@@ -4,6 +4,9 @@
 // User
 #include <api_handler/api_handler_user/api_handler_user_register.h>
 
+// Account
+#include <api_handler/api_handler_account/api_handler_add_account.h>
+
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 
 using namespace std;
@@ -237,10 +240,16 @@ void add_app_route()
         return HttpResponse(OK_200, response);
     };
 
-    // App's API
+    // Register new user
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
     {
         return APIHandlerUserRegister(request).handle();
+    };
+
+    // Add account
+    ADD_ROUTE(RequestMethod::POST, "/add_account")
+    {
+        return APIHandlerAddAccount(request).handle();
     };
 
 }
