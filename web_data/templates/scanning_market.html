@@ -1,0 +1,1705 @@
+<!-- <!doctype html> -->
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <title>
+      Scanning Market
+    </title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Alpha H Trading</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="scanning_market">Scanning Market</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="mm_arbitrage">MM Arbitrage</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="24h_orders_page">24h Orders</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="trade_errors_page">Trade Errors</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="excel_report_page">Excel Report</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="strategy_report_page">Strategy Report</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="modal fade text-dark" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header text-center">
+            <h4 class="modal-title w-100 font-weight-bold">Login</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body mx-3">
+            <div class="md-form mb-3">
+              <i class="fas fa-envelope prefix grey-text"></i>
+              <input type="text" id="login_form_username" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_username">Your username</label>
+            </div>
+
+            <div class="md-form mb-1">
+              <i class="fas fa-lock prefix grey-text"></i>
+              <input type="password" id="login_form_password" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_password">Your password</label>
+            </div>
+
+            <div class="md-form mb-2">
+              <label id="login_error" class="text-white" data-error="wrong" data-success="right" for="">asdad</label>
+            </div>
+
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button onclick=login() class="btn btn-default">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid ml-3">
+      <!-- Title Scanning Market -->
+      <div class="row mt-3">
+        <div class="col-md-2">
+          <h2>Scanning Market</h2>
+        </div>
+        <div class="col-md-1">
+          <button onclick="scan_onclick()" type="button" class="btn btn-warning"><h4>Scan</h4></button>
+        </div>
+        <div class="col-md-1">
+          <button onclick="stop_onclick()" type="button" class="btn btn-warning"><h4>Stop</h4></button>
+        </div>
+        <div class="col-md-1 mt-1">
+          <input id="order_volumn" type="text" class="form-control" aria-describedby="" placeholder="0">
+        </div>
+        <div class="col-md-2">
+          <button onclick="update_order_volumn()" type="button" class="btn float-left btn-warning"><h5>Update Order Volumn</h5></button>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn float-left btn-light"><h4>24hs Profit and Loss</h4></button>
+        </div>
+        <div class="col-md-2 mt-1">
+          <h2 id="24h_profit" class="text-secondary">0.0</h2>
+        </div>
+        <div class="col-md-1 mt-1">
+          <h2 id="user_id" class="text-primary"></h2>
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col-md-2 overflow-auto scrollbar-primary" style="height: 75vh;">
+          <div id="sub-market-group" class="list-group">
+            <a href="#" id="sub-market-button" class="list-group-item d-none" style="background-color: rgba(33,37,41);">
+              <div class="row">
+                <div class="col-md-5">
+                  <div class="row mb-1">
+                    <button id="sub-market-non-main" class="btn btn-sm btn-warning"></button>
+                  </div>
+                  <div class="row mb-1">
+                    <button id="sub-market-currency" class="btn btn-sm btn-success"></button>
+                  </div>
+                  <div class="row">
+                    <button id="sub-market-main" class="btn btn-sm btn-success"></button>
+                  </div>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-2">
+                  <div class="row mb-1">
+                    <button id="replace-times-bid" class="btn btn-sm btn-danger">B</button>
+                  </div>
+                  <div class="row">
+                    <button id="replace-times-ask" class="btn btn-sm btn-primary">A</button>
+                  </div>
+                  <div class="row">
+                    <h6 id="sub-market-volumn" class="mt-2 text-white">0</h6>
+                  </div>
+                </div>
+                <div class="col-2">
+                  <div class="row mb-1">
+                    <h6 id="sub-market-expected-bid" class="mt-1 text-white">0</h6>
+                  </div>
+                  <div class="row">
+                    <h6 id="sub-market-expected-ask" class="mt-1 text-white">0</h6>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+        <div class="col-md-10">
+          <div class="row">
+            <div class="col-md-2">
+              <button type="button" class="btn btn-warning"><h5>Non-main Market</h5></button>
+
+              <div class="row mt-3">
+                <div class="col-md-7">
+                  <select id="non-main-select" class="form-select" aria-label="Default select example">
+                    <option selected>Symbol</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-danger"><h6>Bid</h6></button>
+                  </div>
+                  <div class="col-md-8 mt-1">
+                    <h4 id="non-main-bid"></h4>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-primary"><h6>Ask</h6></button>
+                  </div>
+                  <div class="col-md-8 mt-1">
+                    <h4 id="non-main-ask"></h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-success"><h5>Currency</h5></button>
+
+              <div class="row mt-3">
+                <div class="col-md-7">
+                  <select id="currency-select" class="form-select" aria-label="Default select example">
+                    <option selected>Symbol</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-danger"><h6>Bid</h6></button>
+                  </div>
+                  <div class="col-md-8 mt-1">
+                    <h4 id="currency-bid"></h4>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-primary"><h6>Ask</h6></button>
+                  </div>
+                  <div class="col-md-8 mt-1">
+                    <h4 id="currency-ask"></h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-success"><h5>Main Market</h5></button>
+
+              <div class="row mt-3">
+                <div class="col-md-7">
+                  <select id="main-select" class="form-select" aria-label="Default select example">
+                    <option selected>Symbol</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-danger"><h6>Bid</h6></button>
+                  </div>
+                  <div class="col-md-8 mt-1">
+                    <h4 id="main-bid"></h43>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-primary"><h6>Ask</h6></button>
+                  </div>
+                  <div class="col-md-8 mt-1">
+                    <h4 id="main-ask"></h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="row">
+                <div class="col-md-8">
+                  <button type="button" class="btn btn-success"><h5>Therorical bid - ask</h5></button>
+                  <span id="main_market_asset" class="h4 mt-3"></span>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-danger"><h6>Therorical bid</h6></button>
+                  </div>
+                  <div class="col-md-3 mt-1">
+                    <h4 id="theorical_bid"></h4>
+                  </div>
+                  <div class="col-md-3">
+                    <button type="button" class="btn btn-light"><h7>Profit</h7></button>
+                  </div>
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-light"><h7>P-Fee</h7></button>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-primary"><h6>Main market ask</h6></button>
+                  </div>
+                  <div class="col-md-3 mt-1">
+                    <h4 id="non_main_ask"></h4>
+                  </div>
+                  <div class="col-md-3 mt-1">
+                    <h5 id="profit_on_bid" class="text-danger"></h5>
+                  </div>
+                  <div class="col-md-2 mt-1">
+                    <h5 id="profit_with_fee_on_bid" class="text-danger"></h5>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-5">
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-danger"><h6>Main market bid</h6></button>
+                  </div>
+                  <div class="col-md-3 mt-1">
+                    <h4 id="non_main_bid"></h4>
+                  </div>
+                  <div class="col-md-3">
+                    <button type="button" class="btn btn-light"><h7>Profit</h7></button>
+                  </div>
+                  <div class="col-md-2">
+                    <button type="button" class="btn btn-light"><h7>P-Fee</h7></button>
+                  </div>
+                </div>
+                <div class="row mt-2">
+                  <div class="col-md-4">
+                    <button type="button" class="btn btn-primary"><h6>Therorical ask</h6></button>
+                  </div>
+                  <div class="col-md-3 mt-1">
+                    <h5 id="theorical_ask"></h5>
+                  </div>
+                  <div class="col-md-3 mt-1">
+                    <h5 id="profit_on_ask" class="text-danger"></h5>
+                  </div>
+                  <div class="col-md-2 mt-1">
+                    <h5 id="profit_with_fee_on_ask" class="text-danger"></h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-5">
+            <!-- Theorical Bid Suggested Orders -->
+            <div class="col-md-6">
+              <div class="row">
+                <div class="col-md-4">
+                  <h5>Bid Suggested Orders</h5>
+                </div>
+                <div class="col-md-2" id="bid_type_wrapper">
+                  <button onclick="switch_bid_type()" id="bid_type" type="button" class="btn btn-light"><h7 id="bid_type_text">Limit</h7></button>
+                </div>
+                <div class="col-md-6" id="bid_stop_loss_tick_container" style="display: none">
+                  <div class="row">
+                    <div id="bid_stop_loss_currency_wrapper" class="col-md-3">
+                      <input id="bid_stop_loss_tick_value_currency" type="text" class="form-control" aria-describedby="" placeholder="0">
+                      <h9 id="bid_stop_loss_currency_name" style="font-size: 0.8rem; margin-left: 0.3rem;"></h9>
+                    </div>
+                    <div id="bid_stop_loss_main_wrapper" class="col-md-3">
+                      <input id="bid_stop_loss_tick_value_main" type="text" class="form-control" aria-describedby="" placeholder="0">
+                      <h9 id="bid_stop_loss_main_name" style="font-size: 0.8rem; margin-left: 0.3rem;"></h9>
+                    </div>
+                    <div id="bid_update_tick_btn_wrapper" class="col-md-6">
+                      <button onclick="update_bid_stop_loss_tick()" type="button" class="btn btn-success"><h8>Update tick</h8></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="bid_wrapper" class="row mt-4">
+                <div class="col-md-10">
+                  <table class="table table-dark">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Side</th>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Fee in BNB</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr id="theorical_bid_order_row_1">
+                        <th scope="row">1</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr id="theorical_bid_order_row_2">
+                        <th scope="row">2</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr id="theorical_bid_order_row_3">
+                        <th scope="row">3</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-2">
+                  <div class="row">
+                    <div class="col-md-10 mt-1">
+                      <input id="bid_offset" type="text" class="form-control" aria-describedby="" placeholder="0">
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div class="col-md-12">
+                      <button onclick="on_go_theorical_bid_button_click()" id="go_theorical_bid_orders" type="button" class="btn btn-success"><h6>Go</h6></button>
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div id="cancel_theorical_bid_orders" class="col-md-12 d-none">
+                      <button onclick="on_cancel_theorical_bid_button_click()" type="button" class="btn btn-danger"><h6>Cancel</h6></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="bid-instruction" class="row mt-1 d-none">
+                <div class="col-md-3">
+                  Running. Expected profit:
+                </div>
+                <div class="col-md-1 text-success" id="profit_theorical_bid_orders">
+                  0.01
+                </div>
+                <div class="col-md-1" >
+                </div>
+                <div class="col-md-2">
+                  Re-place times:
+                </div>
+                <div class="col-md-1">
+                  <div onclick="update_replace_times('bid', 1)" class="btn btn-success">+</div>
+                </div>
+                <div class="col-md-1">
+                  <div id="re-place-time-bid" style="display: inline-block; margin-left: 0.6em; margin-top: 0.3em">0</div>
+                </div>
+                <div onclick="update_replace_times('bid', -1)" class="col-md-1">
+                  <div class="btn btn-danger">-</div>
+                </div>
+              </div>
+            </div>
+            <!-- Theorical Ask Suggested Orders -->
+            <div class="col-md-6">
+              <div class="row">
+                <div class="col-md-4">
+                  <h5>Ask Suggested Orders</h5>
+                </div>
+                <div class="col-md-2" id="ask_type_wrapper">
+                  <button onclick="switch_ask_type()" id="ask_type" type="button" class="btn btn-light"><h7 id="ask_type_text">Limit</h7></button>
+                </div>
+                <div class="col-md-6" id="ask_stop_loss_tick_container" style="display: none">
+                  <div class="row">
+                    <div class="col-md-3" id="ask_stop_loss_currency_wrapper">
+                      <input id="ask_stop_loss_tick_value_currency" type="text" class="form-control" aria-describedby="" placeholder="0">
+                      <h9 id="ask_stop_loss_currency_name" style="font-size: 0.8rem; margin-left: 0.3rem;"></h9>
+                    </div>
+                    <div id="ask_stop_loss_main_wrapper" class="col-md-3">
+                      <input id="ask_stop_loss_tick_value_main" type="text" class="form-control" aria-describedby="" placeholder="0">
+                      <h9 id="ask_stop_loss_main_name" style="font-size: 0.8rem; margin-left: 0.3rem;"></h9>
+                    </div>
+                    <div id="ask_update_tick_btn_wrapper" class="col-md-6">
+                      <button onclick="update_ask_stop_loss_tick()" type="button" class="btn btn-success"><h8>Update tick</h8></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="ask_wrapper" class="row mt-4">
+                <div class="col-md-10">
+                  <table class="table table-dark">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Side</th>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Fee in BNB</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr id="theorical_ask_order_row_1">
+                        <th scope="row">1</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr id="theorical_ask_order_row_2">
+                        <th scope="row">2</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                      <tr id="theorical_ask_order_row_3">
+                        <th scope="row">3</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-2">
+                  <div class="row">
+                    <div class="col-md-10 mt-1">
+                      <input id="ask_offset" type="text" class="form-control" aria-describedby="" placeholder="0">
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div class="col-md-12">
+                      <button onclick="on_go_theorical_ask_button_click()" id="go_theorical_ask_orders" type="button" class="btn btn-success"><h6>Go</h6></button>
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div id="cancel_theorical_ask_orders" class="col-md-12 d-none">
+                      <button onclick="on_cancel_theorical_ask_button_click()" type="button" class="btn btn-danger"><h6>Cancel</h6></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="ask-instruction" class="row mt-1 d-none">
+                <div class="col-md-3">
+                  Running. Expected profit:
+                </div>
+                <div class="col-md-1 text-success" id="profit_theorical_ask_orders">
+                  0.01
+                </div>
+                <div class="col-md-1" >
+                </div>
+                <div class="col-md-2">
+                  Re-place times:
+                </div>
+                <div class="col-md-1">
+                  <div onclick="update_replace_times('ask', 1)" class="btn btn-success">+</div>
+                </div>
+                <div class="col-md-1">
+                  <div id="re-place-time-ask" style="display: inline-block; margin-left: 0.6em; margin-top: 0.3em">0</div>
+                </div>
+                <div onclick="update_replace_times('ask', -1)" class="col-md-1">
+                  <div class="btn btn-danger">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send Signal Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+      <div id="sendSignalToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+
+          <strong id="toast-title" class="me-auto">Send signal to device</strong>
+          <small>1 second ago</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-primary font-weight-bold opacity-100">
+          <strong id="send-signal-toast-body">
+            Send signal body
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <script type="text/javascript" src="/libraries/jquery-3.6.0.min.js"></script>
+    <script src="/libraries/proper.min.js" ></script>
+    <script src="/libraries/bootstrap.min.js"></script>
+
+    <script>
+      // Global variables
+      var token;
+      var symbols;
+      var main_symbol;
+      var currency_symbol;
+      var non_main_symbol;
+      var mainSelection;
+      var currencySelection;
+      var non_mainSelection;
+      var user_id;
+      var ws;
+      var data;
+      var sub_market_sample;
+      var active_sub_market = null;
+      var replace_times = {};
+      var sub_market_list = {};
+      var auto_trade_info_list = {};
+      var has_check_update_order_volumn = false;
+
+      // Temporarilly
+      var bid_type_limit = true;
+
+      function show_login_popup() {
+        $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+        $("#modalLoginForm").modal('show');
+      }
+
+      function login() {
+        let username = $("#login_form_username").val();
+        let password = $("#login_form_password").val();
+
+        return fetch(window.location.origin + '/login', {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'username': username,
+            'password': password
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true) {
+            $("#login_error").attr("class", "text-danger");
+            $("#login_error").text(response.msg);
+          } else {
+            $("#modalLoginForm").modal('hide');
+            init();
+            show_login_success_toast(response.data.user_id);
+          }
+        })
+      };
+
+      function get_sample_element() {
+        sub_market_sample = $('#sub-market-button').clone();
+        $("#sub-market-group").empty();
+      }
+
+      function get_user_info() {
+        return fetch(window.location.origin + '/user_info', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true && response.status_code == 401) {
+            show_login_popup();
+            throw "error";
+          }
+          $("#user_id").text(response.data.user_id);
+          user_id = response.data.user_id;
+        })
+      }
+
+      function get_symbols() {
+        return fetch(window.location.origin + '/all_symbols', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          symbols = response.data;
+          console.log("symbols = ", symbols);
+        })
+      }
+
+      function get_websocket_token() {
+        return fetch(window.location.origin + '/websocket_token', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          token = response.data.websocket_token;
+        })
+      }
+
+      function send_auto_trade_info(user_id, type, is_running, expected_profit) {
+        let auto_trade_info = {
+          'sub_market': active_sub_market,
+          'user_id': user_id,
+          'type': type,
+          'is_running': is_running,
+          'expected_profit': expected_profit
+        };
+        fetch(window.location.origin + '/auto_trade_info', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'auto_trade_info': auto_trade_info
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_update_stop_loss_tick(type, stop_loss_tick) {
+        let auto_trade_info = {
+          'sub_market': active_sub_market,
+          'user_id': user_id,
+          'type': type,
+          'stop_loss_tick_currency': stop_loss_tick.currency,
+          'stop_loss_tick_main': stop_loss_tick.main
+        };
+        fetch(window.location.origin + '/auto_trade_info', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'auto_trade_info': auto_trade_info
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_update_market_type(type, market_type) {
+        let auto_trade_info = {
+          'sub_market': active_sub_market,
+          'user_id': user_id,
+          'type': type,
+          'market_type': market_type,
+          'enable_replace': market_type == 'STOP_LOSS_ONLY' ? false : true
+        };
+        fetch(window.location.origin + '/auto_trade_info', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'auto_trade_info': auto_trade_info
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_update_replace_times(type, replace_times) {
+        let auto_trade_info = {
+          'sub_market': active_sub_market,
+          'user_id': user_id,
+          'type': type,
+          'replace_times': replace_times
+        };
+        fetch(window.location.origin + '/auto_trade_info', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'auto_trade_info': auto_trade_info
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function get_auto_trade_info() {
+        return fetch(window.location.origin + '/auto_trade_info', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          auto_trade_info_list = response.data;
+
+          for (sub_market in auto_trade_info_list) {
+            auto_trade_info_list[sub_market] = auto_trade_info_list[sub_market];
+            update_trading_info_to_sub_market_button(sub_market);
+          }
+        })
+      }
+
+      function send_request_scan_market() {
+        fetch(window.location.origin + '/scan_market?' + new URLSearchParams({
+            sub_market: main_symbol + '-' + currency_symbol + '-' + non_main_symbol,
+          }), {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          },
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_request_stop_scanning_market() {
+        fetch(window.location.origin + '/stop_scanning_market?' + new URLSearchParams({
+            sub_market: active_sub_market,
+          }), {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          },
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_request_update_order_volumn(order_volumn) {
+        fetch(window.location.origin + '/update_order_volumn?' + new URLSearchParams({
+            sub_market: active_sub_market,
+            order_volumn: order_volumn,
+          }), {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          },
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function export_excel() {
+        window.open(window.location.origin + '/report_price_ticker');
+      }
+
+      function update_replace_times(type, value) {
+        if (replace_times[type] == undefined) {
+          replace_times[type] = 0;
+        }
+        console.log("replace_times[type] = ", replace_times[type]);
+        replace_times[type] += value;
+
+        if (replace_times[type] < 0) {
+          replace_times[type] = 0;
+        }
+
+        send_update_replace_times(type, replace_times[type]);
+      }
+
+      function place_order(order, price_ticker) {
+        // Set price ticker data by symbol
+        let price_ticker_data;
+        if (order.symbol == data.non_main.symbol) {
+          price_ticker_data = price_ticker.non_main;
+        } else if (order.symbol == data.currency.symbol) {
+          price_ticker_data = price_ticker.currency;
+        } else if (order.symbol == data.main.symbol) {
+          price_ticker_data = price_ticker.main;
+        }
+
+        fetch(window.location.origin + '/order_non_cancel?' + new URLSearchParams({
+            symbol: order.symbol,
+            side: order.side,
+            price: order.price,
+            quantity: order.quantity
+          }), {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'price_ticker': price_ticker_data
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+          if (response.error == true) {
+            show_place_order_error_toast(response.msg);
+          }
+        })
+      }
+
+      function scan_onclick() {
+        show_start_scanning_toast(non_main_symbol, currency_symbol, main_symbol);
+        send_request_scan_market();
+      }
+
+      function stop_onclick() {
+        send_request_stop_scanning_market();
+      }
+
+      function update_order_volumn() {
+        let order_volumn = $("#order_volumn").val();
+        show_update_order_volumn_toast(order_volumn);
+        send_request_update_order_volumn(order_volumn);
+      }
+
+      function place_order_group(order_group, price_ticker) {
+        order_group.forEach(order => {
+          place_order(order, price_ticker);
+        });
+      }
+
+      function update_bid_stop_loss_tick() {
+        let stop_loss_tick = {
+          currency: parseInt($("#bid_stop_loss_tick_value_currency").val()),
+          main: parseInt($("#bid_stop_loss_tick_value_main").val()),
+        }
+        send_update_stop_loss_tick("bid", stop_loss_tick);
+        show_update_stop_loss_tick_toast("bid", stop_loss_tick);
+      }
+
+      function update_ask_stop_loss_tick() {
+        let stop_loss_tick = {
+          currency: parseInt($("#ask_stop_loss_tick_value_currency").val()),
+          main: parseInt($("#ask_stop_loss_tick_value_main").val()),
+        }
+        send_update_stop_loss_tick("ask", stop_loss_tick);
+        show_update_stop_loss_tick_toast("ask", stop_loss_tick);
+      }
+
+      function get_auto_trade_info_by_sub_market(sub_market) {
+        if (auto_trade_info_list.hasOwnProperty(sub_market) == false) {
+          get_auto_trade_info();
+
+          auto_trade_info_list[sub_market] = {};
+        }
+
+        return auto_trade_info_list[sub_market];
+      }
+
+      function switch_bid_type() {
+        let sub_market = main_symbol + '-' + currency_symbol + '-' + non_main_symbol;
+        let auto_trade_info_data = get_auto_trade_info_by_sub_market(sub_market);
+        let new_market_type = get_new_market_type(auto_trade_info_data.bid.market_type);
+
+        send_update_market_type("bid", new_market_type);
+      }
+
+      function switch_ask_type() {
+        let sub_market = main_symbol + '-' + currency_symbol + '-' + non_main_symbol;
+        let auto_trade_info_data = get_auto_trade_info_by_sub_market(sub_market);
+        let new_market_type = get_new_market_type(auto_trade_info_data.ask.market_type);
+
+        send_update_market_type("ask", new_market_type);
+      }
+
+      function get_new_market_type(market_type) {
+        let new_market_type;
+
+        switch (market_type) {
+          case "LIMIT":
+            new_market_type = "STOP_LOSS";
+            break;
+          case "STOP_LOSS":
+            new_market_type = "STOP_LOSS_ONLY";
+            break;
+          case "STOP_LOSS_ONLY":
+            new_market_type = "LIMIT";
+            break;
+          default:
+            new_market_type = "LIMIT";
+        }
+
+        return new_market_type;
+      }
+
+      function on_go_theorical_bid_button_click() {
+        send_auto_trade_info(user_id, 'bid', true, Number($("#bid_offset").val()));
+      }
+
+      function on_go_theorical_ask_button_click() {
+        send_auto_trade_info(user_id, 'ask', true, Number($("#ask_offset").val()));
+      }
+
+      function on_cancel_theorical_bid_button_click() {
+        send_auto_trade_info(user_id, 'bid', false);
+      }
+
+      function on_cancel_theorical_ask_button_click() {
+        send_auto_trade_info(user_id, 'ask', false);
+      }
+
+      function update_trading_control_ui_bid(data) {
+        if (data.is_running) {
+          $("#bid_offset").val(data.expected_profit);
+          $("#bid_offset").attr("disabled", true);
+          $('#bid_type').attr("disabled", true);
+          $("#go_theorical_bid_orders").attr("class", "btn btn-secondary disabled");
+          $("#bid-instruction").attr("class", "row");
+          $("#profit_theorical_bid_orders").text(data.expected_profit);
+          $("#cancel_theorical_bid_orders").attr("class", "col-md-12");
+        } else {
+          $("#bid_offset").val(0);
+          $("#bid_offset").attr("disabled", false);
+          $('#bid_type').attr("disabled", false);
+          $("#go_theorical_bid_orders").attr("class", "btn btn-success");
+          $("#bid-instruction").attr("class", "d-none");
+          $("#cancel_theorical_bid_orders").attr("class", "d-none");
+        }
+
+        // Re-place time
+        replace_times["bid"] = data.replace_times;
+        $("#re-place-time-bid").text(replace_times["bid"]);
+
+        // Stop loss currency + main's names
+        let symbols = data.sub_market.split("-");
+        $("#bid_stop_loss_currency_name").text(symbols[1]);
+        $("#bid_stop_loss_main_name").text(symbols[0]);
+
+        // Bid's stop loss tick value
+        if (data.stop_loss_tick_currency != undefined) {
+          $("#bid_stop_loss_tick_value_currency").val(data.stop_loss_tick_currency);
+        }
+        if (data.stop_loss_tick_main != undefined) {
+          $("#bid_stop_loss_tick_value_main").val(data.stop_loss_tick_main);
+        }
+
+        // Market type
+        if (data.market_type)
+        {
+          if (data.market_type == "LIMIT") {
+            $("#bid_type").attr("class", "btn btn-light");
+            $("#bid_type_text").text("Limit");
+            $('#bid_stop_loss_tick_container').css("display", "none");
+            $('#bid_stop_loss_main_wrapper').attr("class", "col-md-3");
+            $('#bid_update_tick_btn_wrapper').attr("class", "col-md-6");
+            $('#bid_wrapper').attr("class", "row mt-4");
+          } else if (data.market_type == "STOP_LOSS") {
+            $("#bid_type").attr("class", "btn btn-info");
+            $("#bid_type_text").text("Stop Loss");
+            $('#bid_type_wrapper').attr("class", "col-md-2");
+            $('#bid_stop_loss_tick_container').css("display", "");
+            $('#bid_stop_loss_tick_container').attr("class", "col-md-6");
+            $('#bid_stop_loss_currency_wrapper').css("display", "");
+            $('#bid_stop_loss_main_wrapper').attr("class", "col-md-3");
+            $('#bid_update_tick_btn_wrapper').attr("class", "col-md-6");
+            $('#bid_wrapper').attr("class", "row mt-1");
+          } else if (data.market_type == "STOP_LOSS_ONLY") {
+            $("#bid_type").attr("class", "btn btn-warning");
+            $("#bid_type_text").text("Stop Loss Only");
+            $('#bid_type_wrapper').attr("class", "col-md-3");
+            $('#bid_stop_loss_tick_container').css("display", "");
+            $('#bid_stop_loss_tick_container').attr("class", "col-md-4");
+            $('#bid_stop_loss_currency_wrapper').css("display", "none");
+            $('#bid_stop_loss_main_wrapper').attr("class", "col-md-5");
+            $('#bid_update_tick_btn_wrapper').attr("class", "col-md-7");
+            $('#bid_wrapper').attr("class", "row mt-1");
+          }
+        }
+      }
+
+      function update_trading_control_ui_ask(data) {
+        if (data.is_running) {
+          $("#ask_offset").val(data.expected_profit);
+          $("#ask_offset").attr("disabled", true);
+          $('#ask_type').attr("disabled", true);
+          $("#go_theorical_ask_orders").attr("class", "btn btn-secondary disabled");
+          $("#ask-instruction").attr("class", "row");
+          $("#profit_theorical_ask_orders").text(data.expected_profit);
+          $("#cancel_theorical_ask_orders").attr("class", "col-md-12");
+        } else {
+          $("#ask_offset").val(0);
+          $("#ask_offset").attr("disabled", false);
+          $('#ask_type').attr("disabled", false);
+          $("#go_theorical_ask_orders").attr("class", "btn btn-success");
+          $("#ask-instruction").attr("class", "d-none");
+          $("#cancel_theorical_ask_orders").attr("class", "d-none");
+        }
+
+        // Re-place time
+        replace_times["ask"] = data.replace_times;
+        $("#re-place-time-ask").text(replace_times["ask"]);
+
+        // Stop loss currency + main's names
+        let symbols = data.sub_market.split("-");
+        $("#ask_stop_loss_currency_name").text(symbols[1]);
+        $("#ask_stop_loss_main_name").text(symbols[0]);
+
+        // Market type
+        $("#ask_type_text").text(data.market_type);
+
+        // Ask's stop loss tick value
+        if (data.stop_loss_tick_currency != undefined) {
+          $("#ask_stop_loss_tick_value_currency").val(data.stop_loss_tick_currency);
+        }
+        if (data.stop_loss_tick_main != undefined) {
+          $("#ask_stop_loss_tick_value_main").val(data.stop_loss_tick_main);
+        }
+
+        // Market type
+        if (data.market_type)
+        {
+          if (data.market_type == "LIMIT") {
+            $("#ask_type").attr("class", "btn btn-light");
+            $("#ask_type_text").text("Limit");
+            $('#ask_stop_loss_tick_container').css("display", "none");
+            $('#ask_stop_loss_main_wrapper').attr("class", "col-md-3");
+            $('#ask_update_tick_btn_wrapper').attr("class", "col-md-6");
+            $('#ask_wrapper').attr("class", "row mt-4");
+          } else if (data.market_type == "STOP_LOSS") {
+            $("#ask_type").attr("class", "btn btn-info");
+            $("#ask_type_text").text("Stop Loss");
+            $('#ask_type_wrapper').attr("class", "col-md-2");
+            $('#ask_stop_loss_tick_container').css("display", "");
+            $('#ask_stop_loss_tick_container').attr("class", "col-md-6");
+            $('#ask_stop_loss_currency_wrapper').css("display", "");
+            $('#ask_stop_loss_main_wrapper').attr("class", "col-md-3");
+            $('#ask_update_tick_btn_wrapper').attr("class", "col-md-6");
+            $('#ask_wrapper').attr("class", "row mt-1");
+          } else if (data.market_type == "STOP_LOSS_ONLY") {
+            $("#ask_type").attr("class", "btn btn-warning");
+            $("#ask_type_text").text("Stop Loss Only");
+            $('#ask_type_wrapper').attr("class", "col-md-3");
+            $('#ask_stop_loss_tick_container').css("display", "");
+            $('#ask_stop_loss_tick_container').attr("class", "col-md-4");
+            $('#ask_stop_loss_currency_wrapper').css("display", "none");
+            $('#ask_stop_loss_main_wrapper').attr("class", "col-md-5");
+            $('#ask_update_tick_btn_wrapper').attr("class", "col-md-7");
+            $('#ask_wrapper').attr("class", "row mt-1");
+          }
+        }
+      }
+
+      function update_trading_control_ui_by_submarket(sub_market) {
+        let auto_trade_info_data = get_auto_trade_info_by_sub_market(sub_market);
+        if (auto_trade_info_data) {
+          if (auto_trade_info_data.bid) {
+            update_trading_control_ui_bid(auto_trade_info_data.bid);
+          }
+          if (auto_trade_info_data.ask) {
+            update_trading_control_ui_ask(auto_trade_info_data.ask);
+          }
+        }
+
+        update_trading_info_to_sub_market_button(sub_market);
+      }
+
+      function update_trading_info_to_sub_market_button(sub_market) {
+        let sub_market_ui = sub_market_list[sub_market];
+        let auto_trading_info = get_auto_trade_info_by_sub_market(sub_market);
+        let replace_times;
+
+        if (!sub_market_ui || !auto_trading_info) return;
+
+        // Bid
+        replace_times = 0;
+        if (auto_trading_info.bid) {
+          if (auto_trading_info.bid.is_running) {
+            sub_market_ui.find("#sub-market-expected-bid").text(auto_trading_info.bid.expected_profit);
+          } else {
+            sub_market_ui.find("#sub-market-expected-bid").text(0);
+          }
+
+          // Replace times
+          replace_times = auto_trading_info.bid.replace_times;
+        }
+
+        if (replace_times > 0) {
+          sub_market_ui.find("#replace-times-bid").text(replace_times);
+        } else {
+          sub_market_ui.find("#replace-times-bid").text('B');
+        }
+
+        // Ask
+        replace_times = 0;
+        if (auto_trading_info.ask) {
+          if (auto_trading_info.ask.is_running) {
+            sub_market_ui.find("#sub-market-expected-ask").text(auto_trading_info.ask.expected_profit);
+          } else {
+            sub_market_ui.find("#sub-market-expected-ask").text(0);
+          }
+
+          // Replace times
+          replace_times = auto_trading_info.ask.replace_times;
+        }
+
+        if (replace_times > 0) {
+          sub_market_ui.find("#replace-times-ask").text(replace_times);
+        } else {
+          sub_market_ui.find("#replace-times-ask").text('A');
+        }
+      }
+
+      function add_sub_market(sub_market, data) {
+        // Update to UI
+        let sub_market_ui = sub_market_sample.clone();
+        sub_market_ui.find('#sub-market-non-main').text(data.non_main.symbol);
+        sub_market_ui.find('#sub-market-currency').text(data.currency.symbol);
+        sub_market_ui.find('#sub-market-main').text(data.main.symbol);
+        sub_market_ui.attr("class", "list-group-item");
+        sub_market_ui.attr("onclick", "set_active_sub_market('" + sub_market + "')");
+        sub_market_ui.attr("id", "sub-market-button-" + sub_market);
+
+        $("#sub-market-group").append(sub_market_ui);
+        sub_market_list[sub_market] = sub_market_ui;
+
+        update_trading_info_to_sub_market_button(sub_market);
+      }
+
+      function remove_sub_market(main, currency, non_main) {
+        let sub_market = main + '-' + currency + '-' + non_main;
+
+        // Delete from sub_market_list
+        delete sub_market_list[sub_market];
+
+        // Remove from UI
+        $("#sub-market-button-" + sub_market).remove();
+
+        // Show toast
+        show_stop_scanning_toast(non_main, currency, main);
+
+        // Active the other sub_market
+        let sub_market_keys = Object.keys(sub_market_list);
+        if (sub_market_keys.length > 0) {
+          sub_market = sub_market_keys[0];
+          set_active_sub_market(sub_market);
+        }
+      }
+
+      function set_active_sub_market(sub_market) {
+        // In-active all of sub market
+        for (id in sub_market_list) {
+          sub_market_list[id].attr("class", "list-group-item");
+        }
+
+        // Reset symbol of selection + order volumn
+        reset_symbol_of_selection();
+        reset_order_volumn();
+        reset_replace_time();
+
+        // Active current sub_market
+        active_sub_market = sub_market;
+        sub_market_list[sub_market].attr("class", "list-group-item active");
+        // show_active_sub_market_toast(sub_market);
+
+        // Update auto trading control ui
+        update_trading_control_ui_by_submarket(active_sub_market);
+      }
+
+      function add_to_select_list() {
+        symbols.forEach(symbol => {
+          // main
+          $('#main-select').append($('<option>', {
+            value: symbol,
+            text : symbol
+          }));
+
+          // currency
+          $('#currency-select').append($('<option>', {
+            value: symbol,
+            text : symbol
+          }));
+
+          // non main
+          $('#non-main-select').append($('<option>', {
+            value: symbol,
+            text : symbol
+          }));
+        });
+
+        mainSelection = $('#main-select');
+        currencySelection = $('#currency-select');
+        non_mainSelection = $('#non-main-select');
+      }
+
+      function reset_symbol_of_selection() {
+        mainSelection.val('Symbol').change();
+        currencySelection.val('Symbol').change();
+        non_mainSelection.val('Symbol').change();
+      }
+
+      function reset_order_volumn() {
+        has_check_update_order_volumn = false;
+        $("#order_volumn").val('').change();
+      }
+
+      function reset_replace_time() {
+        replace_times = {
+          bid: 0,
+          ask: 0,
+        }
+        $("#re-place-time-bid").text(0);
+        $("#re-place-time-ask").text(0);
+      }
+
+      function check_update_symbol_to_selection(data) {
+        let mainSelected = mainSelection.find("option:selected").text();
+        let currencySelected = currencySelection.find("option:selected").text();
+        let non_mainSelected = non_mainSelection.find("option:selected").text();
+
+        if (mainSelected == 'Symbol') {
+          mainSelection.val(data.main.symbol).change();
+        }
+
+        if (currencySelected == 'Symbol') {
+          currencySelection.val(data.currency.symbol).change();
+        }
+
+        if (non_mainSelected == 'Symbol') {
+          non_mainSelection.val(data.non_main.symbol).change();
+        }
+      }
+
+      function check_update_order_volumn(data) {
+        if (has_check_update_order_volumn == false && $("#order_volumn").val() == '') {
+          $("#order_volumn").val(data.order_volumn);
+          has_check_update_order_volumn = true;
+        }
+      }
+
+      function check_update_order_volumn_to_sub_market(sub_market, order_volumn) {
+        let sub_market_ui = sub_market_list[sub_market];
+
+        if (sub_market_ui) {
+          let volumn_text = sub_market_ui.find("#sub-market-volumn");
+          if (volumn_text.text() != order_volumn) {
+            volumn_text.text(order_volumn);
+          }
+        }
+      }
+
+      function subscribe_channel_profit() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "profit",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          if (data.USDT != undefined) {
+            let ui = $("#24h_profit");
+            ui.text(data.USDT);
+
+            if (data.USDT < 0) {
+              ui.attr("class", "text-danger");
+            } else if (data.USDT > 0) {
+              ui.attr("class", "text-success");
+            } else {
+              ui.text('0.0');
+              ui.attr("class", "text-secondary");
+            }
+          }
+        }
+      }
+
+      function subscribe_channel_profit() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub = {
+            method: "subscribe",
+            channel: "auto_trade",
+            token: token
+          }
+          ws.send(JSON.stringify(sub));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          let sub_market = data.sub_market;
+          if (!auto_trade_info_list[sub_market]) {
+            auto_trade_info_list[sub_market] = {};
+          }
+
+          if (data.type == 'bid') {
+            auto_trade_info_list[sub_market].bid = data;
+          } else if (data.type == 'ask') {
+            auto_trade_info_list[sub_market].ask = data;
+          }
+
+          update_trading_control_ui_by_submarket(active_sub_market);
+          // show_auto_trade_toast(sub_market, data);
+        }
+      }
+
+      function subscribe_channel_notification() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "scanning_market_notification",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          let data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          show_scanning_market_notification_toast(data.msg);
+        }
+      }
+
+      function subscribe_channel_scanning_market() {
+        ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "scanning_market",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          // Check is sub_market stop scanning
+          if (data.is_stop == true) {
+            remove_sub_market(data.main, data.currency, data.non_main);
+            return;
+          }
+
+          // Check sub market
+          let sub_market = data.main.symbol + '-' + data.currency.symbol + '-' + data.non_main.symbol;
+          if (sub_market_list[sub_market] == undefined) {
+            add_sub_market(sub_market, data);
+          }
+          if (active_sub_market == null) {
+            set_active_sub_market(sub_market);
+          }
+
+          check_update_order_volumn_to_sub_market(sub_market, data.order_volumn);
+
+          // Only handle active_sub_market data
+          if (active_sub_market != sub_market) return;
+
+          check_update_symbol_to_selection(data);
+          check_update_order_volumn(data);
+
+          // main
+          $("#main-bid").text(data.main.bid);
+          $("#main-ask").text(data.main.ask);
+
+          // currency
+          $("#currency-bid").text(data.currency.bid);
+          $("#currency-ask").text(data.currency.ask);
+
+          // non-main
+          $("#non-main-bid").text(data.non_main.bid);
+          $("#non-main-ask").text(data.non_main.ask);
+
+          // theorical_bid
+          $("#theorical_bid").text(data.theorical_bid);
+          $("#non_main_ask").text(data.non_main_ask);
+
+          // theorical_ask
+          $("#theorical_ask").text(data.theorical_ask);
+          $("#non_main_bid").text(data.non_main_bid);
+
+          // main_market_asset
+          $("#main_market_asset").text('(In ' + data.main_market_asset + ')');
+
+          // profit_on_bid
+          profit_on_bid = data.profit_on_bid;
+          if (profit_on_bid < 0) {
+            $("#profit_on_bid").attr("class", "text-danger");
+          } else {
+            $("#profit_on_bid").attr("class", "text-success");
+          }
+
+          // profit_with_fee_on_bid
+          profit_with_fee_on_bid = data.profit_with_fee_on_bid;
+          if (profit_with_fee_on_bid < 0) {
+            $("#profit_with_fee_on_bid").attr("class", "text-danger");
+          } else {
+            $("#profit_with_fee_on_bid").attr("class", "text-success");
+          }
+
+          // profit_on_ask
+          profit_on_ask = data.profit_on_ask;
+          if (profit_on_ask < 0) {
+            $("#profit_on_ask").attr("class", "text-danger");
+          } else {
+            $("#profit_on_ask").attr("class", "text-success");
+          }
+
+          // profit_with_fee_on_ask
+          profit_with_fee_on_ask = data.profit_with_fee_on_ask;
+          if (profit_with_fee_on_ask < 0) {
+            $("#profit_with_fee_on_ask").attr("class", "text-danger");
+          } else {
+            $("#profit_with_fee_on_ask").attr("class", "text-success");
+          }
+
+          $("#profit_on_bid").text(profit_on_bid);
+          $("#profit_on_ask").text(profit_on_ask);
+          $("#profit_with_fee_on_bid").text(profit_with_fee_on_bid);
+          $("#profit_with_fee_on_ask").text(profit_with_fee_on_ask);
+
+          // Theorical bid orders
+          data.theorical_bid_orders.forEach((order, index) => {
+            let id = "#theorical_bid_order_row_" + (index + 1);
+            $(id).empty();
+            $(id).append("<th scope='row'>" + (index + 1) + "</th>");
+            $(id).append("<td class='text-" + ((order.side == "BUY") ? 'success' : 'danger') + "'>" + order.side + "</td>");
+            $(id).append("<td>" + order.symbol + "</td>");
+            $(id).append("<td>" + order.price + "</td>");
+            $(id).append("<td>" + order.quantity + "</td>");
+            $(id).append("<td>" + order.BNB_fee + "</td>");
+          });
+
+          // if (profit_with_fee_on_bid <= 0) {
+          //   $("#go_theorical_bid_orders").attr("class","btn btn-danger disabled");
+          // } else {
+          //   $("#go_theorical_bid_orders").attr("class","btn btn-success");
+          // }
+          // $("#go_theorical_bid_orders").attr("class","btn btn-success");
+
+          // Theorical bid orders
+          data.theorical_ask_orders.forEach((order, index) => {
+            let id = "#theorical_ask_order_row_" + (index + 1);
+            $(id).empty();
+            $(id).append("<th scope='row'>" + (index + 1) + "</th>");
+            $(id).append("<td class='text-" + ((order.side == "BUY") ? 'success' : 'danger') + "'>" + order.side + "</td>");
+            $(id).append("<td>" + order.symbol + "</td>");
+            $(id).append("<td>" + order.price + "</td>");
+            $(id).append("<td>" + order.quantity + "</td>");
+            $(id).append("<td>" + order.BNB_fee + "</td>");
+          });
+
+          //if (profit_with_fee_on_ask <= 0) {
+          //  $("#go_theorical_ask_orders").attr("class","btn btn-danger disabled");
+          //} else {
+          //  $("#go_theorical_ask_orders").attr("class","btn btn-success");
+          //}
+          // $("#go_theorical_ask_orders").attr("class","btn btn-success");
+        };
+      }
+
+      function show_login_success_toast(user_id) {
+        $("#toast-title").html("Login Successfully");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "User: <span class='text-primary'>" + user_id + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_start_scanning_toast(non_main_market, currency, main_market) {
+        $("#toast-title").html("Start scanning market");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Non-main market: <span class='text-dark'>" + non_main_market + "</span>",
+          "<br>Currency:  <span class='text-dark'>" + currency + "</span>",
+          "<br>Main market:  <span class='text-dark'>" + main_market + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_stop_scanning_toast(non_main_market, currency, main_market) {
+        $("#toast-title").html("Stop scanning market");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Non-main market: <span class='text-dark'>" + non_main_market + "</span>",
+          "<br>Currency:  <span class='text-dark'>" + currency + "</span>",
+          "<br>Main market:  <span class='text-dark'>" + main_market + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_update_order_volumn_toast(order_volumn) {
+        $("#toast-title").html("Update order volumn");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "New volumn: <span class='text-dark'>" + order_volumn + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_place_order_toast(type, expected_profit) {
+        $("#toast-title").html("Place orders");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Type: <span class='text-dark'>" + type, "</span><br>Expected profit: <span class=" + (expected_profit > 0 ? "'text-success'" : 'text-danger') + ">" + expected_profit + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+      function show_update_stop_loss_tick_toast(type, stop_loss_tick) {
+        $("#toast-title").html("Update Stop Loss tick");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Type: <span class='text-dark'>" + type,
+          "</span><br>Currency Market: <span class=" + (stop_loss_tick.currency > 0 ? "'text-success'" : 'text-danger') + ">" + stop_loss_tick.currency + "</span>",
+          "</span><br>Main Market: <span class=" + (stop_loss_tick.main > 0 ? "'text-success'" : 'text-danger') + ">" + stop_loss_tick.main + "</span>"
+          );
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_active_sub_market_toast(sub_market) {
+        let markets = sub_market.split("-");
+        let non_main = markets[0];
+        let currency = markets[1];
+        let main = markets[2];
+        $("#toast-title").html("Displaying sub market");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Non-main market: <span class='text-success'>" + non_main + "</span>",
+          "<br>Currency:  <span class='text-success'>" + currency + "</span>",
+          "<br>Main market:  <span class='text-success'>" + main + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_place_order_error_toast(message) {
+        $("#toast-title").html("Place orders error");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Message: <span class='text-danger'>" + message, "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_auto_trade_toast(sub_market, data) {
+        $("#toast-title").html("Auto trading");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Sub market: <span class='text-dark'>" + sub_market, "</span>");
+        $("#send-signal-toast-body").append("<br>Status: <span class=" + (data.is_running == true ? "'text-success'" : 'text-danger') + ">" + (data.is_running == true ? "Start" : 'Stop') +  "</span><br>Type: <span class='text-dark'>" + data.type, "</span>");
+        if (data.expected_profit) {
+          $("#send-signal-toast-body").append("<br>Expected profit: <span class=" + (data.expected_profit ? "'text-success'" : 'text-danger') + ">" + data.expected_profit + "</span>");
+        }
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_scanning_market_notification_toast(message) {
+        $("#toast-title").html("Scanning Market Notification");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Message: <span class='text-danger'>" + message, "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function init() {
+        get_user_info()
+        .then(get_sample_element)
+        .then(get_symbols)
+        .then(add_to_select_list)
+        .then(get_websocket_token)
+        .then(subscribe_channel_profit)
+        .then(subscribe_channel_notification)
+        .then(subscribe_channel_scanning_market)
+        .then(get_auto_trade_info);
+      }
+
+      window.onload=function() {
+        init();
+
+        $('#main-select').on('change', function (e) {
+          let optionSelected = $(this).find("option:selected");
+          main_symbol   = optionSelected.text();
+          console.log("main_symbol = ", main_symbol)
+        });
+
+        $('#currency-select').on('change', function (e) {
+          let optionSelected = $(this).find("option:selected");
+          currency_symbol   = optionSelected.text();
+          console.log("currency_symbol = ", currency_symbol)
+        });
+
+        $('#non-main-select').on('change', function (e) {
+          let optionSelected = $(this).find("option:selected");
+          non_main_symbol   = optionSelected.text();
+          console.log("non_main_symbol = ", non_main_symbol)
+        });
+      }
+
+      window.onclose=function(){
+          ws.close();
+      }
+      </script>
+  </body>
+
+  <style>
+    body {
+      background-color: #212121;
+      color: white
+    }
+    .list-group-item:hover {
+      background-color: rgba(33,40,55) !important;
+    }
+
+    .scrollbar-primary::-webkit-scrollbar {
+      width: 12px !important;
+      background-color: #F5F5F5 !important;
+    }
+    .scrollbar-primary::-webkit-scrollbar-thumb {
+      border-radius: 10px !important;
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1) !important;
+      background-color: #4285F4 !important;
+    }
+    .scrollbar-primary {
+      scrollbar-color: #4285F4 #F5F5F5 !important;
+    }
+  </style>
+</html>

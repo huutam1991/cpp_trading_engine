@@ -1,0 +1,676 @@
+<!-- <!doctype html> -->
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+
+    <title>
+      Scanning Market Multiple
+    </title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Alpha H Trading</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="scanning_market">Single Market</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="scanning_market_multiple">Multiple Markets</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="24h_orders_page">24h Orders</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="excel_report_page">Excel Report</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container-fluid ml-3">
+      <!-- Title Scanning Market -->
+      <div class="row mt-3">
+        <div class="col-md-4">
+          <h2>Scanning Market Multiple</h2>
+        </div>
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn float-left btn-light"><h4>24hs Profit and Loss</h4></button>
+        </div>
+        <div class="col-md-2 mt-1">
+          <h2 id="24h_profit" class="text-secondary">0.0</h2>
+        </div>
+      </div>
+      <div id="data_content" class="row mt-3">
+        <div id="data_bid" class="row mt-4" >
+          <div class="col-md-1">
+            <button type="button" class="btn btn-warning"><h6 id="main_symbol">ETHBTC</h6></button>
+            <div class="row mt-3">
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-danger"><h9>B</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="main-bid">2131</h10>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-1">
+                  <button type="button" class="btn btn-primary"><h9>A</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="main-ask">123123</h10>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-1">
+            <button type="button" class="btn btn-success"><h6 id="currency_symbol">BTCUSDT</h6></button>
+            <div class="row mt-3">
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-danger"><h9>B</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="currency-bid"></h10>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-primary"><h9>A</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="currency-ask"></h10>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <button type="button" class="btn btn-success"><h6 id="non_main_symbol">ETHUSDT</h6></button>
+            <div class="row mt-3">
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-danger"><h9>B</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="non-main-bid">123132</h10>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-primary"><h9>A</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="non-main-ask">123</h10>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="row">
+              <div class="row">
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-danger"><h8>Theo bid</h8></button>
+                </div>
+                <div class="col-md-4 mt-1">
+                  <h10 id="theorical_bid">12313</h10>
+                </div>
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-light"><h8>Profit</h8></button>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-primary"><h8>M-m ask</h8></button>
+                </div>
+                <div class="col-md-4 mt-1">
+                  <h10 id="non_main_ask">123123</h10>
+                </div>
+                <div class="col-md-4 mt-1">
+                  <h10 id="profit_on_bid" class="text-danger">34545</h10>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <table class="table table-dark">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Side</th>
+                  <th scope="col">Symbol</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="theorical_bid_order_row_1">
+                  <th scope="row">1</th>
+                  <td class='text-danger'>SELL</td>
+                  <td id='symbol'></td>
+                  <td id='price'></td>
+                  <td id='quantity'></td>
+                </tr>
+                <tr id="theorical_bid_order_row_2">
+                  <th scope="row">2</th>
+                  <td class='text-danger'>SELL</td>
+                  <td id='symbol'></td>
+                  <td id='price'></td>
+                  <td id='quantity'></td>
+                </tr>
+                <tr id="theorical_bid_order_row_3">
+                  <th scope="row">3</th>
+                  <td class='text-success'>BUY</td>
+                  <td id='symbol'></td>
+                  <td id='price'></td>
+                  <td id='quantity'></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-2">
+            <button onclick="on_go_theorical_bid_button_click()" id="go_theorical_bid_orders" type="button" class="btn btn-danger disabled"><h6>Go</h6></button>
+          </div>
+          <hr class="style13 mt-4">
+        </div>
+        <div id="data_ask" class="row mt-4" >
+          <div class="col-md-1">
+            <button type="button" class="btn btn-warning"><h6 id="main_symbol">ETHBTC</h6></button>
+            <div class="row mt-3">
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-danger"><h9>B</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="main-bid">2131</h10>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-1">
+                  <button type="button" class="btn btn-primary"><h9>A</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="main-ask">123123</h10>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-1">
+            <button type="button" class="btn btn-success"><h6 id="currency_symbol">BTCUSDT</h6></button>
+            <div class="row mt-3">
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-danger"><h9>B</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="currency-bid"></h10>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-primary"><h9>A</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="currency-ask"></h10>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <button type="button" class="btn btn-success"><h6 id="non_main_symbol">ETHUSDT</h6></button>
+            <div class="row mt-3">
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-danger"><h9>B</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="non-main-bid">123132</h10>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-2">
+                  <button type="button" class="btn btn-primary"><h9>A</h9></button>
+                </div>
+                <div class="col-md-10 mt-1">
+                  <h10 id="non-main-ask">123</h10>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="row">
+              <div class="row">
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-danger"><h8>M-m bid</h8></button>
+                </div>
+                <div class="col-md-4 mt-1">
+                  <h10 id="non_main_bid">12313</h10>
+                </div>
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-light"><h8>Profit</h8></button>
+                </div>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-primary"><h8>Theo ask</h8></button>
+                </div>
+                <div class="col-md-4 mt-1">
+                  <h10 id="theorical_ask">123123</h10>
+                </div>
+                <div class="col-md-4 mt-1">
+                  <h10 id="profit_on_ask" class="text-danger">34545</h10>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <table class="table table-dark">
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Side</th>
+                  <th scope="col">Symbol</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr id="theorical_ask_order_row_1">
+                  <th scope="row">1</th>
+                  <td class='text-success'>BUY</td>
+                  <td id='symbol'></td>
+                  <td id='price'></td>
+                  <td id='quantity'></td>
+                </tr>
+                <tr id="theorical_ask_order_row_2">
+                  <th scope="row">2</th>
+                  <td class='text-success'>BUY</td>
+                  <td id='symbol'></td>
+                  <td id='price'></td>
+                  <td id='quantity'></td>
+                </tr>
+                <tr id="theorical_ask_order_row_3">
+                  <th scope="row">3</th>
+                  <td class='text-danger'>SELL</td>
+                  <td id='symbol'></td>
+                  <td id='price'></td>
+                  <td id='quantity'></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-md-2">
+            <button onclick="on_go_theorical_ask_button_click()" id="go_theorical_ask_orders" type="button" class="btn btn-danger disabled"><h6>Go</h6></button>
+          </div>
+          <hr class="style13 mt-4">
+        </div>
+      </div>
+    </div>
+
+    <!-- Send Signal Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+      <div id="sendSignalToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+
+          <strong id="toast-title" class="me-auto">Send signal to device</strong>
+          <small>1 second ago</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-primary font-weight-bold opacity-100">
+          <strong id="send-signal-toast-body">
+            Send signal body
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <script type="text/javascript" src="/libraries/jquery-3.6.0.min.js"></script>
+    <script src="/libraries/proper.min.js" ></script>
+    <script src="/libraries/bootstrap.min.js"></script>
+
+    <script>
+      // Global variables
+      var token;
+      var ws;
+      var data_bid_sample;
+      var data_ask_sample;
+      var data_list = {};
+      var ui_list = {};
+      var number_of_highest_profit = 0;
+
+      function login(username, password) {
+        return fetch(window.location.origin + '/login', {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'username': username,
+            'password': password
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          token = response.data.token;
+        })
+      };
+
+      function place_order(order) {
+        fetch(window.location.origin + '/order_non_cancel?' + new URLSearchParams({
+            symbol: order.symbol,
+            side: order.side,
+            price: order.price,
+            quantity: order.quantity
+          }), {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'token': token
+          },
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function scan_onclick() {
+        send_request_scan_market();
+      }
+
+      function place_order_group(order_group) {
+        order_group.forEach(order => {
+          place_order(order);
+        });
+      }
+
+      function on_go_theorical_bid_button_click(key) {
+        show_place_order_toast("Theorical Bid", data_list[key].profit);
+        place_order_group(data_list[key].orders);
+      }
+
+      function on_go_theorical_ask_button_click(key) {
+        show_place_order_toast("Theorical Ask", data_list[key].profit);
+        place_order_group(data_list[key].orders);
+      }
+
+      function add_ui_list(key, ui, type) {
+        let ui_element = {};
+        ui_element.ui = ui;
+
+        if (type == 'bid') {
+          ui_element['main-bid'] = ui.find('#main-bid');
+          ui_element['main-ask'] = ui.find('#main-ask');
+          ui_element['currency-bid'] = ui.find('#currency-bid');
+          ui_element['currency-ask'] = ui.find('#currency-ask');
+          ui_element['non-main-bid'] = ui.find('#non-main-bid');
+          ui_element['non-main-ask'] = ui.find('#non-main-ask');
+
+          ui_element['theorical_bid'] = ui.find('#theorical_bid');
+          ui_element['non_main_ask'] = ui.find('#non_main_ask');
+          ui_element['profit_on_bid'] = ui.find('#profit_on_bid');
+
+          for (let i = 1; i <= 3; i++) {
+            let order_row = ui.find('#theorical_bid_order_row_' + i);
+
+            order_row.symbol = order_row.find('#symbol');
+            order_row.price = order_row.find('#price');
+            order_row.quantity = order_row.find('#quantity');
+
+            ui_element['theorical_bid_order_row_' + i] = order_row;
+          }
+
+          ui_element['go_theorical_bid_orders'] = ui.find('#go_theorical_bid_orders');
+
+        } else if (type == 'ask') {
+          ui_element['main-bid'] = ui.find('#main-bid');
+          ui_element['main-ask'] = ui.find('#main-ask');
+          ui_element['currency-bid'] = ui.find('#currency-bid');
+          ui_element['currency-ask'] = ui.find('#currency-ask');
+          ui_element['non-main-bid'] = ui.find('#non-main-bid');
+          ui_element['non-main-ask'] = ui.find('#non-main-ask');
+
+          ui_element['theorical_ask'] = ui.find('#theorical_ask');
+          ui_element['non_main_bid'] = ui.find('#non_main_bid');
+          ui_element['profit_on_ask'] = ui.find('#profit_on_ask');
+
+          for (let i = 1; i <= 3; i++) {
+            let order_row = ui.find('#theorical_ask_order_row_' + i);
+
+            order_row.symbol = order_row.find('#symbol');
+            order_row.price = order_row.find('#price');
+            order_row.quantity = order_row.find('#quantity');
+
+            ui_element['theorical_ask_order_row_' + i] = order_row;
+          }
+
+          ui_element['go_theorical_ask_orders'] = ui.find('#go_theorical_ask_orders');
+        }
+
+        ui_list[key] = ui_element;
+      }
+
+      function add_data_to_data_content(key, data) {
+
+        if (data.type == 'bid') {
+          let data_bid = data_bid_sample.clone();
+          data_bid.attr('id', key);
+          $('#data_content').append(data_bid);
+
+          data_bid.find('#main_symbol').text(data.common_data.main.symbol);
+          data_bid.find('#currency_symbol').text(data.common_data.currency.symbol);
+          data_bid.find('#non_main_symbol').text(data.common_data.non_main.symbol);
+
+          data_bid.find('#go_theorical_bid_orders').attr("onclick","on_go_theorical_bid_button_click('" + key + "')");
+
+          add_ui_list(key, data_bid, data.type);
+
+        } else if (data.type == 'ask') {
+          let data_ask = data_ask_sample.clone();
+          data_ask.attr('id', key);
+          $('#data_content').append(data_ask);
+
+          data_ask.find('#main_symbol').text(data.common_data.main.symbol);
+          data_ask.find('#currency_symbol').text(data.common_data.currency.symbol);
+          data_ask.find('#non_main_symbol').text(data.common_data.non_main.symbol);
+
+          data_ask.find('#go_theorical_ask_orders').attr("onclick","on_go_theorical_ask_button_click('" + key + "')");
+
+          add_ui_list(key, data_ask, data.type);
+        }
+
+      }
+
+      function remove_data_to_data_content(key, data) {
+        let ui_element = ui_list[key];
+
+        if (ui_element) {
+          ui_element.ui.remove();
+          delete ui_list[key];
+        }
+      }
+
+      function update_data(key, data) {
+        let ui = ui_list[key];
+
+        if (data.type == 'bid') {
+          ui['main-bid'].text(data.common_data.main.bid);
+          ui['main-ask'].text(data.common_data.main.ask);
+          ui['currency-bid'].text(data.common_data.currency.bid);
+          ui['currency-ask'].text(data.common_data.currency.ask);
+          ui['non-main-bid'].text(data.common_data.non_main.bid);
+          ui['non-main-ask'].text(data.common_data.non_main.ask);
+
+          ui['theorical_bid'].text(data.theorical_bid);
+          ui['non_main_ask'].text(data.non_main_ask);
+          ui['profit_on_bid'].text(data.profit);
+
+          if (data.profit < 0) {
+            ui['profit_on_bid'].attr("class","text-danger");
+          } else {
+            ui['profit_on_bid'].attr("class","text-success");
+          }
+
+          data.orders.forEach((order, index) => {
+            let id = "theorical_bid_order_row_" + (index + 1);
+            ui[id].symbol.text(order.symbol);
+            ui[id].price.text(order.price);
+            ui[id].quantity.text(order.quantity);
+          });
+          if (data.profit <= 0) {
+            ui['go_theorical_bid_orders'].attr("class","btn btn-danger disabled");
+          } else {
+            ui['go_theorical_bid_orders'].attr("class","btn btn-success");
+          }
+
+        } else if (data.type == 'ask') {
+          ui['main-bid'].text(data.common_data.main.bid);
+          ui['main-ask'].text(data.common_data.main.ask);
+          ui['currency-bid'].text(data.common_data.currency.bid);
+          ui['currency-ask'].text(data.common_data.currency.ask);
+          ui['non-main-bid'].text(data.common_data.non_main.bid);
+          ui['non-main-ask'].text(data.common_data.non_main.ask);
+
+          ui['theorical_ask'].text(data.theorical_ask);
+          ui['non_main_bid'].text(data.non_main_bid);
+          ui['profit_on_ask'].text(data.profit);
+
+          if (data.profit < 0) {
+            ui['profit_on_ask'].attr("class","text-danger");
+          } else {
+            ui['profit_on_ask'].attr("class","text-success");
+          }
+
+          data.orders.forEach((order, index) => {
+            let id = "theorical_ask_order_row_" + (index + 1);
+            ui[id].symbol.text(order.symbol);
+            ui[id].price.text(order.price);
+            ui[id].quantity.text(order.quantity);
+          });
+          if (data.profit <= 0) {
+            ui['go_theorical_ask_orders'].attr("class","btn btn-danger disabled");
+          } else {
+            ui['go_theorical_ask_orders'].attr("class","btn btn-success");
+          }
+        }
+      }
+
+      function get_sample_element() {
+        data_bid_sample = $('#data_bid').clone();
+        data_ask_sample = $('#data_ask').clone();
+        $('#data_content').empty();
+      }
+
+      function show_place_order_toast(type, expected_profit) {
+        $("#toast-title").html("Place orders");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Type: <span class='text-dark'>" + type, "</span><br>Expected profit: <span class='text-success'>" + expected_profit + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function subscribe_channel_profit() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "profit",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          if (data.USDT != undefined) {
+            let ui = $("#24h_profit");
+            ui.text(data.USDT);
+
+            if (data.USDT < 0) {
+              ui.attr("class", "text-danger");
+            } else if (data.USDT > 0) {
+              ui.attr("class", "text-success");
+            } else {
+              ui.text('0.0');
+              ui.attr("class", "text-secondary");
+            }
+          }
+        }
+      }
+
+      function subscribe_channel_scanning_market_multiple() {
+        ws=new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "scanning_market_multiple",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+
+          let key = data.tuple + '-' + data.type;
+          let is_remove = data.is_remove;
+          data_list[key] = data;
+
+          if (is_remove == true) {
+            remove_data_to_data_content(data.key, data);
+            number_of_highest_profit -= 1;
+          } else {
+            let find = $('#data_content').find('#' + key);
+            if (find.length == 0) {
+              add_data_to_data_content(key, data);
+              number_of_highest_profit += 1;
+            } else {
+              update_data(key, data);
+            }
+          }
+        };
+      }
+
+      window.onload=function() {
+        login('alphah', 'abc123')
+          .then(get_sample_element)
+          .then(subscribe_channel_profit)
+          .then(subscribe_channel_scanning_market_multiple);
+      }
+
+      window.onclose=function(){
+          ws.close();
+      }
+      </script>
+  </body>
+
+  <style>
+    body {
+      background-color: #212121;
+      color: white
+    }
+  </style>
+</html>

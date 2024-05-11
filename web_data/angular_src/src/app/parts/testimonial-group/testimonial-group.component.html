@@ -1,0 +1,257 @@
+<div class="testimonial-group">
+  <div class="col">
+    <div class="row align-center bid">Theo bid</div>
+    <div class="align-left value">
+      {{
+        (data && data.theorical_bid ? data.theorical_bid : 0)
+          | number : "1.1-10"
+      }}
+    </div>
+  </div>
+  <div class="col">
+    <div class="row align-center ask">Theo ask</div>
+    <div class="align-left value">
+      {{
+        (data && data.theorical_ask ? data.theorical_ask : 0)
+          | number : "1.1-10"
+      }}
+    </div>
+  </div>
+  <div class="col">
+    <div class="row align-center bid">Best bid</div>
+    <div class="align-left value">
+      {{
+        (data && data.non_main && data.non_main.bid ? data.non_main.bid : 0)
+          | number : "1.1-10"
+      }}
+    </div>
+  </div>
+  <div class="col">
+    <div class="row align-center ask">Best ask</div>
+    <div class="align-left value">
+      {{
+        (data && data.non_main && data.non_main.ask ? data.non_main.ask : 0)
+          | number : "1.1-10"
+      }}
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="row align-center yellow">Last price</div>
+    <div class="align-left value">-</div>
+  </div>
+
+  <div class="col">
+    <!-- <div class="row align-center bid">Offset B</div> -->
+    <button mat-stroked-button class="btn-bid" (click)="onOffsetClick('bid')">
+      Offset B
+    </button>
+    <div class="row align-left value">
+      <mat-form-field>
+        <input
+          type="text"
+          matInput
+          mask="separator.0"
+          thousandSeparator=","
+          placeholder="0"
+          [(ngModel)]="bidOffset"
+        />
+      </mat-form-field>
+    </div>
+    <div class="align-left value">
+      ({{
+        (bidOffset ? bidOffset * data.non_main_market_tick_size : 0)
+          | number : "1.1-10"
+      }})
+    </div>
+  </div>
+  <div class="col">
+    <button mat-stroked-button class="btn-ask" (click)="onOffsetClick('ask')">
+      Offset A
+    </button>
+    <div class="row align-left value">
+      <mat-form-field>
+        <input
+          type="text"
+          matInput
+          mask="separator.10"
+          thousandSeparator=","
+          placeholder="0"
+          [(ngModel)]="askOffset"
+        />
+      </mat-form-field>
+    </div>
+    <div class="align-left value">
+      ({{
+        (askOffset ? askOffset * data.non_main_market_tick_size : 0)
+          | number : "1.1-10"
+      }})
+    </div>
+  </div>
+
+  <div class="col">
+    <button
+      mat-stroked-button
+      class="btn-bid"
+      (click)="onUpdateOffsetBtnClick('bid')"
+    >
+      UO B
+    </button>
+    <div class="row align-left value">
+      <mat-form-field>
+        <input
+          type="text"
+          matInput
+          mask="separator.10"
+          thousandSeparator=","
+          placeholder="0"
+          [(ngModel)]="bidUpdateOffset"
+        />
+      </mat-form-field>
+    </div>
+    <div class="align-left value">
+      ({{
+        (bidUpdateOffset ? bidUpdateOffset * data.non_main_market_tick_size : 0)
+          | number : "1.1-10"
+      }})
+    </div>
+  </div>
+  <div class="col">
+    <button
+      mat-stroked-button
+      class="btn-ask"
+      (click)="onUpdateOffsetBtnClick('ask')"
+    >
+      UO A
+    </button>
+    <div class="row align-left value">
+      <mat-form-field>
+        <input
+          type="text"
+          matInput
+          mask="separator.10"
+          thousandSeparator=","
+          placeholder="0"
+          [(ngModel)]="askUpdateOffset"
+        />
+      </mat-form-field>
+    </div>
+    <div class="align-left value">
+      ({{
+        (askUpdateOffset ? askUpdateOffset * data.non_main_market_tick_size : 0)
+          | number : "1.1-10"
+      }})
+    </div>
+  </div>
+
+  <div class="col">
+    <button
+      mat-stroked-button
+      class="btn-bid"
+      (click)="onOrderVolumeBtnClick('bid')"
+    >
+      Size B
+    </button>
+    <div class="row align-left value">
+      <mat-form-field>
+        <input
+          type="text"
+          matInput
+          mask="separator.0"
+          thousandSeparator=","
+          placeholder="0"
+          [(ngModel)]="bidOrderVolume"
+        />
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="col">
+    <button
+      mat-stroked-button
+      class="btn-ask"
+      (click)="onOrderVolumeBtnClick('ask')"
+    >
+      Size A
+    </button>
+    <div class="row align-left value">
+      <mat-form-field>
+        <input
+          type="text"
+          matInput
+          mask="separator.0"
+          thousandSeparator=","
+          placeholder="0"
+          [(ngModel)]="askOrderVolume"
+        />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="col">
+    <div
+      class="row align-center checkbox-label"
+      [ngClass]="{ 'arm-bid': checkedArmBid }"
+    >
+      Arm Bid
+    </div>
+    <div class="align-left">
+      <mat-checkbox
+        [(ngModel)]="checkedArmBid"
+        [disabled]="isArming"
+        (change)="onArmBidChecked($event)"
+      >
+      </mat-checkbox>
+    </div>
+  </div>
+  <div class="col">
+    <div
+      class="row align-center checkbox-label"
+      [ngClass]="{ 'arm-ask': checkedArmAsk }"
+    >
+      Arm Ask
+    </div>
+    <div class="align-left">
+      <mat-checkbox
+        [(ngModel)]="checkedArmAsk"
+        [disabled]="isArming"
+        (change)="onArmAskChecked($event)"
+      >
+      </mat-checkbox>
+    </div>
+  </div>
+  <div class="col">
+    <div
+      class="row align-center checkbox-label"
+      [ngClass]="{ 'auto-hedge': checkedArmHedge }"
+    >
+      Auto Hedge
+    </div>
+    <div class="align-left">
+      <mat-checkbox
+        [(ngModel)]="checkedArmHedge"
+        [disabled]="isArming"
+        (change)="onAutoHedgeChecked($event)"
+      >
+      </mat-checkbox>
+    </div>
+  </div>
+
+  <div class="col">
+    <button
+      mat-stroked-button
+      class="btn-stop"
+      *ngIf="isArming"
+      (click)="onGoArbitrage(false)"
+    >
+      Stop
+    </button>
+    <button
+      mat-flat-button
+      color="accent"
+      *ngIf="!isArming"
+      (click)="onGoArbitrage(true)"
+    >
+      Go
+    </button>
+  </div>
+</div>

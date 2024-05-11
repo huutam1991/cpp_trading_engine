@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "dist/alpha-h-trading",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

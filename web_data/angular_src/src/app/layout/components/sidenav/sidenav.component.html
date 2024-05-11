@@ -1,0 +1,116 @@
+<header><mat-icon>settings</mat-icon> Settings</header>
+
+<section class="info" *ngIf="!sidenavService.showDetailSidenav">
+  <div class="item">
+    <span class="label">
+      <mat-icon svgIcon="database"></mat-icon>
+      DB Name:
+    </span>
+    <span class="value">{{ config ? config.db_name : "-" }}</span>
+  </div>
+  <div class="item">
+    <span class="label"> <mat-icon>speed</mat-icon> Speed: </span>
+    <span class="value">{{ config ? config.speed_time : "-" }}</span>
+  </div>
+  <div class="item">
+    <span class="label">
+      <mat-icon *ngIf="config && config.is_start">directions_run</mat-icon>
+      <mat-icon *ngIf="config && !config.is_start">block</mat-icon>
+      Status:
+    </span>
+    <span class="value">
+      {{ config ? (config.is_start ? "Running" : "Stopped") : "-" }}
+    </span>
+  </div>
+</section>
+
+<section
+  class="setting"
+  *ngIf="sidenavService.showDetailSidenav"
+  [formGroup]="configGroup"
+>
+  <div class="item">
+    <span class="row label">Database Name:</span>
+    <div class="row">
+      <mat-form-field>
+        <input
+          type="text"
+          placeholder="Database name"
+          matInput
+          formControlName="db_name"
+          [matAutocomplete]="autoNonMarket"
+        />
+        <mat-autocomplete #autoNonMarket="matAutocomplete">
+          <mat-option *ngFor="let option of dbLists" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+  </div>
+  <div class="item">
+    <span class="label">Speed time:</span>
+    <div class="row">
+      <mat-form-field>
+        <input
+          type="text"
+          placeholder="Speed time"
+          mask="separator.0"
+          thousandSeparator=","
+          placeholder="0"
+          matInput
+          formControlName="speed_time"
+        />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="row w-full">
+    <button
+      mat-flat-button
+      color="accent"
+      class="w-full"
+      *ngIf="!isStart"
+      disabled="{{ isWaitingResposne }}"
+      (click)="onStartOrStopBackTesting(true)"
+    >
+      Start
+    </button>
+
+    <button
+      mat-stroked-button
+      class="w-full btn-stop"
+      *ngIf="isStart"
+      disabled="{{ isWaitingResposne }}"
+      (click)="onStartOrStopBackTesting(false)"
+    >
+      Stop
+    </button>
+  </div>
+
+  <div class="row w-full">
+    <button
+      mat-flat-button
+      color="accent"
+      class="w-full"
+      *ngIf="!isStart"
+      disabled="{{ isWaitingResposne }}"
+      (click)="onCleanBackTestingData()"
+    >
+      Clean Test Data
+    </button>
+  </div>
+
+  <div class="row w-full">
+    <div *ngIf="supportSymbolList.length > 0" class="support-symbol-title">Support Symbols</div>
+  </div>
+
+  <div class="row w-full">
+    <mat-list>
+      <mat-list-item class="symbol" *ngFor="let option of supportSymbolList">
+        {{ option }}
+      </mat-list-item>
+     </mat-list>
+  </div>
+
+</section>

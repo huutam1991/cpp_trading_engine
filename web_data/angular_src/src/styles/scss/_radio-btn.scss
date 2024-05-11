@@ -1,0 +1,31 @@
+::ng-deep .mat-radio-button.mat-accent .mat-radio-ripple .mat-ripple-element {
+  // opacity: 0.5 !important;     /*click effect color change*/
+  background-color: #4392BB !important;
+}
+::ng-deep .cdk-program-focused .mat-focus-indicator .mat-radio-persistent-ripple{
+  background-color: transparent;
+}
+::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle {
+  background-color: #4392BB!important;   /*inner circle color change*/
+  // transform: scale(0.6) !important;
+}
+
+::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
+ border-color:#4392BB!important; /*outer ring color change*/
+}
+::ng-deep .mat-radio-button.mat-accent .mat-radio-outer-circle{
+  border-width: 1px;
+}
+::ng-deep .mat-radio-checked .mat-radio-inner-circle{
+  transform: scale(0.6) !important;
+}
+::ng-deep .mat-checkbox-checkmark {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%,-50%) !important;
+  position: absolute;
+  width: 68% !important;
+}
+::ng-deep .mat-checkbox-checkmark-path {
+  stroke-width: 4.133333px !important;
+}

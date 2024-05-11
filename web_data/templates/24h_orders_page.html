@@ -1,0 +1,405 @@
+<!-- <!doctype html> -->
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <title>
+      24h Orders
+    </title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Alpha H Trading</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="scanning_market">Scanning Market</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="mm_arbitrage">MM Arbitrage</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="24h_orders_page">24h Orders</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="trade_errors_page">Trade Errors</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="excel_report_page">Excel Report</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="strategy_report_page">Strategy Report</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="modal fade text-dark" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header text-center">
+            <h4 class="modal-title w-100 font-weight-bold">Login</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body mx-3">
+            <div class="md-form mb-3">
+              <i class="fas fa-envelope prefix grey-text"></i>
+              <input type="text" id="login_form_username" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_username">Your username</label>
+            </div>
+
+            <div class="md-form mb-1">
+              <i class="fas fa-lock prefix grey-text"></i>
+              <input type="password" id="login_form_password" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_password">Your password</label>
+            </div>
+
+            <div class="md-form mb-2">
+              <label id="login_error" class="text-white" data-error="wrong" data-success="right" for="">asdad</label>
+            </div>
+
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button onclick=login() class="btn btn-default">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid ml-3">
+      <!-- Title Scanning Market -->
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <h2>24h Orders</h2>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn float-left btn-light"><h4>24hs Profit and Loss</h4></button>
+        </div>
+        <div class="col-md-2 mt-1">
+          <h2 id="24h_profit" class="text-secondary">0.0</h2>
+        </div>
+        <div class="col-md-1 mt-1">
+          <h2 id="user_id" class="text-primary"></h2>
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col-md-10">
+          <table class="table table-dark">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Order Id</th>
+                <th scope="col">Side</th>
+                <th scope="col">Symbol</th>
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Filled Quantity</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody id="data_content">
+              <tr id="order_row">
+                <th id='index' scope="row">1</th>
+                <td id='orderId'></td>
+                <td id='side' class='text-danger'></td>
+                <td id='symbol'></td>
+                <td id='price'></td>
+                <td id='quantity'></td>
+                <td id='filled_quantity'></td>
+                <td id='type'></td>
+                <td id='status'></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send Signal Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+      <div id="sendSignalToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+
+          <strong id="toast-title" class="me-auto">Send signal to device</strong>
+          <small>1 second ago</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-primary font-weight-bold opacity-100">
+          <strong id="send-signal-toast-body">
+            Send signal body
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+    <script src="/libraries/proper.min.js" ></script>
+    <script src="/libraries/bootstrap.min.js"></script>
+
+    <script>
+      // Global variables
+      var token;
+      var order_row_sample;
+      var order_list;
+      var ws;
+      var data;
+
+      function show_login_popup() {
+        $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+        $("#modalLoginForm").modal('show');
+      }
+
+      function login() {
+        let username = $("#login_form_username").val();
+        let password = $("#login_form_password").val();
+
+        return fetch(window.location.origin + '/login', {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'username': username,
+            'password': password
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true) {
+            $("#login_error").attr("class", "text-danger");
+            $("#login_error").text(response.msg);
+          } else {
+            $("#modalLoginForm").modal('hide');
+            init();
+            show_login_success_toast(response.data.user_id);
+          }
+        })
+      };
+
+      function get_user_info() {
+        return fetch(window.location.origin + '/user_info', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true && response.status_code == 401) {
+            show_login_popup();
+            throw "error";
+          }
+          $("#user_id").text(response.data.user_id);
+        })
+      }
+
+      function get_websocket_token() {
+        return fetch(window.location.origin + '/websocket_token', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          token = response.data.websocket_token;
+        })
+      }
+
+      function get_24h_orders() {
+        return fetch(window.location.origin + '/24h_orders', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          order_list = response.data;
+          console.log("order_list = ", order_list);
+        })
+      };
+
+      function get_sample_element() {
+        order_row_sample = $('#order_row').clone();
+        $('#data_content').empty();
+      }
+
+      function show_order_list() {
+        $('#data_content').empty();
+
+        order_list.forEach((order, index) => {
+          let order_row = order_row_sample.clone();
+
+          order_row.find('#index').text(index + 1);
+          order_row.find('#orderId').text(order.orderId);
+          order_row.find('#side').text(order.side);
+          order_row.find('#symbol').text(order.symbol);
+          order_row.find('#price').text(order.price);
+          order_row.find('#quantity').text(order.quantity);
+          order_row.find('#filled_quantity').text(order.last_executed_quantity);
+          order_row.find('#type').text(order.type);
+          order_row.find('#status').text(order.status);
+
+          if (order.side == 'SELL') {
+            order_row.find('#side').attr('class', 'text-danger');
+          } else {
+            order_row.find('#side').attr('class', 'text-success');
+          }
+
+          if (order.type == "LIMIT") {
+            order_row.find('#type').attr('class', 'text-light');
+          } else if (order.type == 'MARKET'){
+            order_row.find('#type').attr('class', 'text-light');
+          } else if (order.type == 'STOP_LOSS_LIMIT'){
+            order_row.find('#type').attr('class', 'text-light');
+          }
+
+          if (order.status == 'NEW') {
+            order_row.find('#status').attr('class', 'text-secondary');
+          } else if (order.status == 'WAITING'){
+            order_row.find('#status').attr('class', 'text-info');
+          } else if (order.status == 'FILLED'){
+            order_row.find('#status').attr('class', 'text-success');
+          } else if (order.status == 'PARTIALLY_FILLED'){
+            order_row.find('#status').attr('class', 'text-warning');
+          } else if (order.status == 'CANCELED'){
+            order_row.find('#status').attr('class', 'text-danger');
+          }
+
+          $('#data_content').append(order_row);
+        });
+      }
+
+      function reload_order_list() {
+        get_24h_orders().
+          then(show_order_list);
+      }
+
+      function subscribe_channel_profit() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "profit",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          if (data.USDT) {
+            let ui = $("#24h_profit");
+            ui.text(data.USDT);
+
+            if (data.USDT < 0) {
+              ui.attr("class", "text-danger");
+            } else {
+              ui.attr("class", "text-success");
+            }
+          }
+        }
+      }
+
+      function subscribe_channel_order_status() {
+        ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "order_status",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          order_status = JSON.parse(evt.data).data;
+          if (!order_status) return;
+
+          show_order_update_toast(order_status.orderId,
+            order_status.side,
+            order_status.symbol,
+            order_status.status);
+
+          reload_order_list();
+        };
+      }
+
+      function show_login_success_toast(user_id) {
+        $("#toast-title").html("Login Successfully");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "User: <span class='text-primary'>" + user_id + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_order_update_toast(order_id, side, symbol, status) {
+        $("#toast-title").html("Order updated");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Order Id: <span class='text-dark'>" + order_id + "</span>",
+          "<br>Side: <span class=" + (side == 'BUY' ? "'text-success'" : "'text-danger'") + ">" + side + "</span>",
+          "<br>Symbol:  <span class='text-dark'>" + symbol + "</span>",
+          "<br>Status:  <span class=" +
+            (status == 'FILLED' ? "'text-success'" :
+            (status == 'NEW' ? "'text-secondary'" :
+            (status == 'PARTIALLY_FILLED' ? "'text-warning'" : "'text-danger'"))
+            ) + ">"
+          + status + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function init() {
+        get_user_info()
+        .then(get_sample_element)
+        .then(get_websocket_token)
+        .then(subscribe_channel_profit)
+        .then(subscribe_channel_order_status)
+        .then(get_24h_orders)
+        .then(show_order_list);
+      }
+
+      window.onload=function() {
+        init();
+      }
+
+      window.onclose=function(){
+          ws.close();
+      }
+      </script>
+  </body>
+
+  <style>
+    body {
+      background-color: #212121;
+      color: white
+    }
+  </style>
+</html>

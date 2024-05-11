@@ -1,0 +1,1582 @@
+<!-- <!doctype html> -->
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <title>
+      MM Arbitrage
+    </title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Alpha H Trading</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="scanning_market">Scanning Market</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="mm_arbitrage">MM Arbitrage</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="24h_orders_page">24h Orders</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="trade_errors_page">Trade Errors</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="excel_report_page">Excel Report</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="strategy_report_page">Strategy Report</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="modal fade text-dark" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header text-center">
+            <h4 class="modal-title w-100 font-weight-bold">Login</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body mx-3">
+            <div class="md-form mb-3">
+              <i class="fas fa-envelope prefix grey-text"></i>
+              <input type="text" id="login_form_username" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_username">Your username</label>
+            </div>
+
+            <div class="md-form mb-1">
+              <i class="fas fa-lock prefix grey-text"></i>
+              <input type="password" id="login_form_password" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_password">Your password</label>
+            </div>
+
+            <div class="md-form mb-2">
+              <label id="login_error" class="text-white" data-error="wrong" data-success="right" for="">asdad</label>
+            </div>
+
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button onclick=login() class="btn btn-default">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid ml-3">
+      <!-- Title MM Arbitrage -->
+      <div class="row mt-3">
+        <div class="col-md-2">
+          <h2>MM Arbitrage</h2>
+        </div>
+        <div class="col-md-1">
+          <button onclick="scan_onclick()" type="button" class="btn btn-warning"><h5>Scan</h5></button>
+        </div>
+        <div class="col-md-1">
+          <button onclick="stop_onclick()" type="button" class="btn btn-warning"><h5>Stop</h5></button>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-warning"><h6>N-M Market</h6></button>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <select id="non-main-select" class="form-select" aria-label="Default select example">
+                <option selected>Symbol</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-success"><h6>Currency</h6></button>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <select id="currency-select" class="form-select" aria-label="Default select example">
+                <option selected>Symbol</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-success"><h6>M Market</h6></button>
+          <div class="row mt-3">
+            <div class="col-md-12">
+              <select id="main-select" class="form-select" aria-label="Default select example">
+                <option selected>Symbol</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn float-left btn-light"><h5>24hs P/L</h5></button>
+        </div>
+        <div class="col-md-2 mt-1">
+          <h3 id="24h_profit" class="text-secondary">0.0</h3>
+        </div>
+        <div class="col-md-1 mt-1">
+          <h2 id="user_id" class="text-primary"></h2>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-md-12 overflow-auto scrollbar-primary" style="height: 75vh;">
+          <div id="sub-market-group" class="list-group">
+            <a id="sub-market-button" class="list-group-item d-none" style="background-color: rgba(33,37,41); color: white">
+              <div class="row">
+                <div class="col-md-2">
+                  <div class="row">
+                    <div class="col-md-5">
+                      <div class="row mb-1">
+                        <button id="sub-market-non-main" class="btn btn-sm btn-warning"></button>
+                      </div>
+                      <div class="row mb-1">
+                        <button id="sub-market-currency" class="btn btn-sm btn-success"></button>
+                      </div>
+                      <div class="row">
+                        <button id="sub-market-main" class="btn btn-sm btn-success"></button>
+                      </div>
+                    </div>
+                    <div class="col-md-1">
+                    </div>
+                    <div class="col-2">
+                      <div class="row mb-1">
+                        <button class="btn btn-sm btn-danger">B</button>
+                      </div>
+                      <div class="row">
+                        <button class="btn btn-sm btn-primary">A</button>
+                      </div>
+                      <div class="row">
+                        <h6 id="sub-market-volumn" class="mt-2 text-white"></h6>
+                      </div>
+                    </div>
+                    <div class="col-2">
+                      <div class="row mb-1">
+                        <h6 id="sub-market-expected-bid" class="mt-1 text-white">0</h6>
+                      </div>
+                      <div class="row">
+                        <h6 id="sub-market-expected-ask" class="mt-1 text-white">0</h6>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-10">
+                  <div class="testimonial-group">
+                    <div class="row scrollbar-primary">
+                      <div class="col-md-1">
+                        <button type="button" class="btn btn-danger"><h7>Theo bid</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <h5 id="theo-bid"></h5>
+                          </div>
+                          <div class="col-md-5">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button type="button" class="btn btn-primary"><h7>Theo ask</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <h5 id="theo-ask"></h5>
+                          </div>
+                          <div class="col-md-5">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button type="button" class="btn btn-danger"><h7>Best bid</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <h5 id="best-bid"></h5>
+                          </div>
+                          <div class="col-md-5">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button type="button" class="btn btn-primary"><h7>Best ask</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <h5 id="best-ask"></h5>
+                          </div>
+                          <div class="col-md-5">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button type="button" class="btn btn-warning"><h7>Last price</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <h5 id="last-price">.</h5>
+                          </div>
+                          <div class="col-md-5">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-update-bid-offset" type="button" onclick="update_bid_offset()" class="btn btn-danger"><h7>Offset B</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <input id="offset-bid" type="text" class="form-control" aria-describedby="" placeholder="0">
+                          </div>
+                          <div class="col-md-5">
+                            <h7 id="offset-bid-value"></h7>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1 mb-2">
+                        <button id="btn-update-ask-offset" type="button" onclick="update_ask_offset()" class="btn btn-primary"><h7>Offset A</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <input id="offset-ask" type="text" class="form-control" aria-describedby="" placeholder="0">
+                          </div>
+                          <div class="col-md-5">
+                            <h7 id="offset-ask-value"></h7>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-update-bid-update-offset" type="button" onclick="update_bid_update_offset()" class="btn btn-danger"><h7>UO B</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <input id="update-offset-bid" type="text" class="form-control" aria-describedby="" placeholder="0">
+                          </div>
+                          <div class="col-md-5">
+                            <h7 id="update-offset-bid-value"></h7>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-update-ask-update-offset" type="button" onclick="update_ask_update_offset()" class="btn btn-primary"><h7>UO A</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <input id="update-offset-ask" type="text" class="form-control" aria-describedby="" placeholder="0">
+                          </div>
+                          <div class="col-md-5">
+                            <h7 id="update-offset-ask-value"></h7>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-update-bid-order-volumn" type="button" onclick="update_bid_order_volumn()" class="btn btn-danger"><h7>Size B</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <input id="order-size-bid" type="text" class="form-control" aria-describedby="" placeholder="0">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-update-ask-order-volumn" type="button" onclick="update_ask_order_volumn()" class="btn btn-primary"><h7>Size A</h7></button>
+                        <div class="row mt-2">
+                          <div class="col-md-10">
+                            <input id="order-size-ask" type="text" class="form-control" aria-describedby="" placeholder="0">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-arm-bid" type="button" class="btn btn-light"><h6>Arm Bid</h6></button>
+                        <div class="row mt-1">
+                          <div class="col-md-7">
+                            <input id="arm-bid" onchange="update_arm_bid()" class="form-check-input" type="checkbox" value="">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-arm-ask" type="button" class="btn btn-light"><h6>Arm Ask</h6></button>
+                        <div class="row mt-1">
+                          <div class="col-md-7">
+                            <input id="arm-ask" onchange="update_arm_ask()" class="form-check-input" type="checkbox" value="">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1">
+                        <button id="btn-auto-hedge" type="button" class="btn btn-light"><h6>Auto Hedge</h6></button>
+                        <div class="row mt-1">
+                          <div class="col-md-7">
+                            <input id="auto-hedge" onchange="update_auto_hedge()" class="form-check-input" type="checkbox" value="">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-1" id="btn-go-active" style="display:''">
+                        <button id="btn-start-arming" onclick="start_arming()" type="button" class="btn btn-success" style="margin-left: 2em"><h6>Go</h6></button>
+                      </div>
+                      <div class="col-md-1" id="btn-go-inactive" style="display:none">
+                        <button id="btn-stop-arming" onclick="stop_arming()" type="button" class="btn btn-danger" style="margin-left: 2em"><h6>Stop</h6></button>
+                      </div>
+                    </div>
+
+                    <div class="row mt-5" style="display: none">
+                      <!-- Theorical Bid Suggested Orders -->
+                      <div class="col-md-6" id="bid-order-table" style="visibility: hidden">
+                        <h4>Theorical Bid Suggested Orders</h4>
+                        <div class="row mt-4">
+                          <div class="col-md-10">
+                            <table class="table table-dark" style="font-size: 0.95rem">
+                              <thead>
+                                <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">Side</th>
+                                  <th scope="col">Symbol</th>
+                                  <th scope="col">Price</th>
+                                  <th scope="col" id="bid-header-price-with-offset">Price + 0 tick</th>
+                                  <th scope="col">Quantity</th>
+                                  <th scope="col">Fee in BNB</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr id="theorical_bid_order_row_1">
+                                  <th scope="row">1</th>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                                <tr id="theorical_bid_order_row_2">
+                                  <th scope="row">2</th>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                                <tr id="theorical_bid_order_row_3">
+                                  <th scope="row">3</th>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div class="col-md-2" style="visibility:hidden">
+                            <div class="row">
+                              <div class="col-md-10 mt-1">
+                                <input id="bid_offset" type="text" class="form-control" aria-describedby="" placeholder="0">
+                              </div>
+                            </div>
+                            <div class="row mt-3">
+                              <div class="col-md-12">
+                                <button onclick="on_go_theorical_bid_button_click()" id="go_theorical_bid_orders" type="button" class="btn btn-success"><h6>Go</h6></button>
+                              </div>
+                            </div>
+                            <div class="row mt-3">
+                              <div id="cancel_theorical_bid_orders" class="col-md-12 d-none">
+                                <button onclick="on_cancel_theorical_bid_button_click()" type="button" class="btn btn-danger"><h6>Cancel</h6></button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div id="bid-instruction" class="row mt-1 d-none">
+                          <div class="col-md-3">
+                            Running. Expected profit:
+                          </div>
+                          <div class="col-md-6 text-success" id="profit_theorical_bid_orders">
+                            0.01
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Theorical Ask Suggested Orders -->
+                      <div class="col-md-6" id="ask-order-table" style="visibility: hidden">
+                        <h4>Theorical Ask Suggested Orders</h4>
+                        <div class="row mt-4">
+                          <div class="col-md-10">
+                            <table class="table table-dark" style="font-size: 0.95rem">
+                              <thead>
+                                <tr>
+                                  <th scope="col">#</th>
+                                  <th scope="col">Side</th>
+                                  <th scope="col">Symbol</th>
+                                  <th scope="col">Price</th>
+                                  <th scope="col" id="ask-header-price-with-offset">Price - 0 tick</th>
+                                  <th scope="col">Quantity</th>
+                                  <th scope="col">Fee in BNB</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr id="theorical_ask_order_row_1">
+                                  <th scope="row">1</th>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                                <tr id="theorical_ask_order_row_2">
+                                  <th scope="row">2</th>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                                <tr id="theorical_ask_order_row_3">
+                                  <th scope="row">3</th>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                  <td></td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                          <div class="col-md-2" style="visibility:hidden">
+                            <div class="row">
+                              <div class="col-md-10 mt-1">
+                                <input id="ask_offset" type="text" class="form-control" aria-describedby="" placeholder="0">
+                              </div>
+                            </div>
+                            <div class="row mt-3">
+                              <div class="col-md-12">
+                                <button onclick="on_go_theorical_ask_button_click()" id="go_theorical_ask_orders" type="button" class="btn btn-success"><h6>Go</h6></button>
+                              </div>
+                            </div>
+                            <div class="row mt-3">
+                              <div id="cancel_theorical_ask_orders" class="col-md-12 d-none">
+                                <button onclick="on_cancel_theorical_ask_button_click()" type="button" class="btn btn-danger"><h6>Cancel</h6></button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div id="ask-instruction" class="row mt-1 d-none">
+                          <div class="col-md-3">
+                            Running. Expected profit:
+                          </div>
+                          <div class="col-md-6 text-success" id="profit_theorical_ask_orders">
+                            0.01
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send Signal Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+      <div id="sendSignalToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+
+          <strong id="toast-title" class="me-auto">Send signal to device</strong>
+          <small>1 second ago</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body text-primary font-weight-bold opacity-100">
+          <strong id="send-signal-toast-body">
+            Send signal body
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <script type="text/javascript" src="/libraries/jquery-3.6.0.min.js"></script>
+    <script src="/libraries/proper.min.js" ></script>
+    <script src="/libraries/bootstrap.min.js"></script>
+
+    <script>
+      // Global variables
+      var token;
+      var symbols;
+      var main_symbol;
+      var currency_symbol;
+      var non_main_symbol;
+      var mainSelection;
+      var currencySelection;
+      var non_mainSelection;
+      var user_id;
+      var ws;
+      var data;
+      var sub_market_sample;
+      var active_sub_market = null;
+      var sub_market_list = {};
+
+      function show_login_popup() {
+        $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+        $("#modalLoginForm").modal('show');
+      }
+
+      function login() {
+        let username = $("#login_form_username").val();
+        let password = $("#login_form_password").val();
+
+        return fetch(window.location.origin + '/login', {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'username': username,
+            'password': password
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true) {
+            $("#login_error").attr("class", "text-danger");
+            $("#login_error").text(response.msg);
+          } else {
+            $("#modalLoginForm").modal('hide');
+            init();
+            show_login_success_toast(response.data.user_id);
+          }
+        })
+      };
+
+      function get_sample_element() {
+        sub_market_sample = $('#sub-market-button').clone();
+        $("#sub-market-group").empty();
+      }
+
+      function get_user_info() {
+        return fetch(window.location.origin + '/user_info', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true && response.status_code == 401) {
+            show_login_popup();
+            throw "error";
+          }
+          $("#user_id").text(response.data.user_id);
+          user_id = response.data.user_id;
+        })
+      }
+
+      function get_symbols() {
+        return fetch(window.location.origin + '/all_symbols', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          symbols = response.data;
+          console.log("symbols = ", symbols);
+        })
+      }
+
+      function get_websocket_token() {
+        return fetch(window.location.origin + '/websocket_token', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          token = response.data.websocket_token;
+        })
+      }
+
+      function send_request_scan_market() {
+        fetch(window.location.origin + '/mm_arbitrage_scan_market?' + new URLSearchParams({
+            sub_market: main_symbol + '-' + currency_symbol + '-' + non_main_symbol,
+          }), {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          },
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_request_stop_scanning_market() {
+        fetch(window.location.origin + '/mm_arbitrage_stop_market?' + new URLSearchParams({
+            sub_market: active_sub_market,
+          }), {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          },
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function send_request_update_config(key, val, sub_market) {
+        // Create config object
+        let config = {};
+        config[key] = val;
+
+        if (sub_market == undefined) {
+          sub_market = active_sub_market;
+        }
+
+        fetch(window.location.origin + '/mm_arbitrage_update_config?' + new URLSearchParams({
+            sub_market: sub_market
+          }), {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'config': config
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+        })
+      }
+
+      function export_excel() {
+        window.open(window.location.origin + '/report_price_ticker');
+      }
+
+      function place_order(order, price_ticker) {
+        // Set price ticker data by symbol
+        let price_ticker_data;
+        if (order.symbol == data.non_main.symbol) {
+          price_ticker_data = price_ticker.non_main;
+        } else if (order.symbol == data.currency.symbol) {
+          price_ticker_data = price_ticker.currency;
+        } else if (order.symbol == data.main.symbol) {
+          price_ticker_data = price_ticker.main;
+        }
+
+        fetch(window.location.origin + '/order_non_cancel?' + new URLSearchParams({
+            symbol: order.symbol,
+            side: order.side,
+            price: order.price,
+            quantity: order.quantity
+          }), {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Credentials': true,
+          },
+          body: JSON.stringify({
+            'price_ticker': price_ticker_data
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          console.log("response = ", response);
+          if (response.error == true) {
+            show_place_order_error_toast(response.msg);
+          }
+        })
+      }
+
+      function scan_onclick() {
+        show_start_scanning_toast(non_main_symbol, currency_symbol, main_symbol);
+        send_request_scan_market();
+      }
+
+      function stop_onclick() {
+        send_request_stop_scanning_market();
+      }
+
+      function update_bid_offset(sub_market) {
+        let offset = sub_market_list[sub_market]['offset-bid'].val();
+        show_update_offset_toast("Bid", offset);
+        send_request_update_config("bid_offset", offset, sub_market);
+      }
+
+      function update_ask_offset(sub_market) {
+        let offset = sub_market_list[sub_market]['offset-ask'].val();
+        show_update_offset_toast("Ask", offset);
+        send_request_update_config("ask_offset", offset, sub_market);
+      }
+
+      function update_bid_update_offset(sub_market) {
+        let offset = sub_market_list[sub_market]['update-offset-bid'].val();
+        show_update_offset_toast("Bid", offset);
+        send_request_update_config("bid_update_offset", offset, sub_market);
+      }
+
+      function update_ask_update_offset(sub_market) {
+        let offset = sub_market_list[sub_market]['update-offset-ask'].val();
+        show_update_offset_toast("Ask", offset);
+        send_request_update_config("ask_update_offset", offset, sub_market);
+      }
+
+      function update_bid_order_volumn(sub_market) {
+        let order_volumn = sub_market_list[sub_market]['order-size-bid'].val();
+        show_update_order_volumn_toast("Bid", order_volumn);
+        send_request_update_config("bid_volumn", order_volumn, sub_market);
+      }
+
+      function update_ask_order_volumn(sub_market) {
+        let order_volumn = sub_market_list[sub_market]['order-size-ask'].val();
+        show_update_order_volumn_toast("Ask", order_volumn);
+        send_request_update_config("ask_volumn", order_volumn, sub_market);
+      }
+
+      function update_arm_bid(sub_market) {
+        let arm = sub_market_list[sub_market]['arm-bid'].is(":checked");
+        send_request_update_config("arm_bid", arm, sub_market);
+        // show_update_arm_toast("Bid", arm);
+      }
+
+      function update_arm_ask(sub_market) {
+        let arm = sub_market_list[sub_market]['arm-ask'].is(":checked");
+        send_request_update_config("arm_ask", arm, sub_market);
+        // show_update_arm_toast("Ask", arm);
+      }
+
+      function update_auto_hedge(sub_market) {
+        let auto_hedge = sub_market_list[sub_market]['auto-hedge'].is(":checked");
+        send_request_update_config("auto_hedge", auto_hedge, sub_market);
+        // show_update_auto_hedge_toast(auto_hedge);
+      }
+
+      function place_order_group(order_group, price_ticker) {
+        order_group.forEach(order => {
+          place_order(order, price_ticker);
+        });
+      }
+
+      function auto_scroll(left) {
+        for (sub_market in sub_market_list) {
+          let sub_market_ui = sub_market_list[sub_market];
+          sub_market_ui["scoll-bar"].scrollLeft(left);
+        }
+      }
+
+      function update_sub_market_button(sub_market, data) {
+        let sub_market_ui = sub_market_list[sub_market];
+
+        if (!sub_market_ui || !data.user_config[user_id]) return;
+
+        // Bid
+        if (data.user_config[user_id].placed_order.bid != 0) {
+          sub_market_ui.find("#sub-market-expected-bid").text(data.user_config[user_id].placed_order.bid);
+        } else {
+          sub_market_ui.find("#sub-market-expected-bid").text(0);
+        }
+
+        // Ask
+        if (data.user_config[user_id].placed_order.ask != 0) {
+          sub_market_ui.find("#sub-market-expected-ask").text(data.user_config[user_id].placed_order.ask);
+        } else {
+          sub_market_ui.find("#sub-market-expected-ask").text(0);
+        }
+      }
+
+      function add_sub_market(sub_market, data) {
+        // Update to UI
+        let sub_market_ui = sub_market_sample.clone();
+        sub_market_ui.find('#sub-market-non-main').text(data.non_main.symbol);
+        sub_market_ui.find('#sub-market-currency').text(data.currency.symbol);
+        sub_market_ui.find('#sub-market-main').text(data.main.symbol);
+        sub_market_ui.attr("class", "list-group-item mt-3");
+        sub_market_ui.attr("onclick", "set_active_sub_market('" + sub_market + "')");
+        sub_market_ui.attr("id", "sub-market-button-" + sub_market);
+        sub_market_ui.find('.scrollbar-primary').attr("id", "scroll-bar-" + sub_market);
+
+        // Scroll bar
+        let scroll_bar_id = "scroll-bar-" + sub_market;
+        sub_market_ui["scoll-bar"] = sub_market_ui.find("#" + scroll_bar_id);
+        sub_market_ui["scoll-bar"].scroll(() => {
+          let left = $("#" + scroll_bar_id).scrollLeft();
+          auto_scroll(left);
+        });
+
+        // Add reference to UI element
+        sub_market_ui['theo-bid'] = sub_market_ui.find('#theo-bid');
+        sub_market_ui['theo-ask'] = sub_market_ui.find('#theo-ask');
+        sub_market_ui['best-bid'] = sub_market_ui.find('#best-bid');
+        sub_market_ui['best-ask'] = sub_market_ui.find('#best-ask');
+        sub_market_ui['last-price'] = sub_market_ui.find('#last-price');
+
+        sub_market_ui['offset-bid'] = sub_market_ui.find('#offset-bid');
+        sub_market_ui['offset-bid-value'] = sub_market_ui.find('#offset-bid-value');
+        sub_market_ui['offset-ask'] = sub_market_ui.find('#offset-ask');
+        sub_market_ui['offset-ask-value'] = sub_market_ui.find('#offset-ask-value');
+
+        sub_market_ui['update-offset-bid'] = sub_market_ui.find('#update-offset-bid');
+        sub_market_ui['update-offset-bid-value'] = sub_market_ui.find('#update-offset-bid-value');
+        sub_market_ui['update-offset-ask'] = sub_market_ui.find('#update-offset-ask');
+        sub_market_ui['update-offset-ask-value'] = sub_market_ui.find('#update-offset-ask-value');
+
+        sub_market_ui['order-size-bid'] = sub_market_ui.find('#order-size-bid');
+        sub_market_ui['order-size-ask'] = sub_market_ui.find('#order-size-ask');
+
+        sub_market_ui['arm-bid'] = sub_market_ui.find('#arm-bid');
+        sub_market_ui['arm-ask'] = sub_market_ui.find('#arm-ask');
+        sub_market_ui['auto-hedge'] = sub_market_ui.find('#auto-hedge');
+
+        sub_market_ui['btn-arm-bid'] = sub_market_ui.find('#btn-arm-bid');
+        sub_market_ui['btn-arm-ask'] = sub_market_ui.find('#btn-arm-ask');
+        sub_market_ui['btn-auto-hedge'] = sub_market_ui.find('#btn-auto-hedge');
+
+        sub_market_ui['btn-go-active'] = sub_market_ui.find('#btn-go-active');
+        sub_market_ui['btn-go-inactive'] = sub_market_ui.find('#btn-go-inactive');
+
+        sub_market_ui.find('#btn-update-bid-offset').attr("onclick", "update_bid_offset('" + sub_market + "')");
+        sub_market_ui.find('#btn-update-ask-offset').attr("onclick", "update_ask_offset('" + sub_market + "')");
+        sub_market_ui.find('#btn-update-bid-update-offset').attr("onclick", "update_bid_update_offset('" + sub_market + "')");
+        sub_market_ui.find('#btn-update-ask-update-offset').attr("onclick", "update_ask_update_offset('" + sub_market + "')");
+        sub_market_ui.find('#btn-update-bid-order-volumn').attr("onclick", "update_bid_order_volumn('" + sub_market + "')");
+        sub_market_ui.find('#btn-update-ask-order-volumn').attr("onclick", "update_ask_order_volumn('" + sub_market + "')");
+
+        sub_market_ui.find('#arm-bid').attr("onchange", "update_arm_bid('" + sub_market + "')");
+        sub_market_ui.find('#arm-ask').attr("onchange", "update_arm_ask('" + sub_market + "')");
+        sub_market_ui.find('#auto-hedge').attr("onchange", "update_auto_hedge('" + sub_market + "')");
+
+        sub_market_ui.find('#btn-start-arming').attr("onclick", "start_arming('" + sub_market + "')");
+        sub_market_ui.find('#btn-stop-arming').attr("onclick", "stop_arming('" + sub_market + "')");
+
+        sub_market_ui.has_check_update_bid_order_volumn = false;
+        sub_market_ui.has_check_update_ask_order_volumn = false;
+        sub_market_ui.has_check_update_bid_offset = false;
+        sub_market_ui.has_check_update_ask_offset = false;
+        sub_market_ui.has_check_update_bid_update_offset = false;
+        sub_market_ui.has_check_update_ask_update_offset = false;
+
+        sub_market_ui.is_arm_bid = false;
+        sub_market_ui.is_arm_ask = false;
+        sub_market_ui.is_auto_hedge = false;
+
+        sub_market_ui.is_arming = false;
+
+        $("#sub-market-group").append(sub_market_ui);
+        sub_market_list[sub_market] = sub_market_ui;
+
+        update_sub_market_button(sub_market, data);
+      }
+
+      function remove_sub_market(main, currency, non_main) {
+        let sub_market = main + '-' + currency + '-' + non_main;
+
+        // Delete from sub_market_list
+        delete sub_market_list[sub_market];
+
+        // Remove from UI
+        $("#sub-market-button-" + sub_market).remove();
+
+        // Show toast
+        show_stop_scanning_toast(non_main, currency, main);
+
+        // Active the other sub_market
+        let sub_market_keys = Object.keys(sub_market_list);
+        if (sub_market_keys.length > 0) {
+          sub_market = sub_market_keys[0];
+          set_active_sub_market(sub_market);
+        }
+      }
+
+      function set_active_sub_market(sub_market) {
+        // In-active all of sub market
+        for (id in sub_market_list) {
+          sub_market_list[id].attr("class", "list-group-item mt-3");
+        }
+
+        // Reset symbol of selection + order volumn
+        // reset_symbol_of_selection();
+        // reset_order_config();
+
+        // Active current sub_market
+        active_sub_market = sub_market;
+        sub_market_list[sub_market].attr("class", "list-group-item mt-3 active");
+        // show_active_sub_market_toast(sub_market);
+      }
+
+      function add_to_select_list() {
+        symbols.forEach(symbol => {
+          // main
+          $('#main-select').append($('<option>', {
+            value: symbol,
+            text : symbol
+          }));
+
+          // currency
+          $('#currency-select').append($('<option>', {
+            value: symbol,
+            text : symbol
+          }));
+
+          // non main
+          $('#non-main-select').append($('<option>', {
+            value: symbol,
+            text : symbol
+          }));
+        });
+
+        mainSelection = $('#main-select');
+        currencySelection = $('#currency-select');
+        non_mainSelection = $('#non-main-select');
+      }
+
+      function reset_symbol_of_selection() {
+        mainSelection.val('Symbol').change();
+        currencySelection.val('Symbol').change();
+        non_mainSelection.val('Symbol').change();
+      }
+
+      function reset_order_config() {
+      }
+
+      function check_update_symbol_to_selection(data) {
+        let mainSelected = mainSelection.find("option:selected").text();
+        let currencySelected = currencySelection.find("option:selected").text();
+        let non_mainSelected = non_mainSelection.find("option:selected").text();
+
+        if (mainSelected == 'Symbol') {
+          mainSelection.val(data.main.symbol).change();
+        }
+
+        if (currencySelected == 'Symbol') {
+          currencySelection.val(data.currency.symbol).change();
+        }
+
+        if (non_mainSelected == 'Symbol') {
+          non_mainSelection.val(data.non_main.symbol).change();
+        }
+      }
+
+      function check_update_bid_order_volumn(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (sub_market_ui.has_check_update_bid_order_volumn == false && sub_market_ui['order-size-bid'].val() == '') {
+          sub_market_ui['order-size-bid'].val(data.bid_order_volumn);
+          sub_market_ui.has_check_update_bid_order_volumn = true;
+        }
+      }
+
+      function check_update_ask_order_volumn(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (sub_market_ui.has_check_update_ask_order_volumn == false && sub_market_ui['order-size-ask'].val() == '') {
+          sub_market_ui['order-size-ask'].val(data.ask_order_volumn);
+          sub_market_ui.has_check_update_ask_order_volumn = true;
+        }
+      }
+
+      function check_update_bid_offset(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (sub_market_ui.has_check_update_bid_offset == false && sub_market_ui['offset-bid'].val() == '') {
+          sub_market_ui['offset-bid'].val(data.bid_offset);
+          sub_market_ui.has_check_update_bid_offset = true;
+        }
+      }
+
+      function check_update_ask_offset(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (sub_market_ui.has_check_update_ask_offset == false && sub_market_ui['offset-ask'].val() == '') {
+          sub_market_ui['offset-ask'].val(data.ask_offset);
+          sub_market_ui.has_check_update_ask_offset = true;
+        }
+      }
+
+      function check_update_bid_update_offset(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (sub_market_ui.has_check_update_bid_update_offset == false && sub_market_ui['update-offset-bid'].val() == '') {
+          sub_market_ui['update-offset-bid'].val(data.bid_update_offset);
+          sub_market_ui.has_check_update_bid_update_offset = true;
+        }
+      }
+
+      function check_update_ask_update_offset(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (sub_market_ui.has_check_update_ask_update_offset == false && sub_market_ui['update-offset-ask'].val() == '') {
+          sub_market_ui['update-offset-ask'].val(data.ask_update_offset);
+          sub_market_ui.has_check_update_ask_update_offset = true;
+        }
+      }
+
+      function check_update_arm_bid(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (data.user_config[user_id].arm_bid != sub_market_ui.is_arm_bid) {
+          if (data.user_config[user_id].arm_bid) {
+            sub_market_ui['btn-arm-bid'].attr("class", "btn btn-danger");
+            sub_market_ui['arm-bid'].prop("checked", true);
+          } else {
+            sub_market_ui['btn-arm-bid'].attr("class", "btn btn-light");
+            sub_market_ui['arm-bid'].prop("checked", false);
+          }
+
+          sub_market_ui.is_arm_bid = data.user_config[user_id].arm_bid;
+          check_disable_arm_bid(data);
+        }
+      }
+
+      function check_update_arm_ask(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (data.user_config[user_id].arm_ask != sub_market_ui.is_arm_ask) {
+          if (data.user_config[user_id].arm_ask) {
+            sub_market_ui['btn-arm-ask'].attr("class", "btn btn-primary");
+            sub_market_ui['arm-ask'].prop("checked", true);
+          } else {
+            sub_market_ui['btn-arm-ask'].attr("class", "btn btn-light");
+            sub_market_ui['arm-ask'].prop("checked", false);
+          }
+          sub_market_ui.is_arm_ask = data.user_config[user_id].arm_ask;
+          check_disable_arm_ask(data);
+        }
+      }
+
+      function check_update_auto_hedge(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+
+        if (data.user_config[user_id].auto_hedge != sub_market_ui.is_auto_hedge) {
+          if (data.user_config[user_id].auto_hedge) {
+            sub_market_ui['btn-auto-hedge'].attr("class", "btn btn-info");
+            sub_market_ui['auto-hedge'].prop("checked", true);
+          } else {
+            sub_market_ui['btn-auto-hedge'].attr("class", "btn btn-light");
+            sub_market_ui['auto-hedge'].prop("checked", false);
+          }
+          sub_market_ui.is_auto_hedge = data.user_config[user_id].auto_hedge;
+          check_disable_auto_hedge(data);
+        }
+      }
+
+      function check_disable_arm_bid(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+        let class_props = data.user_config[user_id].arm_bid ? "btn btn-danger" : "btn btn-light";
+
+        class_props += data.user_config[user_id].is_arming ? " disabled" : "";
+        sub_market_ui['btn-arm-bid'].attr("class", class_props);
+        sub_market_ui['arm-bid'].prop("disabled", data.user_config[user_id].is_arming);
+      }
+
+      function check_disable_arm_ask(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+        let class_props = data.user_config[user_id].arm_ask ? "btn btn-primary" : "btn btn-light";
+
+        class_props += data.user_config[user_id].is_arming ? " disabled" : "";
+        sub_market_ui['btn-arm-ask'].attr("class", class_props);
+        sub_market_ui['arm-ask'].prop("disabled", data.user_config[user_id].is_arming);
+      }
+
+      function check_disable_auto_hedge(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+        let class_props = data.user_config[user_id].auto_hedge ? "btn btn-info" : "btn btn-light";
+
+        class_props += data.user_config[user_id].is_arming ? " disabled" : "";
+        sub_market_ui['btn-auto-hedge'].attr("class", class_props);
+        sub_market_ui['auto-hedge'].prop("disabled", data.user_config[user_id].is_arming);
+      }
+
+      function check_update_is_arming(data) {
+        let sub_market_ui = sub_market_list[data.sub_market];
+        let data_is_arming = data.user_config[user_id].is_arming;
+
+        if (data_is_arming == undefined) {
+          data_is_arming = false;
+        }
+
+        if (sub_market_ui.is_arming != data_is_arming) {
+          if (data_is_arming == true) {
+            sub_market_ui['btn-go-active'].css("display", "none");
+            sub_market_ui['btn-go-inactive'].css("display", "");
+          } else {
+            sub_market_ui['btn-go-active'].css("display", "");
+            sub_market_ui['btn-go-inactive'].css("display", "none");
+          }
+          check_disable_arm_bid(data);
+          check_disable_arm_ask(data);
+          check_disable_auto_hedge(data);
+          sub_market_ui.is_arming = data_is_arming;
+        }
+      }
+
+      function check_update_order_volumn_to_sub_market(sub_market, order_volumn) {
+        let sub_market_ui = sub_market_list[sub_market];
+
+        if (sub_market_ui) {
+          let volumn_text = sub_market_ui.find("#sub-market-volumn");
+          if (volumn_text.text() != order_volumn) {
+            volumn_text.text(order_volumn);
+          }
+        }
+      }
+
+      function start_arming(sub_market) {
+        send_request_update_config("is_arming", true, sub_market);
+      }
+
+      function stop_arming(sub_market) {
+        send_request_update_config("is_arming", false, sub_market);
+      }
+
+      function subscribe_channel_profit() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "profit",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          if (data.USDT != undefined) {
+            let ui = $("#24h_profit");
+            ui.text(data.USDT);
+
+            if (data.USDT < 0) {
+              ui.attr("class", "text-danger");
+            } else if (data.USDT > 0) {
+              ui.attr("class", "text-success");
+            } else {
+              ui.text('0.0');
+              ui.attr("class", "text-secondary");
+            }
+          }
+        }
+      }
+
+      function subscribe_channel_notification() {
+        let ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "mm_arbitrage_notification",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          let data = JSON.parse(evt.data).data;
+          if (!data) return;
+
+          show_mm_arbitrage_notification_toast(data.msg);
+        }
+      }
+
+      function subscribe_channel_mm_arbitrage() {
+        ws = new WebSocket("wss://" + window.location.hostname + ":8081");
+
+        ws.onopen=function(evt) {
+          let sub1 = {
+            method: "subscribe",
+            channel: "mm_arbitrage",
+            token: token
+          }
+          ws.send(JSON.stringify(sub1));
+        };
+
+        ws.onmessage=function(evt) {
+          data = JSON.parse(evt.data)?.data;
+          if (!data) return;
+
+          // Check is sub_market stop scanning
+          if (data.is_stop == true) {
+            remove_sub_market(data.main, data.currency, data.non_main);
+            return;
+          }
+
+          // Check sub market
+          let sub_market = data.main.symbol + '-' + data.currency.symbol + '-' + data.non_main.symbol;
+          data.sub_market = sub_market;
+          if (sub_market_list[sub_market] == undefined) {
+            add_sub_market(sub_market, data);
+          }
+          if (active_sub_market == null) {
+            set_active_sub_market(sub_market);
+          }
+
+          check_update_order_volumn_to_sub_market(sub_market, data.order_volumn);
+          update_sub_market_button(sub_market, data);
+
+          // Only handle active_sub_market data
+          //if (active_sub_market != sub_market) return;
+
+          // Add default
+          if (data.user_config[user_id] == undefined) {
+            data.user_config[user_id] = {
+              arm_bid: false,
+              arm_ask: false,
+              auto_hedge: false,
+              is_arming: false,
+            }
+          }
+
+         // check_update_symbol_to_selection(data);
+          check_update_bid_order_volumn(data);
+          check_update_ask_order_volumn(data);
+          check_update_bid_offset(data);
+          check_update_ask_offset(data);
+          check_update_bid_update_offset(data);
+          check_update_ask_update_offset(data);
+          check_update_arm_bid(data);
+          check_update_arm_ask(data);
+          check_update_auto_hedge(data);
+          check_update_is_arming(data);
+
+          // main
+          // $("#main-bid").text(data.main.bid);
+          // $("#main-ask").text(data.main.ask);
+
+          // currency
+          // $("#currency-bid").text(data.currency.bid);
+          // $("#currency-ask").text(data.currency.ask);
+
+          // non-main
+          // $("#non-main-bid").text(data.non_main.bid);
+          // $("#non-main-ask").text(data.non_main.ask);
+
+          let sub_market_ui = sub_market_list[data.sub_market];
+
+          // theorical_bid
+          sub_market_ui['theo-bid'].text(data.theorical_bid);
+
+          // theorical_ask
+          sub_market_ui['theo-ask'].text(data.theorical_ask);
+
+          // best-bid, best-ask
+          sub_market_ui['best-bid'].text(data.non_main.bid);
+          sub_market_ui['best-ask'].text(data.non_main.ask);
+
+          // non_main_market_tick_size
+          let non_main_market_tick_size = data.non_main_market_tick_size;
+          let offset_bid_value = sub_market_ui['offset-bid'].val() * non_main_market_tick_size;
+          sub_market_ui['offset-bid-value'].text("(" + offset_bid_value + ")");
+          let offset_ask_value = sub_market_ui['offset-ask'].val() * non_main_market_tick_size;
+          sub_market_ui['offset-ask-value'].text("(" + offset_ask_value + ")");
+          let update_offset_bid_value = sub_market_ui['update-offset-bid'].val() * non_main_market_tick_size;
+          sub_market_ui['update-offset-bid-value'].text("(" + update_offset_bid_value + ")");
+          let update_offset_ask_value = sub_market_ui['update-offset-ask'].val() * non_main_market_tick_size;
+          sub_market_ui['update-offset-ask-value'].text("(" + update_offset_ask_value + ")");
+
+          // Theorical bid orders
+          // if (data.user_config[user_id].arm_bid) {
+          //   $("#bid-order-table").css("visibility", "");
+          // } else {
+          //   $("#bid-order-table").css("visibility", "hidden");
+          // }
+
+          // $("#bid-header-price-with-offset").text("Price - " + data.bid_offset + " tick");
+          // data.theorical_bid_orders.forEach((order, index) => {
+          //   let id = "#theorical_bid_order_row_" + (index + 1);
+          //   $(id).empty();
+          //   $(id).append("<th scope='row'>" + (index + 1) + "</th>");
+          //   $(id).append("<td class='text-" + ((order.side == "BUY") ? 'success' : 'danger') + "'>" + order.side + "</td>");
+          //   $(id).append("<td>" + order.symbol + "</td>");
+          //   $(id).append("<td>" + order.price + "</td>");
+          //   $(id).append("<td>" + order.price_with_offset + "</td>");
+          //   $(id).append("<td>" + order.quantity + "</td>");
+          //   $(id).append("<td>" + order.BNB_fee + "</td>");
+          // });
+
+          // if (profit_with_fee_on_bid <= 0) {
+          //   $("#go_theorical_bid_orders").attr("class","btn btn-danger disabled");
+          // } else {
+          //   $("#go_theorical_bid_orders").attr("class","btn btn-success");
+          // }
+          // $("#go_theorical_bid_orders").attr("class","btn btn-success");
+
+          // Theorical bid orders
+          // if (data.user_config[user_id].arm_ask) {
+          //   $("#ask-order-table").css("visibility", "");
+          // } else {
+          //   $("#ask-order-table").css("visibility", "hidden");
+          // }
+
+          // $("#ask-header-price-with-offset").text("Price + " + data.ask_offset + " tick");
+          // data.theorical_ask_orders.forEach((order, index) => {
+          //   let id = "#theorical_ask_order_row_" + (index + 1);
+          //   $(id).empty();
+          //   $(id).append("<th scope='row'>" + (index + 1) + "</th>");
+          //   $(id).append("<td class='text-" + ((order.side == "BUY") ? 'success' : 'danger') + "'>" + order.side + "</td>");
+          //   $(id).append("<td>" + order.symbol + "</td>");
+          //   $(id).append("<td>" + order.price + "</td>");
+          //   $(id).append("<td>" + order.price_with_offset + "</td>");
+          //   $(id).append("<td>" + order.quantity + "</td>");
+          //   $(id).append("<td>" + order.BNB_fee + "</td>");
+          // });
+
+          // Show/Hide hedge order base on data.auto_hedge
+          // if (data.user_config[user_id].auto_hedge) {
+          //   $('#theorical_bid_order_row_2').css("display", "");
+          //   $('#theorical_bid_order_row_3').css("display", "");
+          //   $('#theorical_ask_order_row_2').css("display", "");
+          //   $('#theorical_ask_order_row_3').css("display", "");
+          // } else {
+          //   $('#theorical_bid_order_row_2').css("display", "none");
+          //   $('#theorical_bid_order_row_3').css("display", "none");
+          //   $('#theorical_ask_order_row_2').css("display", "none");
+          //   $('#theorical_ask_order_row_3').css("display", "none");
+          // }
+
+          //if (profit_with_fee_on_ask <= 0) {
+          //  $("#go_theorical_ask_orders").attr("class","btn btn-danger disabled");
+          //} else {
+          //  $("#go_theorical_ask_orders").attr("class","btn btn-success");
+          //}
+          // $("#go_theorical_ask_orders").attr("class","btn btn-success");
+        };
+      }
+
+      function show_login_success_toast(user_id) {
+        $("#toast-title").html("Login Successfully");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "User: <span class='text-primary'>" + user_id + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_start_scanning_toast(non_main_market, currency, main_market) {
+        $("#toast-title").html("Start scanning market");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Non-main market: <span class='text-dark'>" + non_main_market + "</span>",
+          "<br>Currency:  <span class='text-dark'>" + currency + "</span>",
+          "<br>Main market:  <span class='text-dark'>" + main_market + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_stop_scanning_toast(non_main_market, currency, main_market) {
+        $("#toast-title").html("Stop scanning market");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Non-main market: <span class='text-dark'>" + non_main_market + "</span>",
+          "<br>Currency:  <span class='text-dark'>" + currency + "</span>",
+          "<br>Main market:  <span class='text-dark'>" + main_market + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_update_order_volumn_toast(type, order_volumn) {
+        $("#toast-title").html("Update order volumn");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Type: <span class='text-dark'>" + type + "</span><br>",
+          "New volumn: <span class='text-dark'>" + order_volumn + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_update_offset_toast(type, offset) {
+        $("#toast-title").html("Update order offset");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Type: <span class='text-dark'>" + type + "</span><br>",
+          "New offset: <span class='text-dark'>" + offset + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_update_arm_toast(type, arm) {
+        $("#toast-title").html("Update arm");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Type: <span class='text-dark'>" + type + "</span><br>",
+          "Arm: <span class=" + (arm ? "'text-success'" : 'text-danger') + ">" + arm + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_update_auto_hedge_toast(auto_hedge) {
+        $("#toast-title").html("Update auto hedge");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Auto hedge: <span class=" + (auto_hedge ? "'text-success'" : 'text-danger') + ">" + auto_hedge + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_place_order_toast(type, expected_profit) {
+        $("#toast-title").html("Place orders");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Type: <span class='text-dark'>" + type, "</span><br>Expected profit: <span class=" + (expected_profit > 0 ? "'text-success'" : 'text-danger') + ">" + expected_profit + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_active_sub_market_toast(sub_market) {
+        let markets = sub_market.split("-");
+        let non_main = markets[0];
+        let currency = markets[1];
+        let main = markets[2];
+        $("#toast-title").html("Displaying sub market");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "Non-main market: <span class='text-success'>" + non_main + "</span>",
+          "<br>Currency:  <span class='text-success'>" + currency + "</span>",
+          "<br>Main market:  <span class='text-success'>" + main + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_place_order_error_toast(message) {
+        $("#toast-title").html("Place orders error");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Message: <span class='text-danger'>" + message, "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_auto_trade_toast(sub_market, data) {
+        $("#toast-title").html("Auto trading");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Sub market: <span class='text-dark'>" + sub_market, "</span>");
+        $("#send-signal-toast-body").append("<br>Status: <span class=" + (data.is_running == true ? "'text-success'" : 'text-danger') + ">" + (data.is_running == true ? "Start" : 'Stop') +  "</span><br>Type: <span class='text-dark'>" + data.type, "</span>");
+        if (data.expected_profit) {
+          $("#send-signal-toast-body").append("<br>Expected profit: <span class=" + (data.expected_profit ? "'text-success'" : 'text-danger') + ">" + data.expected_profit + "</span>");
+        }
+        $('#sendSignalToast').toast('show');
+      }
+
+      function show_mm_arbitrage_notification_toast(message) {
+        $("#toast-title").html("MM Arbitrage Notification");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append("Message: <span class='text-danger'>" + message, "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function init() {
+        get_user_info()
+        .then(get_sample_element)
+        .then(get_symbols)
+        .then(add_to_select_list)
+        .then(get_websocket_token)
+        .then(subscribe_channel_profit)
+        .then(subscribe_channel_notification)
+        .then(subscribe_channel_mm_arbitrage)
+      }
+
+      window.onload=function() {
+        init();
+
+        $('#main-select').on('change', function (e) {
+          let optionSelected = $(this).find("option:selected");
+          main_symbol   = optionSelected.text();
+          console.log("main_symbol = ", main_symbol)
+        });
+
+        $('#currency-select').on('change', function (e) {
+          let optionSelected = $(this).find("option:selected");
+          currency_symbol   = optionSelected.text();
+          console.log("currency_symbol = ", currency_symbol)
+        });
+
+        $('#non-main-select').on('change', function (e) {
+          let optionSelected = $(this).find("option:selected");
+          non_main_symbol   = optionSelected.text();
+          console.log("non_main_symbol = ", non_main_symbol)
+        });
+      }
+
+      window.onclose=function(){
+          ws.close();
+      }
+      </script>
+  </body>
+
+  <style>
+    body {
+      background-color: #212121;
+      color: white
+    }
+    .list-group-item:hover {
+      background-color: rgba(33,40,68) !important;
+    }
+
+    .scrollbar-primary::-webkit-scrollbar {
+      width: 3px !important;
+      height: 7px !important;
+      background-color: rgba(33,37,41) !important;
+    }
+    .scrollbar-primary::-webkit-scrollbar-thumb {
+      border-radius: 10px !important;
+      -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1) !important;
+      background-color: #4285F4 !important;
+    }
+    .scrollbar-primary {
+      scrollbar-color: #4285F4 rgba(33,37,41) !important;
+    }
+    .testimonial-group > .row {
+      display: block;
+      overflow-x: scroll;
+      white-space: nowrap;
+    }
+    .testimonial-group > .row > .col-4 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-1 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-2 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-3 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-4 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-5 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-6 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-7 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-8 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-9 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-10 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-11 {
+      display: inline-block;
+    }
+    .testimonial-group > .row > .col-md-12 {
+      display: inline-block;
+    }
+  </style>
+</html>

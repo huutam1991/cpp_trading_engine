@@ -12,7 +12,6 @@
 *.pch
 
 # Compiled Dynamic libraries
-*.so
 *.dylib
 *.dll
 
@@ -30,3 +29,31 @@
 *.exe
 *.out
 *.app
+http_server_cpp
+http_server_cpp_debug
+
+# Build folder
+build/
+debug/
+
+# MongoDB data folder
+z_docker/mongo_docker_data
+z_docker/dump
+
+# Report file
+web_data/excel/report.xls
+web_data/excel/strategy_report.xls
+
+# Web data
+web_data/angular_src/node_modules
+web_data/angular_src/.angular
+
+# Targets log
+.vscode/targets.log
+.vscode/settings.json
+
+# Log files
+*.err
+
+# Front-end deploy folder
+# web_data/deploy/**

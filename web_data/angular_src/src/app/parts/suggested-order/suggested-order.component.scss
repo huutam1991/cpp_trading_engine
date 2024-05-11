@@ -1,0 +1,128 @@
+.suggested-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .header {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        width: 100%;
+        height: 55px;
+        $title-width: 170px;
+
+        .title {
+            width: $title-width;
+        }
+
+        .limit-btn {
+            background-color: #f8f9fa;
+        }
+
+        .stop-loss-area {
+            display: flex;
+            flex-direction: row;
+            width: calc(100% - $title-width);
+            justify-content: space-between;
+
+            .stop-loss-btn {
+                background-color: #0dcaf0;
+            }
+
+            .stop-loss-only-btn {
+                background-color: #ffc107;
+            }
+
+            .stop-loss-input {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .update-tick-btn {
+                background-color: #198754;
+            }
+
+            mat-form-field {
+                width: 100px;
+            }
+
+            ::ng-deep .mat-form-field-appearance-outline .mat-form-field-flex {
+                margin-top: -0.55em;
+            }
+        }
+    }
+
+    .bid-table {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+
+        .table {
+            width: 90%;
+            min-height: 300px;
+        }
+
+        .action {
+            width: 10%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            .btn-cancel {
+                background-color: #dc3545;
+                color: #fff;
+                padding: 0 10px;
+            }
+        }
+    }
+
+    .running {
+        justify-content: space-between;
+        align-items: center;
+        padding-left: 0.5rem;
+        padding-top: 10px;
+
+        .replace {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .count-action {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: 120px;
+            justify-content: space-between;
+
+            .btn {
+                width: 38px;
+                height: 36px;
+                min-width: 38px;
+                line-height: 30px;
+                padding: 0 12px;
+            }
+
+            .plus-btn {
+                background-color: #198754;
+            }
+
+            .minus-btn {
+                background-color: #dc3545;
+            }
+        }
+
+        .negative {
+            color: #ff0606;
+        }
+
+        .positive {
+            color: #27AE60;
+        }
+    }
+
+    mat-form-field {
+        width: 100%;
+    }
+}

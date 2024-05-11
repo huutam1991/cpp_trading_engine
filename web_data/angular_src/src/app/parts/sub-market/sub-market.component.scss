@@ -1,0 +1,41 @@
+@import "src/styles/styles-variables.scss";
+
+.sub-market {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 54px));
+    row-gap: 4px;
+    column-gap: 10px;
+    padding: 6px 12px 6px 6px;
+    border: 1px solid transparent;
+
+    .col-span-3 {
+        grid-column: span 3 / span 3;
+    }
+
+    .non-market,
+    .market {
+        height: 30px;
+        background-color: $non-market;
+        border-radius: 4px;
+    }
+
+    .non-market{
+        color: #000;
+    }
+
+    .market {
+        background-color: $market;
+    }
+
+    .bid-sub {
+        background-color: $bid;
+        border-radius: 4px;
+        width: 30px;
+    }
+
+    .ask-sub {
+        background-color: $ask;
+        border-radius: 4px;
+        width: 30px;
+    }
+}

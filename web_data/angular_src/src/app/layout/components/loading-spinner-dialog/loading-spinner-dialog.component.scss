@@ -1,0 +1,26 @@
+.row-spinner {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  height: 70px;
+  align-items: center;
+}
+
+.column-spinner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.column-spinner-loading {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 18px;
+}
+
+.spinner-modal-text {
+  line-height: 48px;
+  height: 48px;
+  font-size: large;
+}

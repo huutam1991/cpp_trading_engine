@@ -1,0 +1,333 @@
+<div class="container-datatable">
+  <div class="loading-shade" *ngIf="isLoadingResults">
+    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+  </div>
+  <div
+    *ngIf="displayColumns.length > 0 && dataSource"
+    class="table-container"
+    [ngClass]="{ 'hidden-scroll': totalRecords === 0 }"
+  >
+    <table
+      mat-table
+      matSort
+      #matTable
+      [dataSource]="rowData"
+      multiTemplateDataRows
+      (matSortChange)="handleSort.emit($event)"
+    >
+      <ng-container *ngIf="tableConfig.expandable">
+        <ng-container matColumnDef="expand">
+          <th
+            *matHeaderCellDef
+            mat-header-cell
+            [ngStyle]="{ width: '50px', 'max-width': '50px' }"
+          >
+            &nbsp;
+          </th>
+          <td
+            *matCellDef="let element; let j = index"
+            mat-cell
+            [ngStyle]="{ width: '50px', 'max-width': '50px' }"
+          >
+            <button
+              mat-icon-button
+              (click)="onExpandedRowClick($event, element)"
+            >
+              <mat-icon *ngIf="expandedElement !== element"
+                >keyboard_arrow_down</mat-icon
+              >
+              <mat-icon *ngIf="expandedElement === element"
+                >keyboard_arrow_up</mat-icon
+              >
+            </button>
+          </td>
+        </ng-container>
+      </ng-container>
+      <ng-container
+        *ngFor="let column of columnDefinition"
+        [matColumnDef]="column.id"
+        [sticky]="column.sticky ? true : false"
+        [stickyEnd]="column.stickyEnd ? true : false"
+      >
+        <ng-container [ngSwitch]="column.type">
+          <!-- ::::::::::::::::::::::::::::::::::INDEX:::::::::::::::::::::::::::::::::::::::: -->
+          <div *ngSwitchCase="'index'">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              [class.header-align-center]="column.alignCenter"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              <div class="cell-overflow table-header">#</div>
+            </th>
+            <td
+              *matCellDef="let row; let j = dataIndex"
+              mat-cell
+              [class.cell-align-center]="column.alignCenter"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              <div class="cell-overflow">
+                {{ pageNumber === 0 ? j + 1 : pageNumber * 10 + (j + 1) }}
+              </div>
+            </td>
+          </div>
+
+          <!-- ::::::::::::::::::::::::::::::::::TEXT:::::::::::::::::::::::::::::::::::::::: -->
+          <div *ngSwitchCase="'text'">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header
+              disabled="{{ !column.orderable }}"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              {{ column.name }}
+            </th>
+            <td
+              *matCellDef="let element"
+              mat-cell
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px',
+                color: column.color ? column.color : ''
+              }"
+              [class.cell-align-right]="column.alignRight"
+              [class.cell-align-center]="column.alignCenter"
+              [matTooltipDisabled]="!column.showTooltip"
+              [class.overflow]="column.overflow"
+              [matTooltipPosition]="column.tooltipAlign || 'above'"
+              [matTooltip]="utils.getValueByKey(element, column.id)"
+            >
+              <span *ngIf="!column.format">
+                {{
+                  !utils.getValueByKey(element, column.id)
+                    ? "-"
+                    : utils.getValueByKey(element, column.id)
+                }}
+              </span>
+              <span
+                *ngIf="column && column.format && isDateTime(column.format)"
+              >
+                {{
+                  utils.getValueByKey(element, column.id)
+                    | datetimeformat2 : column.format.toString()
+                }}
+              </span>
+            </td>
+          </div>
+
+          <!-- ::::::::::::::::::::::::::::::::::MONEY:::::::::::::::::::::::::::::::::::::::: -->
+          <div *ngSwitchCase="'money'">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header
+              disabled="{{ !column.orderable }}"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              {{ column.name }}
+            </th>
+            <td
+              *matCellDef="let element"
+              mat-cell
+              class="overflow"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+              [class.cell-align-right]="column.alignRight"
+              [class.cell-align-center]="column.alignCenter"
+            >
+              <span *ngIf="column && !column.format">
+                {{
+                  !utils.getValueByKey(element, column.id)
+                    ? "0"
+                    : utils.getValueByKey(element, column.id)
+                }}
+                $
+              </span>
+              <span *ngIf="column && column.format && isNumber(column.format)">
+                {{
+                  !utils.getValueByKey(element, column.id)
+                    ? "0"
+                    : (utils.getValueByKey(element, column.id)
+                      | currencyFormatPipe : pipeNumber(column.format))
+                }}
+                $
+              </span>
+            </td>
+          </div>
+
+          <!-- ::::::::::::::::::::::::::::::::::NUMBER:::::::::::::::::::::::::::::::::::::::: -->
+          <div *ngSwitchCase="'number'">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              mat-sort-header
+              disabled="{{ !column.orderable }}"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              {{ column.name }}
+            </th>
+            <td
+              *matCellDef="let element"
+              mat-cell
+              class="overflow"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px',
+                color: column.checkNegative
+                  ? utils.getValueByKey(element, column.id) >= 0
+                    ? '#27AE60'
+                    : '#dc3545'
+                  : ''
+              }"
+              [class.cell-align-right]="column.alignRight"
+              [class.cell-align-center]="column.alignCenter"
+            >
+              <span *ngIf="!column.format">
+                {{
+                  !utils.getValueByKey(element, column.id)
+                    ? "0"
+                    : utils.getValueByKey(element, column.id)
+                }}
+              </span>
+              <span *ngIf="column && column.format && isNumber(column.format)">
+                {{
+                  utils.getValueByKey(element, column.id) || "0"
+                    | currencyFormatPipe : pipeNumber(column.format)
+                }}
+              </span>
+            </td>
+          </div>
+
+          <!-- ::::::::::::::::::::::::::::::::::STATUS:::::::::::::::::::::::::::::::::::::::: -->
+          <div *ngSwitchCase="'status'">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              {{ column.name }}
+            </th>
+            <td
+              *matCellDef="let element"
+              mat-cell
+              class="overflow"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+              [class.cell-align-right]="column.alignRight"
+              [class.cell-align-center]="column.alignCenter"
+            >
+              <div
+                class="chip-item"
+                [ngStyle]="{
+                  'background-color': column.colorObject[element[column.id]]
+                }"
+              >
+                {{
+                  !utils.getValueByKey(element, column.id)
+                    ? "-"
+                    : utils.getValueByKey(element, column.id)
+                }}
+              </div>
+            </td>
+          </div>
+
+          <!-- ::::::::::::::::::::::::::::::::::TYPE:::::::::::::::::::::::::::::::::::::::: -->
+          <div *ngSwitchCase="'type'">
+            <th
+              *matHeaderCellDef
+              mat-header-cell
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+            >
+              {{ column.name }}
+            </th>
+            <td
+              *matCellDef="let element"
+              mat-cell
+              class="overflow"
+              [ngStyle]="{
+                width: (column.weight || 0) * 10 + 'px',
+                'min-width': (column.weight || 0) * 10 + 'px',
+                'max-width': (column.weight || 0) * 10 + 'px'
+              }"
+              [class.cell-align-right]="column.alignRight"
+              [class.cell-align-center]="column.alignCenter"
+            >
+              <span
+                [ngStyle]="{
+                  color: column.colorObject[element[column.id]]
+                }"
+              >
+                {{
+                  !utils.getValueByKey(element, column.id)
+                    ? "-"
+                    : utils.getValueByKey(element, column.id)
+                }}
+              </span>
+            </td>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayColumns; sticky: true"></tr>
+      <tr
+        mat-row
+        class="element-row"
+        *matRowDef="let row; columns: displayColumns; let idx = index"
+        [ngStyle]="styleObject(selectedRowIndex, idx)"
+        (dblclick)="onRowDblClick($event, row, idx)"
+      ></tr>
+    </table>
+
+    <ng-container *ngIf="rowData.length === 0">
+      <div class="empty" [attr.colspan]="displayColumns.length">
+        No data found!
+      </div>
+    </ng-container>
+  </div>
+  <!-- <mat-paginator
+    [pageSizeOptions]="pageSizeOptions"
+    [showFirstLastButtons]="true"
+    [length]="totalRecords"
+    [pageIndex]="pageNumber"
+    [pageSize]="pageSize"
+    (page)="pageSwitch.emit($event)"
+  >
+  </mat-paginator> -->
+</div>

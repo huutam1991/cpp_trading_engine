@@ -1,0 +1,48 @@
+.input-wrapper{
+  // width: 142px;
+}
+.cdk-program-focused .mat-button-focus-overlay{
+  background-color: transparent;
+}
+.input-wrapper input{
+  outline: none;
+  border: 1px solid #D6D6D6;
+  border-radius: 2px;
+  padding: 7.5px 8px;
+  font-size: 16px;
+  // width: 142px;
+  height: 35px;
+  color: #485764;
+  letter-spacing: 0.014em;
+}
+.input-wrapper input:focus{
+  border: 1px solid #4392BB;
+  caret-color: #4392BB;
+
+}
+.input-wrapper input:disabled{
+  border: 1px solid #D6D6D6;
+  background-color: #F2F2F2;
+
+}
+.input-wrapper .input-label{
+  font-size: 12px;
+  font-weight: 500;
+}
+.input-wrapper .input-normal{
+  position: relative;
+  height: 100%;
+}
+
+.input-wrapper .input-normal.input-calendar .mat-datepicker-toggle{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: -3px;
+}
+
+.input-wrapper .input-normal.input-calendar .mat-datepicker-toggle mat-icon{
+  line-height:0;
+  width: 11px;
+  height: 15px;
+}

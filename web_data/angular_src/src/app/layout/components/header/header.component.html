@@ -1,0 +1,60 @@
+<header
+  [ngStyle]="{
+    'padding-right': getPaddingSize()
+  }"
+>
+  <div class="logo-brand">
+    <h6 (click)="onMenuClick('')">Alpha H Trading</h6>
+  </div>
+  <div class="menu-desktop">
+    <ng-container *ngFor="let menu of dataMenu">
+      <a
+        mat-button
+        [routerLink]="menu.route"
+        [class.active]="activeRouter(menu.route)"
+      >
+        {{ menu.label }}
+      </a>
+    </ng-container>
+    <div class="others">
+      <button mat-icon-button [matMenuTriggerFor]="beforeMenu">
+        <mat-icon>settings</mat-icon>
+      </button>
+      <mat-menu #beforeMenu="matMenu" xPosition="before">
+        <button mat-menu-item>
+          {{ label }} <span class="user-label">{{ userName }}</span>
+        </button>
+        <button
+          mat-menu-item
+          (click)="onMenuClick('setting')"
+          *ngIf="sidenavService.showSidenavOnSetting"
+        >
+          Setting
+        </button>
+        <button mat-menu-item (click)="logout()">Logout</button>
+      </mat-menu>
+    </div>
+  </div>
+
+  <div class="menu-mobile">
+    <button mat-icon-button [matMenuTriggerFor]="beforeMenuMobile">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <mat-menu #beforeMenuMobile="matMenu" xPosition="before">
+      <button mat-menu-item>Hello, Tâm</button>
+      <ng-container *ngFor="let menu of dataMenu">
+        <button mat-menu-item (click)="onMenuClick(menu.route)">
+          {{ menu.label }}
+        </button>
+      </ng-container>
+      <button
+        mat-menu-item
+        (click)="onMenuClick('setting')"
+        *ngIf="sidenavService.showSidenavOnSetting"
+      >
+        Setting
+      </button>
+      <button mat-menu-item (click)="logout()">Logout</button>
+    </mat-menu>
+  </div>
+</header>

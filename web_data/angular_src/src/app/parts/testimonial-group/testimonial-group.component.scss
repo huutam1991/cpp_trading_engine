@@ -1,0 +1,82 @@
+.testimonial-group {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 1.25rem;
+
+    .col {
+        width: 100px;
+        min-width: 100px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 14px;
+
+        .yellow {
+            width: 100px;
+        }
+
+        mat-form-field {
+            width: 100px;
+        }
+
+        .value {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-bid,
+        .btn-ask {
+            color: #fff;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .btn-bid {
+            background-color: #dc3545;
+        }
+
+        .btn-ask {
+            background-color: #0d6efd;
+        }
+
+        .checkbox-label {
+            width: 100px;
+            min-height: 40px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #000;
+            background-color: #fff;
+        }
+
+        .arm-bid {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .arm-ask {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+
+        .auto-hedge {
+            background-color: #0dcaf0;
+        }
+
+        .btn-stop {
+            background-color: #dc3545;
+            color: #fff;
+            padding: 0 10px;
+        }
+    }
+
+    .fixed {
+        height: 120px;
+        position: fixed;
+        right: 16px;
+        background-color: #0F172A;
+        padding-left: 14px;
+    }
+}

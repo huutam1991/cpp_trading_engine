@@ -1,0 +1,37 @@
+.theoretical-container {
+    display: flex;
+    flex-direction: column;
+
+    .header {
+        margin-bottom: 0.75rem;
+    }
+
+    .row {
+        gap: 0.5rem;
+
+        span {
+            font-size: 16px;
+            font-weight: 600;
+        }
+    }
+
+    .grid-theoretical {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 25%));
+        row-gap: 14px;
+        column-gap: 8px;
+
+        .value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .profit-label {
+            color: #000;
+            font-size: 14px;
+            font-weight: bold;
+            background-color: #fff;
+            border-radius: 4px;
+        }
+    }
+}

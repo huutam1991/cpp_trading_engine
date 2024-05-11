@@ -1,0 +1,11 @@
+mat-form-field {
+    width: 220px;
+}
+
+::ng-deep.mat-date-range-input-container {
+    color: #000;
+}
+
+::ng-deep.mat-form-field-infix+.mat-form-field-suffix {
+    top: -0.25rem !important;
+}

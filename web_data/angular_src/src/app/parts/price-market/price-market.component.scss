@@ -1,0 +1,85 @@
+@import "src/styles/styles-variables.scss";
+@import "src/styles/scss/breakpoints.scss";
+
+.market-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+
+    @include max-desktop-down-1570() {
+        width: 520px;
+    }
+
+    @include max-desktop-down-1500() {
+        width: 470px;
+    }
+
+    @include max-desktop-down-1380() {
+        width: 480px;
+    }
+
+    @include max-desktop-down-1310() {
+        width: 430px;
+    }
+
+    @include max-desktop-down-1210() {
+        width: 380px;
+    }
+
+
+    .col-4 {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        .value-contain {
+            display: flex;
+            gap: 0.5rem;
+
+            .value {
+                font-size: 22px;
+                font-weight: 700;
+
+                @include max-desktop-down-1500() {
+                    font-size: 18px;
+                    font-weight: 600;
+                }
+
+                @include max-desktop-down-1380() {
+                    font-size: 16px;
+                }
+
+                @include max-desktop-down-1210() {
+                    font-size: 14px;
+                }
+            }
+
+            .ask,
+            .bid {
+                @include max-desktop-down-1210() {
+                    font-size: 14px;
+                    min-width: 40px;
+                    min-width: 36px;
+                }
+            }
+
+        }
+    }
+
+    .col-4 button {
+        width: 100%;
+    }
+
+    mat-form-field {
+        width: 100%;
+
+        .uppercase::placeholder {
+            text-transform: none;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+    }
+}

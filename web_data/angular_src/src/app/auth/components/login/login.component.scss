@@ -1,0 +1,48 @@
+@import "src/styles/scss/breakpoints.scss";
+
+.login-section {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  color: #fff;
+
+  h2 {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+  }
+
+  .login-detail {
+    @include max-mobile-up-280-down-376 () {
+      width: 270px;
+      padding: 1rem;
+    }
+
+    width: 416px;
+    display: flex;
+    flex-direction: column;
+    background-color: #1E293B;
+    padding: 3rem;
+    border-radius: 1rem;
+
+    .form-login {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .btn-sign-in {
+        height: 40px;
+      }
+
+      .mat-raised-button.mat-primary:not(.mat-button-disabled):hover {
+        background-color: #6059d9;
+      }
+
+      .mat-raised-button.mat-primary {
+        background-color: #4F46E5;
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/http_server_cpp_debug",
+            "args": ["8080", "web_data"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [
+                {
+                  "name": "LD_LIBRARY_PATH",
+                  "value": "${workspaceRoot}/core/lib/x64"
+                },
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "additionalSOLibSearchPath": "/usr/local/lib/x64",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description":  "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug"
+        },
+        {
+            "name": "Launch Binance Simulation",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/binance_simulator_service/main.py",
+            "cwd": "${workspaceFolder}/binance_simulator_service",
+            "stopOnEntry": false
+        }
+    ]
+}

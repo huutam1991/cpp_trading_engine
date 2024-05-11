@@ -1,0 +1,8 @@
+<div
+  class="toast toast-{{ toast.type }}"
+  [style.bottom.px]="i === 0 ? 50 : i * 100 + (50 + i * 65)"
+>
+  <b class="toast-heading">{{ toast.title }}</b>
+  <p class="toast-body" *ngIf="toast.body" [innerHTML]="toast.body"></p>
+  <a class="close" (click)="remove.emit(i)">&times;</a>
+</div>

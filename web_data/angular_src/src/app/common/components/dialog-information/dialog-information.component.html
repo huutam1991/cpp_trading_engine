@@ -1,0 +1,31 @@
+<mat-toolbar [ngClass]="color">
+  <mat-icon
+    svgIcon="icon-close-dialog"
+    (click)="data.negative.click()"
+  ></mat-icon>
+</mat-toolbar>
+
+<div class="message">
+  <mat-icon [svgIcon]="icon"></mat-icon>
+  <span class="title" *ngIf="data.content">{{ data.content }}</span>
+</div>
+
+<div mat-dialog-actions class="btn-dialog-actions">
+  <button
+    *ngIf="data.negative"
+    mat-stroked-button
+    class="mgr-20"
+    (click)="data.negative.click()"
+  >
+    {{ data.negative.title }}
+  </button>
+
+  <button
+    *ngIf="data.positive"
+    mat-raised-button
+    color="primary"
+    (click)="data.positive.click()"
+  >
+    {{ data.positive.title }}
+  </button>
+</div>

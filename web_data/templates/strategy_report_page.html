@@ -1,0 +1,333 @@
+<!-- <!doctype html> -->
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <title>
+      Strategy Report
+    </title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Alpha H Trading</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="scanning_market">Scanning Market</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="mm_arbitrage">MM Arbitrage</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="24h_orders_page">24h Orders</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="trade_errors_page">Trade Errors</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="excel_report_page">Excel Report</a>
+          </li>
+          <li class="nav-item active">
+            <a class="nav-link" href="strategy_report_page">Strategy Report</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="modal fade text-dark" id="modalLoginForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header text-center">
+            <h4 class="modal-title w-100 font-weight-bold">Login</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body mx-3">
+            <div class="md-form mb-3">
+              <i class="fas fa-envelope prefix grey-text"></i>
+              <input type="text" id="login_form_username" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_username">Your username</label>
+            </div>
+
+            <div class="md-form mb-1">
+              <i class="fas fa-lock prefix grey-text"></i>
+              <input type="password" id="login_form_password" class="form-control validate">
+              <label data-error="wrong" data-success="right" for="login_form_password">Your password</label>
+            </div>
+
+            <div class="md-form mb-2">
+              <label id="login_error" class="text-white" data-error="wrong" data-success="right" for="">asdad</label>
+            </div>
+
+          </div>
+          <div class="modal-footer d-flex justify-content-center">
+            <button onclick=login() class="btn btn-default">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid ml-3">
+      <!-- Title -->
+      <div class="row mt-3">
+        <div class="col-md-2">
+          <h2 style="color: white">Strategy Report</h2>
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-warning"><h5>From</h5></button>
+        </div>
+        <div class="col-md-1 mt-1">
+          <div id="datepicker_from" class="input-group date" data-date-format="mm-dd-yyyy">
+            <input class="form-control" type="text" readonly />
+            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+        </div>
+        <div class="col-md-1 mt-1">
+          <h2 id="user_id" class="text-primary"></h2>
+        </div>
+      </div>
+      <div class="row mt-4">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-1">
+          <button type="button" class="btn btn-warning"><h5>To</h5></button>
+        </div>
+        <div class="col-md-1 mt-1">
+          <div id="datepicker_to" class="input-group date" data-date-format="mm-dd-yyyy">
+            <input class="form-control" type="text" readonly />
+            <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col-md-2">
+        </div>
+        <div class="col-md-1">
+          <button onclick="export_excel()" type="button" class="btn btn-success"><h6>Export Excel</h6></button>
+        </div>
+      </div>
+      <div class="row mt-5">
+        <div class="col-md-10">
+          <table class="table table-dark">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Strategy</th>
+                <th scope="col">Symbol</th>
+                <th scope="col">User</th>
+                <th scope="col">Hit Time</th>
+                <th scope="col">Profit</th>
+              </tr>
+            </thead>
+            <tbody id="data_content">
+              <tr id="result_row">
+                <th id='index' scope="row">1</th>
+                <td id='strategy'></td>
+                <td id='symbol'></td>
+                <td id='user'></td>
+                <td id='hit_time'></td>
+                <td id='profit'></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.10.2/umd/popper.min.js" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+
+    <script>
+      var user_id;
+      var date_from;
+      var date_to;
+      var trading_result_list;
+
+      function show_login_popup() {
+        $("#modalLoginForm").modal({backdrop: 'static', keyboard: false});
+        $("#modalLoginForm").modal('show');
+      }
+
+      function login() {
+        let username = $("#login_form_username").val();
+        let password = $("#login_form_password").val();
+
+        return fetch(window.location.origin + '/login', {
+          method: 'POST',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            'username': username,
+            'password': password
+          })
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true) {
+            $("#login_error").attr("class", "text-danger");
+            $("#login_error").text(response.msg);
+          } else {
+            $("#modalLoginForm").modal('hide');
+            init();
+            show_login_success_toast(response.data.user_id);
+          }
+        })
+      };
+
+      function get_user_info() {
+        return fetch(window.location.origin + '/user_info', {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          if (response.error == true && response.status_code == 401) {
+            show_login_popup();
+            throw "error";
+          }
+          $("#user_id").text(response.data.user_id);
+          user_id = response.data.user_id;
+        })
+      }
+
+      function get_trading_result_list() {
+        return fetch(window.location.origin + '/trading_result_list?from=' + date_from + '&to=' + date_to, {
+          method: 'GET',
+          headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true,
+          }
+        })
+        .then(response => response.json())
+        .then(response => {
+          trading_result_list = response.data;
+          console.log("trading_result_list = ", trading_result_list);
+        })
+      };
+
+      function get_sample_element() {
+        result_row_sample = $('#result_row').clone();
+        $('#data_content').empty();
+      }
+
+      function show_trading_result_list() {
+        $('#data_content').empty();
+
+        for (strategy_id in trading_result_list) {
+          let strategy = trading_result_list[strategy_id];
+          for (symbol_id in strategy) {
+            let result_list = strategy[symbol_id];
+            result_list.forEach((result, index) => {
+              let result_row = result_row_sample.clone();
+
+              result_row.find('#index').text(index + 1);
+              result_row.find('#strategy').text(result.strategy_name);
+              result_row.find('#symbol').text(result.symbol_list);
+              result_row.find('#user').text(result.user_id);
+              result_row.find('#hit_time').text(result.hit_time_str);
+              result_row.find('#profit').text(result.profit);
+
+              // Strategy name
+              if (result.strategy_name == 'Market Scanning') {
+                result_row.find('#strategy').attr('class', 'text-success');
+              } else if (result.strategy_name == 'MM Arbitrage') {
+                result_row.find('#strategy').attr('class', 'text-primary');
+              }
+
+              // Profit
+              if (result.profit >= 0) {
+                result_row.find('#profit').attr('class', 'text-success');
+              } else {
+                result_row.find('#profit').attr('class', 'text-danger');
+              }
+
+              $('#data_content').append(result_row);
+            });
+          }
+        }
+      }
+
+      function export_excel() {
+        window.open(window.location.origin + '/report_trading_result?from=' + date_from + '&to=' + date_to);
+      }
+
+      function show_login_success_toast(user_id) {
+        $("#toast-title").html("Login Successfully");
+        $("#send-signal-toast-body").empty();
+        $("#send-signal-toast-body").append(
+          "User: <span class='text-primary'>" + user_id + "</span>");
+        $('#sendSignalToast').toast('show');
+      }
+
+      function init() {
+        get_user_info()
+        .then(get_sample_element)
+        .then(get_trading_result_list)
+        .then(show_trading_result_list)
+      }
+
+      window.onload=function() {
+        init();
+      }
+
+      $(document).ready(function(){
+        $("#datepicker_from").datepicker({
+          autoclose: true,
+          todayHighlight: true
+        }).datepicker('update', new Date(new Date().setDate(new Date().getDate() - 1)));
+
+        $("#datepicker_to").datepicker({
+          autoclose: true,
+          todayHighlight: true
+        }).datepicker('update', new Date());
+
+        $("#datepicker_from").change(function() {
+          var date = $(this).datepicker("getDate");
+          date_from = date.getTime();
+        });
+
+        $("#datepicker_to").change(function() {
+          var date = $(this).datepicker("getDate");
+          date_to = date.getTime() + 86400000;
+        });
+
+        // Init value for date_from + date_to
+        let date = $("#datepicker_from").datepicker("getDate");
+        date_from = date.getTime();
+        date = $("#datepicker_to").datepicker("getDate");
+        date_to = date.getTime() + 86400000;
+      });
+    </script>
+  </body>
+
+  <style>
+    body {
+      background-color: #212121;
+    }
+  </style>
+</html>
