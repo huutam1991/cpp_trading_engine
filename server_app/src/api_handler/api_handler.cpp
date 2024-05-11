@@ -53,7 +53,7 @@ std::string APIHandler::check_authentication()
 
     // Get User from user_id
     std::string user_id = payload["user_id"];
-    m_user = UserManager::instance().get_user_by_id(user_id);
+    // m_user = UserManager::instance().get_user_by_id(user_id);
 
     return res;
 }
@@ -68,10 +68,9 @@ HttpResponse APIHandler::handle()
         return HttpRequest::response_unauthorized_request_401(check_valid_token);
     }
 
-    if (m_need_check_none_source && m_user != nullptr && m_user->get_active_storage_source()->get_source_type() == SourceType::NONE)
+    if (m_need_check_none_source)
     {
-        LOG(ERROR) << "User [" + m_user->get_user_id() + "] does not have any active source, pls specify a source";
-        return HttpRequest::response_bad_request_400("User [" + m_user->get_user_id() + "] does not have any active source, pls specify a source");
+
     }
 
     // Check missing params

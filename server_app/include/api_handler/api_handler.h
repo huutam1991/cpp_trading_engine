@@ -13,7 +13,6 @@
 #include <json/json_value.h>
 #include <mongo_db/mongo_db_header.h>
 #include <mongo_db/mongo_db.h>
-#include <user_manager/user_manager.h>
 
 class APIHandler
 {
@@ -33,8 +32,6 @@ public:
     APIHandler() = delete;
     APIHandler(APIHandler&) = delete;
     APIHandler(HttpRequest* request);
-
-    std::shared_ptr<User> m_user = nullptr;
 
     void add_mandatory_params(const std::vector<std::string>& mandatory_params);
     void add_mandatory_body_params(const std::vector<std::string>& mandatory_body_params);
