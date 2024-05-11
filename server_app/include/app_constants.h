@@ -68,8 +68,8 @@ enum class SourceType
 // Trading result collection name
 #define TRADING_RESULT "trading_result"
 
-// User DB name
-#define USER_DB_NAME "user"
+// App info DB name
+#define APP_INFO_DB_NAME "app_info"
 
 // None Source
 #define NONE_DB_SOURCE_NAME "none_source"
@@ -84,7 +84,7 @@ enum class SourceType
 #define BINANCE_TESTNET_WS_URL "testnet.binance.vision"
 #define BINANCE_TESTNET_WS_PORT "443"
 
-// Binance Spot 
+// Binance Spot
 #define BINANCE_SPOT_DB_SOURCE_NAME "binance_spot"
 #define BINANCE_SPOT_URL "api.binance.com"
 #define BINANCE_SPOT_PORT "443"
