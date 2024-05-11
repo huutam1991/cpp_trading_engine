@@ -1,6 +1,9 @@
 #include <api_header.h>
 #include <data_model/data_model.h>
 
+// User
+#include <api_handler/api_handler_user/api_handler_user_register.h>
+
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 
 using namespace std;
@@ -232,6 +235,12 @@ void add_app_route()
         std::string response = ExternalRequest("www.google.com", 80, "/", RequestMethod::GET).send_request();
 
         return HttpResponse(OK_200, response);
+    };
+
+    // App's API
+    ADD_ROUTE(RequestMethod::POST, "/register_new_user")
+    {
+        return APIHandlerUserRegister(request).handle();
     };
 
 }
