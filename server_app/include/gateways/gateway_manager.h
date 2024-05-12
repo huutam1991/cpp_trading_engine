@@ -21,6 +21,7 @@ private:
     std::unordered_map<GatewayEnum, std::shared_ptr<Gateway>> m_gateways;
 
 public:
+    void init();
     std::shared_ptr<Gateway> get_gateway(GatewayEnum gateway);
 };
 

@@ -1,6 +1,7 @@
 #ifndef GATEWAY_H
 #define GATEWAY_H
 
+#include <util_macros.h>
 #include <order/order.h>
 
 class Gateway

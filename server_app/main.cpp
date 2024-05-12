@@ -11,6 +11,8 @@
 #include <jwt/jwt_manager.h>
 #include <timer.h>
 
+#include <gateways/gateway_manager.h>
+
 extern void add_app_route();
 extern void add_bad_request();
 
@@ -58,6 +60,8 @@ int main(int argc, char **argv) {
     //     CHANNEL_SCANNING_MARKET_NOTIFICATION
     // });
     // WebSocketServerType::instance().start();
+
+    GatewayManager::instance().init();
 
     // Server
     HttpsServer server(port, web_data_path);

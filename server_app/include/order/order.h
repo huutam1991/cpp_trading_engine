@@ -24,7 +24,6 @@ public:
         quantity{quantity_i}
     {}
 
-
 };
 
 #endif //ORDER_H

@@ -155,14 +155,6 @@ inline static const std::string BINANCE_SPOT_ABBREVIATION_NAME =    "BIN_SPOT";
 inline static const std::string BINANCE_FUTURES_ABBREVIATION_NAME = "BIN_FUT";
 inline static const std::string BINANCE_NAV_ABBREVIATION_NAME =     "BIN_NAV";
 
-struct Order
-{
-    std::string side;
-    std::string symbol;
-    long double price;
-    long double quantity;
-};
-
 enum Market
 {
     BINANCE_SPOT			= 0,
