@@ -8,6 +8,8 @@
 #include <api_handler/api_handler_account/api_handler_add_account.h>
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 
+#include <gateways/gateway_manager.h>
+
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 
 using namespace std;
@@ -224,9 +226,21 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/get_list_trade")
     {
         Json response;
-        response["trades"] = MongoDB::instance()
-            .set_db_and_collection("test1", "trade")
-            .find_many();
+        // response["trades"] = MongoDB::instance()
+        //     .set_db_and_collection("test1", "trade")
+        //     .find_many();
+
+        Order order(
+            "CVXUSDT",
+            Order::Side::BUY,
+            "LIMIT",
+            2.0,
+            3.5
+        );
+
+        GatewayManager::instance()
+            .get_gateway(GatewayEnum::BINANCE)
+            ->place(order);
 
         return HttpResponse(OK_200, response);
     };

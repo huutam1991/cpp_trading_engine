@@ -2,6 +2,8 @@
 #define GATEWAY_H
 
 #include <util_macros.h>
+#include <app_constants.h>
+#include <json/json.h>
 #include <order/order.h>
 
 class Gateway
