@@ -54,12 +54,6 @@ Json BinanceGateway::send_binance_request(RequestMethod method, const std::strin
     auto signature = getSignature(new_query_std);
     new_query_std += "&signature=" + getSignature(new_query_std);
 
-    ADD_LOG("new_query_std = " << new_query_std);
-    ADD_LOG("m_url = " << m_url);
-    ADD_LOG("m_port = " << m_port);
-    ADD_LOG("timestamp = " << timestamp);
-    ADD_LOG("signature = " << signature);
-
     ExternalRequestSsl binance_request(m_url, m_port, api_path + "?" + new_query_std, method);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
