@@ -9,7 +9,7 @@ void GatewayManager::init()
     ADD_LOG("Loading activate accounts:");
 
     Json activate_accounts = MongoDB::instance()
-        .set_db_and_collection(APP_INFO_DB_NAME, "activate_account")
+        .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts")
         .find_many();
 
     activate_accounts.for_each([this](Json& activate_account)

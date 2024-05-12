@@ -6,6 +6,7 @@
 
 // Account
 #include <api_handler/api_handler_account/api_handler_add_account.h>
+#include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 
@@ -250,6 +251,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/add_account")
     {
         return APIHandlerAddAccount(request).handle();
+    };
+
+    // Add activate account
+    ADD_ROUTE(RequestMethod::POST, "/add_activate_account")
+    {
+        return APIHandlerAddActivateAccount(request).handle();
     };
 
 }
