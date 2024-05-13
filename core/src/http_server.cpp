@@ -109,9 +109,9 @@ int HttpServer::accept_new_connection()
         int n;
         unsigned int m = sizeof(n);
         getsockopt(client_fd, SOL_SOCKET, SO_RCVBUF, (void *)&n, &m);
-        ADD_LOG("client_fd = " << client_fd << ", Receive buffer = " << n);
+        // ADD_LOG("client_fd = " << client_fd << ", Receive buffer = " << n);
         getsockopt(client_fd, SOL_SOCKET, SO_SNDBUF, (void *)&n, &m);
-        ADD_LOG("client_fd = " << client_fd << ", Send    buffer = " << n);
+        // ADD_LOG("client_fd = " << client_fd << ", Send    buffer = " << n);
     }
     fcntl(client_fd, F_SETFL, O_NONBLOCK);
 

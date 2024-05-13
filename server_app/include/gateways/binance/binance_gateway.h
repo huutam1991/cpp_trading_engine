@@ -3,10 +3,12 @@
 
 #include <gateways/gateway.h>
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
+#include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 
 class BinanceGateway : public Gateway
 {
     BinanceQuoterSpot m_quoter_spot;
+    BinanceQuoterPerpetual m_quoter_perpetual;
 
 public:
     BinanceGateway(const std::string& key);
