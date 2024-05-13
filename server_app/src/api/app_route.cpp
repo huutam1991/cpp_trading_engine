@@ -231,12 +231,12 @@ void add_app_route()
         //     .find_many();
 
         Order order(
-            Order::ExchangeType::SPOT,
-            "CVXUSDT",
-            Order::Side::SELL,
+            Order::ExchangeType::PERPETUAL,
+            "ETHUSDT",
+            Order::Side::BUY,
             "MARKET",
-            2.0,
-            2.497
+            2975.0,
+            0.02
         );
 
         Json order_response = GatewayManager::instance()

@@ -20,19 +20,28 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     // Get [symbol] + [quantity]
     std::string symbol;
     double quantity = 0;
+    double price = response["price"];
 
     // Get fill symbol + quantity
     if (response.has_field("symbol") && response.has_field("origQty"))
     {
         symbol = std::string(response["symbol"]);
         quantity = std::stod(std::string(response["origQty"]));
+        std::string side = std::string(response["side"]);
+
+        // Use BUY to take profit or stop loss, so symbol should be USDT
+        if (side == "BUY")
+        {
+            symbol = "USDT";
+            quantity *= price;
+        }
 
         ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity);
     }
 
     return {
         {"type", "perpetual"},
-        {"symbol", symbol + "USDT"},
+        {"symbol", symbol},
         {"quantity", quantity}
     };
 }
