@@ -26,20 +26,33 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     {
         Json fills = response["fills"];
 
-        fills.for_each([&symbol, &quantity](Json& fill)
+        fills.for_each([&](Json& fill)
         {
             ADD_LOG("fill: " << fill);
+            double f_quantity = std::stod(std::string(fill["qty"]));
+            double f_commission = std::stod(std::string(fill["commission"]));
+            double f_price = std::stod(std::string(fill["price"]));
             symbol = std::string(fill["commissionAsset"]);
-            quantity += std::stod(std::string(fill["qty"]));
-            quantity -= std::stod(std::string(fill["commission"]));
+
+            // This is BUY order
+            if (symbol != "USDT")
+            {
+                quantity += f_quantity - f_commission;
+            }
+            // This is SELL order
+            else
+            {
+                quantity += (f_quantity * f_price) - f_commission;
+            }
         });
 
         ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity);
     }
 
+
     return {
         {"type", "spot"},
-        {"symbol", symbol + "USDT"},
+        {"symbol", symbol},
         {"quantity", quantity}
     };
 }

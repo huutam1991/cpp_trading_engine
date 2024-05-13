@@ -233,10 +233,10 @@ void add_app_route()
         Order order(
             Order::ExchangeType::SPOT,
             "CVXUSDT",
-            Order::Side::BUY,
+            Order::Side::SELL,
             "MARKET",
             2.0,
-            2.5
+            2.497
         );
 
         Json order_response = GatewayManager::instance()
