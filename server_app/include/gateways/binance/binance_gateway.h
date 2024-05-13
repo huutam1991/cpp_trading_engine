@@ -21,7 +21,7 @@ private:
 
 public:
     BinanceGateway(const std::string& key);
-    virtual void place(Order order) override;
+    virtual Json place(Order order) override;
 
 };
 

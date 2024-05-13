@@ -233,16 +233,16 @@ void add_app_route()
         Order order(
             "CVXUSDT",
             Order::Side::BUY,
-            "LIMIT",
+            "MARKET",
             2.0,
-            3.5
+            7.5
         );
 
-        GatewayManager::instance()
+        Json order_response = GatewayManager::instance()
             .get_gateway(GatewayEnum::BINANCE)
             ->place(order);
 
-        return HttpResponse(OK_200, response);
+        return HttpResponse(OK_200, order_response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/external_request")

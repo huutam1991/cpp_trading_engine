@@ -9,7 +9,7 @@
 class Gateway
 {
 public:
-    virtual void place(Order order) = 0;
+    virtual Json place(Order order) = 0;
 
 };
 
