@@ -15,6 +15,7 @@ protected:
 
 public:
     BinanceQuoterSpot(const std::string& key);
+    virtual Json place(Order order);
 
 };
 

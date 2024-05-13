@@ -235,7 +235,7 @@ void add_app_route()
             Order::Side::BUY,
             "MARKET",
             2.0,
-            7.5
+            4.5
         );
 
         Json order_response = GatewayManager::instance()

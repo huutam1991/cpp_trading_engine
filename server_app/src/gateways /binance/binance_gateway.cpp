@@ -6,23 +6,9 @@ BinanceGateway::BinanceGateway(const std::string& key) : m_quoter_spot(key)
 
 Json BinanceGateway::place(Order order)
 {
-    // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
-    std::string query_str;
-    std::string side = order.side == Order::Side::BUY ? "BUY" : "SELL";
+    Json response = m_quoter_spot.place(order);
 
-    query_str += "symbol=" + order.symbol;
-    query_str += "&side=" + side;
-    query_str += "&type=" + order.type;
-    query_str += "&quantity=" + std::to_string(order.quantity);
-
-    if (order.type == "LIMIT")
-    {
-        query_str += "&timeInForce=GTC";
-        query_str += "&price=" + std::to_string(order.price);
-    }
-
-    Json response = m_quoter_spot.send_binance_request(RequestMethod::POST, "/api/v3/order", query_str);
-
+    // Get [symbol] + [quantity]
     std::string symbol;
     double quantity = 0;
 
