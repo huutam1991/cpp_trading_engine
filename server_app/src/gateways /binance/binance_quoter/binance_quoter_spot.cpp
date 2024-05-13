@@ -15,6 +15,34 @@ std::string& BinanceQuoterSpot::get_port()
     return m_port;
 }
 
+Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
+{
+    // Get [symbol] + [quantity]
+    std::string symbol;
+    double quantity = 0;
+
+    // Get fill symbol + quantity
+    if (response.has_field("fills"))
+    {
+        Json fills = response["fills"];
+
+        fills.for_each([&symbol, &quantity](Json& fill)
+        {
+            ADD_LOG("fill: " << fill);
+            symbol = std::string(fill["commissionAsset"]);
+            quantity += std::stod(std::string(fill["qty"]));
+            quantity -= std::stod(std::string(fill["commission"]));
+        });
+
+        ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity);
+    }
+
+    return {
+        {"symbol", symbol + "USDT"},
+        {"quantity", quantity}
+    };
+}
+
 Json BinanceQuoterSpot::place(Order order)
 {
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY

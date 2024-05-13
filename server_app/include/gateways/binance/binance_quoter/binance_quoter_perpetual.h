@@ -15,6 +15,8 @@ protected:
 
 public:
     BinanceQuoterPerpetual(const std::string& key);
+
+    virtual Json get_trade_result_from_response(Json& response);
     virtual Json place(Order order);
 
 };

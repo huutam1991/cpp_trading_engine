@@ -15,6 +15,25 @@ std::string& BinanceQuoterPerpetual::get_port()
     return m_port;
 }
 
+Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
+{
+    // Get [symbol] + [quantity]
+    std::string symbol;
+    double quantity = 0;
+
+    // Get fill symbol + quantity
+    if (response.has_field("symbol") && response.has_field("origQty"))
+    {
+        symbol = std::string(response["symbol"]);
+        quantity = std::stod(std::string(response["origQty"]));
+    }
+
+    return {
+        {"symbol", symbol + "USDT"},
+        {"quantity", quantity}
+    };
+}
+
 Json BinanceQuoterPerpetual::place(Order order)
 {
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
