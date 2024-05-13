@@ -12,6 +12,5 @@ Json BinanceGateway::place(Order order)
         (BinanceQuoter*)&m_quoter_perpetual;
 
     Json response = quoter->place(order);
-    ADD_LOG("response:" << response);
     return quoter->get_trade_result_from_response(response);
 }

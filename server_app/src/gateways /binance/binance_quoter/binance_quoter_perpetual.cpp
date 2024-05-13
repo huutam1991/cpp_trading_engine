@@ -26,6 +26,8 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     {
         symbol = std::string(response["symbol"]);
         quantity = std::stod(std::string(response["origQty"]));
+
+        ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity);
     }
 
     return {
