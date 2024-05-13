@@ -38,6 +38,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     }
 
     return {
+        {"type", "spot"},
         {"symbol", symbol + "USDT"},
         {"quantity", quantity}
     };

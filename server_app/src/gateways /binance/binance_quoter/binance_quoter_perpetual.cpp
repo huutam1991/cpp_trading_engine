@@ -29,6 +29,7 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     }
 
     return {
+        {"type", "perpetual"},
         {"symbol", symbol + "USDT"},
         {"quantity", quantity}
     };
@@ -43,16 +44,13 @@ Json BinanceQuoterPerpetual::place(Order order)
     query_str += "symbol=" + order.symbol;
     query_str += "&side=" + side;
     query_str += "&type=" + order.type;
-    // query_str += "&quantity=" + std::to_string(order.quantity);
-    query_str += "&quantity=0.3";
+    query_str += "&quantity=" + std::to_string(order.quantity);
 
     if (order.type == "LIMIT")
     {
         query_str += "&timeInForce=GTC";
         query_str += "&price=" + std::to_string(order.price);
     }
-
-    ADD_LOG("query_str: " << query_str);
 
     return send_binance_request(RequestMethod::POST, "/fapi/v1/order", query_str);
 }

@@ -6,7 +6,12 @@ BinanceGateway::BinanceGateway(const std::string& key) : m_quoter_spot(key), m_q
 
 Json BinanceGateway::place(Order order)
 {
-    Json response = m_quoter_perpetual.place(order);
+    // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
+    BinanceQuoter* quoter = order.exchange_type == Order::ExchangeType::SPOT ?
+        (BinanceQuoter*)&m_quoter_spot :
+        (BinanceQuoter*)&m_quoter_perpetual;
 
-    return m_quoter_perpetual.get_trade_result_from_response(response);
+    Json response = quoter->place(order);
+    ADD_LOG("response:" << response);
+    return quoter->get_trade_result_from_response(response);
 }
