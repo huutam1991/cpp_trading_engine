@@ -4,7 +4,7 @@
 #include <gateways/gateway.h>
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
-#include <gateways/binance/binance_market_data.h>
+#include <gateways/binance/binance_market_data/binance_market_data.h>
 
 class BinanceGateway : public Gateway
 {
@@ -13,7 +13,8 @@ class BinanceGateway : public Gateway
     BinanceQuoterPerpetual m_quoter_perpetual;
 
     // Market data
-    BinanceMarketData m_market_data;
+    BinanceMarketData m_market_data_sport;
+    BinanceMarketData m_market_data_perpetual;
 
 public:
     BinanceGateway(const std::string& key);

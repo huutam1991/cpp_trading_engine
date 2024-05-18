@@ -1,6 +1,8 @@
-#include <gateways/binance/binance_market_data.h>
+#include <gateways/binance/binance_market_data/binance_market_data.h>
 
-BinanceMarketData::BinanceMarketData(const std::string& symbol):
+BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port, const std::string& symbol):
+    m_url(url),
+    m_port(port),
     m_symbol(symbol)
 {
 }
@@ -13,7 +15,7 @@ BinanceMarketData::~BinanceMarketData()
 void BinanceMarketData::start()
 {
     //check_ws_url_base_on_back_testing();
-    m_websocket = std::make_shared<WebsocketClient>(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT, "/ws");
+    m_websocket = std::make_shared<WebsocketClient>(m_url, m_port, "/ws");
 
     m_websocket->on_connect([this](WebsocketClientHandle& ws)
     {
@@ -83,7 +85,7 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {
         // symbol
-        depth["s"] = BINANCE_SPOT_ABBREVIATION_NAME + "#" + m_symbol;
+        depth["s"] = m_symbol;
         // event name
         depth["e"] = "depthUpdate";
 

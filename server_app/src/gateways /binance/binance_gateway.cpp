@@ -3,18 +3,29 @@
 BinanceGateway::BinanceGateway(const std::string& key) :
     m_quoter_spot(key),
     m_quoter_perpetual(key),
-    m_market_data("BTCUSDT")
+    m_market_data_sport(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT, "BTCUSDT"),
+    m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT, "BTCUSDT")
 {
-    m_market_data.set_call_back([this](const std::string& symbol, Json& payload)
+    // Spot
+    m_market_data_sport.set_call_back([this](const std::string& symbol, Json& payload)
     {
         this->on_depth_update(symbol, payload);
     });
-    m_market_data.start();
+    m_market_data_sport.start();
+
+    // Perpetual
+    // m_market_data_perpetual.set_call_back([this](const std::string& symbol, Json& payload)
+    // {
+    //     this->on_depth_update(symbol, payload);
+    // });
+    // m_market_data_perpetual.start();
 }
 
 void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
 {
-    ADD_LOG("On depth update - symbol: " << symbol << " - depth: " << payload);
+    double best_bid = payload["bids"][0][0];
+    double best_ask = payload["asks"][0][0];
+    ADD_LOG("On depth update - symbol: " << symbol << " - best_bid: " << best_bid << " - best_ask: " << best_ask);
 }
 
 Json BinanceGateway::place(Order order)
