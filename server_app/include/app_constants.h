@@ -71,6 +71,9 @@ enum class SourceType
 // App info DB name
 #define APP_INFO_DB_NAME "app_info"
 
+// Strategy DB name
+#define STRATEGY_DB_NAME "strategy"
+
 // None Source
 #define NONE_DB_SOURCE_NAME "none_source"
 
