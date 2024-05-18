@@ -2,6 +2,7 @@
 #define DATA_MODEL_H
 
 #include <vector>
+#include <unordered_map>
 #include <memory>
 #include <functional>
 
@@ -16,15 +17,15 @@ public:
     DataModel(const DataModel& copy);
     DataModel(const std::string& db, const std::string& collection);
     DataModel(const std::string& db, const std::string& collection, const std::string& id);
-    
+
     DataModel& operator=(const Json& json);
     DataModel& operator=(const DataModel& copy);
     DataField& operator[](const char* key);
     DataField& operator[](const std::string& key);
 
-    operator Json();  
+    operator Json();
     Json& get_data();
-    
+
     friend std::ostream& operator<<(std::ostream& cout, const DataModel& data_model);
 
     template<class T>
@@ -46,6 +47,7 @@ public:
 
     void set_callback(std::function<void(Json&)> callback);
     static std::vector<DataModel> get_data_model_list(const std::string& db, const std::string& collection);
+    static std::unordered_map<std::string, DataModel> get_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name);
 
 protected:
     std::string m_id = "-1";
@@ -64,7 +66,7 @@ private:
 
     bool m_has_checked_counter = false;
     DataField m_data_field = DataField(this);
-    std::function<void(Json&)> m_callback = nullptr; 
+    std::function<void(Json&)> m_callback = nullptr;
 };
 
 template<class T>

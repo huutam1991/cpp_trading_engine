@@ -109,6 +109,22 @@ void add_app_route()
         return HttpResponse(OK_200, response);
     };
 
+    ADD_ROUTE(RequestMethod::GET, "/test_new_data_model")
+    {
+        Json user = {
+            {"name", "tam_pattern"},
+            {"age", 33},
+            {"role", "Trading Engine Developer"},
+            {"company", "Pattern Research"},
+            {"skills", "C++, Rust, gRPC, Bazel, NixOS"},
+        };
+
+        DataModel dm("test_data_model", "user");
+        dm = user;
+
+        return HttpResponse(OK_200, dm.get_data());
+    };
+
     ADD_ROUTE(RequestMethod::GET, "/test_data_model")
     {
         Json user = {
@@ -145,6 +161,15 @@ void add_app_route()
         response["company"] = (Json)dm["company"]["Tech stack"];
 
         return HttpResponse(OK_200, response);
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/test_data_model_get_map")
+    {
+        std::string name = request->get_query_param("name");
+        std::unordered_map<std::string, DataModel> users = DataModel::get_data_model_map("test_data_model", "user", "name");
+        DataModel a = users[name];
+
+        return HttpResponse(OK_200, a.get_data());
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_clone")

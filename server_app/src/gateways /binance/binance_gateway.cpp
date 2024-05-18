@@ -7,11 +7,11 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT, "BTCUSDT")
 {
     // Spot
-    m_market_data_sport.set_call_back([this](const std::string& symbol, Json& payload)
-    {
-        this->on_depth_update(symbol, payload);
-    });
-    m_market_data_sport.start();
+    // m_market_data_sport.set_call_back([this](const std::string& symbol, Json& payload)
+    // {
+    //     this->on_depth_update(symbol, payload);
+    // });
+    // m_market_data_sport.start();
 
     // Perpetual
     // m_market_data_perpetual.set_call_back([this](const std::string& symbol, Json& payload)
