@@ -25,7 +25,7 @@ void BinanceMarketData::start()
         STRING_LOWER_CASE(lower_case_symbol);
 
         Json params;
-        params[0] = lower_case_symbol + "@depth5@100ms";
+        params[0] = lower_case_symbol + "@depth5@1000ms";
 
         Json subcribe;
         subcribe["method"] = "SUBSCRIBE";

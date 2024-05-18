@@ -1,7 +1,20 @@
 #include <gateways/binance/binance_gateway.h>
 
-BinanceGateway::BinanceGateway(const std::string& key) : m_quoter_spot(key), m_quoter_perpetual(key)
+BinanceGateway::BinanceGateway(const std::string& key) :
+    m_quoter_spot(key),
+    m_quoter_perpetual(key),
+    m_market_data("BTCUSDT")
 {
+    m_market_data.set_call_back([this](const std::string& symbol, Json& payload)
+    {
+        this->on_depth_update(symbol, payload);
+    });
+    m_market_data.start();
+}
+
+void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
+{
+    ADD_LOG("On depth update - symbol: " << symbol << " - depth: " << payload);
 }
 
 Json BinanceGateway::place(Order order)

@@ -4,15 +4,23 @@
 #include <gateways/gateway.h>
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
+#include <gateways/binance/binance_market_data.h>
 
 class BinanceGateway : public Gateway
 {
+    // Quoter
     BinanceQuoterSpot m_quoter_spot;
     BinanceQuoterPerpetual m_quoter_perpetual;
+
+    // Market data
+    BinanceMarketData m_market_data;
 
 public:
     BinanceGateway(const std::string& key);
     virtual Json place(Order order) override;
+
+private:
+    void on_depth_update(const std::string& symbol, Json& payload);
 
 };
 
