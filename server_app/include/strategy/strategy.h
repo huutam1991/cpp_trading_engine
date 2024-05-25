@@ -10,6 +10,13 @@ class Strategy
 {
     Singleton(Strategy)
 
+private:
+    std::string m_symbol;
+    double m_volumn;
+    double m_move_price;
+
+    bool m_is_running = false;
+
 public:
     void init();
 };

@@ -6,6 +6,9 @@
 void Strategy::init()
 {
     // Load current strategy info
+    Json config = MongoDB::instance()
+        .set_db_and_collection(STRATEGY_DB_NAME, "config")
+        .find_any();
 
-
+    ADD_LOG("Strategy config: " << config);
 }
