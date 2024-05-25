@@ -58,6 +58,11 @@ void Strategy::start()
     {
         current_checkpoint["is_current_checkpoint"] = true;
     }
+    else
+    {
+        DataModel new_checkpoint = m_checkpoints->create_checkpoint_data_model(m_current_price);
+        new_checkpoint["is_current_checkpoint"] = true;
+    }
 }
 
 void Strategy::stop()

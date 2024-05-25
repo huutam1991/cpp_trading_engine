@@ -24,12 +24,12 @@ class CheckPoints
 private:
     std::string get_collection_name();
     std::string get_checkpoint_id(double price);
-    DataModel create_checkpoint_data_model(double price);
 
 public:
     CheckPoints(const std::string symbol, double volumn, double move_price);
 
     DataModel get_current_checkpoint();
+    DataModel create_checkpoint_data_model(double price);
 };
 
 #endif //CHECK_POINTS_H

@@ -54,6 +54,9 @@ DataModel CheckPoints::create_checkpoint_data_model(double price)
         {"is_current_checkpoint", false},
     };
 
+    // Add to [m_checkpoint_list]
+    m_checkpoint_list.insert(std::make_pair(checkpoint_id, checkpoint));
+
     return checkpoint;
 }
 
