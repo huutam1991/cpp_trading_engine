@@ -16,13 +16,6 @@ include_directories(core/include)
 include_directories(server_app/include)
 include_directories(server_app/src)
 
-# Link to lib.so base on environments
-if(DEFINED ENV{ARM64})
-    link_directories(core/lib/arm64)
-else()
-    link_directories(core/lib/x64)
-endif()
-
 # Header files
 file (GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/core/*.h
@@ -47,7 +40,6 @@ list(FILTER SRC_FILES EXCLUDE REGEX "server_app/src/trading_strategy/.*")
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SRC_FILES})
 
 target_link_libraries(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE -lxl)
 target_link_libraries(${PROJECT_NAME} PRIVATE mongo::bsoncxx_shared)
 target_link_libraries(${PROJECT_NAME} PRIVATE mongo::mongocxx_shared)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto OpenSSL::SSL)
