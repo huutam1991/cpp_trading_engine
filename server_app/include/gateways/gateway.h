@@ -8,8 +8,13 @@
 
 class Gateway
 {
+protected:
+    std::function<void(double)> m_price_update_callback;
+
 public:
-    virtual Json place(Order order) = 0;
+    void register_price_update(std::function<void(double)> price_update_callback);
+
+    virtual Json place(Order order);
 
 };
 

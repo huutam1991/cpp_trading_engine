@@ -1,4 +1,5 @@
 #include <strategy/strategy.h>
+#include <gateways/gateway_manager.h>
 #include <mongo_db/mongo_db.h>
 #include <json/json.h>
 #include <app_constants.h>
@@ -24,7 +25,14 @@ void Strategy::init()
 
     // Load checkpoints
     m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price);
-
     DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
     ADD_LOG("current_checkpoint: " << current_checkpoint);
+
+    // Add price callback
+    GatewayManager::instance()
+        .get_gateway(GatewayEnum::BINANCE)
+        ->register_price_update([](double price)
+        {
+            ADD_LOG("Strategy: " << " - best_bid: " << price);
+        });
 }
