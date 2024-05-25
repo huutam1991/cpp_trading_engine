@@ -27,7 +27,7 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     double best_ask = payload["asks"][0][0];
     ADD_LOG("On depth update - symbol: " << symbol << " - best_bid: " << best_bid << " - best_ask: " << best_ask);
 
-    m_price_update_callback(best_bid);
+    m_price_update_callback(best_ask);
 }
 
 Json BinanceGateway::place(Order order)

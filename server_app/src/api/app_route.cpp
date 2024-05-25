@@ -12,6 +12,7 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 
 #include <gateways/gateway_manager.h>
+#include <strategy/strategy.h>
 
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 
@@ -303,8 +304,23 @@ void add_app_route()
     };
 
     // Update strategy's config
-    ADD_ROUTE(RequestMethod::POST, "/update_strategy_config")
+    ADD_ROUTE(RequestMethod::POST, "/strategy_config")
     {
         return APIHandlerStrategyConfig(request).handle();
+    };
+
+    // Get strategy's config
+    ADD_ROUTE(RequestMethod::GET, "/strategy_config")
+    {
+        return APIHandlerStrategyConfig(request).handle();
+    };
+
+    // Update strategy's config
+    ADD_ROUTE(RequestMethod::GET, "/current_price")
+    {
+        Json response;
+        response["current_price"] = Strategy::instance().get_current_price();
+
+        return HttpResponse(OK_200, response);
     };
 }

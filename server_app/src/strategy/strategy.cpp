@@ -31,8 +31,18 @@ void Strategy::init()
     // Add price callback
     GatewayManager::instance()
         .get_gateway(GatewayEnum::BINANCE)
-        ->register_price_update([](double price)
+        ->register_price_update([this](double price)
         {
-            ADD_LOG("Strategy: " << " - best_bid: " << price);
+            this->update(price);
         });
+}
+
+void Strategy::update(double price)
+{
+    m_current_price = price;
+}
+
+double Strategy::get_current_price()
+{
+    return m_current_price;
 }
