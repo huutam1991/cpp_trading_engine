@@ -17,7 +17,7 @@ class CheckPoints
 
     // // Size
     // double m_volumn;
-    // double m_move_value;
+    // double m_move_price;
 
     // // Current positions
     // double m_buy_spot;
