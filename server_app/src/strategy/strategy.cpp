@@ -21,4 +21,7 @@ void Strategy::init()
     ADD_LOG("- volumn: " << m_volumn);
     ADD_LOG("- move_price: " << m_move_price);
     ADD_LOG("- is_running: " << m_is_running);
+
+    // Load checkpoints
+    m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price);
 }

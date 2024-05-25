@@ -31,9 +31,11 @@ class CheckPoints
     // bool m_is_current_checkpoint = false;
 
     std::unordered_map<std::string, DataModel> m_checkpoint_list;
+    std::string m_collection_name;
 
 public:
     CheckPoints(const std::string symbol, double volumn, double move_price);
+    std::string get_collection_name();
 };
 
 #endif //CHECK_POINTS_H

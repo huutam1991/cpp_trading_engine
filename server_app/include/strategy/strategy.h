@@ -6,6 +6,8 @@
 #include <json/json.h>
 #include <data_model/data_model.h>
 
+#include <strategy/check_points.h>
+
 class Strategy
 {
     Singleton(Strategy)
@@ -16,6 +18,9 @@ private:
     double m_move_price;
 
     bool m_is_running = false;
+
+    // Checkpoints
+    std::shared_ptr<CheckPoints> m_checkpoints;
 
 public:
     void init();
