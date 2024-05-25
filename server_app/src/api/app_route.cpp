@@ -8,6 +8,9 @@
 #include <api_handler/api_handler_account/api_handler_add_account.h>
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 
+// Strategy
+#include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
+
 #include <gateways/gateway_manager.h>
 
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
@@ -299,4 +302,9 @@ void add_app_route()
         return APIHandlerAddActivateAccount(request).handle();
     };
 
+    // Update strategy's config
+    ADD_ROUTE(RequestMethod::POST, "/update_strategy_config")
+    {
+        return APIHandlerStrategyConfig(request).handle();
+    };
 }
