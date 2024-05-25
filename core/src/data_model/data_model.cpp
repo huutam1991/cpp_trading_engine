@@ -89,7 +89,7 @@ void DataModel::save_to_DB()
     }
     else
     {
-        if (m_has_checked_counter == false)
+        if (m_has_checked_available == false)
         {
             size_t count = query.count_documents("_id", bsoncxx::oid(m_id));
             if (count == 0)
@@ -101,7 +101,7 @@ void DataModel::save_to_DB()
                 query.replace_one("_id", bsoncxx::oid(m_id), *m_data);
             }
 
-            m_has_checked_counter = true;
+            m_has_checked_available = true;
         }
         else
         {

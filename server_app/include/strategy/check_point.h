@@ -17,8 +17,8 @@ class CheckPoint
     double m_sell_perpetual;
 
     // For accounting
-    double m_profit;
-    size_t m_visit_time;
+    double m_total_profit;
+    size_t m_visit_times;
 
 public:
     void save_to_db();

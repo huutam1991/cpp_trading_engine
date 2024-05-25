@@ -64,7 +64,7 @@ private:
     void get_from_DB();
     void check_invoke_callback();
 
-    bool m_has_checked_counter = false;
+    bool m_has_checked_available = false;
     DataField m_data_field = DataField(this);
     std::function<void(Json&)> m_callback = nullptr;
 };
