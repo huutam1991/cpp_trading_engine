@@ -49,6 +49,11 @@ void DataModel::get_from_DB()
         .find_one("_id", bsoncxx::oid(m_id));
 }
 
+bool DataModel::is_null()
+{
+    return m_data->is_null();
+}
+
 DataModel::operator Json()
 {
     return *m_data;

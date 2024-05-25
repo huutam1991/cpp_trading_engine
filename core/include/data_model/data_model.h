@@ -24,6 +24,8 @@ public:
     DataField& operator[](const char* key);
     DataField& operator[](const std::string& key);
 
+
+    bool is_null();
     operator Json();
     Json& get_data();
 
