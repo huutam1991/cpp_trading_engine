@@ -44,7 +44,7 @@ HttpResponse APIHandlerStrategyConfig::child_handle()
         }
 
         // Re-init Strategy with new config
-        Strategy::instance().init();
+        Strategy::instance().on_config_change();
 
         // Response
         response["data"] = config;

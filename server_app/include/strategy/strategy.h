@@ -25,8 +25,12 @@ private:
     // Checkpoints
     std::shared_ptr<CheckPoints> m_checkpoints;
 
+    void start();
+    void stop();
+
 public:
     void init();
+    void on_config_change();
     void update(double price);
 
     double get_current_price();

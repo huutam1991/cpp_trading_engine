@@ -25,8 +25,6 @@ void Strategy::init()
 
     // Load checkpoints
     m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price);
-    DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
-    ADD_LOG("current_checkpoint: " << current_checkpoint);
 
     // Add price callback
     GatewayManager::instance().get_gateway(GatewayEnum::BINANCE)
@@ -34,6 +32,43 @@ void Strategy::init()
         {
             this->update(price);
         });
+}
+
+void Strategy::on_config_change()
+{
+    // Re-init config
+    init();
+
+    // Check start-stop
+    if (m_is_running)
+    {
+        start();
+    }
+    else
+    {
+        stop();
+    }
+}
+
+void Strategy::start()
+{
+    DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
+
+    if (current_checkpoint.is_null() == false)
+    {
+        current_checkpoint["is_current_checkpoint"] = true;
+    }
+}
+
+void Strategy::stop()
+{
+    DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
+    ADD_LOG("current_checkpoint: " << current_checkpoint);
+
+    if (current_checkpoint.is_null() == false)
+    {
+        current_checkpoint["is_current_checkpoint"] = false;
+    }
 }
 
 void Strategy::update(double price)
