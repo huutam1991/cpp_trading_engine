@@ -1,5 +1,6 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <mongo_db/mongo_db.h>
+#include <strategy/strategy.h>
 
 APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHandler(request)
 {
@@ -41,6 +42,9 @@ HttpResponse APIHandlerStrategyConfig::child_handle()
             std::string _id = current_config["_id"]["$oid"];
             query.replace_one("_id", bsoncxx::oid(_id), config);
         }
+
+        // Re-init Strategy with new config
+        Strategy::instance().init();
 
         // Response
         response["data"] = config;

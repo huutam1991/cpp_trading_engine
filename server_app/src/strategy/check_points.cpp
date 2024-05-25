@@ -71,5 +71,5 @@ DataModel CheckPoints::get_current_checkpoint()
         }
     }
 
-    return create_checkpoint_data_model(m_current_price);
+    return DataModel(JsonNull());
 }

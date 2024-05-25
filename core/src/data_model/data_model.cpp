@@ -6,6 +6,11 @@ DataModel::DataModel()
     m_data = std::make_shared<Json>();
 }
 
+DataModel::DataModel(JsonNull)
+{
+    m_data = std::make_shared<Json>(JsonNull());
+}
+
 DataModel::DataModel(const DataModel& copy) : m_db(copy.m_db), m_collection(copy.m_collection), m_id(copy.m_id), m_data(copy.m_data)
 {
 }

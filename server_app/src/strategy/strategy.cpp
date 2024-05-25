@@ -29,8 +29,7 @@ void Strategy::init()
     ADD_LOG("current_checkpoint: " << current_checkpoint);
 
     // Add price callback
-    GatewayManager::instance()
-        .get_gateway(GatewayEnum::BINANCE)
+    GatewayManager::instance().get_gateway(GatewayEnum::BINANCE)
         ->register_price_update([this](double price)
         {
             this->update(price);
