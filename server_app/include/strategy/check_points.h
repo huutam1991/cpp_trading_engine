@@ -11,31 +11,25 @@ class CheckPoints
     // Data fields
 
     // // Id
-    // std::string m_symbol;
-    // double m_price;
-    // std::string m_checkpoint_id; // m_checkpoint_id = m_symbol + "_" + std::to_string(m_price)
+    std::string m_symbol;
+    double m_current_price = 2800.0;
 
     // // Size
-    // double m_volumn;
-    // double m_move_price;
-
-    // // Current positions
-    // double m_buy_spot;
-    // double m_sell_perpetual;
-
-    // // For accounting
-    // double m_total_profit;
-    // size_t m_visit_times;
-
-    // // Is active checkpoint
-    // bool m_is_current_checkpoint = false;
+    double m_volumn;
+    double m_move_price;
 
     std::unordered_map<std::string, DataModel> m_checkpoint_list;
     std::string m_collection_name;
 
+private:
+    std::string get_collection_name();
+    std::string get_checkpoint_id(double price);
+    DataModel create_checkpoint_data_model(double price);
+
 public:
     CheckPoints(const std::string symbol, double volumn, double move_price);
-    std::string get_collection_name();
+
+    DataModel get_current_checkpoint();
 };
 
 #endif //CHECK_POINTS_H

@@ -24,4 +24,7 @@ void Strategy::init()
 
     // Load checkpoints
     m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price);
+
+    DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
+    ADD_LOG("current_checkpoint: " << current_checkpoint);
 }
