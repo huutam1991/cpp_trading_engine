@@ -43,8 +43,8 @@ class SimpleGuard
     bool* m_value;
 
 public:
-    SimpleGuard(bool* value) { m_value = value; *m_value = true;  ADD_LOG("SimpleGuard start"); }
-    ~SimpleGuard() { *m_value = false;   ADD_LOG("SimpleGuard stop");}
+    SimpleGuard(bool* value) { m_value = value; *m_value = true; }
+    ~SimpleGuard() { *m_value = false; }
 };
 
 #endif //STRATEGY_H
