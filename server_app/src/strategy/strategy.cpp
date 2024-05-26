@@ -1,3 +1,5 @@
+
+
 #include <strategy/strategy.h>
 #include <gateways/gateway_manager.h>
 #include <mongo_db/mongo_db.h>
@@ -6,6 +8,8 @@
 
 void Strategy::init()
 {
+    SimpleGuard g(&m_is_init);
+
     // Load current strategy info
     Json config = MongoDB::instance()
         .set_db_and_collection(STRATEGY_DB_NAME, "config")
@@ -81,6 +85,9 @@ void Strategy::stop()
 
 void Strategy::update(double price)
 {
+    // Dont do update when strategy is init
+    if (m_is_init == true) return;
+
     m_current_price = price;
 }
 

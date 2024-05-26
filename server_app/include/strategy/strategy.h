@@ -22,6 +22,7 @@ private:
     // Status
     double m_current_price = -1.0;
     bool m_is_running = false;
+    bool m_is_init = false;
 
     // Checkpoints
     std::shared_ptr<CheckPoints> m_checkpoints;
@@ -35,6 +36,15 @@ public:
     void update(double price);
 
     double get_current_price();
+};
+
+class SimpleGuard
+{
+    bool* m_value;
+
+public:
+    SimpleGuard(bool* value) { m_value = value; *m_value = true;  ADD_LOG("SimpleGuard start"); }
+    ~SimpleGuard() { *m_value = false;   ADD_LOG("SimpleGuard stop");}
 };
 
 #endif //STRATEGY_H
