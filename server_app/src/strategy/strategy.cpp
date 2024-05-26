@@ -39,8 +39,6 @@ void Strategy::init()
         this->update(price);
     });
     gateway->subscribe_symbol(m_symbol);
-
-    ADD_LOG("Balances: " << gateway->get_balances());
 }
 
 void Strategy::on_config_change()

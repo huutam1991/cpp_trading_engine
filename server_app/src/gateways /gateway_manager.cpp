@@ -16,8 +16,9 @@ void GatewayManager::init()
     {
         std::string exchange = activate_account["exchange"];
         std::string key = activate_account["key"];
+        GatewayEnum gateway_enum = gateway_name_to_enum(exchange);
 
-        if (exchange == "binance")
+        if (gateway_enum == GatewayEnum::BINANCE)
         {
             m_gateways.insert(std::make_pair(GatewayEnum::BINANCE, std::make_shared<BinanceGateway>(key)));
         }
@@ -28,6 +29,23 @@ void GatewayManager::init()
     });
 }
 
+GatewayEnum GatewayManager::gateway_name_to_enum(const std::string& gateway)
+{
+    if (gateway == "binance")
+    {
+        return GatewayEnum::BINANCE;
+    }
+    else if (gateway == "coinbase")
+    {
+        return GatewayEnum::COINBASE;
+    }
+    // Default is BINANCE
+    else
+    {
+       return GatewayEnum::BINANCE;
+    }
+}
+
 std::shared_ptr<Gateway> GatewayManager::get_gateway(GatewayEnum gateway_enum)
 {
     if (m_gateways.find(gateway_enum) != m_gateways.end())
@@ -36,4 +54,10 @@ std::shared_ptr<Gateway> GatewayManager::get_gateway(GatewayEnum gateway_enum)
     }
 
     return std::shared_ptr<Gateway>(nullptr);
+}
+
+std::shared_ptr<Gateway> GatewayManager::get_gateway(const std::string& gateway)
+{
+    GatewayEnum gateway_enum = gateway_name_to_enum(gateway);
+    return get_gateway(gateway_enum);
 }

@@ -63,5 +63,18 @@ Json BinanceGateway::place(Order order)
 
 Json BinanceGateway::get_balances()
 {
-    return m_quoter_spot.get_balances();
+    Json balances = m_quoter_spot.get_balances();
+    balances.for_each([](Json& balance)
+    {
+        balance["available"] = balance["free"];
+
+        balance.remove_field("btcValuation");
+        balance.remove_field("withdrawing");
+        balance.remove_field("ipoable");
+        balance.remove_field("locked");
+        balance.remove_field("freeze");
+        balance.remove_field("free");
+    });
+
+    return balances;
 }

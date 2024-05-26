@@ -7,6 +7,7 @@
 // Account
 #include <api_handler/api_handler_account/api_handler_add_account.h>
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
+#include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 
 // Strategy
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
@@ -301,6 +302,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/add_activate_account")
     {
         return APIHandlerAddActivateAccount(request).handle();
+    };
+
+    // Add activate account
+    ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
+    {
+        return APIHandlerActivateAccountBalances(request).handle();
     };
 
     // Update strategy's config
