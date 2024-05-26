@@ -4,7 +4,7 @@
 
 APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHandler(request)
 {
-    add_mandatory_body_params({"symbol", "volumn", "move_price", "is_running"});
+    add_mandatory_body_params({"symbol", "volumn", "move_price", "is_running", "sell_buy_ratio"});
 }
 
 HttpResponse APIHandlerStrategyConfig::child_handle()

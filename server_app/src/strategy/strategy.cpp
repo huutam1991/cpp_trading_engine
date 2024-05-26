@@ -14,6 +14,7 @@ void Strategy::init()
     m_symbol = std::string(config["symbol"]);
     m_volumn = config["volumn"];
     m_move_price = config["move_price"];
+    m_sell_buy_ratio = config["sell_buy_ratio"];
     m_is_running = config["is_running"];
 
     // Log config
@@ -21,10 +22,11 @@ void Strategy::init()
     ADD_LOG("- symbol: " << m_symbol);
     ADD_LOG("- volumn: " << m_volumn);
     ADD_LOG("- move_price: " << m_move_price);
+    ADD_LOG("- sell_buy_ratio: " << m_sell_buy_ratio);
     ADD_LOG("- is_running: " << m_is_running);
 
     // Load checkpoints
-    m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price);
+    m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price, m_sell_buy_ratio);
 
     // Add price callback + subscribe to symbol
     auto gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);

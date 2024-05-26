@@ -17,6 +17,7 @@ private:
     std::string m_symbol;
     double m_volumn;
     double m_move_price;
+    double m_sell_buy_ratio;
 
     // Status
     double m_current_price = -1.0;

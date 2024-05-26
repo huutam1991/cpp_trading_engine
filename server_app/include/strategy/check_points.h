@@ -10,13 +10,14 @@ class CheckPoints
 {
     // Data fields
 
-    // // Id
+    // Id
     std::string m_symbol;
     double m_current_price = 2800.0;
 
-    // // Size
+    // Size
     double m_volumn;
     double m_move_price;
+    double m_sell_buy_ratio;
 
     std::unordered_map<std::string, DataModel> m_checkpoint_list;
     std::string m_collection_name;
@@ -26,7 +27,7 @@ private:
     std::string get_checkpoint_id(double price);
 
 public:
-    CheckPoints(const std::string symbol, double volumn, double move_price);
+    CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
 
     DataModel get_current_checkpoint();
     DataModel create_checkpoint_data_model(double price);
