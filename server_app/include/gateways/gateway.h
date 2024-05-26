@@ -14,9 +14,11 @@ protected:
 public:
     void register_price_update(std::function<void(double)> price_update_callback);
 
-    virtual void subscribe_symbol(const std::string& symbol);
-    virtual Json place(Order order);
+    virtual void subscribe_symbol(const std::string& symbol) = 0;
+    virtual Json place(Order order) = 0;
 
+    // Util methods
+    virtual Json get_balances() = 0;
 };
 
 #endif //GATEWAY_H

@@ -16,6 +16,11 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
     ADD_LOG("Binance account - m_is_testnet: " << m_is_testnet);
 }
 
+Json BinanceQuoter::get_balances()
+{
+    return send_binance_request(RequestMethod::POST, "/sapi/v3/asset/getUserAsset", "");
+}
+
 std::string BinanceQuoter::getTimestamp()
 {
 	long long ms_since_epoch = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

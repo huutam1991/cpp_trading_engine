@@ -32,5 +32,5 @@ HttpResponse APIHandlerAddAccount::child_handle()
         response["error"] = false;
     }
 
-    return HttpResponse(OK_200, response);;
+    return HttpResponse(OK_200, response);
 }

@@ -21,6 +21,7 @@ public:
 
     virtual void subscribe_symbol(const std::string& symbol);
     virtual Json place(Order order) override;
+    virtual Json get_balances();
 
 private:
     void on_depth_update(const std::string& symbol, Json& payload);

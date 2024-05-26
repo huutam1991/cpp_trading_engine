@@ -23,6 +23,8 @@ protected:
 public:
     BinanceQuoter(const std::string& key);
 
+    Json get_balances();
+
     virtual Json get_trade_result_from_response(Json& response) = 0;
     virtual Json place(Order order) = 0;
 

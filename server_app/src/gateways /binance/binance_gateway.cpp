@@ -60,3 +60,8 @@ Json BinanceGateway::place(Order order)
 
     return quoter->get_trade_result_from_response(response);
 }
+
+Json BinanceGateway::get_balances()
+{
+    return m_quoter_spot.get_balances();
+}
