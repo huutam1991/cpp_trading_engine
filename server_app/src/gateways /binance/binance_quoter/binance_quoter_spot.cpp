@@ -3,6 +3,8 @@
 
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
+    m_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_URL : BINANCE_SPOT_URL;
+    m_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_PORT : BINANCE_SPOT_PORT;
 }
 
 std::string& BinanceQuoterSpot::get_url()

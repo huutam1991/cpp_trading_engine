@@ -81,11 +81,11 @@ enum class SourceType
 #define BINANCE_COMMON "binance_common"
 
 // Binance testnet
-#define BINANCE_TESTNET_DB_SOURCE_NAME "binance_test"
-#define BINANCE_TESTNET_URL "testnet.binance.vision"
-#define BINANCE_TESTNET_PORT "443"
-#define BINANCE_TESTNET_WS_URL "testnet.binance.vision"
-#define BINANCE_TESTNET_WS_PORT "443"
+#define BINANCE_TESTNET_SPOT_DB_SOURCE_NAME "binance_test"
+#define BINANCE_TESTNET_SPOT_URL "testnet.binance.vision"
+#define BINANCE_TESTNET_SPOT_PORT "443"
+#define BINANCE_TESTNET_SPOT_WS_URL "testnet.binance.vision"
+#define BINANCE_TESTNET_SPOT_WS_PORT "443"
 
 // Binance Spot
 #define BINANCE_SPOT_DB_SOURCE_NAME "binance_spot"
@@ -93,6 +93,13 @@ enum class SourceType
 #define BINANCE_SPOT_PORT "443"
 #define BINANCE_SPOT_WS_URL "stream.binance.com"
 #define BINANCE_SPOT_WS_PORT "9443"
+
+// Binance Testnet Fututes
+#define BINANCE_TESTNET_FUTURES_DB_SOURCE_NAME "binance_test_futures"
+#define BINANCE_TESTNET_FUTURES_URL "testnet.binancefuture.com"
+#define BINANCE_TESTNET_FUTURES_PORT "443"
+#define BINANCE_TESTNET_FUTURES_WS_URL "fstream.binancefuture.com"
+#define BINANCE_TESTNET_FUTURES_WS_PORT "443"
 
 // Binance Fututes
 #define BINANCE_FUTURES_DB_SOURCE_NAME "binance_futures"

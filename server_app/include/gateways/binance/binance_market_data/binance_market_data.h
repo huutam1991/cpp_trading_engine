@@ -11,6 +11,7 @@ public:
     BinanceMarketData(const std::string& url, const std::string& port);
     ~BinanceMarketData();
 
+    void update_url_and_port(const std::string& url, const std::string& port);
     virtual void start();
     void subscribe_symbol(const std::string& symbol, std::function<void(const std::string& symbol, Json& payload)> call_back);
 

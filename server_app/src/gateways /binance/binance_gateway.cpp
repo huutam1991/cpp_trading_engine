@@ -1,21 +1,34 @@
 #include <gateways/binance/binance_gateway.h>
+#include <account/account.h>
 
 BinanceGateway::BinanceGateway(const std::string& key) :
     m_quoter_spot(key),
     m_quoter_perpetual(key),
-    m_market_data_sport(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
+    m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
+    Json account = Account::load_account_by_key(key);
+    bool is_testnet = account["is_testnet"];
+
+    // Update url + port for market data SPOT
+    std::string md_spot_url  = is_testnet == true ? BINANCE_TESTNET_SPOT_WS_URL : BINANCE_SPOT_WS_URL;
+    std::string md_spot_port = is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
+    m_market_data_spot.update_url_and_port(md_spot_url, md_spot_port);
+
+    // Update url + port for market data PERPETUAL
+    std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
+    std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
+    m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
 }
 
 void BinanceGateway::subscribe_symbol(const std::string& symbol)
 {
     // Spot
-    m_market_data_sport.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)
+    m_market_data_spot.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)
     {
         this->on_depth_update(symbol, payload);
     });
-    m_market_data_sport.start();
+    m_market_data_spot.start();
 
     // Perpetual
     // m_market_data_perpetual.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)

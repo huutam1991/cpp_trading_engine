@@ -13,7 +13,7 @@ class BinanceGateway : public Gateway
     BinanceQuoterPerpetual m_quoter_perpetual;
 
     // Market data
-    BinanceMarketData m_market_data_sport;
+    BinanceMarketData m_market_data_spot;
     BinanceMarketData m_market_data_perpetual;
 
 public:

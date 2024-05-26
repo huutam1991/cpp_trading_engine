@@ -14,6 +14,7 @@ class BinanceQuoter
     std::string encryptWithHMAC(const char* key, const char* data);
 
 protected:
+    bool m_is_testnet = false;
     virtual std::string& get_url() = 0;
     virtual std::string& get_port() = 0;
 
