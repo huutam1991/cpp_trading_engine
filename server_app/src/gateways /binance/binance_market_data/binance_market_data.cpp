@@ -1,9 +1,8 @@
 #include <gateways/binance/binance_market_data/binance_market_data.h>
 
-BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port, const std::string& symbol):
+BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
     m_url(url),
-    m_port(port),
-    m_symbol(symbol)
+    m_port(port)
 {
 }
 
@@ -74,8 +73,9 @@ size_t BinanceMarketData::get_stream_id_count()
 }
 
 
-void BinanceMarketData::set_call_back(std::function<void(const std::string& symbol, Json& payload)> call_back)
+void BinanceMarketData::subscribe_symbol(const std::string& symbol, std::function<void(const std::string& symbol, Json& payload)> call_back)
 {
+    m_symbol = symbol;
     m_on_callback = call_back;
 }
 

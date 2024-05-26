@@ -14,6 +14,7 @@ protected:
 public:
     void register_price_update(std::function<void(double)> price_update_callback);
 
+    virtual void subscribe_symbol(const std::string& symbol);
     virtual Json place(Order order);
 
 };

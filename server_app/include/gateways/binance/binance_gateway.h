@@ -18,6 +18,8 @@ class BinanceGateway : public Gateway
 
 public:
     BinanceGateway(const std::string& key);
+
+    virtual void subscribe_symbol(const std::string& symbol);
     virtual Json place(Order order) override;
 
 private:
