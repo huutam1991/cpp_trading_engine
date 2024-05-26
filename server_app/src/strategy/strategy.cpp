@@ -26,7 +26,7 @@ void Strategy::init()
     // Load checkpoints
     m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_volumn, m_move_price);
 
-    // Add price callback
+    // Add price callback + subscribe to symbol
     auto gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
     gateway->register_price_update([this](double price)
     {
