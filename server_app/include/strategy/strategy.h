@@ -7,6 +7,7 @@
 #include <data_model/data_model.h>
 
 #include <strategy/check_points.h>
+#include <strategy/strategy_state/strategy_state.h>
 
 class Strategy
 {
@@ -26,6 +27,9 @@ private:
 
     // Checkpoints
     std::shared_ptr<CheckPoints> m_checkpoints;
+
+    // StrategyState
+    std::shared_ptr<StrategyState> m_strategy_state;
 
     void start();
     void stop();
