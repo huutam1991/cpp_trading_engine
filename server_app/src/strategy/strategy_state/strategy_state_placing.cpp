@@ -47,6 +47,7 @@ Order StrategyStatePlacing::get_buy_spot_order_by_checkpoint(DataModel& checkpoi
     double price = checkpoint["info"]["price"];
     double size = checkpoint["size"]["buy_volumn"];
     double quantity = size / price;
+    double round_up_quantity = m_gateway->round_up_quantity(symbol, quantity);
 
     return Order(
         Order::ExchangeType::SPOT,
@@ -54,7 +55,7 @@ Order StrategyStatePlacing::get_buy_spot_order_by_checkpoint(DataModel& checkpoi
         Order::Side::BUY,
         "MARKET",
         0.0, // since type is MARKET, no need to specify price
-        quantity
+        round_up_quantity
     );
 }
 

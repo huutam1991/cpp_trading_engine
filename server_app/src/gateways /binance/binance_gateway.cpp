@@ -22,13 +22,43 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
 
-    ADD_LOG("get_symbols_info: " << get_symbols_info()["symbols"][0]);
+    m_symbols_info = get_symbols_info();
 }
 
 Json BinanceGateway::get_symbols_info()
 {
-    ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\"]", RequestMethod::GET);
-    return Json::parse(binance_request.send_request(""));
+    ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\"]", RequestMethod::GET);
+
+    Json exchange_info = Json::parse(binance_request.send_request(""));
+    Json symbols_info;
+
+    exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
+    {
+        std::string symbol_name = data["symbol"];
+
+        symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
+        symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
+        symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
+    });
+
+    return symbols_info;
+}
+
+size_t BinanceGateway::get_rounded_number(const std::string& lot_size)
+{
+    int pos_1 = lot_size.find_first_of("1"); // find the position of charater '1'
+    return pos_1 - 1;
+}
+
+std::string BinanceGateway::round_string_number(const std::string& str_number, size_t precision)
+{
+    int point_pos = str_number.find_first_of(".");
+    if (point_pos > -1)
+    {
+        return str_number.substr(0, point_pos + (precision == 0 ? 0 : precision + 1));
+    }
+
+    return str_number;
 }
 
 void BinanceGateway::subscribe_symbol(const std::string& symbol)
@@ -87,4 +117,12 @@ Json BinanceGateway::get_balances()
     });
 
     return balances;
+}
+
+double BinanceGateway::round_up_quantity(const std::string& symbol, double quantity)
+{
+    size_t lot_size = m_symbols_info[symbol]["lotSize"];
+    std::string round_str_number = round_string_number(std::to_string(quantity), lot_size);
+
+    return std::stod(round_str_number);
 }
