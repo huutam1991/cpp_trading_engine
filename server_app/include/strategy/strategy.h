@@ -25,11 +25,12 @@ private:
     bool m_is_running = false;
     bool m_is_init = false;
 
-    // Checkpoints
+    // Checkpoints + Gateway
     std::shared_ptr<CheckPoints> m_checkpoints;
+    std::shared_ptr<Gateway> m_gateway;
 
     // StrategyState
-    std::shared_ptr<StrategyState> m_strategy_state;
+    static std::unordered_map<std::string, StrategyState*>* get_strategy_states();
 
     void start();
     void stop();
