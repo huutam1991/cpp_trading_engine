@@ -9,6 +9,7 @@
 // StrategyState
 #include <strategy/strategy_state/strategy_state_start.h>
 #include <strategy/strategy_state/strategy_state_placing.h>
+#include <strategy/strategy_state/strategy_state_monitoring.h>
 #include <strategy/strategy_state/strategy_state_stop.h>
 
 std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
@@ -23,6 +24,7 @@ std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
 
         m_strategy_states["START"] = new StrategyStateStart(gateway, check_point);
         m_strategy_states["PLACING"] = new StrategyStatePlacing(gateway, check_point);
+        m_strategy_states["MONITORING"] = new StrategyStateMonitoring(gateway, check_point);
         m_strategy_states["STOP"] = new StrategyStateStop(gateway, check_point);
     }
 

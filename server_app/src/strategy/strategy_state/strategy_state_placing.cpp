@@ -20,4 +20,6 @@ void StrategyStatePlacing::run(double price)
 
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
     checkpoint["is_current_checkpoint"] = true;
+
+    StrategyState::set_state_status("MONITORING");
 }
