@@ -18,14 +18,11 @@ DataModel StrategyState::get_state_status()
     if (state_status.is_null())
     {
         // Load from DB
-        std::vector<DataModel> load = DataModel::get_data_model_list(STRATEGY_DB_NAME, "status");
-        if (load.size() > 0)
+        state_status = DataModel::get_single_data_model(STRATEGY_DB_NAME, "status");
+
+        // Default status is STOP
+        if (state_status.get_data().has_field("status") == false)
         {
-            state_status = load[0];
-        }
-        else
-        {
-            state_status = DataModel(STRATEGY_DB_NAME, "status");
             state_status["status"] = "STOP";
         }
     }
