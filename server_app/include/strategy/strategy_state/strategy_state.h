@@ -27,7 +27,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual void run();
+    virtual void run(double price);
 };
 
 #endif //STRATEGY_STATE_H

@@ -14,7 +14,7 @@ void StrategyStateStart::end()
     ADD_LOG("StrategyStateStart - end");
 }
 
-void StrategyStateStart::run()
+void StrategyStateStart::run(double price)
 {
     ADD_LOG("StrategyStateStart - run");
 }

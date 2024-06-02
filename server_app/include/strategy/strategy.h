@@ -47,7 +47,7 @@ class SimpleGuard
     bool* m_value;
 
 public:
-    SimpleGuard(bool* value) { m_value = value; *m_value = true; }
+    SimpleGuard(bool& value) { m_value = &value; *m_value = true; }
     ~SimpleGuard() { *m_value = false; }
 };
 

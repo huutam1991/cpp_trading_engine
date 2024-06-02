@@ -21,7 +21,7 @@ void StrategyState::end()
     ADD_LOG("StrategyState - end");
 }
 
-void StrategyState::run()
+void StrategyState::run(double price)
 {
     ADD_LOG("StrategyState - run");
 }

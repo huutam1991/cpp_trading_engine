@@ -8,12 +8,10 @@
 
 void Strategy::init()
 {
-    SimpleGuard g(&m_is_init);
+    SimpleGuard g(m_is_init);
 
     // Load current strategy info
-    Json config = MongoDB::instance()
-        .set_db_and_collection(STRATEGY_DB_NAME, "config")
-        .find_any();
+    DataModel config = DataModel::get_data_model_list(STRATEGY_DB_NAME, "config")[0];
 
     m_symbol = std::string(config["symbol"]);
     m_volumn = config["volumn"];
