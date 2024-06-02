@@ -30,6 +30,7 @@ public:
     CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
 
     DataModel get_current_checkpoint();
+    DataModel get_checkpoint_by_price(double price);
     DataModel create_checkpoint_data_model(double price);
 };
 

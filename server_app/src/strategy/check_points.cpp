@@ -17,6 +17,18 @@ std::string CheckPoints::get_checkpoint_id(double price)
     return m_symbol + "_" + std::to_string((size_t)price);
 }
 
+DataModel CheckPoints::get_checkpoint_by_price(double price)
+{
+    std::string checkpoint_id = get_checkpoint_id(price);
+
+    if (m_checkpoint_list.find(checkpoint_id) != m_checkpoint_list.end())
+    {
+        return m_checkpoint_list[checkpoint_id];
+    }
+
+    return create_checkpoint_data_model(price);
+}
+
 DataModel CheckPoints::create_checkpoint_data_model(double price)
 {
     std::string checkpoint_id = get_checkpoint_id(price);
