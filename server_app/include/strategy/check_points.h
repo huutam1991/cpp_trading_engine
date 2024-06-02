@@ -6,6 +6,8 @@
 #include <json/json.h>
 #include <data_model/data_model.h>
 
+#include <order/order.h>
+
 class CheckPoints
 {
     // Data fields
