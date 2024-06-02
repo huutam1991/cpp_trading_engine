@@ -25,6 +25,7 @@ public:
     ~StrategyState();
 
     static DataModel get_state_status();
+    static void set_state_status(const std::string& status);
 
     virtual void begin();
     virtual void end();

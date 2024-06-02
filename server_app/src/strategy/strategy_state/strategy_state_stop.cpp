@@ -16,5 +16,15 @@ void StrategyStateStop::end()
 
 void StrategyStateStop::run(double price)
 {
-    ADD_LOG("StrategyStateStop - run: Do nothing");
+    DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
+
+    if (current_checkpoint.is_null() == false)
+    {
+        current_checkpoint["is_current_checkpoint"] = false;
+        // TBD -> send close orders
+    }
+    else
+    {
+        ADD_LOG("StrategyStateStop - run: Do nothing");
+    }
 }

@@ -21,6 +21,7 @@ std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
         Gateway* gateway = Strategy::instance().m_gateway.get();
 
         m_strategy_states["START"] = new StrategyStateStart(gateway, checkpoints);
+        m_strategy_states["PLACING"] = new StrategyStateStop(gateway, checkpoints);
         m_strategy_states["STOP"] = new StrategyStateStop(gateway, checkpoints);
     }
 
@@ -82,34 +83,12 @@ void Strategy::on_config_change()
 
 void Strategy::start()
 {
-    DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
-
-    DataModel status = StrategyState::get_state_status();
-    status["status"] = "START";
-
-    // if (current_checkpoint.is_null() == false)
-    // {
-    //     current_checkpoint["is_current_checkpoint"] = true;
-    // }
-    // else
-    // {
-    //     DataModel new_checkpoint = m_checkpoints->create_checkpoint_data_model(m_current_price);
-    //     new_checkpoint["is_current_checkpoint"] = true;
-    // }
+    StrategyState::set_state_status("START");
 }
 
 void Strategy::stop()
 {
-    DataModel status = StrategyState::get_state_status();
-    status["status"] = "STOP";
-
-    // DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
-    // ADD_LOG("current_checkpoint: " << current_checkpoint);
-
-    // if (current_checkpoint.is_null() == false)
-    // {
-    //     current_checkpoint["is_current_checkpoint"] = false;
-    // }
+    StrategyState::set_state_status("STOP");
 }
 
 void Strategy::update(double price)

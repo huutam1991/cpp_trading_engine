@@ -30,6 +30,12 @@ DataModel StrategyState::get_state_status()
     return state_status;
 }
 
+void StrategyState::set_state_status(const std::string& status)
+{
+    DataModel state_status = StrategyState::get_state_status();
+    state_status["status"] = status;
+}
+
 void StrategyState::begin()
 {
     ADD_LOG("StrategyState - begin");
