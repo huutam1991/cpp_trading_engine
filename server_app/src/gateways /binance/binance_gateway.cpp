@@ -1,3 +1,5 @@
+#include <external_request/external_request_ssl.h>
+
 #include <gateways/binance/binance_gateway.h>
 #include <account/account.h>
 
@@ -19,6 +21,14 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
     std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
+
+    ADD_LOG("get_symbols_info: " << get_symbols_info()["symbols"][0]);
+}
+
+Json BinanceGateway::get_symbols_info()
+{
+    ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\"]", RequestMethod::GET);
+    return Json::parse(binance_request.send_request(""));
 }
 
 void BinanceGateway::subscribe_symbol(const std::string& symbol)

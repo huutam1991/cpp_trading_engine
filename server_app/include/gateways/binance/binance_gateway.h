@@ -26,6 +26,8 @@ public:
 private:
     void on_depth_update(const std::string& symbol, Json& payload);
 
+    Json get_symbols_info();
+
 };
 
 #endif //BINANCE_GATEWAY_H
