@@ -18,6 +18,9 @@ DataModel::DataModel(const DataModel& copy) : m_db(copy.m_db), m_collection(copy
 DataModel::DataModel(const std::string& db, const std::string& collection) : m_db(db), m_collection(collection)
 {
     m_data = std::make_shared<Json>();
+
+    // Save empty data to DB, but this action can init [m_id] and make this DataModel a real one
+    save_to_DB();
 }
 
 DataModel::DataModel(const std::string& db, const std::string& collection, const std::string& id) : m_db(db), m_collection(collection), m_id(id)
