@@ -41,8 +41,8 @@ void Strategy::init()
     {
         config = {
             {"symbol", "ETHUSDT"},
-            {"buy_volumn", 30},
-            {"move_price", 307},
+            {"buy_volumn", (long)30},
+            {"move_price", (long)307},
             {"sell_buy_ratio", 0.4},
             {"is_running", false}
         };
