@@ -6,7 +6,7 @@
 class StrategyStateStop : public StrategyState
 {
 public:
-    StrategyStateStop(Gateway* gateway, CheckPoints* checkpoints);
+    StrategyStateStop(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
 
     virtual void begin();
     virtual void end();

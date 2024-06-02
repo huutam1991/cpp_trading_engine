@@ -18,12 +18,12 @@ std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
     // Init StrategyState by name
     if (m_strategy_states.size() == 0)
     {
-        CheckPoints* checkpoints = Strategy::instance().m_checkpoints.get();
-        Gateway* gateway = Strategy::instance().m_gateway.get();
+        std::shared_ptr<Gateway>& gateway = Strategy::instance().m_gateway;
+        std::shared_ptr<CheckPoints>& check_point = Strategy::instance().m_checkpoints;
 
-        m_strategy_states["START"] = new StrategyStateStart(gateway, checkpoints);
-        m_strategy_states["PLACING"] = new StrategyStatePlacing(gateway, checkpoints);
-        m_strategy_states["STOP"] = new StrategyStateStop(gateway, checkpoints);
+        m_strategy_states["START"] = new StrategyStateStart(gateway, check_point);
+        m_strategy_states["PLACING"] = new StrategyStatePlacing(gateway, check_point);
+        m_strategy_states["STOP"] = new StrategyStateStop(gateway, check_point);
     }
 
     return &m_strategy_states;

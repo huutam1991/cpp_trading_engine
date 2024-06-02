@@ -1,6 +1,6 @@
 #include <strategy/strategy_state/strategy_state_placing.h>
 
-StrategyStatePlacing::StrategyStatePlacing(Gateway* gateway, CheckPoints* checkpoints)
+StrategyStatePlacing::StrategyStatePlacing(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints)
     : StrategyState(gateway, checkpoints)
 {}
 

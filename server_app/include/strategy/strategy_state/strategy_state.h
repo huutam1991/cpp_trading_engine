@@ -16,12 +16,12 @@ enum StateStatus
 class StrategyState
 {
 protected:
-    Gateway* m_gateway;
-    CheckPoints* m_checkpoints;
+    std::shared_ptr<Gateway>& m_gateway;
+    std::shared_ptr<CheckPoints>& m_checkpoints;
 
 
 public:
-    StrategyState(Gateway* gateway, CheckPoints* checkpoints);
+    StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
     ~StrategyState();
 
     static DataModel get_state_status();
