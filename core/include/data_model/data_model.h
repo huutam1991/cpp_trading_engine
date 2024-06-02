@@ -49,6 +49,7 @@ public:
     void set_id(const std::string& id);
 
     void set_callback(std::function<void(Json&)> callback);
+    static DataModel get_single_data_model(const std::string& db, const std::string& collection);
     static std::vector<DataModel> get_data_model_list(const std::string& db, const std::string& collection);
     static std::unordered_map<std::string, DataModel> get_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name);
 
