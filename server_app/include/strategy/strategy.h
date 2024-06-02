@@ -16,7 +16,7 @@ class Strategy
 private:
     // Info
     std::string m_symbol;
-    double m_volumn;
+    double m_buy_volumn;
     double m_move_price;
     double m_sell_buy_ratio;
 

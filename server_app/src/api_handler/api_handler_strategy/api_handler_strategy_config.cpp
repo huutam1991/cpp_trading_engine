@@ -4,7 +4,7 @@
 
 APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHandler(request)
 {
-    add_mandatory_body_params({"symbol", "volumn", "move_price", "is_running", "sell_buy_ratio"});
+    add_mandatory_body_params({"symbol", "buy_volumn", "move_price", "is_running", "sell_buy_ratio"});
 }
 
 HttpResponse APIHandlerStrategyConfig::child_handle()
@@ -30,7 +30,7 @@ HttpResponse APIHandlerStrategyConfig::child_handle()
     {
         Json config = m_request->get_body_json();
         std::string symbol = config["symbol"];
-        double price = config["volumn"];
+        double buy_volumn = config["buy_volumn"];
         double move_value = config["move_price"];
 
         if (current_config.is_null() == true)
@@ -48,7 +48,7 @@ HttpResponse APIHandlerStrategyConfig::child_handle()
 
         // Response
         response["data"] = config;
-        response["msg"] = "update config for strategy [" + symbol + "_" + std::to_string((size_t)price) + "_" + std::to_string((size_t)move_value) + "] successfully";
+        response["msg"] = "update config for strategy [" + symbol + "_" + std::to_string((size_t)buy_volumn) + "_" + std::to_string((size_t)move_value) + "] successfully";
         response["status_code"] = OK_200;
         response["error"] = false;
     }
