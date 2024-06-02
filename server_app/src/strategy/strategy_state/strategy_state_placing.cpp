@@ -24,18 +24,18 @@ void StrategyStatePlacing::run(double price)
 
     // Buy SPOT order
     Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([this, buy_spot]()
+    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot]()
     {
-        Json response = m_gateway->place(buy_spot);
+        Json response = gateway->place(buy_spot);
 
         ADD_LOG("order response: " << response);
     });
 
     // // Sell Perpetual order
     // Order sell_perpetual = get_buy_spot_order_by_checkpoint(checkpoint);
-    // AppUtils::instance().get_app_pool()->execute_function([this, sell_perpetual]()
+    // AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, sell_perpetual]()
     // {
-    //     m_gateway->place(sell_perpetual);
+    //     gateway->place(sell_perpetual);
     // });
 
     StrategyState::set_state_status("MONITORING");
