@@ -63,6 +63,9 @@ void Strategy::start()
 {
     DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
 
+    DataModel status = StrategyState::get_state_status();
+    status["status"] = "START";
+
     if (current_checkpoint.is_null() == false)
     {
         current_checkpoint["is_current_checkpoint"] = true;
@@ -76,6 +79,9 @@ void Strategy::start()
 
 void Strategy::stop()
 {
+    DataModel status = StrategyState::get_state_status();
+    status["status"] = "STOP";
+
     DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
     ADD_LOG("current_checkpoint: " << current_checkpoint);
 

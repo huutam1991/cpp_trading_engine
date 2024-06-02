@@ -4,7 +4,7 @@
 #include <gateways/gateway.h>
 #include <strategy/check_points.h>
 
-enum StrategyStateEnum
+enum StateStatus
 {
     START,
     PLACING,
@@ -19,11 +19,12 @@ protected:
     Gateway* m_gateway;
     CheckPoints* m_checkpoints;
 
-    bool m_should_end = false;
 
 public:
     StrategyState(Gateway* gateway, CheckPoints* checkpoints);
     ~StrategyState();
+
+    static DataModel get_state_status();
 
     virtual void begin();
     virtual void end();
