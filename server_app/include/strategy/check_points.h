@@ -26,12 +26,13 @@ private:
     std::string get_collection_name();
     std::string get_checkpoint_id(double price);
 
+    DataModel create_checkpoint_data_model(double price);
+
 public:
     CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
 
     DataModel get_current_checkpoint();
     DataModel get_checkpoint_by_price(double price);
-    DataModel create_checkpoint_data_model(double price);
 };
 
 #endif //CHECK_POINTS_H
