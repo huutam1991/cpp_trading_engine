@@ -53,7 +53,6 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
         ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity);
     }
 
-
     return {
         {"type", "spot"},
         {"symbol", symbol},
