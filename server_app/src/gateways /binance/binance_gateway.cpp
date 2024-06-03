@@ -22,10 +22,13 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
 
-    m_symbols_info = get_symbols_info();
+    m_symbols_info["spot"] = get_spot_symbols_info();
+    m_symbols_info["perpetual"] = get_perpetual_symbols_info();
+
+    ADD_LOG("m_symbols_info: " << m_symbols_info);
 }
 
-Json BinanceGateway::get_symbols_info()
+Json BinanceGateway::get_spot_symbols_info()
 {
     ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\"]", RequestMethod::GET);
 
@@ -39,6 +42,28 @@ Json BinanceGateway::get_symbols_info()
         symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
         symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
         symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
+    });
+
+    return symbols_info;
+}
+
+Json BinanceGateway::get_perpetual_symbols_info()
+{
+    ExternalRequestSsl binance_request(BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT, "/fapi/v1/exchangeInfo", RequestMethod::GET);
+
+    Json exchange_info = Json::parse(binance_request.send_request(""));
+    Json symbols_info;
+
+    exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
+    {
+        std::string symbol_name = data["symbol"];
+
+        if (symbol_name == "ETHUSDT" || symbol_name == "BTCUSDT")
+        {
+            symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
+            symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
+            symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
+        }
     });
 
     return symbols_info;
@@ -98,6 +123,8 @@ Json BinanceGateway::place(Order order)
     // Tricky here, assume value of price from [response] is current market price
     response["price"] = order.price;
 
+    ADD_LOG("Order place: " << response);
+
     return quoter->get_trade_result_from_response(response);
 }
 
@@ -119,9 +146,9 @@ Json BinanceGateway::get_balances()
     return balances;
 }
 
-double BinanceGateway::round_up_quantity(const std::string& symbol, double quantity)
+double BinanceGateway::round_up_quantity(const std::string& type, const std::string& symbol, double quantity)
 {
-    size_t lot_size = m_symbols_info[symbol]["lotSize"];
+    size_t lot_size = m_symbols_info[type][symbol]["lotSize"];
     std::string round_str_number = round_string_number(std::to_string(quantity), lot_size);
 
     return std::stod(round_str_number);

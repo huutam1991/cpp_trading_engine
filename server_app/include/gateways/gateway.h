@@ -19,7 +19,7 @@ public:
 
     // Util methods
     virtual Json get_balances() = 0;
-    virtual double round_up_quantity(const std::string& symbol, double quantity) = 0;
+    virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) = 0;
 };
 
 #endif //GATEWAY_H

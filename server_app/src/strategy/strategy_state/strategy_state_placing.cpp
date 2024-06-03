@@ -22,23 +22,26 @@ void StrategyStatePlacing::run(double price)
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
     checkpoint["is_current_checkpoint"] = true;
 
-    // Buy SPOT order
-    Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
+    // // Buy SPOT order
+    // Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
+    // AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
+    // {
+    //     DataModel cp = checkpoint;
+
+    //     Json response = gateway->place(buy_spot);
+    //     cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
+    //     cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+    // });
+
+    // Sell Perpetual order
+    Order sell_perpetual = get_sell_perpetual_order_by_checkpoint(checkpoint);
+    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, sell_perpetual, checkpoint]()
     {
         DataModel cp = checkpoint;
+        Json response = gateway->place(sell_perpetual);
 
-        Json response = gateway->place(buy_spot);
-        cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
-        cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+        ADD_LOG("sell perpetual response: " << response);
     });
-
-    // // Sell Perpetual order
-    // Order sell_perpetual = get_buy_spot_order_by_checkpoint(checkpoint);
-    // AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, sell_perpetual]()
-    // {
-    //     gateway->place(sell_perpetual);
-    // });
 
     StrategyState::set_state_status("MONITORING");
 }
@@ -49,7 +52,7 @@ Order StrategyStatePlacing::get_buy_spot_order_by_checkpoint(DataModel& checkpoi
     double price = checkpoint["info"]["price"];
     double size = checkpoint["size"]["buy_volumn"];
     double quantity = size / price;
-    double round_up_quantity = m_gateway->round_up_quantity(symbol, quantity);
+    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
 
     return Order(
         Order::ExchangeType::SPOT,
@@ -69,6 +72,7 @@ Order StrategyStatePlacing::get_sell_perpetual_order_by_checkpoint(DataModel& ch
     double sell_buy_ratio = checkpoint["size"]["sell_buy_ratio"];
     double sell_size = sell_buy_ratio * buy_size;
     double quantity = sell_size / price;
+    double round_up_quantity = m_gateway->round_up_quantity("perpetual", symbol, quantity);
 
     return Order(
         Order::ExchangeType::PERPETUAL,
@@ -76,6 +80,6 @@ Order StrategyStatePlacing::get_sell_perpetual_order_by_checkpoint(DataModel& ch
         Order::Side::SELL,
         "MARKET",
         0.0, // since type is MARKET, no need to specify price
-        quantity
+        round_up_quantity
     );
 }
