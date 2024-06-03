@@ -24,11 +24,12 @@ void StrategyStatePlacing::run(double price)
 
     // Buy SPOT order
     Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot]()
+    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
     {
-        Json response = gateway->place(buy_spot);
+        DataModel cp = checkpoint;
 
-        ADD_LOG("order response: " << response);
+        Json response = gateway->place(buy_spot);
+        cp["positions"]["buy_spot"] = response["quantity"];
     });
 
     // // Sell Perpetual order
