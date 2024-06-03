@@ -38,7 +38,10 @@ void StrategyStatePlacing::run(double price)
     AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, sell_perpetual, checkpoint]()
     {
         DataModel cp = checkpoint;
+
         Json response = gateway->place(sell_perpetual);
+        cp["positions"]["sell_perpetual"]["quantity"] = response["quantity"];
+        cp["positions"]["sell_perpetual"]["volumn_in_usdt"] = response["volumn_in_usdt"];
 
         ADD_LOG("sell perpetual response: " << response);
     });
@@ -79,7 +82,7 @@ Order StrategyStatePlacing::get_sell_perpetual_order_by_checkpoint(DataModel& ch
         symbol,
         Order::Side::SELL,
         "MARKET",
-        0.0, // since type is MARKET, no need to specify price
+        price,
         round_up_quantity
     );
 }

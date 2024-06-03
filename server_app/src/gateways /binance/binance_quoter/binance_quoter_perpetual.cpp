@@ -22,6 +22,7 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     // Get [symbol] + [quantity]
     std::string symbol;
     double quantity = 0;
+    double volumn_in_usdt = 0;
     double price = response["price"];
 
     // Get fill symbol + quantity
@@ -31,20 +32,23 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
         quantity = std::stod(std::string(response["origQty"]));
         std::string side = std::string(response["side"]);
 
+        // Get volumn in USDT
+        volumn_in_usdt = quantity * price;
+
         // Use BUY to take profit or stop loss, so symbol should be USDT
         if (side == "BUY")
         {
             symbol = "USDT";
-            quantity *= price;
         }
 
-        ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity);
+        ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
     }
 
     return {
         {"type", "perpetual"},
         {"symbol", symbol},
-        {"quantity", quantity}
+        {"quantity", quantity},
+        {"volumn_in_usdt", volumn_in_usdt}
     };
 }
 
