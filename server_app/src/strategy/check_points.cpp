@@ -53,12 +53,20 @@ DataModel CheckPoints::create_checkpoint_data_model(double price)
 
         // Current positions
         {"positions", {
-            {"buy_spot", 0.0},
-            {"sell_perpetual", 0.0},
+            {"buy_spot", {
+                {"quantity", 0.0},
+                {"volumn_in_usdt", 0.0},
+            }},
+            {"sell_perpetual", {
+                {"quantity", 0.0},
+                {"volumn_in_usdt", 0.0},
+            }},
         }},
 
         // For accounting
         {"accounting", {
+            {"buy_spot_profit", 0.0},
+            {"sell_perpetual_profit", 0.0},
             {"total_profit", 0.0},
             {"visit_times", 0.0},
         }},

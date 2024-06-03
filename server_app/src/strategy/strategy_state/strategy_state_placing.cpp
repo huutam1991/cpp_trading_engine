@@ -29,7 +29,8 @@ void StrategyStatePlacing::run(double price)
         DataModel cp = checkpoint;
 
         Json response = gateway->place(buy_spot);
-        cp["positions"]["buy_spot"] = response["quantity"];
+        cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
+        cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
     });
 
     // // Sell Perpetual order

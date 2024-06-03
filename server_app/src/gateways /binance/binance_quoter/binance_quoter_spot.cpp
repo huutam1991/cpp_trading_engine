@@ -22,6 +22,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     // Get [symbol] + [quantity]
     std::string symbol;
     double quantity = 0;
+    double volumn_in_usdt = 0;
 
     // Get fill symbol + quantity
     if (response.has_field("fills"))
@@ -40,6 +41,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
             if (symbol != "USDT")
             {
                 quantity += f_quantity - f_commission;
+                volumn_in_usdt += f_quantity * f_price;
             }
             // This is SELL order
             else
@@ -55,7 +57,8 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     return {
         {"type", "spot"},
         {"symbol", symbol},
-        {"quantity", quantity}
+        {"quantity", quantity},
+        {"volumn_in_usdt", volumn_in_usdt}
     };
 }
 

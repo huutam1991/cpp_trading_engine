@@ -31,9 +31,25 @@ void StrategyStateStop::run(double price)
         {
             DataModel cp = checkpoint;
 
+            // Place close buy spot order
             Json response = gateway->place(close_buy_spot);
 
-            ADD_LOG("Close buy SPOT order: " << response);
+            // Calculate profit
+            double volumn_in_usdt = cp["positions"]["buy_spot"]["volumn_in_usdt"];
+            double close_volumn = response["quantity"];
+            double profit = close_volumn - volumn_in_usdt;
+
+            // Save profit to checkpoint
+            double buy_spot_profit = cp["buy_spot_profit"];
+            double total_profit = cp["total_profit"];
+            cp["buy_spot_profit"] = buy_spot_profit + profit;
+            cp["total_profit"] = total_profit + profit;
+
+            // Close buy spot position
+            cp["positions"]["buy_spot"] = Json{
+                {"quantity", 0.0},
+                {"volumn_in_usdt", 0.0},
+            };
         });
 
         // Mark current checkpoint is false
@@ -44,7 +60,7 @@ void StrategyStateStop::run(double price)
 Order StrategyStateStop::get_close_buy_spot_order_by_checkpoint(DataModel& checkpoint)
 {
     std::string symbol = checkpoint["info"]["symbol"];
-    double quantity = checkpoint["positions"]["buy_spot"];
+    double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
     double round_up_quantity = m_gateway->round_up_quantity(symbol, quantity);
 
     return Order(
