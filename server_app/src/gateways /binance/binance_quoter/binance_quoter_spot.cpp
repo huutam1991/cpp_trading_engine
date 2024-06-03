@@ -46,11 +46,11 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
             // This is SELL order
             else
             {
-                quantity += (f_quantity * f_price) - f_commission;
+                volumn_in_usdt += (f_quantity * f_price) - f_commission;
             }
         });
 
-        ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity);
+        ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
     }
 
     return {
