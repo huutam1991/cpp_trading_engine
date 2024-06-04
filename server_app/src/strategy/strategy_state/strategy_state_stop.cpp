@@ -61,16 +61,16 @@ void StrategyStateStop::run(double price)
             // Place close buy spot order
             Json response = gateway->place(close_sell_perpetual);
 
-            // // Calculate profit
-            // double place_volumn_in_usdt = cp["positions"]["buy_spot"]["volumn_in_usdt"];
-            // double close_volumn_in_usdt = response["volumn_in_usdt"];
-            // double profit = close_volumn_in_usdt - place_volumn_in_usdt;
+            // Calculate profit
+            double place_volumn_in_usdt = cp["positions"]["sell_perpetual"]["volumn_in_usdt"];
+            double close_volumn_in_usdt = response["volumn_in_usdt"];
+            double profit = close_volumn_in_usdt - place_volumn_in_usdt;
 
-            // // Save profit to checkpoint
-            // double buy_spot_profit = cp["buy_spot_profit"];
-            // double total_profit = cp["total_profit"];
-            // cp["accounting"]["buy_spot_profit"] = buy_spot_profit + profit;
-            // cp["accounting"]["total_profit"] = total_profit + profit;
+            // Save profit to checkpoint
+            double sell_perpetual_profit = cp["sell_perpetual_profit"];
+            double total_profit = cp["total_profit"];
+            cp["accounting"]["sell_perpetual_profit"] = sell_perpetual_profit + profit;
+            cp["accounting"]["total_profit"] = total_profit + profit;
 
             // Close buy spot position
             cp["positions"]["sell_perpetual"] = Json{
