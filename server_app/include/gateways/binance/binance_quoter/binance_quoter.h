@@ -5,15 +5,15 @@
 
 class BinanceQuoter
 {
-    std::string m_key;
-    std::string m_api_key;
-    std::string m_api_secret;
-
     std::string getTimestamp();
     std::string getSignature(std::string& query);
     std::string encryptWithHMAC(const char* key, const char* data);
 
 protected:
+    std::string m_key;
+    std::string m_api_key;
+    std::string m_api_secret;
+
     bool m_is_testnet = false;
     virtual std::string& get_url() = 0;
     virtual std::string& get_port() = 0;
