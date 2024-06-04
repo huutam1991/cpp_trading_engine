@@ -45,19 +45,30 @@ void BinanceQuoterPerpetual::init_websocket()
 
     m_websocket->on_message([this](const std::string& buffer, WebsocketClientHandle& ws)
     {
-        // ADD_LOG("BinanceFuturesUser OnMessage: " << buffer);
         Json json = Json::parse(buffer);
-        ADD_LOG("BinanceFuturesUser on_message: " << json);
 
-        if (json.has_field("e") == true)
+        if (json["e"] == "ORDER_TRADE_UPDATE")
         {
-            std::string event_type = json["e"];
+            Json order = json["o"];
+            if (order["X"] == "FILLED")
+            {
+                Json data = {
+                    {"status", "FILLED"},
+                    {"symbol", order["s"]},
+                    {"price", std::stod(std::string(order["ap"]))},
+                    {"quantity", std::stod(std::string(order["z"]))}
+                };
+
+                ADD_LOG("BinanceQuoterPerpetual Filled: " << data);
+
+                update_order_result(data);
+            }
         }
     });
 
     m_websocket->on_close([this](websocket::close_code close_code)
     {
-        ADD_LOG("BinanceFuturesUser on_close, close_code = " << close_code);
+        ADD_LOG("BinanceQuoterPerpetual on_close, close_code = " << close_code);
 
         // Unexpected close, need to re-start
         if (close_code == websocket::close_code::internal_error)
@@ -108,32 +119,26 @@ void BinanceQuoterPerpetual::del_timer_keep_alive_listen_key()
     }
 }
 
+void BinanceQuoterPerpetual::update_order_result(const Json& order_result)
+{
+    std::unique_lock lock(m_mutex);
+    m_order_result = order_result;
+}
+
 Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
 {
-    // Get [symbol] + [quantity]
-    std::string symbol;
-    double quantity = 0;
-    double volumn_in_usdt = 0;
-    double price = response["price"];
-
-    // Get fill symbol + quantity
-    if (response.has_field("symbol") && response.has_field("origQty"))
+    // Tricky here
+    while (m_order_result["status"] == "PLACING")
     {
-        symbol = std::string(response["symbol"]);
-        quantity = std::stod(std::string(response["origQty"]));
-        std::string side = std::string(response["side"]);
-
-        // Get volumn in USDT
-        volumn_in_usdt = quantity * price;
-
-        // Use BUY to take profit or stop loss, so symbol should be USDT
-        if (side == "BUY")
-        {
-            symbol = "USDT";
-        }
-
-        ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
     }
+
+    // Get [symbol] + [quantity]
+    std::string symbol = m_order_result["symbol"];
+    double quantity = m_order_result["quantity"];
+    double price = m_order_result["price"];
+    double volumn_in_usdt = quantity * price;
+
+    ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
 
     return {
         {"type", "perpetual"},
@@ -145,6 +150,11 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
 
 Json BinanceQuoterPerpetual::place(Order order)
 {
+    // Update order result to "placing", mean need to wait until it get filled
+    update_order_result({
+        {"status", "PLACING"},
+    });
+
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
     std::string side = order.side == Order::Side::BUY ? "BUY" : "SELL";

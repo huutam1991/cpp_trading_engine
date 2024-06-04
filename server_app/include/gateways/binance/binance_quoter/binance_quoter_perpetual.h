@@ -12,6 +12,11 @@ private:
     std::string m_ws_url = BINANCE_FUTURES_WS_URL;
     std::string m_ws_port = BINANCE_FUTURES_WS_PORT;
 
+    // For update order result
+    std::mutex m_mutex;
+    Json m_order_result;
+    void update_order_result(const Json& order_result);
+
     // Websocket to get order data
     std::shared_ptr<WebsocketClient> m_websocket;
     std::string m_listen_key;

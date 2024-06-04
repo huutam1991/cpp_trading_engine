@@ -120,10 +120,6 @@ Json BinanceGateway::place(Order order)
         (BinanceQuoter*)&m_quoter_perpetual;
 
     Json response = quoter->place(order);
-    // Tricky here, assume value of price from [response] is current market price
-    response["price"] = order.price;
-
-    ADD_LOG("Order place: " << response);
 
     return quoter->get_trade_result_from_response(response);
 }
