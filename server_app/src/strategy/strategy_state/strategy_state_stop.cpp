@@ -41,7 +41,7 @@ void StrategyStateStop::run(double price)
 
             // Save profit to checkpoint
             double buy_spot_profit = cp["buy_spot_profit"];
-            double total_profit = cp["total_profit"];
+            double total_profit = cp["accounting"]["total_profit"];
             cp["accounting"]["buy_spot_profit"] = buy_spot_profit + profit;
             cp["accounting"]["total_profit"] = total_profit + profit;
 
@@ -68,7 +68,7 @@ void StrategyStateStop::run(double price)
 
             // Save profit to checkpoint
             double sell_perpetual_profit = cp["sell_perpetual_profit"];
-            double total_profit = cp["total_profit"];
+            double total_profit = cp["accounting"]["total_profit"];
             cp["accounting"]["sell_perpetual_profit"] = sell_perpetual_profit + profit;
             cp["accounting"]["total_profit"] = total_profit + profit;
 
