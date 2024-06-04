@@ -22,16 +22,16 @@ void StrategyStatePlacing::run(double price)
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
     checkpoint["is_current_checkpoint"] = true;
 
-    // // Buy SPOT order
-    // Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
-    // AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
-    // {
-    //     DataModel cp = checkpoint;
+    // Buy SPOT order
+    Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
+    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
+    {
+        DataModel cp = checkpoint;
 
-    //     Json response = gateway->place(buy_spot);
-    //     cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
-    //     cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
-    // });
+        Json response = gateway->place(buy_spot);
+        cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
+        cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+    });
 
     // Sell Perpetual order
     Order sell_perpetual = get_sell_perpetual_order_by_checkpoint(checkpoint);
