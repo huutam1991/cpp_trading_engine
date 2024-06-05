@@ -21,6 +21,8 @@ void StrategyStateStart::run(double price)
     DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
     if (current_checkpoint.is_null() == true)
     {
+        //
+        StrategyState::set_placing_price(-1.0);
         StrategyState::set_state_status("PLACING");
     }
 }

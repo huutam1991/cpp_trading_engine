@@ -52,6 +52,23 @@ void StrategyState::run(double price)
     ADD_LOG("StrategyState - run");
 }
 
+double* StrategyState::placing_price_ptr()
+{
+    static double placing_price = -1;
+    return &placing_price;
+}
+
+void StrategyState::set_placing_price(double price)
+{
+    double* price_ptr = placing_price_ptr();
+    *price_ptr = price;
+}
+
+double StrategyState::get_placing_price()
+{
+    double* price_ptr = placing_price_ptr();
+    return *price_ptr;
+}
 
 void StrategyState::send_close_spot_order(DataModel& checkpoint)
 {

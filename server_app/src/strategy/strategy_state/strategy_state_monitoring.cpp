@@ -28,8 +28,10 @@ void StrategyStateMonitoring::run(double price)
         // Only close perpetual order
         send_close_perpetual_order(checkpoint);
 
-        // Continue with the other checkpoint
         checkpoint["is_current_checkpoint"] = false;
+
+        // Continue with the other checkpoint
+        StrategyState::set_placing_price(mark_price - move_price);
         StrategyState::set_state_status("PLACING");
     }
     // Price go up to higher checkpoint
@@ -39,8 +41,10 @@ void StrategyStateMonitoring::run(double price)
         send_close_spot_order(checkpoint);
         send_close_perpetual_order(checkpoint);
 
-        // Continue with the other checkpoint
         checkpoint["is_current_checkpoint"] = false;
+
+        // Continue with the other checkpoint
+        StrategyState::set_placing_price(mark_price + move_price);
         StrategyState::set_state_status("PLACING");
     }
 

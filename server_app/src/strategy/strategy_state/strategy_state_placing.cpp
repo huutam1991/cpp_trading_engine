@@ -19,6 +19,10 @@ void StrategyStatePlacing::run(double price)
 {
     ADD_LOG("StrategyStatePlacing - run");
 
+    // Get [price] to place
+    double placing_price = StrategyState::get_placing_price();
+    price = placing_price == -1 ? price : placing_price;
+
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
     checkpoint["is_current_checkpoint"] = true;
 
@@ -32,9 +36,14 @@ void StrategyStatePlacing::run(double price)
     {
         DataModel cp = checkpoint;
 
-        Json response = gateway->place(buy_spot);
-        cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
-        cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+        // Only place buy spot if this checkpoint is not holding any quantity
+        double quantity = cp["positions"]["buy_spot"]["quantity"];
+        if (quantity == 0)
+        {
+            Json response = gateway->place(buy_spot);
+            cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
+            cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+        }
     });
 
     // Sell Perpetual order

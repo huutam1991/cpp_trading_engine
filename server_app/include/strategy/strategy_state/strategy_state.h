@@ -19,7 +19,6 @@ protected:
     std::shared_ptr<Gateway>& m_gateway;
     std::shared_ptr<CheckPoints>& m_checkpoints;
 
-
 public:
     StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
     ~StrategyState();
@@ -37,6 +36,11 @@ protected:
 
     Order get_close_buy_spot_order_by_checkpoint(DataModel& checkpoint);
     Order get_close_sell_perpetual_order_by_checkpoint(DataModel& checkpoint);
+
+    // For placing at a specific price
+    static double* placing_price_ptr();
+    static void set_placing_price(double price);
+    static double get_placing_price();
 };
 
 #endif //STRATEGY_STATE_H
