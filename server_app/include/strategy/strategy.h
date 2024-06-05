@@ -41,6 +41,7 @@ public:
     void update(double price);
 
     double get_current_price();
+    double get_total_profit();
 };
 
 class SimpleGuard

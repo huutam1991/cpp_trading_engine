@@ -124,3 +124,8 @@ double Strategy::get_current_price()
 {
     return m_current_price;
 }
+
+double Strategy::get_total_profit()
+{
+    return m_checkpoints->get_total_profit();
+}

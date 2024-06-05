@@ -35,6 +35,7 @@ public:
 
     DataModel get_current_checkpoint();
     DataModel get_checkpoint_by_price(double price);
+    double    get_total_profit();
 };
 
 #endif //CHECK_POINTS_H

@@ -97,3 +97,16 @@ DataModel CheckPoints::get_current_checkpoint()
 
     return DataModel(JsonNull());
 }
+
+double CheckPoints::get_total_profit()
+{
+    double total_profit = 0;
+
+    for (auto it : m_checkpoint_list)
+    {
+        DataModel& checkpoint = it.second;
+        total_profit += (double)checkpoint["accounting"]["total_profit"];
+    }
+
+    return total_profit;
+}
