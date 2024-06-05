@@ -86,7 +86,7 @@ void StrategyState::send_close_spot_order(DataModel& checkpoint)
         double profit = close_volumn_in_usdt - place_volumn_in_usdt;
 
         // Save profit to checkpoint
-        double buy_spot_profit = cp["buy_spot_profit"];
+        double buy_spot_profit = cp["accounting"]["buy_spot_profit"];
         double total_profit = cp["accounting"]["total_profit"];
         cp["accounting"]["buy_spot_profit"] = buy_spot_profit + profit;
         cp["accounting"]["total_profit"] = total_profit + profit;
@@ -115,7 +115,7 @@ void StrategyState::send_close_perpetual_order(DataModel& checkpoint)
         double profit = place_volumn_in_usdt - close_volumn_in_usdt;
 
         // Save profit to checkpoint
-        double sell_perpetual_profit = cp["sell_perpetual_profit"];
+        double sell_perpetual_profit = cp["accounting"]["sell_perpetual_profit"];
         double total_profit = cp["accounting"]["total_profit"];
         cp["accounting"]["sell_perpetual_profit"] = sell_perpetual_profit + profit;
         cp["accounting"]["total_profit"] = total_profit + profit;
