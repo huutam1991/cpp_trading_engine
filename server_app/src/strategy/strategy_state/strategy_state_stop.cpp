@@ -64,7 +64,7 @@ void StrategyStateStop::run(double price)
             // Calculate profit
             double place_volumn_in_usdt = cp["positions"]["sell_perpetual"]["volumn_in_usdt"];
             double close_volumn_in_usdt = response["volumn_in_usdt"];
-            double profit = close_volumn_in_usdt - place_volumn_in_usdt;
+            double profit = place_volumn_in_usdt - close_volumn_in_usdt;
 
             // Save profit to checkpoint
             double sell_perpetual_profit = cp["sell_perpetual_profit"];

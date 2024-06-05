@@ -120,6 +120,7 @@ Json BinanceGateway::place(Order order)
         (BinanceQuoter*)&m_quoter_perpetual;
 
     Json response = quoter->place(order);
+    response["symbol"] = order.symbol;
 
     return quoter->get_trade_result_from_response(response);
 }
