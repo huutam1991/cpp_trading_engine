@@ -56,12 +56,17 @@ void Strategy::init()
     m_sell_buy_ratio = config["sell_buy_ratio"];
     m_is_running = config["is_running"];
 
+    // Get [placing_price]
+    double placing_price = config["placing_price"];
+    StrategyState::set_placing_price(placing_price);
+
     // Log config
     ADD_LOG("Strategy config:");
     ADD_LOG("- symbol: " << m_symbol);
     ADD_LOG("- buy_volumn: " << m_buy_volumn);
     ADD_LOG("- move_price: " << m_move_price);
     ADD_LOG("- sell_buy_ratio: " << m_sell_buy_ratio);
+    ADD_LOG("- placing_price: " << placing_price);
     ADD_LOG("- is_running: " << m_is_running);
 
     // Load checkpoints

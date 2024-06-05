@@ -25,6 +25,7 @@ public:
 
     static DataModel get_state_status();
     static void set_state_status(const std::string& status);
+    static void set_placing_price(double price);
 
     virtual void begin();
     virtual void end();
@@ -39,7 +40,6 @@ protected:
 
     // For placing at a specific price
     static double* placing_price_ptr();
-    static void set_placing_price(double price);
     static double get_placing_price();
 };
 
