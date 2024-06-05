@@ -22,6 +22,10 @@ void StrategyStatePlacing::run(double price)
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
     checkpoint["is_current_checkpoint"] = true;
 
+    // Increase visit times
+    long visit_times = checkpoint["accounting"]["visit_times"];
+    checkpoint["accounting"]["visit_times"] = visit_times + 1;
+
     // Buy SPOT order
     Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
     AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
