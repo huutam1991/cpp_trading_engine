@@ -23,4 +23,8 @@ void StrategyStateStart::run(double price)
     {
         StrategyState::set_state_status("PLACING");
     }
+    else
+    {
+        StrategyState::set_state_status("MONITORING");
+    }
 }
