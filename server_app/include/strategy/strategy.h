@@ -42,6 +42,7 @@ public:
 
     double get_current_price();
     double get_total_profit();
+    DataModel get_current_checkpoint();
 };
 
 class SimpleGuard

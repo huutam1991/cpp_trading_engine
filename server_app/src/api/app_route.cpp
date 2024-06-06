@@ -328,6 +328,7 @@ void add_app_route()
         Json response;
         response["current_price"] = Strategy::instance().get_current_price();
         response["total_profit"] = Strategy::instance().get_total_profit();
+        response["current_checkpoint"] = Strategy::instance().get_current_checkpoint();
 
         return HttpResponse(OK_200, response);
     };

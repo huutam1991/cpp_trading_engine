@@ -129,3 +129,15 @@ double Strategy::get_total_profit()
 {
     return m_checkpoints->get_total_profit();
 }
+
+DataModel Strategy::get_current_checkpoint()
+{
+    Json checkpoint = m_checkpoints->get_current_checkpoint().get_data();
+    checkpoint.remove_field("is_current_checkpoint");
+    checkpoint.remove_field("_id");
+    checkpoint.remove_field("info");
+    checkpoint.remove_field("size");
+    checkpoint.remove_field("accounting");
+
+    return checkpoint;
+}
