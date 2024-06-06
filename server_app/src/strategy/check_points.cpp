@@ -110,3 +110,21 @@ double CheckPoints::get_total_profit()
 
     return total_profit;
 }
+
+Json CheckPoints::get_buy_spot_holding()
+{
+    double quantity = 0;
+    double volumn_in_usdt = 0;
+
+    for (auto it : m_checkpoint_list)
+    {
+        DataModel& checkpoint = it.second;
+        quantity += (double)checkpoint["positions"]["buy_spot"]["quantity"];
+        volumn_in_usdt += (double)checkpoint["positions"]["buy_spot"]["volumn_in_usdt"];
+    }
+
+    return {
+        {"quantity", quantity},
+        {"volumn_in_usdt", volumn_in_usdt},
+    };
+}

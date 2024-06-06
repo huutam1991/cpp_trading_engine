@@ -329,6 +329,7 @@ void add_app_route()
         response["current_price"] = Strategy::instance().get_current_price();
         response["total_profit"] = Strategy::instance().get_total_profit();
         response["current_checkpoint"] = Strategy::instance().get_current_checkpoint();
+        response["buy_spot_holding"] = Strategy::instance().get_buy_spot_holding();
 
         return HttpResponse(OK_200, response);
     };

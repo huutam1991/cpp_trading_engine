@@ -130,9 +130,9 @@ double Strategy::get_total_profit()
     return m_checkpoints->get_total_profit();
 }
 
-DataModel Strategy::get_current_checkpoint()
+Json Strategy::get_current_checkpoint()
 {
-    Json checkpoint = m_checkpoints->get_current_checkpoint().get_data();
+    Json checkpoint = m_checkpoints->get_current_checkpoint().get_data().deep_clone();
     checkpoint.remove_field("is_current_checkpoint");
     checkpoint.remove_field("_id");
     checkpoint.remove_field("info");
@@ -140,4 +140,9 @@ DataModel Strategy::get_current_checkpoint()
     checkpoint.remove_field("accounting");
 
     return checkpoint;
+}
+
+Json Strategy::get_buy_spot_holding()
+{
+    return m_checkpoints->get_buy_spot_holding();
 }
