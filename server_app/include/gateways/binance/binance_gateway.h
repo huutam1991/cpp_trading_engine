@@ -14,7 +14,7 @@ class BinanceGateway : public Gateway
 
     // Market data
     BinanceMarketData m_market_data_spot;
-    BinanceMarketData m_market_data_perpetual;
+    // BinanceMarketData m_market_data_perpetual;
 
     // Exchange info
     Json m_symbols_info;

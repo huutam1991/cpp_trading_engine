@@ -26,6 +26,11 @@ private:
     std::shared_ptr<WebsocketClient> m_websocket;
     std::function<void(const std::string& symbol, Json& payload)> m_on_callback = nullptr;
 
+    // Schedule to reset websocket
+    size_t m_schedule_task_id = 0;
+    void add_timer_reset_websocket(size_t period);
+    void del_timer_reset_websocket();
+
     size_t get_stream_id_count();
 };
 

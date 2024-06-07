@@ -1,19 +1,21 @@
 #include <gateways/binance/binance_market_data/binance_market_data.h>
+#include <timer.h>
 
 BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)
 {
+    add_timer_reset_websocket(10000);
 }
 
 BinanceMarketData::~BinanceMarketData()
 {
     ADD_LOG("~BinanceMarketData, " << m_symbol);
+    del_timer_reset_websocket();
 }
 
 void BinanceMarketData::start()
 {
-    //check_ws_url_base_on_back_testing();
     m_websocket = std::make_shared<WebsocketClient>(m_url, m_port, "/ws");
 
     m_websocket->on_connect([this](WebsocketClientHandle& ws)
@@ -120,4 +122,23 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
         return true;
     }
     return false;
+}
+
+void BinanceMarketData::add_timer_reset_websocket(size_t period)
+{
+    ADD_LOG("add timer outside");
+    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
+    {
+        ADD_LOG("add timer inside");
+        start();
+    },
+    period);
+}
+
+void BinanceMarketData::del_timer_reset_websocket()
+{
+    if (m_schedule_task_id != 0)
+    {
+        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
+    }
 }

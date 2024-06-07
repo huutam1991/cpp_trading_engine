@@ -6,8 +6,8 @@
 BinanceGateway::BinanceGateway(const std::string& key) :
     m_quoter_spot(key),
     m_quoter_perpetual(key),
-    m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
-    m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
+    m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT)
+    // m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
     Json account = Account::load_account_by_key(key);
     bool is_testnet = account["is_testnet"];
@@ -17,10 +17,10 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     std::string md_spot_port = is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
     m_market_data_spot.update_url_and_port(md_spot_url, md_spot_port);
 
-    // Update url + port for market data PERPETUAL
-    std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
-    std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
-    m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
+    // // Update url + port for market data PERPETUAL
+    // std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
+    // std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
+    // m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
 
     m_symbols_info["spot"] = get_spot_symbols_info();
     m_symbols_info["perpetual"] = get_perpetual_symbols_info();
