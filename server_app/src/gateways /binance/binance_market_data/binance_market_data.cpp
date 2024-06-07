@@ -126,10 +126,8 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
 
 void BinanceMarketData::add_timer_reset_websocket(size_t period)
 {
-    ADD_LOG("add timer outside");
     m_schedule_task_id = Timer::instance().add_schedule_task([this]()
     {
-        ADD_LOG("add timer inside");
         start();
     },
     period);

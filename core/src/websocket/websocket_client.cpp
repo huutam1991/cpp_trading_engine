@@ -117,7 +117,7 @@ void WebsocketClient::run()
 
                 std::string strbuf = beast::buffers_to_string(buffer.data());
                 on_message(strbuf, wsh);
-                        
+
                 buffer.consume(buffer.size());
 
                 // if (use_valid_data == false)
@@ -179,14 +179,14 @@ void WebsocketClient::run()
                 //             // }
 
                 //             std::string strbuf;
-                //             for ( const auto &it: buffer.data() ) 
+                //             for ( const auto &it: buffer.data() )
                 //             {
                 //                 strbuf.append(static_cast<const char *>(it.data()), it.size());
                 //             }
 
                 //             on_message(strbuf, wsh);
                 //         }
-                        
+
                 //         buffer.consume(buffer.size());
 
                 //         // buffer.consume(buffer.size());
@@ -217,9 +217,10 @@ void WebsocketClient::run()
 
             return EXIT_FAILURE;
         }
-        catch (...)  
+        catch (...)
         {
             LOG(ERROR) << "Websocket Default Exception" << std::endl;
+            on_close(websocket::close_code::internal_error);
             return EXIT_FAILURE;
         }
     });
