@@ -1,4 +1,5 @@
 #include <external_request/external_request_ssl.h>
+#include <mongo_db/mongo_db.h>
 
 #include <gateways/binance/binance_gateway.h>
 #include <account/account.h>
@@ -112,6 +113,16 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(best_ask);
 }
 
+void BinanceGateway::check_save_resonse_error(Json& response)
+{
+    if ((long)response["code"] < 0)
+    {
+        MongoDB::instance()
+            .set_db_and_collection(STRATEGY_DB_NAME, "error")
+            .insert_one(response);
+    }
+}
+
 Json BinanceGateway::place(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
@@ -121,6 +132,9 @@ Json BinanceGateway::place(Order order)
 
     Json response = quoter->place(order);
     response["symbol"] = order.symbol;
+
+    // Check save error
+    check_save_resonse_error(response);
 
     return quoter->get_trade_result_from_response(response);
 }
