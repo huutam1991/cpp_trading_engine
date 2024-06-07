@@ -5,7 +5,7 @@ BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& 
     m_url(url),
     m_port(port)
 {
-    add_timer_reset_websocket(10000);
+    add_timer_reset_websocket(1800000);
 }
 
 BinanceMarketData::~BinanceMarketData()
