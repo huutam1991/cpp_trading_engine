@@ -63,6 +63,8 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
 
 Json BinanceQuoterSpot::place(Order order)
 {
+    m_order = order;
+
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
     std::string side = order.side == Order::Side::BUY ? "BUY" : "SELL";

@@ -15,6 +15,7 @@ protected:
     std::string m_api_secret;
 
     bool m_is_testnet = false;
+    Order m_order;
     virtual std::string& get_url() = 0;
     virtual std::string& get_port() = 0;
 

@@ -59,6 +59,7 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
     if ((long)response["code"] < 0)
     {
         response["query"] = query;
+        response["order"] = m_order.to_json();
 
         MongoDB::instance()
             .set_db_and_collection(STRATEGY_DB_NAME, "error")

@@ -162,6 +162,8 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
 
 Json BinanceQuoterPerpetual::place(Order order)
 {
+    m_order = order;
+
     // Update order result to "placing", mean need to wait until it get filled
     update_order_result({
         {"status", "PLACING"},
