@@ -323,14 +323,8 @@ void add_app_route()
     };
 
     // Update strategy's config
-    ADD_ROUTE(RequestMethod::GET, "/current_price")
+    ADD_ROUTE(RequestMethod::GET, "/current_info")
     {
-        Json response;
-        response["current_price"] = Strategy::instance().get_current_price();
-        response["total_profit"] = Strategy::instance().get_total_profit();
-        response["current_checkpoint"] = Strategy::instance().get_current_checkpoint();
-        response["buy_spot_holding"] = Strategy::instance().get_buy_spot_holding();
-
-        return HttpResponse(OK_200, response);
+        return HttpResponse(OK_200, Strategy::instance().get_current_info());
     };
 }

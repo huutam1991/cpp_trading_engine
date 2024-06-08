@@ -41,9 +41,7 @@ public:
     void update(double price);
 
     double get_current_price();
-    double get_total_profit();
-    Json get_current_checkpoint();
-    Json get_buy_spot_holding();
+    Json   get_current_info();
 };
 
 class SimpleGuard

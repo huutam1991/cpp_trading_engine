@@ -128,3 +128,19 @@ Json CheckPoints::get_buy_spot_holding()
         {"volumn_in_usdt", volumn_in_usdt},
     };
 }
+
+Json CheckPoints::get_current_info()
+{
+    Json current_checkpoint = get_current_checkpoint().get_data().deep_clone();
+    current_checkpoint.remove_field("is_current_checkpoint");
+    current_checkpoint.remove_field("_id");
+    current_checkpoint.remove_field("info");
+    current_checkpoint.remove_field("size");
+    current_checkpoint.remove_field("accounting");
+
+    return {
+        {"current_checkpoint", current_checkpoint},
+        {"buy_spot_holding", get_buy_spot_holding()},
+        {"total_profit", get_total_profit()}
+    };
+}

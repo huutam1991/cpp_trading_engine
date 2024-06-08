@@ -30,13 +30,16 @@ private:
 
     DataModel create_checkpoint_data_model(double price);
 
+    // For get information
+    double    get_total_profit();
+    Json      get_buy_spot_holding();
+
 public:
     CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
 
     DataModel get_current_checkpoint();
     DataModel get_checkpoint_by_price(double price);
-    double    get_total_profit();
-    Json      get_buy_spot_holding();
+    Json      get_current_info();
 };
 
 #endif //CHECK_POINTS_H
