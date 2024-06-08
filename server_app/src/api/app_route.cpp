@@ -11,6 +11,7 @@
 
 // Strategy
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
+#include <api_handler/api_handler_strategy/api_handler_strategy_current_info.h>
 
 #include <gateways/gateway_manager.h>
 #include <strategy/strategy.h>
@@ -323,8 +324,8 @@ void add_app_route()
     };
 
     // Update strategy's config
-    ADD_ROUTE(RequestMethod::GET, "/current_info")
+    ADD_ROUTE(RequestMethod::GET, "/strategy_current_info")
     {
-        return HttpResponse(OK_200, Strategy::instance().get_current_info());
+        return APIHandlerStrategyCurrentInfo(request).handle();
     };
 }
