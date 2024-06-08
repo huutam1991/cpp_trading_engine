@@ -187,6 +187,32 @@ std::string CheckPoints::get_max_checkpoint()
     return res;
 }
 
+double CheckPoints::get_price_distance()
+{
+    std::string max_checkpoint = get_max_checkpoint();
+    std::string min_checkpoint = get_min_checkpoint();
+
+    double max_price = 0;
+    double min_price = 0;
+
+    for (auto it : m_checkpoint_list)
+    {
+        DataModel& checkpoint = it.second;
+        std::string checkpoint_id = checkpoint["checkpoint_id"];
+
+        if (checkpoint_id == max_checkpoint)
+        {
+            max_price = checkpoint["info"]["price"];
+        }
+        else if (checkpoint_id == min_checkpoint)
+        {
+            min_price = checkpoint["info"]["price"];
+        }
+    }
+
+    return max_price - min_price;
+}
+
 Json CheckPoints::get_current_info()
 {
     Json current_checkpoint = get_current_checkpoint().get_data().deep_clone();
@@ -202,6 +228,7 @@ Json CheckPoints::get_current_info()
         {"total_checkpoints", m_checkpoint_list.size()},
         {"min_checkpoint", get_min_checkpoint()},
         {"max_checkpoint", get_max_checkpoint()},
+        {"price_distance", get_price_distance()},
         {"total_profit", get_total_profit()}
     };
 }

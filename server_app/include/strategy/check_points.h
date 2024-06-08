@@ -35,6 +35,7 @@ private:
     Json        get_buy_spot_holding();
     std::string get_min_checkpoint();
     std::string get_max_checkpoint();
+    double      get_price_distance();
 
 public:
     CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
