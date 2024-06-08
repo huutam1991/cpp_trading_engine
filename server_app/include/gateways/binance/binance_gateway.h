@@ -29,7 +29,6 @@ public:
 
 private:
     void on_depth_update(const std::string& symbol, Json& payload);
-    void check_save_resonse_error(Json& response);
 
     Json get_spot_symbols_info();
     Json get_perpetual_symbols_info();

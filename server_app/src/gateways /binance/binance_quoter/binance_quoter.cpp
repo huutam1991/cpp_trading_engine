@@ -1,5 +1,6 @@
 #include <openssl/hmac.h>
 #include <external_request/external_request_ssl.h>
+#include <mongo_db/mongo_db.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 #include <account/account.h>
@@ -53,6 +54,18 @@ std::string BinanceQuoter::getSignature(std::string& query)
 	return encryptWithHMAC(m_api_secret.c_str(), query.c_str());
 }
 
+void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& query)
+{
+    if ((long)response["code"] < 0)
+    {
+        response["query"] = query;
+
+        MongoDB::instance()
+            .set_db_and_collection(STRATEGY_DB_NAME, "error")
+            .insert_one(response);
+    }
+}
+
 Json BinanceQuoter::send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str)
 {
     std::string new_query_std = query_str;
@@ -64,5 +77,10 @@ Json BinanceQuoter::send_binance_request(RequestMethod method, const std::string
     ExternalRequestSsl binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    return Json::parse(binance_request.send_request(""));
+    Json response = Json::parse(binance_request.send_request(""));
+
+    // Check to save error
+    check_save_resonse_error(response, new_query_std);
+
+    return response;
 }
