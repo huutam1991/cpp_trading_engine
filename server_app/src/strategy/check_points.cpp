@@ -195,8 +195,8 @@ Json CheckPoints::get_neighbor_checkpoints()
     double move_price = current_checkpoint["size"]["move_price"];
 
     return {
-        {"next_checkpoint", symbol + "_" + std::to_string(price + move_price)},
-        {"prev_checkpoint", symbol + "_" + std::to_string(price - move_price)},
+        {"next_checkpoint", symbol + "_" + std::to_string(long(price + move_price))},
+        {"prev_checkpoint", symbol + "_" + std::to_string(long(price - move_price))},
     };
 }
 
