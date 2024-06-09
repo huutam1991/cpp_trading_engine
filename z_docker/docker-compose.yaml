@@ -4,48 +4,32 @@ services:
   mongodb:
     image: mongo:latest
     networks:
-      - alphahtrading-net
+      - cpp_trading_engine_network
     ports:
      - 27017:27017
     volumes:
       - ./mongo_docker_data:/data/db
 
-  # binance_simulator:
-  #   build:
-  #     context: ../
-  #     dockerfile: binance_simulator_service/Dockerfile
-  #   depends_on:
-  #     - mongodb
-  #   networks:
-  #     - alphahtrading-net
-  #   ports:
-  #    - 4443:4443
-  #    - 5443:5443
-  #   environment:
-  #     - MONGO_URI=mongodb://mongodb:27017
-
-  manual-trader:
+  cpp_trading_engine:
     build:
       context: ../
       dockerfile: z_docker/Dockerfile
     depends_on:
       - mongodb
     networks:
-      - alphahtrading-net
+      - cpp_trading_engine_network
     ports:
      - 80:80
      - 443:443
      - 8081:8081
     environment:
       - MONGO_URI=mongodb://mongodb:27017
-      - INIT_PRICE_PENDING_TIME=3
-      - BINANCE_SIMULATOR_URL=binance_simulator
       - GLOG_logbufsecs=0
     volumes:
       - ./excel:/web_data/excel
       - /home/ubuntu/manualtrader/logs:/tmp
 
 networks:
-  alphahtrading-net:
+  cpp_trading_engine_network:
     driver: bridge
 

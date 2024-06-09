@@ -2,20 +2,20 @@ FROM ubuntu:22.04
 
 # Install libraries
 WORKDIR /install_folder
-ADD ../install_library.sh /install_folder
+ADD install_library.sh /install_folder
 RUN chmod 777 install_library.sh
 RUN ./install_library.sh
 
 # Copy source code into container
-WORKDIR /manualtrader
-ADD core /manualtrader/core
-ADD server_app /manualtrader/server_app
-ADD web_data /manualtrader/web_data
-ADD build_bash.sh /manualtrader
-ADD CMakeLists.txt /manualtrader
-ADD run_bash.sh /manualtrader
-ADD server-certificate.crt /manualtrader
-ADD server-private-key.pem /manualtrader
+WORKDIR /cpp_trading_engine
+ADD core /cpp_trading_engine/core
+ADD server_app /cpp_trading_engine/server_app
+ADD web_data /cpp_trading_engine/web_data
+ADD build_bash.sh /cpp_trading_engine
+ADD CMakeLists.txt /cpp_trading_engine
+ADD run_bash.sh /cpp_trading_engine
+ADD server-certificate.crt /cpp_trading_engine
+ADD server-private-key.pem /cpp_trading_engine
 
 # Add lib to system path
 #ENV ARM64="True"
