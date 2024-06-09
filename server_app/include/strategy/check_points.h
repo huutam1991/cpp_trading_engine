@@ -33,6 +33,7 @@ private:
     // For get information
     double      get_total_profit();
     Json        get_buy_spot_holding();
+    Json        get_neighbor_checkpoints();
     std::string get_min_checkpoint();
     std::string get_max_checkpoint();
     double      get_price_distance();

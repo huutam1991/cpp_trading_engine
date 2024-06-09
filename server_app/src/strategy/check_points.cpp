@@ -187,6 +187,19 @@ std::string CheckPoints::get_max_checkpoint()
     return res;
 }
 
+Json CheckPoints::get_neighbor_checkpoints()
+{
+    Json current_checkpoint = get_current_checkpoint().get_data().deep_clone();
+    std::string symbol = current_checkpoint["info"]["symbol"];
+    double price = current_checkpoint["info"]["price"];
+    double move_price = current_checkpoint["size"]["move_price"];
+
+    return {
+        {"next_checkpoint", symbol + "_" + std::to_string(price + move_price)},
+        {"prev_checkpoint", symbol + "_" + std::to_string(price - move_price)},
+    };
+}
+
 double CheckPoints::get_price_distance()
 {
     std::string max_checkpoint = get_max_checkpoint();
@@ -228,6 +241,7 @@ Json CheckPoints::get_current_info()
         {"total_checkpoints", m_checkpoint_list.size()},
         {"min_checkpoint", get_min_checkpoint()},
         {"max_checkpoint", get_max_checkpoint()},
+        {"neighbor_checkpoints", get_neighbor_checkpoints()},
         {"price_distance", get_price_distance()},
         {"total_profit", get_total_profit()}
     };
