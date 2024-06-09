@@ -3,6 +3,7 @@
 
 // User
 #include <api_handler/api_handler_user/api_handler_user_register.h>
+#include <api_handler/api_handler_user/api_handler_user_login.h>
 
 // Account
 #include <api_handler/api_handler_account/api_handler_add_account.h>
@@ -291,6 +292,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
     {
         return APIHandlerUserRegister(request).handle();
+    };
+
+    // User's login
+    ADD_ROUTE(RequestMethod::POST, "/login")
+    {
+        return APIHandlerUserLogin(request).handle();
     };
 
     // Add account
