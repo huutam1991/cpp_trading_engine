@@ -3,6 +3,7 @@
 
 APIHandlerStrategyCurrentInfo::APIHandlerStrategyCurrentInfo(HttpRequest* request) : APIHandler(request)
 {
+    m_need_check_authentication = true;
 }
 
 HttpResponse APIHandlerStrategyCurrentInfo::child_handle()

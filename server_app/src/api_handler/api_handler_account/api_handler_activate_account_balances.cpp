@@ -4,6 +4,7 @@
 
 APIHandlerActivateAccountBalances::APIHandlerActivateAccountBalances(HttpRequest* request) : APIHandler(request)
 {
+    m_need_check_authentication = true;
     add_mandatory_body_params({"symbols"});
 }
 

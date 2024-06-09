@@ -55,6 +55,11 @@ std::string APIHandler::check_authentication()
     std::string user_id = payload["user_id"];
     // m_user = UserManager::instance().get_user_by_id(user_id);
 
+    if (user_id != "root")
+    {
+        return "Not root user";
+    }
+
     return res;
 }
 

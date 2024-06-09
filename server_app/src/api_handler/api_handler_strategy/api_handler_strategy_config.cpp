@@ -4,6 +4,7 @@
 
 APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHandler(request)
 {
+    m_need_check_authentication = true;
     add_mandatory_body_params({"symbol", "buy_volumn", "move_price", "is_running", "sell_buy_ratio"});
 }
 
