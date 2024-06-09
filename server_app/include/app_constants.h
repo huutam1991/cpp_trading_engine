@@ -11,8 +11,8 @@
 
 // Token
 #define TOKEN_ISSUER "AlphaHTrading"
-#define TOKEN_EXPRIED_TIME 24
-#define TOKEN_SECRET_KEY "JWTManager02112022"
+#define TOKEN_EXPRIED_TIME 168
+#define TOKEN_SECRET_KEY "CPP_TRADING_ENGINE_ON_BINANCE_22661"
 
 // Channel name
 #define CHANNEL_ORDER_STATUS "order_status"
