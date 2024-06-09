@@ -10,7 +10,7 @@ RUN ./install_library.sh
 WORKDIR /cpp_trading_engine
 ADD core /cpp_trading_engine/core
 ADD server_app /cpp_trading_engine/server_app
-# ADD web_data /cpp_trading_engine/web_data
+ADD web_data /cpp_trading_engine/web_data
 ADD build_bash.sh /cpp_trading_engine
 ADD CMakeLists.txt /cpp_trading_engine
 ADD run_bash.sh /cpp_trading_engine
