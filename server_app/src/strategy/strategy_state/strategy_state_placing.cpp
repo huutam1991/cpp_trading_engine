@@ -46,18 +46,18 @@ void StrategyStatePlacing::run(double price)
         }
     });
 
-    // Sell Perpetual order
-    Order sell_perpetual = get_sell_perpetual_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, sell_perpetual, checkpoint]()
-    {
-        DataModel cp = checkpoint;
+    // // Sell Perpetual order
+    // Order sell_perpetual = get_sell_perpetual_order_by_checkpoint(checkpoint);
+    // AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, sell_perpetual, checkpoint]()
+    // {
+    //     DataModel cp = checkpoint;
 
-        Json response = gateway->place(sell_perpetual);
-        cp["positions"]["sell_perpetual"]["quantity"] = response["quantity"];
-        cp["positions"]["sell_perpetual"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+    //     Json response = gateway->place(sell_perpetual);
+    //     cp["positions"]["sell_perpetual"]["quantity"] = response["quantity"];
+    //     cp["positions"]["sell_perpetual"]["volumn_in_usdt"] = response["volumn_in_usdt"];
 
-        ADD_LOG("sell perpetual response: " << response);
-    });
+    //     ADD_LOG("sell perpetual response: " << response);
+    // });
 
     StrategyState::set_state_status("MONITORING");
 }

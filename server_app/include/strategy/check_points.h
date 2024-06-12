@@ -30,7 +30,7 @@ private:
 
     DataModel create_checkpoint_data_model(double price);
 
-    // For get information
+    // For getting information
     double      get_total_profit();
     Json        get_buy_spot_holding();
     Json        get_neighbor_checkpoints();

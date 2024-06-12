@@ -27,8 +27,8 @@ void StrategyStateStop::run(double price)
         // Send close spot order
         send_close_spot_order(checkpoint);
 
-        // Send close perpetual order
-        send_close_perpetual_order(checkpoint);
+        // // Send close perpetual order
+        // send_close_perpetual_order(checkpoint);
 
         // Mark current checkpoint is false
         checkpoint["is_current_checkpoint"] = false;

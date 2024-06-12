@@ -25,8 +25,8 @@ void StrategyStateMonitoring::run(double price)
     // Price go down to lower checkpoint
     if (price <= mark_price - move_price)
     {
-        // Only close perpetual order
-        send_close_perpetual_order(checkpoint);
+        // // Only close perpetual order
+        // send_close_perpetual_order(checkpoint);
 
         checkpoint["is_current_checkpoint"] = false;
 
@@ -39,7 +39,7 @@ void StrategyStateMonitoring::run(double price)
     {
         // Close both orders
         send_close_spot_order(checkpoint);
-        send_close_perpetual_order(checkpoint);
+        // send_close_perpetual_order(checkpoint);
 
         checkpoint["is_current_checkpoint"] = false;
 
