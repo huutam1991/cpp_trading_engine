@@ -42,6 +42,7 @@ public:
 
     double get_current_price();
     Json   get_current_info();
+    DataModel get_checkpoint_by_price(double price);
 };
 
 class SimpleGuard

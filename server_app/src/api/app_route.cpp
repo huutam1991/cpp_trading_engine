@@ -85,6 +85,16 @@ void add_app_route()
         std::string body = request->get_body();
         Json data = Json::parse(body);
 
+        if (data.has_field("price"))
+        {
+            double price = data["price"];
+            DataModel checkpoint = Strategy::instance().get_checkpoint_by_price(price);
+            checkpoint["accounting"]["sell_perpetual_profit"] = 0.0;
+            checkpoint["accounting"]["total_profit"] = (double)checkpoint["accounting"]["buy_spot_profit"];
+
+            data = checkpoint;
+        }
+
         Json response;
         response["message"] = "OK";
         response["data"] = data;

@@ -125,6 +125,11 @@ double Strategy::get_current_price()
     return m_current_price;
 }
 
+DataModel Strategy::get_checkpoint_by_price(double price)
+{
+    return m_checkpoints->get_checkpoint_by_price(price);
+}
+
 Json Strategy::get_current_info()
 {
     Json info = m_checkpoints->get_current_info();
