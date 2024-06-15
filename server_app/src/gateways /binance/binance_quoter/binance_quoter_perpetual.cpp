@@ -128,9 +128,9 @@ void BinanceQuoterPerpetual::update_order_result(const Json& order_result)
 Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
 {
     // Return empty data if has error
-    ADD_LOG("Perpetual order error: " << response);
     if ((long)response["code"] < 0)
     {
+        ADD_LOG("Perpetual order error: " << response);
         return {
             {"type", "perpetual"},
             {"symbol", response["symbol"]},

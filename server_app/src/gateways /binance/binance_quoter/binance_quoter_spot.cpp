@@ -19,6 +19,18 @@ std::string& BinanceQuoterSpot::get_port()
 
 Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
 {
+    // Return empty data if has error
+    if ((long)response["code"] < 0)
+    {
+        ADD_LOG("Spot order error: " << response);
+        return {
+            {"type", "spot"},
+            {"symbol", response["symbol"]},
+            {"quantity", 0.0},
+            {"volumn_in_usdt", 0.0}
+        };
+    }
+
     // Get [symbol] + [quantity]
     std::string symbol;
     double quantity = 0;
