@@ -132,8 +132,26 @@ DataModel Strategy::get_checkpoint_by_price(double price)
 
 Json Strategy::get_current_info()
 {
+    double market_price = get_current_price();
     Json info = m_checkpoints->get_current_info();
-    info["current_price"] = get_current_price();
+    info["current_price"] = market_price;
+
+    double next_price = info["neighbor_checkpoints"][0]["price"];
+    double curr_price = info["neighbor_checkpoints"][1]["price"];
+    double prev_price = info["neighbor_checkpoints"][2]["price"];
+
+    if (abs(market_price - curr_price) < 0.0)
+    {
+        info["neighbor_checkpoints"][1]["price_distance"] = market_price - curr_price;
+    }
+    else if (next_price - market_price < market_price - prev_price)
+    {
+        info["neighbor_checkpoints"][0]["price_distance"] = next_price - market_price;
+    }
+    else
+    {
+        info["neighbor_checkpoints"][2]["price_distance"] = market_price - prev_price;
+    }
 
     return info;
 }

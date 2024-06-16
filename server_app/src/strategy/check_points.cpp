@@ -190,14 +190,25 @@ std::string CheckPoints::get_max_checkpoint()
 Json CheckPoints::get_neighbor_checkpoints()
 {
     Json current_checkpoint = get_current_checkpoint().get_data().deep_clone();
-    std::string symbol = current_checkpoint["info"]["symbol"];
     double price = current_checkpoint["info"]["price"];
     double move_price = current_checkpoint["size"]["move_price"];
 
+    Json next_checkpoint = {
+        {"price", price + move_price},
+    };
+
+    Json curr_checkpoint = {
+        {"price", price},
+    };
+
+    Json prev_checkpoint = {
+        {"price", price - move_price},
+    };
+
     Json res = Json::create_array();
-    res.push_back({"next_checkpoint", symbol + "_" + std::to_string(long(price + move_price))});
-    res.push_back({"curr_checkpoint", current_checkpoint["checkpoint_id"]});
-    res.push_back({"prev_checkpoint", symbol + "_" + std::to_string(long(price - move_price))});
+    res.push_back(next_checkpoint);
+    res.push_back(curr_checkpoint);
+    res.push_back(prev_checkpoint);
 
     return res;
 }
