@@ -50,6 +50,8 @@ public:
     void for_each_with_index(std::function<void(size_t,Json&)> loop_func) const;
     void sort(std::function<bool(Json&,Json&)>);
 
+    void push_back(const Json& value);
+
     Json& operator=(const Json&);
     Json& operator[](const std::string&);
     Json& operator[](const char*);

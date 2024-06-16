@@ -194,10 +194,12 @@ Json CheckPoints::get_neighbor_checkpoints()
     double price = current_checkpoint["info"]["price"];
     double move_price = current_checkpoint["size"]["move_price"];
 
-    return {
-        {"next_checkpoint", symbol + "_" + std::to_string(long(price + move_price))},
-        {"prev_checkpoint", symbol + "_" + std::to_string(long(price - move_price))},
-    };
+    Json res = Json::create_array();
+    res.push_back({"next_checkpoint", symbol + "_" + std::to_string(long(price + move_price))});
+    res.push_back({"curr_checkpoint", current_checkpoint["checkpoint_id"]});
+    res.push_back({"prev_checkpoint", symbol + "_" + std::to_string(long(price - move_price))});
+
+    return res;
 }
 
 double CheckPoints::get_price_distance()
@@ -228,10 +230,7 @@ double CheckPoints::get_price_distance()
 
 Json CheckPoints::get_current_info()
 {
-    Json current_checkpoint = get_current_checkpoint().get_data().deep_clone();
-
     return {
-        {"current_checkpoint_id", current_checkpoint["checkpoint_id"]},
         {"buy_spot_holding", get_buy_spot_holding()},
         {"total_checkpoints", m_checkpoint_list.size()},
         {"min_checkpoint", get_min_checkpoint()},
