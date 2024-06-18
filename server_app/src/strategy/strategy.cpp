@@ -136,9 +136,9 @@ Json Strategy::get_current_info()
     Json info = m_checkpoints->get_current_info();
     info["current_price"] = market_price;
 
-    double next_price = info["neighbor_checkpoints"][0]["price"];
-    double curr_price = info["neighbor_checkpoints"][1]["price"];
-    double prev_price = info["neighbor_checkpoints"][2]["price"];
+    double next_price = info["neighbor_checkpoints"][0]["next_price"];
+    double curr_price = info["neighbor_checkpoints"][1]["curr_price"];
+    double prev_price = info["neighbor_checkpoints"][2]["prev_price"];
 
     if (abs(market_price - curr_price) < 0.0)
     {
