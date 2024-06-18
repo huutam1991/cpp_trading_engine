@@ -194,15 +194,15 @@ Json CheckPoints::get_neighbor_checkpoints()
     double move_price = current_checkpoint["size"]["move_price"];
 
     Json next_checkpoint = {
-        {"price", price + move_price},
+        {"next_price", price + move_price},
     };
 
     Json curr_checkpoint = {
-        {"price", price},
+        {"curr_price", price},
     };
 
     Json prev_checkpoint = {
-        {"price", price - move_price},
+        {"prev_price", price - move_price},
     };
 
     Json res = Json::create_array();
@@ -247,7 +247,7 @@ Json CheckPoints::get_current_info()
         {"min_checkpoint", get_min_checkpoint()},
         {"max_checkpoint", get_max_checkpoint()},
         {"neighbor_checkpoints", get_neighbor_checkpoints()},
-        {"price_distance", get_price_distance()},
+        {"max_min_price_distance", get_price_distance()},
         {"total_profit", get_total_profit()}
     };
 }
