@@ -140,17 +140,19 @@ Json Strategy::get_current_info()
     double curr_price = info["neighbor_checkpoints"][1]["curr_price"];
     double prev_price = info["neighbor_checkpoints"][2]["prev_price"];
 
-    if (abs(market_price - curr_price) < 0.0)
+    if (abs(market_price - curr_price) < 1.0)
     {
         info["neighbor_checkpoints"][1]["price_distance"] = market_price - curr_price;
     }
     else if (next_price - market_price < market_price - prev_price)
     {
         info["neighbor_checkpoints"][0]["price_distance"] = next_price - market_price;
+        info["neighbor_checkpoints"][0]["to_curr_price"] = curr_price - market_price;
     }
     else
     {
         info["neighbor_checkpoints"][2]["price_distance"] = market_price - prev_price;
+        info["neighbor_checkpoints"][2]["to_curr_price"] = market_price - curr_price;
     }
 
     return info;
