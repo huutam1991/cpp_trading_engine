@@ -78,7 +78,7 @@ bool HttpRequestPost::is_valid_format()
         content_length = stoi(param_content_length);
     }
 
-    return content_length == m_body.size();
+    return content_length == 0 || content_length == m_body.size();
 }
 
 std::string HttpRequestPost::get_body()
