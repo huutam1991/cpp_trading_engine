@@ -1,0 +1,16 @@
+#ifndef STRATEGY_STATE_CLOSE_ALL_POSITIONS_H
+#define STRATEGY_STATE_CLOSE_ALL_POSITIONS_H
+
+#include <strategy/strategy_state/strategy_state.h>
+
+class StrategyStateCloseAllPositions : public StrategyState
+{
+public:
+    StrategyStateCloseAllPositions(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
+
+    virtual void begin();
+    virtual void end();
+    virtual void run(double price);
+};
+
+#endif //STRATEGY_STATE_CLOSE_ALL_POSITIONS_H
