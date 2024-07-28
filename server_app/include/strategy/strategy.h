@@ -23,6 +23,7 @@ private:
     // Status
     double m_current_price = -1.0;
     bool m_is_running = false;
+    bool m_is_close_all_positions = false;
     bool m_is_init = false;
 
     // Checkpoints + Gateway
@@ -34,6 +35,7 @@ private:
 
     void start();
     void stop();
+    void close_all_positions();
 
 public:
     void init();

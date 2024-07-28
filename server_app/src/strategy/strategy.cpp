@@ -11,6 +11,7 @@
 #include <strategy/strategy_state/strategy_state_placing.h>
 #include <strategy/strategy_state/strategy_state_monitoring.h>
 #include <strategy/strategy_state/strategy_state_stop.h>
+#include <strategy/strategy_state/strategy_state_close_all_positions.h>
 
 std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
 {
@@ -26,6 +27,7 @@ std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
         m_strategy_states["PLACING"] = new StrategyStatePlacing(gateway, check_point);
         m_strategy_states["MONITORING"] = new StrategyStateMonitoring(gateway, check_point);
         m_strategy_states["STOP"] = new StrategyStateStop(gateway, check_point);
+        m_strategy_states["CLOSE_ALL_POSITIONS"] = new StrategyStateCloseAllPositions(gateway, check_point);
     }
 
     return &m_strategy_states;
@@ -55,6 +57,7 @@ void Strategy::init()
     m_move_price = config["move_price"];
     m_sell_buy_ratio = config["sell_buy_ratio"];
     m_is_running = config["is_running"];
+    m_is_close_all_positions = config["is_close_all_positions"];
 
     // Get [placing_price]
     double placing_price = config["placing_price"];
@@ -68,6 +71,7 @@ void Strategy::init()
     ADD_LOG("- sell_buy_ratio: " << m_sell_buy_ratio);
     ADD_LOG("- placing_price: " << placing_price);
     ADD_LOG("- is_running: " << m_is_running);
+    ADD_LOG("- is_close_all_positions: " << m_is_close_all_positions);
 
     // Load checkpoints
     m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_buy_volumn, m_move_price, m_sell_buy_ratio);
@@ -93,7 +97,15 @@ void Strategy::on_config_change()
     }
     else
     {
-        stop();
+        // Only close all positions when [m_is_running] == false and [m_is_close_all_positions] == true
+        if (m_is_close_all_positions == true)
+        {
+            close_all_positions();
+        }
+        else
+        {
+            stop();
+        }
     }
 }
 
@@ -105,6 +117,10 @@ void Strategy::start()
 void Strategy::stop()
 {
     StrategyState::set_state_status("STOP");
+}
+
+void Strategy::close_all_positions() {
+    StrategyState::set_state_status("CLOSE_ALL_POSITIONS");
 }
 
 void Strategy::update(double price)
