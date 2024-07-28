@@ -16,7 +16,7 @@ void StrategyStateCloseAllPositions::end()
 
 void StrategyStateCloseAllPositions::run(double price)
 {
-    DataModel checkpoint = m_checkpoints->get_current_checkpoint();
+    DataModel checkpoint = m_checkpoints->get_one_holding_checkpoint();
 
     if (checkpoint.is_null() == true)
     {
@@ -26,11 +26,5 @@ void StrategyStateCloseAllPositions::run(double price)
     {
         // Send close spot order
         send_close_spot_order(checkpoint);
-
-        // // Send close perpetual order
-        // send_close_perpetual_order(checkpoint);
-
-        // Mark current checkpoint is false
-        checkpoint["is_current_checkpoint"] = false;
     }
 }

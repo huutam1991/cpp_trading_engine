@@ -98,6 +98,22 @@ DataModel CheckPoints::get_current_checkpoint()
     return DataModel(JsonNull());
 }
 
+DataModel CheckPoints::get_one_holding_checkpoint()
+{
+    for (auto& it : m_checkpoint_list)
+    {
+        DataModel& checkpoint = it.second;
+        double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
+
+        // [quantity] > 0 means this is a holding checkpoint
+        if (quantity > 0) {
+            return it.second;
+        }
+    }
+
+    return DataModel(JsonNull());
+}
+
 double CheckPoints::get_total_profit()
 {
     double total_profit = 0;
