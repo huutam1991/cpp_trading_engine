@@ -114,6 +114,22 @@ DataModel CheckPoints::get_one_holding_checkpoint()
     return DataModel(JsonNull());
 }
 
+DataModel CheckPoints::get_checkpoint_can_take_profit(double price, double take_profit) {
+    for (auto& it : m_checkpoint_list)
+    {
+        DataModel& checkpoint = it.second;
+        double mark_price = checkpoint["info"]["price"];
+        double move_price = price - mark_price;
+
+        // [move_price] >= [take_profit] means this checkpoint can take profit
+        if (move_price >= take_profit) {
+            return it.second;
+        }
+    }
+
+    return DataModel(JsonNull());
+}
+
 double CheckPoints::get_total_profit()
 {
     double total_profit = 0;
