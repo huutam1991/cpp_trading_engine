@@ -67,6 +67,10 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
             .set_db_and_collection(STRATEGY_DB_NAME, "error")
             .insert_one(error);
     }
+    else
+    {
+        response["code"] = 0;
+    }
 }
 
 Json BinanceQuoter::send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str)
