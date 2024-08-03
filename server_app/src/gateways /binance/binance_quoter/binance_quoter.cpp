@@ -56,14 +56,16 @@ std::string BinanceQuoter::getSignature(std::string& query)
 
 void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& query)
 {
-    if ((long)response["code"] < 0)
+    if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
     {
-        response["query"] = query;
-        response["order"] = m_order.to_json();
+        Json error;
+        error["query"] = query;
+        error["order"] = m_order.to_json();
+        error["response"] = response;
 
         MongoDB::instance()
             .set_db_and_collection(STRATEGY_DB_NAME, "error")
-            .insert_one(response);
+            .insert_one(error);
     }
 }
 
