@@ -38,7 +38,8 @@ void StrategyStatePlacing::run(double price)
         double quantity = cp["positions"]["buy_spot"]["quantity"];
         if (quantity == 0)
         {
-            Json response = gateway->place(buy_spot);
+            // Json response = gateway->place(buy_spot);
+            Json response;
             cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
             cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
         }

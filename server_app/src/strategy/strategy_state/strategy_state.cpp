@@ -78,7 +78,8 @@ void StrategyState::send_close_spot_order(DataModel& checkpoint)
         DataModel cp = checkpoint;
 
         // Place close buy spot order
-        Json response = gateway->place(close_buy_spot);
+        // Json response = gateway->place(close_buy_spot);
+        Json response;
 
         // Calculate profit
         double place_volumn_in_usdt = cp["positions"]["buy_spot"]["volumn_in_usdt"];
@@ -107,7 +108,8 @@ void StrategyState::send_close_perpetual_order(DataModel& checkpoint)
         DataModel cp = checkpoint;
 
         // Place close buy spot order
-        Json response = gateway->place(close_sell_perpetual);
+        // Json response = gateway->place(close_sell_perpetual);
+        Json response;
 
         // Calculate profit
         double place_volumn_in_usdt = cp["positions"]["sell_perpetual"]["volumn_in_usdt"];

@@ -160,7 +160,7 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     };
 }
 
-Json BinanceQuoterPerpetual::place(Order order)
+Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
     m_order = order;
 
@@ -184,5 +184,5 @@ Json BinanceQuoterPerpetual::place(Order order)
         query_str += "&price=" + std::to_string(order.price);
     }
 
-    return send_binance_request(RequestMethod::POST, "/fapi/v1/order", query_str);
+    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", query_str);
 }

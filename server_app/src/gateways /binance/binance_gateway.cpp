@@ -112,22 +112,22 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(best_ask);
 }
 
-Json BinanceGateway::place(Order order)
+Task<Json> BinanceGateway::place(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
     BinanceQuoter* quoter = order.exchange_type == Order::ExchangeType::SPOT ?
         (BinanceQuoter*)&m_quoter_spot :
         (BinanceQuoter*)&m_quoter_perpetual;
 
-    Json response = quoter->place(order);
+    Json response = co_await quoter->place(order);
     response["symbol"] = order.symbol;
 
-    return quoter->get_trade_result_from_response(response);
+    co_return quoter->get_trade_result_from_response(response);
 }
 
-Json BinanceGateway::get_balances()
+Task<Json> BinanceGateway::get_balances()
 {
-    Json balances = m_quoter_spot.get_balances();
+    Json balances = co_await m_quoter_spot.get_balances();
     balances.for_each([](Json& balance)
     {
         balance["available"] = balance["free"];
@@ -140,7 +140,7 @@ Json BinanceGateway::get_balances()
         balance.remove_field("free");
     });
 
-    return balances;
+    co_return balances;
 }
 
 double BinanceGateway::round_up_quantity(const std::string& type, const std::string& symbol, double quantity)

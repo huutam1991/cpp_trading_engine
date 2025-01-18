@@ -19,16 +19,16 @@ protected:
     virtual std::string& get_url() = 0;
     virtual std::string& get_port() = 0;
 
-    Json send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str);
+    Task<Json> send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str);
     void check_save_resonse_error(Json& response, const std::string& query);
 
 public:
     BinanceQuoter(const std::string& key);
 
-    Json get_balances();
+    Task<Json> get_balances();
 
     virtual Json get_trade_result_from_response(Json& response) = 0;
-    virtual Json place(Order order) = 0;
+    virtual Task<Json> place(Order order) = 0;
 
 };
 

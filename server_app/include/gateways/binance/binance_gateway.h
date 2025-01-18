@@ -23,8 +23,8 @@ public:
     BinanceGateway(const std::string& key);
 
     virtual void subscribe_symbol(const std::string& symbol);
-    virtual Json place(Order order) override;
-    virtual Json get_balances();
+    virtual Task<Json> place(Order order) override;
+    virtual Task<Json> get_balances();
     virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity);
 
 private:

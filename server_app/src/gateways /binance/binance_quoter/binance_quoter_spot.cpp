@@ -73,7 +73,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     };
 }
 
-Json BinanceQuoterSpot::place(Order order)
+Task<Json> BinanceQuoterSpot::place(Order order)
 {
     m_order = order;
 
@@ -92,5 +92,5 @@ Json BinanceQuoterSpot::place(Order order)
         query_str += "&price=" + std::to_string(order.price);
     }
 
-    return send_binance_request(RequestMethod::POST, "/api/v3/order", query_str);
+    co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", query_str);
 }

@@ -17,9 +17,9 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
     ADD_LOG("Binance account - m_is_testnet: " << m_is_testnet);
 }
 
-Json BinanceQuoter::get_balances()
+Task<Json> BinanceQuoter::get_balances()
 {
-    return send_binance_request(RequestMethod::POST, "/sapi/v3/asset/getUserAsset", "");
+    co_return co_await send_binance_request(RequestMethod::POST, "/sapi/v3/asset/getUserAsset", "");
 }
 
 std::string BinanceQuoter::getTimestamp()
@@ -73,7 +73,7 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
     }
 }
 
-Json BinanceQuoter::send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str)
+Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str)
 {
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();
@@ -89,5 +89,5 @@ Json BinanceQuoter::send_binance_request(RequestMethod method, const std::string
     // Check to save error
     check_save_resonse_error(response, new_query_std);
 
-    return response;
+    co_return response;
 }

@@ -1,5 +1,6 @@
 #include <api_header.h>
 #include <data_model/data_model.h>
+#include <coroutine/event_base.h>
 
 // User
 #include <api_handler/api_handler_user/api_handler_user_register.h>
@@ -255,7 +256,7 @@ void add_app_route()
         return HttpResponse(OK_200, response);
     };
 
-    ADD_ROUTE(RequestMethod::GET, "/get_list_trade")
+    ADD_ROUTE(RequestMethod::GET, "/test_place")
     {
         Json response;
         // response["trades"] = MongoDB::instance()
@@ -271,11 +272,23 @@ void add_app_route()
             0.02
         );
 
-        Json order_response = GatewayManager::instance()
-            .get_gateway(GatewayEnum::BINANCE)
-            ->place(order);
+        // auto task = GatewayManager::instance()
+        //     .get_gateway(GatewayEnum::BINANCE)
+        //     ->place(order);
 
-        return HttpResponse(OK_200, order_response);
+
+        // threads.emplace_back([event_base = &event_base]()
+        // {
+        //     event_base->loop();
+        // });
+        // task.start_running_on(&event_base);
+
+        // while (task.handle.done() == false)
+        // {}
+
+        // Json order_response = task.value();
+
+        return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/external_request")

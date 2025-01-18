@@ -35,7 +35,7 @@ public:
     ~BinanceQuoterPerpetual();
 
     virtual Json get_trade_result_from_response(Json& response);
-    virtual Json place(Order order);
+    virtual Task<Json> place(Order order);
 
 };
 

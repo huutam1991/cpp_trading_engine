@@ -23,7 +23,8 @@ HttpResponse APIHandlerActivateAccountBalances::child_handle()
         .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts")
         .find_many();
     std::string exchange = activate_accounts[0]["exchange"];
-    Json balances = GatewayManager::instance().get_gateway(exchange)->get_balances();
+    // Json balances = GatewayManager::instance().get_gateway(exchange)->get_balances();
+    Json balances = {};
 
     // Form response data from [balances] + [symbols_set]
     Json data = Json::create_array();
