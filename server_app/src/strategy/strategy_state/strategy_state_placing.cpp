@@ -32,10 +32,8 @@ void StrategyStatePlacing::run(double price)
 
     // Buy SPOT order
     Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, checkpoint]()
+    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, cp = checkpoint]() mutable
     {
-        DataModel cp = checkpoint;
-
         // Only place buy spot if this checkpoint is not holding any quantity
         double quantity = cp["positions"]["buy_spot"]["quantity"];
         if (quantity == 0)

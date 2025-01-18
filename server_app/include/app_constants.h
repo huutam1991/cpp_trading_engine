@@ -10,7 +10,7 @@
 #define NUMBER_OF_APP_THREADS 10
 
 // Token
-#define TOKEN_ISSUER "AlphaHTrading"
+#define TOKEN_ISSUER "TamNguyen"
 #define TOKEN_EXPRIED_TIME 168
 #define TOKEN_SECRET_KEY "CPP_TRADING_ENGINE_ON_BINANCE_22661"
 
