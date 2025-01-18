@@ -1,6 +1,6 @@
 #include <api_header.h>
 #include <data_model/data_model.h>
-#include <coroutine/event_base.h>
+#include <coroutine/event_base_manager.h>
 
 // User
 #include <api_handler/api_handler_user/api_handler_user_register.h>
@@ -272,23 +272,19 @@ void add_app_route()
             0.02
         );
 
-        // auto task = GatewayManager::instance()
-        //     .get_gateway(GatewayEnum::BINANCE)
-        //     ->place(order);
+        auto task = GatewayManager::instance()
+            .get_gateway(GatewayEnum::BINANCE)
+            ->place(order);
 
 
-        // threads.emplace_back([event_base = &event_base]()
-        // {
-        //     event_base->loop();
-        // });
-        // task.start_running_on(&event_base);
+        task.start_running_on(EventBaseManager::instance().get_event_base_by_id(1));
 
-        // while (task.handle.done() == false)
-        // {}
+        while (task.handle.done() == false)
+        {}
 
-        // Json order_response = task.value();
+        Json order_response = task.value();
 
-        return HttpResponse(OK_200, response);
+        return HttpResponse(OK_200, order_response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/external_request")
