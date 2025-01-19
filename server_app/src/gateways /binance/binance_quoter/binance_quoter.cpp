@@ -4,6 +4,7 @@
 
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 #include <account/account.h>
+#include <request_future.h>
 
 BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 {
@@ -83,10 +84,10 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::
 
     ADD_LOG("get_url(): " << get_url());
 
-    ExternalRequestSsl binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
+    RequestFuture binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    Json response = Json::parse(binance_request.send_request());
+    Json response = co_await binance_request.send_request();
 
     // Check to save error
     check_save_resonse_error(response, new_query_std);

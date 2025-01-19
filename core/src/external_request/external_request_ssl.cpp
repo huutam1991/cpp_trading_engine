@@ -124,8 +124,13 @@ std::string ExternalRequestSsl::send_request()
         // Custom header
         for (auto it = m_headers.begin(); it != m_headers.end(); it++)
         {
+            ADD_LOG("request, header - key: " << it->first << ", value: " << it->second);
             req.set(it->first, it->second);
         }
+
+        ADD_LOG("request, body: " << body);
+        ADD_LOG("request, m_url: " << m_url);
+        ADD_LOG("request, m_path: " << m_path);
 
         // Send the HTTP request to the remote host
         http::write(stream, req);
@@ -187,6 +192,8 @@ std::string ExternalRequestSsl::send_request()
         //     throw beast::system_error{ec};
 
         // If we get here then the connection is closed gracefully
+
+        ADD_LOG("response_str: " << response_str);
 
         return response_str;
     }

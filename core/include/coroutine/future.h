@@ -1,6 +1,7 @@
 #ifndef FUTURE_H
 #define FUTURE_H
 
+#include <functional>
 #include "base_promise_type.h"
 
 // Future is not a coroutine, it's just a awaitable
