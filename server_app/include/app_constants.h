@@ -190,6 +190,7 @@ enum NotificationState
 
 enum EventBaseID
 {
+    APP,
     STRATEGY
 };
 

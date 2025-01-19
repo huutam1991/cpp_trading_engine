@@ -128,7 +128,8 @@ Task<Json> BinanceGateway::place(Order order)
 Task<Json> BinanceGateway::get_balances()
 {
     Json balances = co_await m_quoter_spot.get_balances();
-    balances.for_each([](Json& balance)
+
+    balances["balances"].for_each([](Json& balance)
     {
         balance["available"] = balance["free"];
 
@@ -140,7 +141,7 @@ Task<Json> BinanceGateway::get_balances()
         balance.remove_field("free");
     });
 
-    co_return balances;
+    co_return balances["balances"];
 }
 
 double BinanceGateway::round_up_quantity(const std::string& type, const std::string& symbol, double quantity)

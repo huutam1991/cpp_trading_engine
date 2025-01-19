@@ -19,6 +19,20 @@ ThreadPool* AppUtils::get_app_pool()
     return app_pool;
 }
 
+EventBase* AppUtils::get_app_event_base()
+{
+    if (m_event_base == nullptr)
+    {
+        std::unique_lock lock(m_app_pool_mutex);
+        if (m_event_base == nullptr)
+        {
+            m_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::APP);
+        }
+    }
+
+    return m_event_base;
+}
+
 bool AppUtils::is_long_number(const std::string& number_str)
 {
     try {

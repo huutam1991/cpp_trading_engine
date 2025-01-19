@@ -1,5 +1,9 @@
+#include <coroutine/event_base_manager.h>
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 #include <gateways/gateway_manager.h>
+
+#include <app_utils.h>
+
 #include <set>
 
 APIHandlerActivateAccountBalances::APIHandlerActivateAccountBalances(HttpRequest* request) : APIHandler(request)
@@ -23,8 +27,11 @@ HttpResponse APIHandlerActivateAccountBalances::child_handle()
         .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts")
         .find_many();
     std::string exchange = activate_accounts[0]["exchange"];
-    // Json balances = GatewayManager::instance().get_gateway(exchange)->get_balances();
-    Json balances = {};
+
+    // Use coroutine
+    EventBase* app_event = AppUtils::instance().get_app_event_base();
+    Task<Json> balance_task = GatewayManager::instance().get_gateway(exchange)->get_balances();
+    Json balances = balance_task.start_running_on(app_event).get();
 
     // Form response data from [balances] + [symbols_set]
     Json data = Json::create_array();

@@ -19,7 +19,7 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 
 Task<Json> BinanceQuoter::get_balances()
 {
-    co_return co_await send_binance_request(RequestMethod::POST, "/sapi/v3/asset/getUserAsset", "");
+    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "");
 }
 
 std::string BinanceQuoter::getTimestamp()
@@ -80,6 +80,8 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::
     new_query_std += "&timestamp=" + timestamp;
     auto signature = getSignature(new_query_std);
     new_query_std += "&signature=" + signature;
+
+    ADD_LOG("get_url(): " << get_url());
 
     ExternalRequestSsl binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
