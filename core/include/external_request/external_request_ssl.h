@@ -42,7 +42,7 @@ private:
     static ssl::context ctx;
 
     std::unordered_map<std::string, std::string> m_headers;
-    Json m_body;
+    Json m_body = JsonNull();
 
 public:
     void add_header(const std::string& key, const std::string value);

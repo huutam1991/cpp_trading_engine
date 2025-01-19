@@ -113,7 +113,7 @@ std::string ExternalRequestSsl::send_request()
         int version = 10;
 
         // Set up an HTTP GET request message
-        std::string body = m_body.get_string_value();
+        std::string body = m_body.is_null() ? "" : m_body.get_string_value();
         http::request<http::string_body> req{transform_request_method(m_request_method), m_path, version};
         req.body() = body;
         req.set(http::field::host, m_url);
@@ -124,13 +124,8 @@ std::string ExternalRequestSsl::send_request()
         // Custom header
         for (auto it = m_headers.begin(); it != m_headers.end(); it++)
         {
-            ADD_LOG("request, header - key: " << it->first << ", value: " << it->second);
             req.set(it->first, it->second);
         }
-
-        ADD_LOG("request, body: " << body);
-        ADD_LOG("request, m_url: " << m_url);
-        ADD_LOG("request, m_path: " << m_path);
 
         // Send the HTTP request to the remote host
         http::write(stream, req);

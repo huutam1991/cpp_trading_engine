@@ -82,8 +82,6 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::
     auto signature = getSignature(new_query_std);
     new_query_std += "&signature=" + signature;
 
-    ADD_LOG("get_url(): " << get_url());
-
     RequestFuture binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
