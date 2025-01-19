@@ -34,13 +34,14 @@ HttpResponse APIHandlerActivateAccountBalances::child_handle()
     Json balances = balance_task.start_running_on(app_event).get();
 
     // Form response data from [balances] + [symbols_set]
-    Json data = Json::create_array();
+    Json data;
     balances.for_each([&symbols_set, &data](Json& balance)
     {
         std::string asset = balance["asset"];
+
         if (symbols_set.find(asset) != symbols_set.end())
         {
-            data.push_back(balance);
+            data[asset] = balance["available"];
         }
     });
 
