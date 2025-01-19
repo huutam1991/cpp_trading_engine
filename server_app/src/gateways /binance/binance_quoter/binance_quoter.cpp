@@ -86,7 +86,7 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::
     ExternalRequestSsl binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    Json response = Json::parse(binance_request.send_request(""));
+    Json response = Json::parse(binance_request.send_request());
 
     // Check to save error
     check_save_resonse_error(response, new_query_std);

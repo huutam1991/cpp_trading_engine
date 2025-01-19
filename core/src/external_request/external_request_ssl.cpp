@@ -14,6 +14,11 @@ void ExternalRequestSsl::add_header(const std::string& key, const std::string va
     m_headers.insert(std::make_pair(key, value));
 }
 
+void ExternalRequestSsl::add_body(Json& body)
+{
+    m_body = body;
+}
+
 http::verb ExternalRequestSsl::transform_request_method(RequestMethod method)
 {
     http::verb res;
@@ -64,7 +69,7 @@ void ExternalRequestSsl::init_io_context()
     ExternalRequestSsl::ctx.set_verify_mode(ssl::verify_peer);
 }
 
-std::string ExternalRequestSsl::send_request(const std::string& body)
+std::string ExternalRequestSsl::send_request()
 {
     try
     {
@@ -108,6 +113,7 @@ std::string ExternalRequestSsl::send_request(const std::string& body)
         int version = 10;
 
         // Set up an HTTP GET request message
+        std::string body = m_body.get_string_value();
         http::request<http::string_body> req{transform_request_method(m_request_method), m_path, version};
         req.body() = body;
         req.set(http::field::host, m_url);

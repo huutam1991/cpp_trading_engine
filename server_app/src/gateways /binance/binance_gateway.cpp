@@ -32,7 +32,7 @@ Json BinanceGateway::get_spot_symbols_info()
 {
     ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\",\"BTCUSDC\",\"ETHUSDC\"]", RequestMethod::GET);
 
-    Json exchange_info = Json::parse(binance_request.send_request(""));
+    Json exchange_info = Json::parse(binance_request.send_request());
     Json symbols_info;
 
     exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
@@ -51,7 +51,7 @@ Json BinanceGateway::get_perpetual_symbols_info()
 {
     ExternalRequestSsl binance_request(BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT, "/fapi/v1/exchangeInfo", RequestMethod::GET);
 
-    Json exchange_info = Json::parse(binance_request.send_request(""));
+    Json exchange_info = Json::parse(binance_request.send_request());
     Json symbols_info;
 
     exchange_info["symbols"].for_each([&symbols_info, this](Json& data)

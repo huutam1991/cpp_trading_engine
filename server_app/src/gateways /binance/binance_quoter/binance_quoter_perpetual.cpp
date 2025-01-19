@@ -90,7 +90,7 @@ std::string BinanceQuoterPerpetual::get_listen_key()
     ExternalRequestSsl binance_request(m_url, m_port, "/fapi/v1/listenKey", RequestMethod::POST);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string res = binance_request.send_request("");
+    std::string res = binance_request.send_request();
     Json data = Json::parse(res);
     return data["listenKey"];
 }
@@ -104,7 +104,7 @@ void BinanceQuoterPerpetual::add_timer_keep_alive_listen_key(size_t period)
 
         ADD_LOG("BinanceQuoterPerpetual re-active m_listen_key = " << m_listen_key);
 
-        std::string res = binance_request.send_request("");
+        std::string res = binance_request.send_request();
         Json data = Json::parse(res);
         ADD_LOG("re-active data: " << data.get_string_value());
     },

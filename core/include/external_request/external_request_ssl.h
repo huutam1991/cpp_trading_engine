@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <json/json.h>
 
 namespace beast = boost::beast; // from <boost/beast.hpp>
 namespace http = beast::http;   // from <boost/beast/http.hpp>
@@ -41,10 +42,12 @@ private:
     static ssl::context ctx;
 
     std::unordered_map<std::string, std::string> m_headers;
+    Json m_body;
 
 public:
     void add_header(const std::string& key, const std::string value);
-    std::string send_request(const std::string& body);
+    void add_body(Json& body);
+    std::string send_request();
     http::verb transform_request_method(RequestMethod method);
 
 };
