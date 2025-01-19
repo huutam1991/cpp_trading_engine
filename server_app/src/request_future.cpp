@@ -21,7 +21,6 @@ Future<Json> RequestFuture::send_request()
         AppUtils::instance().get_app_pool()->execute_function([request = request, value]() mutable
         {
             Json response = Json::parse(request->send_request());
-            ADD_LOG("response: "<< response);
             value.set_value(response);
         });
     });

@@ -24,8 +24,6 @@ BinanceGateway::BinanceGateway(const std::string& key) :
 
     m_symbols_info["spot"] = get_spot_symbols_info();
     m_symbols_info["perpetual"] = get_perpetual_symbols_info();
-
-    ADD_LOG("m_symbols_info: " << m_symbols_info);
 }
 
 Json BinanceGateway::get_spot_symbols_info()

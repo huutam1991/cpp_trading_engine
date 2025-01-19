@@ -188,8 +188,6 @@ std::string ExternalRequestSsl::send_request()
 
         // If we get here then the connection is closed gracefully
 
-        ADD_LOG("response_str: " << response_str);
-
         return response_str;
     }
     catch(std::exception const& e)
