@@ -277,12 +277,8 @@ void add_app_route()
             ->place(order);
 
 
-        task.start_running_on(EventBaseManager::instance().get_event_base_by_id(1));
-
-        while (task.handle.done() == false)
-        {}
-
-        Json order_response = task.value();
+        std::future<Json> result = task.start_running_on(EventBaseManager::instance().get_event_base_by_id(1));
+        Json order_response = result.get();
 
         return HttpResponse(OK_200, order_response);
     };

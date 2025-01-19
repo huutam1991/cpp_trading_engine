@@ -1,6 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
+#include <future>
 #include "base_promise_type.h"
 
 template<class T>
@@ -26,11 +27,15 @@ struct Task
         void return_value(T v)
         {
             value = v;
+            promise_value.set_value(v);
         }
         void unhandled_exception() { std::terminate(); }
 
         // Main value
         T value;
+
+        // Promise value
+        std::promise<T> promise_value;
     };
 
     std::coroutine_handle<promise_type> handle;
@@ -64,10 +69,14 @@ struct Task
         get_base_promise_type()->m_suspending_promise = suspend_base_pt;
     }
 
-    void start_running_on(EventBase* event_base)
+    std::future<T> start_running_on(EventBase* event_base)
     {
         auto base_promise_type = get_base_promise_type();
         base_promise_type->start_running_on(event_base, handle);
+
+        // Return future
+        promise_type& promise = handle.promise();
+        return promise.promise_value.get_future();
     }
 
     bool await_ready()
