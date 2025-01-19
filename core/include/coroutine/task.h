@@ -69,10 +69,15 @@ struct Task
         get_base_promise_type()->m_suspending_promise = suspend_base_pt;
     }
 
-    std::future<T> start_running_on(EventBase* event_base)
+    void register_on(EventBase* event_base)
     {
         auto base_promise_type = get_base_promise_type();
-        base_promise_type->start_running_on(event_base, handle);
+        base_promise_type->register_on(event_base, handle);
+    }
+
+    std::future<T> start_running_on(EventBase* event_base)
+    {
+        register_on(event_base);
 
         // Return future
         promise_type& promise = handle.promise();
@@ -96,7 +101,7 @@ struct Task
         save_suspending_promise(suspend_base_pt);
 
         // Running this task on EventBase
-        start_running_on(suspend_base_pt->m_event_base);
+        register_on(suspend_base_pt->m_event_base);
     }
 
     T await_resume()

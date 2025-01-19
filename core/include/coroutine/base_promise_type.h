@@ -10,7 +10,7 @@ struct BasePromiseType
     EventBase* m_event_base = nullptr;
     uint64_t task_id = 0;
 
-    void start_running_on(EventBase* event_base, std::coroutine_handle<>& handle)
+    void register_on(EventBase* event_base, std::coroutine_handle<>& handle)
     {
         m_event_base = event_base;
         task_id = event_base->add_to_event_base(handle);
