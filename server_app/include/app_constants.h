@@ -188,4 +188,9 @@ enum NotificationState
     NOTIFICATION_STATE_TRADE_ERROR              = 3
 };
 
+enum EventBaseID
+{
+    STRATEGY
+};
+
 #endif //APP_CONSTANTS_H
