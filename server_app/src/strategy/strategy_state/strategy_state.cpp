@@ -139,7 +139,7 @@ Order StrategyState::get_close_buy_spot_order_by_checkpoint(DataModel& checkpoin
         Order::ExchangeType::SPOT,
         symbol,
         Order::Side::SELL,
-        "MARKET",
+        Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
         round_up_quantity
     );
@@ -155,7 +155,7 @@ Order StrategyState::get_close_sell_perpetual_order_by_checkpoint(DataModel& che
         Order::ExchangeType::PERPETUAL,
         symbol,
         Order::Side::BUY,
-        "MARKET",
+        Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
         round_up_quantity
     );

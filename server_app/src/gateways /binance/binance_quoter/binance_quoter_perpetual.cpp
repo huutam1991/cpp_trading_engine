@@ -174,11 +174,11 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
     std::string side = order.side == Order::Side::BUY ? "BUY" : "SELL";
 
     query_str += "symbol=" + order.symbol;
-    query_str += "&side=" + side;
-    query_str += "&type=" + order.type;
+    query_str += "&side=" + Order::to_string(order.side);
+    query_str += "&type=" + Order::to_string(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);
 
-    if (order.type == "LIMIT")
+    if (order.type == Order::OrderType::LIMIT)
     {
         query_str += "&timeInForce=GTC";
         query_str += "&price=" + std::to_string(order.price);
