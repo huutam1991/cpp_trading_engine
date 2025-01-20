@@ -1,23 +1,23 @@
 #include <strategy/check_points.h>
 
-CheckPoints::CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio) :
+CheckPointList::CheckPointList(const std::string symbol, double volumn, double move_price, double sell_buy_ratio) :
     m_symbol(symbol), m_buy_volumn(volumn), m_move_price(move_price), m_sell_buy_ratio(sell_buy_ratio)
 {
     m_collection_name = symbol + "_" + std::to_string((size_t)volumn) + "_" + std::to_string((size_t)move_price);
     m_checkpoint_list = DataModel::get_data_model_map(STRATEGY_DB_NAME, m_collection_name, "checkpoint_id");
 }
 
-std::string CheckPoints::get_collection_name()
+std::string CheckPointList::get_collection_name()
 {
     return m_collection_name;
 }
 
-std::string CheckPoints::get_checkpoint_id(double price)
+std::string CheckPointList::get_checkpoint_id(double price)
 {
     return m_symbol + "_" + std::to_string((size_t)price);
 }
 
-DataModel CheckPoints::get_checkpoint_by_price(double price)
+DataModel CheckPointList::get_checkpoint_by_price(double price)
 {
     std::string checkpoint_id = get_checkpoint_id(price);
 
@@ -29,7 +29,7 @@ DataModel CheckPoints::get_checkpoint_by_price(double price)
     return create_checkpoint_data_model(price);
 }
 
-DataModel CheckPoints::create_checkpoint_data_model(double price)
+DataModel CheckPointList::create_checkpoint_data_model(double price)
 {
     std::string checkpoint_id = get_checkpoint_id(price);
 
@@ -81,7 +81,7 @@ DataModel CheckPoints::create_checkpoint_data_model(double price)
     return checkpoint;
 }
 
-DataModel CheckPoints::get_current_checkpoint()
+DataModel CheckPointList::get_current_checkpoint()
 {
     bool is_current_checkpoint = false;
 
@@ -98,7 +98,7 @@ DataModel CheckPoints::get_current_checkpoint()
     return DataModel(JsonNull());
 }
 
-DataModel CheckPoints::get_one_holding_checkpoint()
+DataModel CheckPointList::get_one_holding_checkpoint()
 {
     for (auto& it : m_checkpoint_list)
     {
@@ -114,7 +114,7 @@ DataModel CheckPoints::get_one_holding_checkpoint()
     return DataModel(JsonNull());
 }
 
-DataModel CheckPoints::get_checkpoint_can_take_profit(double price, double take_profit) {
+DataModel CheckPointList::get_checkpoint_can_take_profit(double price, double take_profit) {
     for (auto& it : m_checkpoint_list)
     {
         DataModel& checkpoint = it.second;
@@ -131,7 +131,7 @@ DataModel CheckPoints::get_checkpoint_can_take_profit(double price, double take_
     return DataModel(JsonNull());
 }
 
-double CheckPoints::get_total_profit()
+double CheckPointList::get_total_profit()
 {
     double total_profit = 0;
 
@@ -144,7 +144,7 @@ double CheckPoints::get_total_profit()
     return total_profit;
 }
 
-Json CheckPoints::get_buy_spot_holding()
+Json CheckPointList::get_buy_spot_holding()
 {
     double quantity = 0;
     double volumn_in_usdt = 0;
@@ -162,7 +162,7 @@ Json CheckPoints::get_buy_spot_holding()
     };
 }
 
-std::string CheckPoints::get_min_checkpoint()
+std::string CheckPointList::get_min_checkpoint()
 {
     double min_price = -1;
     std::string res = "";
@@ -191,7 +191,7 @@ std::string CheckPoints::get_min_checkpoint()
     return res;
 }
 
-std::string CheckPoints::get_max_checkpoint()
+std::string CheckPointList::get_max_checkpoint()
 {
     double max_price = -1;
     std::string res = "";
@@ -220,7 +220,7 @@ std::string CheckPoints::get_max_checkpoint()
     return res;
 }
 
-Json CheckPoints::get_neighbor_checkpoints()
+Json CheckPointList::get_neighbor_checkpoints()
 {
     Json current_checkpoint = get_current_checkpoint().get_data().deep_clone();
     double price = current_checkpoint["info"]["price"];
@@ -246,7 +246,7 @@ Json CheckPoints::get_neighbor_checkpoints()
     return res;
 }
 
-double CheckPoints::get_price_distance()
+double CheckPointList::get_price_distance()
 {
     std::string max_checkpoint = get_max_checkpoint();
     std::string min_checkpoint = get_min_checkpoint();
@@ -272,7 +272,7 @@ double CheckPoints::get_price_distance()
     return max_price - min_price;
 }
 
-Json CheckPoints::get_current_info()
+Json CheckPointList::get_current_info()
 {
     return {
         {"buy_spot_holding", get_buy_spot_holding()},

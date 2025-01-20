@@ -21,7 +21,7 @@ std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
     if (m_strategy_states.size() == 0)
     {
         std::shared_ptr<Gateway>& gateway = Strategy::instance().m_gateway;
-        std::shared_ptr<CheckPoints>& check_point = Strategy::instance().m_checkpoints;
+        std::shared_ptr<CheckPointList>& check_point = Strategy::instance().m_checkpoints;
 
         m_strategy_states["START"] = new StrategyStateStart(gateway, check_point);
         m_strategy_states["PLACING"] = new StrategyStatePlacing(gateway, check_point);
@@ -74,7 +74,7 @@ void Strategy::init()
     ADD_LOG("- is_close_all_positions: " << m_is_close_all_positions);
 
     // Load checkpoints
-    m_checkpoints = std::make_shared<CheckPoints>(m_symbol, m_buy_volumn, m_move_price, m_sell_buy_ratio);
+    m_checkpoints = std::make_shared<CheckPointList>(m_symbol, m_buy_volumn, m_move_price, m_sell_buy_ratio);
 
     // Add price callback + subscribe to symbol
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);

@@ -6,7 +6,7 @@
 class StrategyStateCloseAllPositions : public StrategyState
 {
 public:
-    StrategyStateCloseAllPositions(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
+    StrategyStateCloseAllPositions(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);
 
     virtual void begin();
     virtual void end();

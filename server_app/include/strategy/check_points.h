@@ -8,7 +8,7 @@
 
 #include <order/order.h>
 
-class CheckPoints
+class CheckPointList
 {
     // Data fields
 
@@ -39,7 +39,7 @@ private:
     double      get_price_distance();
 
 public:
-    CheckPoints(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
+    CheckPointList(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
 
     DataModel get_current_checkpoint();
     DataModel get_one_holding_checkpoint();

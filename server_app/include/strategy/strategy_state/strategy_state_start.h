@@ -6,7 +6,7 @@
 class StrategyStateStart : public StrategyState
 {
 public:
-    StrategyStateStart(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
+    StrategyStateStart(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);
 
     virtual void begin();
     virtual void end();

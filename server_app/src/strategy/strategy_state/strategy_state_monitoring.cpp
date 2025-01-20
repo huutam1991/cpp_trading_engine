@@ -1,7 +1,7 @@
 #include <strategy/strategy_state/strategy_state_monitoring.h>
 #include <mongo_db/mongo_db.h>
 
-StrategyStateMonitoring::StrategyStateMonitoring(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints)
+StrategyStateMonitoring::StrategyStateMonitoring(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : StrategyState(gateway, checkpoints)
 {}
 

@@ -17,7 +17,7 @@ private:
     std::string m_listen_key;
     size_t m_schedule_task_id = 0;
     void init_websocket();
-    std::string get_listen_key();
+    Task<std::string> get_listen_key();
     void add_timer_keep_alive_listen_key(size_t period);
     void del_timer_keep_alive_listen_key();
 

@@ -1,7 +1,7 @@
 #include <strategy/strategy_state/strategy_state_placing.h>
 #include <app_utils.h>
 
-StrategyStatePlacing::StrategyStatePlacing(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints)
+StrategyStatePlacing::StrategyStatePlacing(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : StrategyState(gateway, checkpoints)
 {}
 

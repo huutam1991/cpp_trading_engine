@@ -17,10 +17,10 @@ class StrategyState
 {
 protected:
     std::shared_ptr<Gateway>& m_gateway;
-    std::shared_ptr<CheckPoints>& m_checkpoints;
+    std::shared_ptr<CheckPointList>& m_checkpoints;
 
 public:
-    StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints);
+    StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);
     ~StrategyState();
 
     static DataModel get_state_status();

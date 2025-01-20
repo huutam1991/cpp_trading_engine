@@ -1,6 +1,6 @@
 #include <strategy/strategy_state/strategy_state_start.h>
 
-StrategyStateStart::StrategyStateStart(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPoints>& checkpoints)
+StrategyStateStart::StrategyStateStart(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : StrategyState(gateway, checkpoints)
 {}
 

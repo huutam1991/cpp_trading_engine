@@ -27,7 +27,7 @@ private:
     bool m_is_init = false;
 
     // Checkpoints + Gateway
-    std::shared_ptr<CheckPoints> m_checkpoints;
+    std::shared_ptr<CheckPointList> m_checkpoints;
     std::shared_ptr<Gateway> m_gateway;
 
     // StrategyState

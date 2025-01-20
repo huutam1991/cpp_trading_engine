@@ -2,6 +2,7 @@
 #include <timer.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
+#include <request_future.h>
 
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
@@ -26,7 +27,7 @@ std::string& BinanceQuoterSpot::get_port()
 
 void BinanceQuoterSpot::init_websocket()
 {
-    m_listen_key = this->get_listen_key();
+    // m_listen_key = this->get_listen_key();
 
     // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
     add_timer_keep_alive_listen_key(1800000);
@@ -82,14 +83,14 @@ void BinanceQuoterSpot::init_websocket()
     m_websocket->run();
 }
 
-std::string BinanceQuoterSpot::get_listen_key()
+Task<std::string> BinanceQuoterSpot::get_listen_key()
 {
-    ExternalRequestSsl binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
+    RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string res = binance_request.send_request();
+    std::string res = co_await binance_request.send_request();
     Json data = Json::parse(res);
-    return data["listenKey"];
+    co_return data["listenKey"];
 }
 
 void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
