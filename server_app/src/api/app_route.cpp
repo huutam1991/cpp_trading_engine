@@ -258,16 +258,11 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::GET, "/test_place")
     {
-        Json response;
-        // response["trades"] = MongoDB::instance()
-        //     .set_db_and_collection("test1", "trade")
-        //     .find_many();
-
         Order order(
-            Order::ExchangeType::PERPETUAL,
+            Order::ExchangeType::SPOT,
             "ETHUSDT",
             Order::Side::BUY,
-            "MARKET",
+            "LIMIT",
             2975.0,
             0.02
         );
