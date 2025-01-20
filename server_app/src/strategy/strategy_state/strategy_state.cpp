@@ -4,7 +4,6 @@
 StrategyState::StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : m_gateway(gateway), m_checkpoints(checkpoints)
 {
-    this->begin();
 }
 
 StrategyState::~StrategyState()

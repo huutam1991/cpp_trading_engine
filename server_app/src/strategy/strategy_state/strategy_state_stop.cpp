@@ -2,7 +2,9 @@
 
 StrategyStateStop::StrategyStateStop(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : StrategyState(gateway, checkpoints)
-{}
+{
+    this->begin();
+}
 
 void StrategyStateStop::begin()
 {
