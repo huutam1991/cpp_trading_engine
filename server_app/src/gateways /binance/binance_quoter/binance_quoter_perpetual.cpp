@@ -171,7 +171,6 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
 
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
-    std::string side = order.side == Order::Side::BUY ? "BUY" : "SELL";
 
     query_str += "symbol=" + order.symbol;
     query_str += "&side=" + Order::to_string(order.side);
