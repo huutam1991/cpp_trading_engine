@@ -1,3 +1,5 @@
+#include <external_request/external_request_ssl.h>
+#include <timer.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 
@@ -5,6 +7,11 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
 {
     m_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_URL : BINANCE_SPOT_URL;
     m_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_PORT : BINANCE_SPOT_PORT;
+
+    // websocket
+    m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_URL : BINANCE_SPOT_WS_URL;
+    m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
+    init_websocket();
 }
 
 std::string& BinanceQuoterSpot::get_url()
@@ -15,6 +22,98 @@ std::string& BinanceQuoterSpot::get_url()
 std::string& BinanceQuoterSpot::get_port()
 {
     return m_port;
+}
+
+void BinanceQuoterSpot::init_websocket()
+{
+    m_listen_key = this->get_listen_key();
+
+    // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
+    add_timer_keep_alive_listen_key(1800000);
+
+    m_websocket = std::make_shared<WebsocketClient>(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
+
+    m_websocket->on_connect([this](WebsocketClientHandle& ws)
+    {
+        ADD_LOG("BinanceQuoterSpot websocket connected");
+    });
+
+    m_websocket->on_message([this](const std::string& buffer, WebsocketClientHandle& ws)
+    {
+        Json json = Json::parse(buffer);
+
+        ADD_LOG("Spot order ack: " << json);
+
+        if (json["e"] == "ORDER_TRADE_UPDATE")
+        {
+            Json order = json["o"];
+            if (order["X"] == "FILLED")
+            {
+                Json data = {
+                    {"status", "FILLED"},
+                    {"symbol", order["s"]},
+                    {"price", std::stod(std::string(order["ap"]))},
+                    {"quantity", std::stod(std::string(order["z"]))}
+                };
+
+                ADD_LOG("BinanceQuoterSpot Filled: " << data);
+
+                // update_order_result(data);
+            }
+        }
+    });
+
+    m_websocket->on_close([this](websocket::close_code close_code)
+    {
+        ADD_LOG("BinanceQuoterSpot on_close, close_code = " << close_code);
+
+        // Unexpected close, need to re-start
+        if (close_code == websocket::close_code::internal_error)
+        {
+            // Delete current schedule task to re-active m_listen_key
+            this->del_timer_keep_alive_listen_key();
+
+            // Re-start
+            ADD_LOG("BinanceFutures - re-starting");
+            this->init_websocket();
+        }
+    });
+
+    m_websocket->run();
+}
+
+std::string BinanceQuoterSpot::get_listen_key()
+{
+    ExternalRequestSsl binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
+    binance_request.add_header("X-MBX-APIKEY", m_api_key);
+
+    std::string res = binance_request.send_request();
+    Json data = Json::parse(res);
+    return data["listenKey"];
+}
+
+void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
+{
+    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
+    {
+        ExternalRequestSsl binance_request(m_url, "443", "/fapi/v1/listenKey?listenKey=" + m_listen_key, RequestMethod::PUT);
+        binance_request.add_header("X-MBX-APIKEY", m_api_key);
+
+        ADD_LOG("BinanceQuoterSpot re-active m_listen_key = " << m_listen_key);
+
+        std::string res = binance_request.send_request();
+        Json data = Json::parse(res);
+        ADD_LOG("re-active data: " << data.get_string_value());
+    },
+    period);
+}
+
+void BinanceQuoterSpot::del_timer_keep_alive_listen_key()
+{
+    if (m_schedule_task_id != 0)
+    {
+        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
+    }
 }
 
 Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)

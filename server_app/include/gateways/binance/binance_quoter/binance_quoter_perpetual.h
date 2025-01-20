@@ -34,9 +34,8 @@ public:
     BinanceQuoterPerpetual(const std::string& key);
     ~BinanceQuoterPerpetual();
 
-    virtual Json get_trade_result_from_response(Json& response);
-    virtual Task<Json> place(Order order);
-
+    virtual Json get_trade_result_from_response(Json& response) override;
+    virtual Task<Json> place(Order order) override;
 };
 
 #endif //BINANCE_QUOTER_PERPETUAL_H
