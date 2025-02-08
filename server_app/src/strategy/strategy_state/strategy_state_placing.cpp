@@ -21,6 +21,22 @@ void StrategyStatePlacing::run(double price)
 {
     ADD_LOG("StrategyStatePlacing - run");
 
+    // Check [max_price_to_place]
+    Json strategy_config = MongoDB::instance()
+        .set_db_and_collection(STRATEGY_DB_NAME, "config")
+        .find_any();
+
+    if (strategy_config.has_field("max_price_to_place")) {
+        double max_price_to_place = strategy_config["max_price_to_place"];
+
+        if (price >= max_price_to_place)
+        {
+            StrategyState::set_state_status("MONITORING");
+
+            return;
+        }
+    }
+
     // Get [price] to place
     double placing_price = StrategyState::get_placing_price();
     price = placing_price == -1 ? price : placing_price;
