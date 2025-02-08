@@ -27,7 +27,8 @@ std::string& BinanceQuoterSpot::get_port()
 
 void BinanceQuoterSpot::init_websocket()
 {
-    // m_listen_key = this->get_listen_key();
+    auto task = this->get_listen_key();
+    m_listen_key = task.start_running_on(AppUtils::instance().get_app_event_base()).get();
 
     // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
     add_timer_keep_alive_listen_key(1800000);
