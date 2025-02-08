@@ -5,6 +5,9 @@ apt-get install -y wget curl git
 apt-get install -y build-essential
 apt-get install -y libgflags-dev
 
+apt update
+apt install g++-11
+
 # Install the MongoDB C Driver (libmongoc) and BSON library (libbson)¶
 cd /
 apt-get install libmongoc-1.0-0 -y
