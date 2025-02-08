@@ -263,7 +263,7 @@ void add_app_route()
             "ETHUSDT",
             Order::Side::BUY,
             Order::OrderType::LIMIT,
-            2975.0,
+            2275.0,
             0.02
         );
 

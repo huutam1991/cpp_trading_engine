@@ -72,31 +72,27 @@ double StrategyState::get_placing_price()
 void StrategyState::send_close_spot_order(DataModel& checkpoint)
 {
     Order close_buy_spot = get_close_buy_spot_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, close_buy_spot, checkpoint]()
-    {
-        DataModel cp = checkpoint;
 
-        // Place close buy spot order
-        // Json response = gateway->place(close_buy_spot);
-        Json response;
+    // Place close buy spot order
+    auto task = m_gateway->place(close_buy_spot);
+    Json response = task.start_running_on(AppUtils::instance().get_app_event_base()).get();
 
-        // Calculate profit
-        double place_volumn_in_usdt = cp["positions"]["buy_spot"]["volumn_in_usdt"];
-        double close_volumn_in_usdt = response["volumn_in_usdt"];
-        double profit = close_volumn_in_usdt - place_volumn_in_usdt;
+    // Calculate profit
+    double place_volumn_in_usdt = checkpoint["positions"]["buy_spot"]["volumn_in_usdt"];
+    double close_volumn_in_usdt = response["volumn_in_usdt"];
+    double profit = close_volumn_in_usdt - place_volumn_in_usdt;
 
-        // Save profit to checkpoint
-        double buy_spot_profit = cp["accounting"]["buy_spot_profit"];
-        double total_profit = cp["accounting"]["total_profit"];
-        cp["accounting"]["buy_spot_profit"] = buy_spot_profit + profit;
-        cp["accounting"]["total_profit"] = total_profit + profit;
+    // Save profit to checkpoint
+    double buy_spot_profit = checkpoint["accounting"]["buy_spot_profit"];
+    double total_profit = checkpoint["accounting"]["total_profit"];
+    checkpoint["accounting"]["buy_spot_profit"] = buy_spot_profit + profit;
+    checkpoint["accounting"]["total_profit"] = total_profit + profit;
 
-        // Close buy spot position
-        cp["positions"]["buy_spot"] = Json{
-            {"quantity", 0.0},
-            {"volumn_in_usdt", 0.0},
-        };
-    });
+    // Close buy spot position
+    checkpoint["positions"]["buy_spot"] = Json{
+        {"quantity", 0.0},
+        {"volumn_in_usdt", 0.0},
+    };
 }
 
 void StrategyState::send_close_perpetual_order(DataModel& checkpoint)

@@ -34,18 +34,17 @@ void StrategyStatePlacing::run(double price)
 
     // Buy SPOT order
     Order buy_spot = get_buy_spot_order_by_checkpoint(checkpoint);
-    AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, buy_spot, cp = checkpoint]() mutable
+
+    // Only place buy spot if this checkpoint is not holding any quantity
+    double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
+    if (quantity == 0)
     {
-        // Only place buy spot if this checkpoint is not holding any quantity
-        double quantity = cp["positions"]["buy_spot"]["quantity"];
-        if (quantity == 0)
-        {
-            // Json response = gateway->place(buy_spot);
-            Json response;
-            cp["positions"]["buy_spot"]["quantity"] = response["quantity"];
-            cp["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
-        }
-    });
+        auto task = m_gateway->place(buy_spot);
+        Json response = task.start_running_on(AppUtils::instance().get_app_event_base()).get();
+
+        checkpoint["positions"]["buy_spot"]["quantity"] = response["quantity"];
+        checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];
+    }
 
     // // Sell Perpetual order
     // Order sell_perpetual = get_sell_perpetual_order_by_checkpoint(checkpoint);
