@@ -39,20 +39,6 @@ void StrategyStateMonitoring::run(double price)
     // Price go up to higher checkpoint
     else if (price >= mark_price + move_price)
     {
-        // Check [max_price_to_place]
-        Json strategy_config = MongoDB::instance()
-            .set_db_and_collection(STRATEGY_DB_NAME, "config")
-            .find_any();
-
-        if (strategy_config.has_field("max_price_to_place")) {
-            double max_price_to_place = strategy_config["max_price_to_place"];
-
-            if (price >= max_price_to_place)
-            {
-                return;
-            }
-        }
-
         checkpoint["is_current_checkpoint"] = false;
 
         // Continue with the other checkpoint

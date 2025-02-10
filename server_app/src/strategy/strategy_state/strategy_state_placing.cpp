@@ -21,6 +21,13 @@ void StrategyStatePlacing::run(double price)
 {
     ADD_LOG("StrategyStatePlacing - run");
 
+    // Get [price] to place
+    double placing_price = StrategyState::get_placing_price();
+    price = placing_price == -1 ? price : placing_price;
+
+    DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
+    checkpoint["is_current_checkpoint"] = true;
+
     // Check [max_price_to_place]
     Json strategy_config = MongoDB::instance()
         .set_db_and_collection(STRATEGY_DB_NAME, "config")
@@ -36,13 +43,6 @@ void StrategyStatePlacing::run(double price)
             return;
         }
     }
-
-    // Get [price] to place
-    double placing_price = StrategyState::get_placing_price();
-    price = placing_price == -1 ? price : placing_price;
-
-    DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
-    checkpoint["is_current_checkpoint"] = true;
 
     // Increase visit times
     long visit_times = checkpoint["accounting"]["visit_times"];
