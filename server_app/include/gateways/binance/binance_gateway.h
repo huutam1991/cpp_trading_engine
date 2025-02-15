@@ -22,10 +22,10 @@ class BinanceGateway : public Gateway
 public:
     BinanceGateway(const std::string& key);
 
-    virtual void subscribe_symbol(const std::string& symbol);
+    virtual void subscribe_symbol(const std::string& symbol) override;
     virtual Task<Json> place(Order order) override;
-    virtual Task<Json> get_balances();
-    virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity);
+    virtual Task<Json> get_balances() override;
+    virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) override;
 
 private:
     void on_depth_update(const std::string& symbol, Json& payload);

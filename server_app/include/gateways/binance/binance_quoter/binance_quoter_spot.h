@@ -27,6 +27,7 @@ protected:
 
 public:
     BinanceQuoterSpot(const std::string& key);
+    ~BinanceQuoterSpot();
 
     virtual Json get_trade_result_from_response(Json& response) override;
     virtual Task<Json> place(Order order) override;

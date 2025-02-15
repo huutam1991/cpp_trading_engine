@@ -15,6 +15,11 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
     init_websocket();
 }
 
+BinanceQuoterSpot::~BinanceQuoterSpot()
+{
+    del_timer_keep_alive_listen_key();
+}
+
 std::string& BinanceQuoterSpot::get_url()
 {
     return m_url;
@@ -89,8 +94,7 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string res = co_await binance_request.send_request();
-    Json data = Json::parse(res);
+    Json data = co_await binance_request.send_request();
     co_return data["listenKey"];
 }
 
@@ -98,14 +102,13 @@ void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
 {
     m_schedule_task_id = Timer::instance().add_schedule_task([this]()
     {
-        ExternalRequestSsl binance_request(m_url, "443", "/fapi/v1/listenKey?listenKey=" + m_listen_key, RequestMethod::PUT);
+        ExternalRequestSsl binance_request(m_url, "443", "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
         binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
         ADD_LOG("BinanceQuoterSpot re-active m_listen_key = " << m_listen_key);
 
         std::string res = binance_request.send_request();
         Json data = Json::parse(res);
-        ADD_LOG("re-active data: " << data.get_string_value());
     },
     period);
 }

@@ -4,14 +4,11 @@
 BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)
-{
-    add_timer_reset_websocket(1800000);
-}
+{}
 
 BinanceMarketData::~BinanceMarketData()
 {
     ADD_LOG("~BinanceMarketData, " << m_symbol);
-    del_timer_reset_websocket();
 }
 
 void BinanceMarketData::start()
@@ -122,21 +119,4 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
         return true;
     }
     return false;
-}
-
-void BinanceMarketData::add_timer_reset_websocket(size_t period)
-{
-    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    {
-        start();
-    },
-    period);
-}
-
-void BinanceMarketData::del_timer_reset_websocket()
-{
-    if (m_schedule_task_id != 0)
-    {
-        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
-    }
 }
