@@ -154,7 +154,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
             symbol = std::string(fill["commissionAsset"]);
 
             // This is BUY order
-            if (symbol == "BTC")
+            if (symbol == "BTC" || symbol == "ETH" || symbol == "SOL")
             {
                 quantity += f_quantity - f_commission;
                 volumn_in_usdt += f_quantity * f_price;
