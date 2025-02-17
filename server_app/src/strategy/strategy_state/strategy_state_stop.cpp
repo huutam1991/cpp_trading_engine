@@ -22,7 +22,7 @@ void StrategyStateStop::run(double price)
 
     if (checkpoint.is_null() == true)
     {
-        // ADD_LOG("StrategyStateStop - run: Do nothing");
+        ADD_LOG("StrategyStateStop - run: Do nothing");
     }
     else
     {

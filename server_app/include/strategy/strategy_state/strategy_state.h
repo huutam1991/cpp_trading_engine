@@ -23,7 +23,7 @@ public:
     StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);
     ~StrategyState();
 
-    static DataModel get_state_status();
+    static DataModel& get_state_status();
     static void set_state_status(const std::string& status);
     static void set_placing_price(double price);
 

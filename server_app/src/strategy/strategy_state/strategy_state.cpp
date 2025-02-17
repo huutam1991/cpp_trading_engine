@@ -11,7 +11,7 @@ StrategyState::~StrategyState()
     this->end();
 }
 
-DataModel StrategyState::get_state_status()
+DataModel& StrategyState::get_state_status()
 {
     static DataModel state_status = JsonNull();
 
@@ -32,7 +32,7 @@ DataModel StrategyState::get_state_status()
 
 void StrategyState::set_state_status(const std::string& status)
 {
-    DataModel state_status = StrategyState::get_state_status();
+    DataModel& state_status = StrategyState::get_state_status();
     state_status["status"] = status;
 }
 
