@@ -5,6 +5,7 @@
 #include <mongo_db/mongo_db.h>
 #include <json/json.h>
 #include <app_constants.h>
+#include <app_utils.h>
 
 // StrategyState
 #include <strategy/strategy_state/strategy_state_start.h>
@@ -80,9 +81,12 @@ void Strategy::init()
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
     m_gateway->register_price_update([this](double price)
     {
-        this->update(price);
+        m_price_update.set_value(price);
     });
     m_gateway->subscribe_symbol(m_symbol);
+
+    auto task = update();
+    task.start_running_on(AppUtils::instance().get_app_event_base());
 }
 
 void Strategy::on_config_change()
@@ -123,17 +127,29 @@ void Strategy::close_all_positions() {
     StrategyState::set_state_status("CLOSE_ALL_POSITIONS");
 }
 
-void Strategy::update(double price)
+TaskVoid Strategy::update()
 {
-    // Dont do update when strategy is init
-    if (m_is_init == true) return;
+    while (true)
+    {
+        // Dont do update when strategy is init
+        if (m_is_init == true) co_return;
 
-    m_current_price = price;
+        double price = co_await wait_new_price_update();
 
-    std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
-    std::string status = StrategyState::get_state_status()["status"];
+        std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
+        std::string status = StrategyState::get_state_status()["status"];
 
-    (*strategy_states)[status]->run(price);
+        co_await (*strategy_states)[status]->run(price);
+    }
+}
+
+
+Future<double> Strategy::wait_new_price_update()
+{
+    return Future<double>([this](Future<double>::FutureValue value)
+    {
+        m_price_update = value;
+    });
 }
 
 double Strategy::get_current_price()

@@ -10,7 +10,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual void run(double price);
+    virtual TaskVoid run(double price);
 
     Order get_buy_spot_order_by_checkpoint(DataModel& checkpoint);
     Order get_sell_perpetual_order_by_checkpoint(DataModel& checkpoint);

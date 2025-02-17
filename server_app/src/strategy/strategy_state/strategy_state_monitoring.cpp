@@ -17,7 +17,7 @@ void StrategyStateMonitoring::end()
     ADD_LOG("StrategyStateMonitoring - end");
 }
 
-void StrategyStateMonitoring::run(double price)
+TaskVoid StrategyStateMonitoring::run(double price)
 {
     ADD_LOG("StrategyStateMonitoring - run");
 
@@ -34,7 +34,7 @@ void StrategyStateMonitoring::run(double price)
         StrategyState::set_placing_price(mark_price - move_price);
         StrategyState::set_state_status("PLACING");
 
-        return;
+        co_return;
     }
     // Price go up to higher checkpoint
     else if (price >= mark_price + move_price)
@@ -45,7 +45,7 @@ void StrategyStateMonitoring::run(double price)
         StrategyState::set_placing_price(mark_price + move_price);
         StrategyState::set_state_status("PLACING");
 
-        return;
+        co_return;
     }
 
     // Check to take profit

@@ -1,19 +1,17 @@
-#ifndef TASK_H
-#define TASK_H
+#ifndef TASK_VOID_H
+#define TASK_VOID_H
 
 #include <future>
-#include "task_void.h"
 #include "base_promise_type.h"
 
-template<class T>
-struct Task
+struct TaskVoid
 {
     struct promise_type : public BasePromiseType
     {
         // Methods of a standard promise
-        Task get_return_object()
+        TaskVoid get_return_object()
         {
-            return Task{std::coroutine_handle<promise_type>::from_promise(*this)};
+            return TaskVoid{std::coroutine_handle<promise_type>::from_promise(*this)};
         }
         std::suspend_always initial_suspend() { return {}; }
         std::suspend_always final_suspend() noexcept
@@ -25,23 +23,19 @@ struct Task
 
             return {};
         }
-        void return_value(T v)
+        void return_void()
         {
-            value = v;
-            promise_value.set_value(v);
+            promise_value.set_value();
         }
         void unhandled_exception() { std::terminate(); }
 
-        // Main value
-        T value;
-
         // Promise value
-        std::promise<T> promise_value;
+        std::promise<void> promise_value;
     };
 
     std::coroutine_handle<promise_type> handle;
-    Task(std::coroutine_handle<promise_type> h) : handle(h) {}
-    ~Task()
+    TaskVoid(std::coroutine_handle<promise_type> h) : handle(h) {}
+    ~TaskVoid()
     {
         auto base_promise_type = get_base_promise_type();
         uint64_t task_id = base_promise_type->task_id;
@@ -51,11 +45,6 @@ struct Task
         {
             handle.destroy();
         }
-    }
-
-    T value()
-    {
-        return handle.promise().value;
     }
 
     // Get BasePromiseType of current coroutine
@@ -76,7 +65,7 @@ struct Task
         base_promise_type->register_on(event_base, handle);
     }
 
-    std::future<T> start_running_on(EventBase* event_base)
+    std::future<void> start_running_on(EventBase* event_base)
     {
         register_on(event_base);
 
@@ -105,10 +94,10 @@ struct Task
         register_on(suspend_base_pt->m_event_base);
     }
 
-    T await_resume()
+    void await_resume()
     {
-        return handle.promise().value;
+        return;
     }
 };
 
-#endif // TASK_H
+#endif // TASK_VOID_H

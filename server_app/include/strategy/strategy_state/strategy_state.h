@@ -1,6 +1,8 @@
 #ifndef STRATEGY_STATE_H
 #define STRATEGY_STATE_H
 
+#include <coroutine/task.h>
+
 #include <gateways/gateway.h>
 #include <strategy/check_points.h>
 
@@ -29,7 +31,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual void run(double price);
+    virtual TaskVoid run(double price);
 
 protected:
     void send_close_spot_order(DataModel& checkpoint);

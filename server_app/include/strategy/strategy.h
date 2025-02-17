@@ -5,6 +5,8 @@
 #include <app_constants.h>
 #include <json/json.h>
 #include <data_model/data_model.h>
+#include <coroutine/task.h>
+#include <coroutine/future.h>
 
 #include <strategy/check_points.h>
 #include <strategy/strategy_state/strategy_state.h>
@@ -33,6 +35,10 @@ private:
     // StrategyState
     static std::unordered_map<std::string, StrategyState*>* get_strategy_states();
 
+    // Price update
+    Future<double>::FutureValue m_price_update;
+    Future<double> wait_new_price_update();
+
     void start();
     void stop();
     void close_all_positions();
@@ -40,7 +46,7 @@ private:
 public:
     void init();
     void on_config_change();
-    void update(double price);
+    TaskVoid update();
 
     double get_current_price();
     Json   get_current_info();

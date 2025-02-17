@@ -10,7 +10,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual void run(double price);
+    virtual TaskVoid run(double price);
 };
 
 #endif //STRATEGY_STATE_STOP_H

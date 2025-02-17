@@ -16,7 +16,7 @@ void StrategyStateStart::end()
     ADD_LOG("StrategyStateStart - end");
 }
 
-void StrategyStateStart::run(double price)
+TaskVoid StrategyStateStart::run(double price)
 {
     ADD_LOG("StrategyStateStart - run");
 
@@ -29,4 +29,6 @@ void StrategyStateStart::run(double price)
     {
         StrategyState::set_state_status("MONITORING");
     }
+
+    co_return;
 }

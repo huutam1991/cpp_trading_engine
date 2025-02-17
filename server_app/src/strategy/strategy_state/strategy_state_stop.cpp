@@ -16,13 +16,13 @@ void StrategyStateStop::end()
     ADD_LOG("StrategyStateStop - end");
 }
 
-void StrategyStateStop::run(double price)
+TaskVoid StrategyStateStop::run(double price)
 {
     DataModel checkpoint = m_checkpoints->get_current_checkpoint();
 
     if (checkpoint.is_null() == true)
     {
-        ADD_LOG("StrategyStateStop - run: Do nothing");
+        ADD_LOG("StrategyStateStop - run: Do nothing, price: " << price);
     }
     else
     {
@@ -35,4 +35,6 @@ void StrategyStateStop::run(double price)
         // Mark current checkpoint is false
         checkpoint["is_current_checkpoint"] = false;
     }
+
+    co_return;
 }
