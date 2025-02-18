@@ -10,6 +10,11 @@ Timer::Task::~Task()
 {
 }
 
+Timer::Timer()
+{
+    init();
+}
+
 void Timer::init()
 {
     m_thread = std::thread([this]()

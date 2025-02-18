@@ -15,7 +15,16 @@ using namespace boost::placeholders;
 
 class Timer
 {
-    Singleton(Timer);
+public:
+    Timer(Timer const&)         = delete;
+    Timer& operator=(Timer const&)    = delete;
+    static Timer& instance() {
+        static Timer instance;
+        return instance;
+    }
+private:
+    Timer();
+    ~Timer() = default;
 
 private:
     class Task

@@ -9,7 +9,6 @@
 #include <websocket/websocket_server.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
-#include <timer.h>
 
 #include <gateways/gateway_manager.h>
 #include <strategy/strategy.h>
@@ -36,9 +35,7 @@ int main(int argc, char **argv) {
         .set_expried_time(TOKEN_EXPRIED_TIME)
         .set_secret_key(TOKEN_SECRET_KEY);
 
-    // Init Timer
-    Timer::instance().init();
-
+    // Init routes
     add_app_route();
     add_bad_request();
 
