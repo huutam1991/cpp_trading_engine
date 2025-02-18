@@ -135,6 +135,7 @@ TaskVoid Strategy::update()
         if (m_is_init == true)
         {
             co_await Future<size_t>::sleep_for_seconds(1);
+            continue;
         }
 
         double price = co_await wait_new_price_update();
