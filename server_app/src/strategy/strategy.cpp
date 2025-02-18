@@ -141,12 +141,12 @@ TaskVoid Strategy::update()
             continue;
         }
 
-        double price = co_await wait_new_price_update();
+        m_current_price = co_await wait_new_price_update();
 
         std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
         std::string status = StrategyState::get_state_status()["status"];
 
-        co_await (*strategy_states)[status]->run(price);
+        co_await (*strategy_states)[status]->run(m_current_price);
     }
 }
 
