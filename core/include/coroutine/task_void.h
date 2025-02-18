@@ -35,14 +35,15 @@ struct TaskVoid
 
     std::coroutine_handle<promise_type> handle;
     TaskVoid(std::coroutine_handle<promise_type> h) : handle(h) {}
+    TaskVoid(const TaskVoid& copy) : handle{copy.handle} {}
     ~TaskVoid()
     {
+        auto base_promise_type = get_base_promise_type();
+        uint64_t task_id = base_promise_type->task_id;
+        base_promise_type->m_event_base->remove_from_event_base(task_id);
+
         if (handle && handle.done())
         {
-            auto base_promise_type = get_base_promise_type();
-            uint64_t task_id = base_promise_type->task_id;
-            base_promise_type->m_event_base->remove_from_event_base(task_id);
-
             handle.destroy();
         }
     }

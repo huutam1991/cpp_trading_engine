@@ -86,7 +86,7 @@ void Strategy::init()
     m_gateway->subscribe_symbol(m_symbol);
 
     auto task = update();
-    task.start_running_on(AppUtils::instance().get_app_event_base());
+    task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY));
 }
 
 void Strategy::on_config_change()
