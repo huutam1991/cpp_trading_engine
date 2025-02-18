@@ -62,4 +62,6 @@ TaskVoid StrategyStateMonitoring::run(double price)
             send_close_spot_order(checkpoint);
         }
     }
+
+    co_return;
 }

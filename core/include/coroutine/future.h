@@ -19,6 +19,17 @@ struct Future
         FutureValue() : m_value{std::make_shared<T>()}
         {}
 
+        FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_suspending_promise{copy.m_suspending_promise}
+        {}
+
+        FutureValue& operator=(const FutureValue& copy)
+        {
+            m_value = copy.m_value;
+            m_suspending_promise = copy.m_suspending_promise;
+
+            return *this;
+        }
+
         void set_suspending_promise(BasePromiseType* suspending_promise)
         {
             m_suspending_promise = suspending_promise;

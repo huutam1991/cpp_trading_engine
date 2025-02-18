@@ -76,6 +76,8 @@ TaskVoid StrategyStatePlacing::run(double price)
     // });
 
     StrategyState::set_state_status("MONITORING");
+
+    co_return;
 }
 
 Order StrategyStatePlacing::get_buy_spot_order_by_checkpoint(DataModel& checkpoint)

@@ -81,6 +81,7 @@ void Strategy::init()
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
     m_gateway->register_price_update([this](double price)
     {
+        ADD_LOG("Tam - price update, " << 1);
         m_price_update.set_value(price);
     });
     m_gateway->subscribe_symbol(m_symbol);
@@ -129,12 +130,16 @@ void Strategy::close_all_positions() {
 
 TaskVoid Strategy::update()
 {
+    ADD_LOG("Tam - task update, " << 1);
     while (true)
     {
+        ADD_LOG("Tam - task update, " << 2);
         // Dont do update when strategy is init
         if (m_is_init == true) co_return;
+        ADD_LOG("Tam - task update, " << 3);
 
         double price = co_await wait_new_price_update();
+        ADD_LOG("Tam - task update, " << 4);
 
         std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
         std::string status = StrategyState::get_state_status()["status"];
