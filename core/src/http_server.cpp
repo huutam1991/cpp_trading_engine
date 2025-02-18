@@ -18,7 +18,7 @@ HttpServer::HttpServer(int port, std::string dir_path) : m_port(port), m_dir_pat
 {
     init_socket();
     m_epoll       = new EPollWrapper(m_server_fd);
-    m_thread_pool = new ThreadPool(NUMBER_OF_THREADS, "Server Pool");
+    m_thread_pool = new ThreadPool(NUMBER_OF_HTTPS_SERVER_THREADS, "Server Pool");
 }
 
 HttpServer::~HttpServer()

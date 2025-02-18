@@ -39,16 +39,33 @@ struct Task
         std::promise<T> promise_value;
     };
 
-    std::coroutine_handle<promise_type> handle;
+    std::coroutine_handle<promise_type> handle = nullptr;
     Task(std::coroutine_handle<promise_type> h) : handle(h) {}
+    Task() {};
+    Task(const Task& copy) : handle{copy.handle} {}
     ~Task()
     {
-        auto base_promise_type = get_base_promise_type();
-        uint64_t task_id = base_promise_type->task_id;
-        base_promise_type->m_event_base->remove_from_event_base(task_id);
+        // Light destroy, lol
+        destroy(false);
+    }
 
-        if (handle && handle.done())
+    Task& operator=(const Task& copy)
+    {
+        handle = copy.handle;
+        return *this;
+    }
+
+    void destroy(bool complete = true)
+    {
+        if (handle && (handle.done() || complete == true))
         {
+            auto base_promise_type = get_base_promise_type();
+            if (base_promise_type->m_event_base != nullptr)
+            {
+                uint64_t task_id = base_promise_type->task_id;
+                base_promise_type->m_event_base->remove_from_event_base(task_id);
+            }
+
             handle.destroy();
         }
     }

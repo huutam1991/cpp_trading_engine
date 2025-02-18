@@ -36,6 +36,7 @@ private:
     static std::unordered_map<std::string, StrategyState*>* get_strategy_states();
 
     // Price update
+    TaskVoid m_update_task;
     Future<double>::FutureValue m_price_update;
     Future<double> wait_new_price_update();
 

@@ -3,6 +3,7 @@
 
 #include <future>
 #include "base_promise_type.h"
+#include <util_macros.h>
 
 struct TaskVoid
 {
@@ -33,17 +34,33 @@ struct TaskVoid
         std::promise<void> promise_value;
     };
 
-    std::coroutine_handle<promise_type> handle;
+    std::coroutine_handle<promise_type> handle = nullptr;
     TaskVoid(std::coroutine_handle<promise_type> h) : handle(h) {}
+    TaskVoid() {};
     TaskVoid(const TaskVoid& copy) : handle{copy.handle} {}
     ~TaskVoid()
     {
-        auto base_promise_type = get_base_promise_type();
-        uint64_t task_id = base_promise_type->task_id;
-        base_promise_type->m_event_base->remove_from_event_base(task_id);
+        // Light destroy, lol
+        destroy(false);
+    }
 
-        if (handle && handle.done())
+    TaskVoid& operator=(const TaskVoid& copy)
+    {
+        handle = copy.handle;
+        return *this;
+    }
+
+    void destroy(bool complete = true)
+    {
+        if (handle && (handle.done() || complete == true))
         {
+            auto base_promise_type = get_base_promise_type();
+            if (base_promise_type->m_event_base != nullptr)
+            {
+                uint64_t task_id = base_promise_type->task_id;
+                base_promise_type->m_event_base->remove_from_event_base(task_id);
+            }
+
             handle.destroy();
         }
     }
