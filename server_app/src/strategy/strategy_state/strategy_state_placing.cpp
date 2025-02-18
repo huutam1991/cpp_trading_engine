@@ -55,8 +55,7 @@ TaskVoid StrategyStatePlacing::run(double price)
     double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
     if (quantity == 0)
     {
-        auto task = m_gateway->place(buy_spot);
-        Json response = task.start_running_on(AppUtils::instance().get_app_event_base()).get();
+        Json response = co_await m_gateway->place(buy_spot);
 
         checkpoint["positions"]["buy_spot"]["quantity"] = response["quantity"];
         checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] = response["volumn_in_usdt"];

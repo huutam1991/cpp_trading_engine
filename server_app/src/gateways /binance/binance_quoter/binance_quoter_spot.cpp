@@ -1,5 +1,6 @@
 #include <external_request/external_request_ssl.h>
 #include <timer.h>
+#include <coroutine/event_base_manager.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <request_future.h>
@@ -33,7 +34,7 @@ std::string& BinanceQuoterSpot::get_port()
 void BinanceQuoterSpot::init_websocket()
 {
     auto task = this->get_listen_key();
-    m_listen_key = task.start_running_on(AppUtils::instance().get_app_event_base()).get();
+    m_listen_key = task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY)).get();
 
     // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
     add_timer_keep_alive_listen_key(1800000);

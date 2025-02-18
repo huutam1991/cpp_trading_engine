@@ -71,13 +71,12 @@ double StrategyState::get_placing_price()
     return *price_ptr;
 }
 
-void StrategyState::send_close_spot_order(DataModel& checkpoint)
+TaskVoid StrategyState::send_close_spot_order(DataModel& checkpoint)
 {
     Order close_buy_spot = get_close_buy_spot_order_by_checkpoint(checkpoint);
 
     // Place close buy spot order
-    auto task = m_gateway->place(close_buy_spot);
-    Json response = task.start_running_on(AppUtils::instance().get_app_event_base()).get();
+    Json response = co_await m_gateway->place(close_buy_spot);
 
     // Calculate profit
     double place_volumn_in_usdt = checkpoint["positions"]["buy_spot"]["volumn_in_usdt"];
@@ -95,6 +94,8 @@ void StrategyState::send_close_spot_order(DataModel& checkpoint)
         {"quantity", 0.0},
         {"volumn_in_usdt", 0.0},
     };
+
+    co_return;
 }
 
 void StrategyState::send_close_perpetual_order(DataModel& checkpoint)

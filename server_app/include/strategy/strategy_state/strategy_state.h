@@ -34,7 +34,7 @@ public:
     virtual TaskVoid run(double price);
 
 protected:
-    void send_close_spot_order(DataModel& checkpoint);
+    TaskVoid send_close_spot_order(DataModel& checkpoint);
     void send_close_perpetual_order(DataModel& checkpoint);
 
     Order get_close_buy_spot_order_by_checkpoint(DataModel& checkpoint);

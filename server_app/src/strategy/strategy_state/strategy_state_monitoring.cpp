@@ -59,7 +59,7 @@ TaskVoid StrategyStateMonitoring::run(double price)
 
         // Send close order to take profit
         if (checkpoint.is_null() == false) {
-            send_close_spot_order(checkpoint);
+            co_await send_close_spot_order(checkpoint);
         }
     }
 

@@ -27,7 +27,7 @@ TaskVoid StrategyStateCloseAllPositions::run(double price)
     else
     {
         // Send close spot order
-        send_close_spot_order(checkpoint);
+        co_await send_close_spot_order(checkpoint);
     }
 
     co_return;
