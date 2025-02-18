@@ -16,10 +16,11 @@ class MeasureTime
 {
 private:
     std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    std::string m_logs;
     MeasureUnit m_measure_unit;
 
 public:
-    MeasureTime(MeasureUnit measure_unit = MeasureUnit::MILLISECOND) : m_measure_unit{measure_unit}
+    MeasureTime(std::string logs, MeasureUnit measure_unit = MeasureUnit::MILLISECOND) : m_logs{logs}, m_measure_unit{measure_unit}
     {
         start = std::chrono::high_resolution_clock::now();
     }
@@ -27,7 +28,7 @@ public:
     ~MeasureTime()
     {
         auto end = std::chrono::high_resolution_clock::now();
-        size_t duration_count = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        auto duration_count = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
         double execute_time;
         std::string unit;
 
@@ -57,7 +58,7 @@ public:
             break;
         }
 
-        ADD_LOG("Execute time: " << execute_time << " " << unit);
+        ADD_LOG("Execute time - " << m_logs << ": " << execute_time << " " << unit);
     }
 };
 
