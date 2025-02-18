@@ -15,6 +15,8 @@ using namespace boost::placeholders;
 
 class Timer
 {
+    // Implement Singleton for Timer
+    // Need to keep constructor not to be default (to invoke init() in constructor)
 public:
     Timer(Timer const&)         = delete;
     Timer& operator=(Timer const&)    = delete;

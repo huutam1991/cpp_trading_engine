@@ -3,6 +3,8 @@
 
 #include <functional>
 #include <memory>
+
+#include <timer.h>
 #include "base_promise_type.h"
 
 // Future is not a coroutine, it's just a awaitable
@@ -74,6 +76,24 @@ struct Future
     // Constructor, need to have an execute function
     Future(std::function<void(FutureValue)> execute_func) : m_execute_func(execute_func)
     {
+    }
+
+    // Static method
+    static Future<size_t> sleep_for_milliseconds(size_t milliseconds)
+    {
+        return Future<size_t>([milliseconds](Future<size_t>::FutureValue value) mutable
+        {
+            Timer::instance().add_time_out([milliseconds, value]() mutable
+            {
+                value.set_value(milliseconds);
+            },
+            milliseconds);
+        });
+    }
+
+    static Future<size_t> sleep_for_seconds(size_t seconds)
+    {
+        return sleep_for_milliseconds(seconds * 1000);
     }
 
     bool await_ready()
