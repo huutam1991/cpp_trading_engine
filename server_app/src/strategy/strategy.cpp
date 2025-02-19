@@ -137,7 +137,7 @@ TaskVoid Strategy::update()
         // Dont do update when strategy is init
         if (m_is_init == true)
         {
-            co_await Future<size_t>::sleep_for_seconds(1);
+            co_await Future<size_t>::sleep_for_seconds(2);
             continue;
         }
 
