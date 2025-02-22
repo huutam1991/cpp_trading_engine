@@ -1,5 +1,8 @@
 #include <gateways/binance/binance_market_data/binance_market_data.h>
 #include <timer.h>
+#include <mongo_db/mongo_db.h>
+
+#include <app_constants.h>
 
 BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
     m_url(url),
@@ -47,6 +50,15 @@ void BinanceMarketData::start()
             {
                 m_on_callback(m_symbol, depth);
             }
+        }
+        else
+        {
+            // Save this none json data for checking error
+            MongoDB::instance()
+                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_none_json_data")
+                .insert_one({
+                    {"", buffer}
+                });
         }
     });
 
