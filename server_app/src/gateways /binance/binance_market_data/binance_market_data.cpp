@@ -55,10 +55,8 @@ void BinanceMarketData::start()
         {
             // Save this none json data for checking error
             MongoDB::instance()
-                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_none_json_data")
-                .insert_one({
-                    {"", buffer}
-                });
+                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
+                .insert_one(Json::parse(buffer));
         }
     });
 
