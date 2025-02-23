@@ -15,18 +15,20 @@ struct Future
     {
     private:
         std::shared_ptr<T> m_value;
+        std::shared_ptr<bool> m_is_set;
         BasePromiseType* m_suspending_promise = nullptr;
 
     public:
-        FutureValue() : m_value{std::make_shared<T>()}
+        FutureValue() : m_value{std::make_shared<T>()}, m_is_set{std::make_shared<bool>(false)}
         {}
 
-        FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_suspending_promise{copy.m_suspending_promise}
+        FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_is_set{copy.m_is_set}, m_suspending_promise{copy.m_suspending_promise}
         {}
 
         FutureValue& operator=(const FutureValue& copy)
         {
             m_value = copy.m_value;
+            m_is_set = copy.m_is_set;
             m_suspending_promise = copy.m_suspending_promise;
 
             return *this;
@@ -39,6 +41,9 @@ struct Future
 
         void set_value(T& value)
         {
+            // Check if this future is already set
+            if (*m_is_set == true) return;
+
             *m_value = value;
 
             // Mark future as ready
@@ -47,6 +52,9 @@ struct Future
 
         void set_value(T&& value)
         {
+            // Check if this future is already set
+            if (*m_is_set == true) return;
+
             *m_value = std::move(value);
 
             // Mark future as ready
@@ -66,6 +74,8 @@ struct Future
             {
                 m_suspending_promise->set_waiting(false);
             }
+
+            *m_is_set = true;
         }
 
     };
