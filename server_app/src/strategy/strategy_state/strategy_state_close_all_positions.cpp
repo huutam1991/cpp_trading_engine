@@ -22,7 +22,7 @@ TaskVoid StrategyStateCloseAllPositions::run(double price)
 
     if (checkpoint.is_null() == true)
     {
-        ADD_LOG("StrategyStateCloseAllPositions - run: Do nothing as there's no holding checkpoint");
+        ADD_LOG("StrategyStateCloseAllPositions - price: " << price << ", run: Do nothing as there's no holding checkpoint");
     }
     else
     {

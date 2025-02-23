@@ -7,10 +7,14 @@
 BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)
-{}
+{
+    // Set period time to check websocket stream is stop at every 10 seconds
+    add_timer_to_check_websocket_stream_is_stop(10000);
+}
 
 BinanceMarketData::~BinanceMarketData()
 {
+    del_timer_to_check_websocket_stream_is_stop();
     ADD_LOG("~BinanceMarketData, " << m_symbol);
 }
 
@@ -42,6 +46,9 @@ void BinanceMarketData::start()
 
     m_websocket->on_message([this](const std::string& buffer, WebsocketClientHandle& ws)
     {
+        // Increase m_websocket_data_counter (should find a better solution)
+        m_websocket_data_counter++;
+
         Json depth = Json();
         if (this->standardize_data(buffer, depth))
         {
@@ -129,4 +136,26 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
         return true;
     }
     return false;
+}
+
+void BinanceMarketData::add_timer_to_check_websocket_stream_is_stop(size_t period)
+{
+    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
+    {
+        if (m_websocket_data_counter == 0)
+        {
+            this->start();
+        }
+
+        m_websocket_data_counter = 0;
+    },
+    period);
+}
+
+void BinanceMarketData::del_timer_to_check_websocket_stream_is_stop()
+{
+    if (m_schedule_task_id != 0)
+    {
+        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
+    }
 }
