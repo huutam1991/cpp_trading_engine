@@ -49,11 +49,11 @@ public:
     void set_id(const std::string& id);
 
     void set_callback(std::function<void(Json&)> callback);
-    static DataModel get_single_data_model(const std::string& db, const std::string& collection);
-    static std::vector<DataModel> get_data_model_list(const std::string& db, const std::string& collection);
+    static DataModel load_single_data_model(const std::string& db, const std::string& collection);
+    static std::vector<DataModel> load_data_model_list(const std::string& db, const std::string& collection);
 
     template<class T>
-    static std::unordered_map<T, DataModel> get_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name)
+    static std::unordered_map<T, DataModel> load_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name)
     {
         Json data_list = MongoDB::instance()
             .set_db_and_collection(db, collection)

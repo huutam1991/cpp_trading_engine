@@ -4,7 +4,7 @@ CheckPointList::CheckPointList(const std::string symbol, double volumn, double m
     m_symbol(symbol), m_buy_volumn(volumn), m_move_price(move_price), m_sell_buy_ratio(sell_buy_ratio)
 {
     m_collection_name = symbol + "_" + std::to_string((size_t)volumn) + "_" + std::to_string((size_t)move_price);
-    m_checkpoint_list = DataModel::get_data_model_map<std::string>(STRATEGY_DB_NAME, m_collection_name, "checkpoint_id");
+    m_checkpoint_list = DataModel::load_data_model_map<std::string>(STRATEGY_DB_NAME, m_collection_name, "checkpoint_id");
 }
 
 std::string CheckPointList::get_collection_name()

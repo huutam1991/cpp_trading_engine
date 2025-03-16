@@ -2,7 +2,7 @@
 
 void OrderManager::init()
 {
-    m_order_list = DataModel::get_data_model_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
+    m_order_list = DataModel::load_data_model_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
 }
 
 OrderId OrderManager::generate_order_id()

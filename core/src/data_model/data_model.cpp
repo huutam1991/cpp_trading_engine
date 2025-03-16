@@ -161,9 +161,9 @@ void DataModel::set_callback(std::function<void(Json&)> callback)
     m_callback = callback;
 }
 
-DataModel DataModel::get_single_data_model(const std::string& db, const std::string& collection)
+DataModel DataModel::load_single_data_model(const std::string& db, const std::string& collection)
 {
-    std::vector<DataModel> list = DataModel::get_data_model_list(db, collection);
+    std::vector<DataModel> list = DataModel::load_data_model_list(db, collection);
     if (list.size() > 0)
     {
         return list[0];
@@ -174,7 +174,7 @@ DataModel DataModel::get_single_data_model(const std::string& db, const std::str
     return dm;
 }
 
-std::vector<DataModel> DataModel::get_data_model_list(const std::string& db, const std::string& collection)
+std::vector<DataModel> DataModel::load_data_model_list(const std::string& db, const std::string& collection)
 {
     Json data_list = MongoDB::instance()
         .set_db_and_collection(db, collection)

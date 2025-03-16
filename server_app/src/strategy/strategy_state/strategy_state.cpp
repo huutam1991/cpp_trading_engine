@@ -18,7 +18,7 @@ DataModel& StrategyState::get_state_status()
     if (state_status.is_null())
     {
         // Load from DB
-        state_status = DataModel::get_single_data_model(STRATEGY_DB_NAME, "status");
+        state_status = DataModel::load_single_data_model(STRATEGY_DB_NAME, "status");
 
         // Default status is STOP
         if (state_status.get_data().has_field("status") == false)

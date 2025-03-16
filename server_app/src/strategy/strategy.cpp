@@ -39,7 +39,7 @@ void Strategy::init()
     SimpleGuard g(m_is_init);
 
     // Load current strategy info
-    DataModel config = DataModel::get_single_data_model(STRATEGY_DB_NAME, "config");
+    DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "config");
 
     // If there's no config data available, add default config
     if (config.get_data().has_field("symbol") == false)
