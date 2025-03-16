@@ -4,7 +4,7 @@
 #include <string>
 #include <json/json.h>
 
-using OrderId = uint64_t;
+using OrderId = size_t;
 
 class Order
 {

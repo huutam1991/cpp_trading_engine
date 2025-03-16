@@ -51,6 +51,8 @@ void BinanceQuoterSpot::init_websocket()
         Json json = Json::parse(buffer);
 
         ADD_LOG("Spot order ack: " << json);
+        ADD_LOG("order_id: " << (OrderId)json["c"]);
+        ADD_LOG("order_id: " << (OrderId)json["c"]);
 
         if (json["e"] == "executionReport")
         {
@@ -59,7 +61,7 @@ void BinanceQuoterSpot::init_websocket()
             {
                 Order order
                 {
-                    OrderManager::generate_order_id(),
+                    std::stoull((std::string)json["c"]),
                     Order::ExchangeType::SPOT,
                     json["s"], // Symbol
                     Order::side_from_string(json["S"]), // Side
@@ -193,12 +195,15 @@ Task<Json> BinanceQuoterSpot::place(Order order)
     query_str += "&side=" + Order::to_string(order.side);
     query_str += "&type=" + Order::to_string(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);
+    query_str += "&newClientOrderId=" + std::to_string(order.order_id);
 
     if (order.type == Order::OrderType::LIMIT)
     {
         query_str += "&timeInForce=GTC";
         query_str += "&price=" + std::to_string(order.price);
     }
+
+    ADD_LOG("query: " << query_str);
 
     co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", query_str);
 }

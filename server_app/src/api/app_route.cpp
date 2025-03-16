@@ -260,7 +260,7 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/test_place")
     {
         Order order(
-            345354,
+            OrderManager::generate_order_id(),
             Order::ExchangeType::SPOT,
             "ETHUSDT",
             Order::Side::BUY,
