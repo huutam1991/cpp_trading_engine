@@ -11,6 +11,7 @@
 #include <jwt/jwt_manager.h>
 
 #include <gateways/gateway_manager.h>
+#include <order/order_manager.h>
 #include <strategy/strategy.h>
 
 extern void add_app_route();
@@ -60,7 +61,7 @@ int main(int argc, char **argv) {
     // WebSocketServerType::instance().start();
 
     GatewayManager::instance().init();
-
+    OrderManager::instance().init();
     Strategy::instance().init();
 
     // Server

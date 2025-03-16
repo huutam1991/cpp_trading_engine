@@ -18,10 +18,11 @@ class OrderManager
 private:
     std::unordered_map<OrderId, DataModel> m_order_list;
 
-    void init();
 
 public:
     static OrderId generate_order_id();
+
+    void init();
 
 };
 
