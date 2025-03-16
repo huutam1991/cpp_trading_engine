@@ -8,6 +8,19 @@ void OrderManager::init()
     {
         ADD_LOG("order_id: " << order_id << ", Order: " << order);
     }
+
+    // Start running on EventBaseID::ORDER
+    auto task = check_update_order();
+    task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::ORDER));
+}
+
+void OrderManager::update_order(Order order)
+{
+    std::unique_lock lock(m_order_manager_mutex);
+    m_order_update_queue.push(order);
+
+    // Inform that there's new order in [m_order_update_queue]
+    m_has_order_update.set_value(true);
 }
 
 OrderId OrderManager::generate_order_id()
@@ -40,9 +53,37 @@ DataModel OrderManager::find_order_by_id(OrderId order_id)
     return m_order_list[order_id];
 }
 
-void OrderManager::update_order(Order order)
+void OrderManager::handle_update_order(Order order)
 {
     DataModel order_dm = find_order_by_id(order.order_id);
 
     order_dm = order.to_json();
+}
+
+Future<bool> OrderManager::wait_new_order_update()
+{
+    return Future<bool>([this](Future<bool>::FutureValue value)
+    {
+        m_has_order_update = value;
+    });
+}
+
+TaskVoid OrderManager::check_update_order()
+{
+    while (true)
+    {
+        co_await wait_new_order_update();
+
+        while (m_order_update_queue.size() > 0)
+        {
+            // Get order from [m_order_update_queue]
+            Order order = m_order_update_queue.front();
+
+            // Update this order
+            handle_update_order(order);
+
+            // Remove order from [m_order_update_queue]
+            m_order_update_queue.pop();
+        }
+    }
 }
