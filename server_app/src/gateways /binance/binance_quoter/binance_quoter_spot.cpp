@@ -51,8 +51,6 @@ void BinanceQuoterSpot::init_websocket()
         Json json = Json::parse(buffer);
 
         ADD_LOG("Spot order ack: " << json);
-        ADD_LOG("order_id: " << (OrderId)json["c"]);
-        ADD_LOG("order_id: " << (OrderId)json["c"]);
 
         if (json["e"] == "executionReport")
         {
