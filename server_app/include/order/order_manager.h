@@ -23,6 +23,9 @@ public:
     static OrderId generate_order_id();
 
     void init();
+    void create_order_data_model(OrderId order_id);
+    DataModel find_order_by_id(OrderId order_id);
+    void update_order(Order order);
 
 };
 
