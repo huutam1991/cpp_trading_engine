@@ -48,6 +48,16 @@ public:
         return type == OrderType::LIMIT ? "LIMIT" : "MARKET";
     }
 
+    inline static Side side_from_string(std::string data)
+    {
+        return data == "BUY" ? Side::BUY : Side::SELL;
+    }
+
+    inline static OrderType type_from_string(std::string data)
+    {
+        return data == "LIMIT" ? OrderType::LIMIT : OrderType::MARKET;
+    }
+
     Json to_json();
 };
 

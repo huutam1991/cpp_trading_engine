@@ -52,21 +52,25 @@ void BinanceQuoterSpot::init_websocket()
 
         ADD_LOG("Spot order ack: " << json);
 
-        if (json["e"] == "ORDER_TRADE_UPDATE")
+        if (json["e"] == "executionReport")
         {
-            Json order = json["o"];
-            if (order["X"] == "FILLED")
+            // New order
+            if (json["X"] == "NEW")
             {
-                Json data = {
-                    {"status", "FILLED"},
-                    {"symbol", order["s"]},
-                    {"price", std::stod(std::string(order["ap"]))},
-                    {"quantity", std::stod(std::string(order["z"]))}
+                Order order
+                {
+                    OrderManager::generate_order_id(),
+                    Order::ExchangeType::SPOT,
+                    json["s"], // Symbol
+                    Order::side_from_string(json["S"]), // Side
+                    Order::type_from_string(json["o"]), // Type
+                    std::stod((std::string)json["p"]), // Price
+                    std::stod((std::string)json["q"]), // Quantity
                 };
 
-                ADD_LOG("BinanceQuoterSpot Filled: " << data);
+                ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
 
-                // update_order_result(data);
+                OrderManager::instance().update_order(order);
             }
         }
     });
