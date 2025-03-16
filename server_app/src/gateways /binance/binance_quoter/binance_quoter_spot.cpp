@@ -61,13 +61,13 @@ void BinanceQuoterSpot::init_websocket()
             {
                 Order order
                 {
-                    std::stoull((std::string)json["c"]),
-                    Order::ExchangeType::SPOT,
-                    json["s"], // Symbol
-                    Order::side_from_string(json["S"]), // Side
-                    Order::type_from_string(json["o"]), // Type
-                    std::stod((std::string)json["p"]), // Price
-                    std::stod((std::string)json["q"]), // Quantity
+                    std::stoull((std::string)json["c"]), // Order Id
+                    Order::ExchangeType::SPOT,           // Exchange Type
+                    json["s"],                           // Symbol
+                    Order::side_from_string(json["S"]),  // Side
+                    Order::type_from_string(json["o"]),  // Type
+                    std::stod((std::string)json["p"]),   // Price
+                    std::stod((std::string)json["q"]),   // Quantity
                 };
 
                 ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
