@@ -56,25 +56,32 @@ void BinanceQuoterSpot::init_websocket()
 
         if (json["e"] == "executionReport")
         {
+            Order order
+            {
+                1,                                   // Order Id
+                Order::ExchangeType::SPOT,           // Exchange Type
+                Order::Status::NEW,                  // Status
+                json["s"],                           // Symbol
+                Order::side_from_string(json["S"]),  // Side
+                Order::type_from_string(json["o"]),  // Type
+                std::stod((std::string)json["p"]),   // Price
+                std::stod((std::string)json["q"]),   // Quantity
+            };
+
             // New order
             if (json["X"] == "NEW")
             {
-                Order order
-                {
-                    std::stoull((std::string)json["c"]), // Order Id
-                    Order::ExchangeType::SPOT,           // Exchange Type
-                    Order::Status::NEW,                  // Status
-                    json["s"],                           // Symbol
-                    Order::side_from_string(json["S"]),  // Side
-                    Order::type_from_string(json["o"]),  // Type
-                    std::stod((std::string)json["p"]),   // Price
-                    std::stod((std::string)json["q"]),   // Quantity
-                };
-
-                ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
-
-                OrderManager::instance().update_order(order);
+                order.order_id = std::stoull((std::string)json["c"]);
+                order.status = Order::Status::NEW;
             }
+            else if (json["X"] == "CANCELED")
+            {
+                order.order_id = std::stoull((std::string)json["C"]);
+                order.status = Order::Status::CANCELED;
+            }
+
+            ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
+            OrderManager::instance().update_order(order);
         }
     });
 
