@@ -14,7 +14,7 @@ class OrderManager
 private:
 
 public:
-    uint64_t generate_order_id();
+    static OrderId generate_order_id();
 
 };
 
