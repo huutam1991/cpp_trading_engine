@@ -174,7 +174,7 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/test_data_model_get_map")
     {
         std::string name = request->get_query_param("name");
-        std::unordered_map<std::string, DataModel> users = DataModel::get_data_model_map("test_data_model", "user", "name");
+        std::unordered_map<std::string, DataModel> users = DataModel::get_data_model_map<std::string>("test_data_model", "user", "name");
         DataModel a = users[name];
 
         return HttpResponse(OK_200, a.get_data());

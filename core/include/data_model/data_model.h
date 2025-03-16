@@ -51,7 +51,26 @@ public:
     void set_callback(std::function<void(Json&)> callback);
     static DataModel get_single_data_model(const std::string& db, const std::string& collection);
     static std::vector<DataModel> get_data_model_list(const std::string& db, const std::string& collection);
-    static std::unordered_map<std::string, DataModel> get_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name);
+
+    template<class T>
+    static std::unordered_map<T, DataModel> get_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name)
+    {
+        Json data_list = MongoDB::instance()
+            .set_db_and_collection(db, collection)
+            .find_many();
+
+        std::unordered_map<T, DataModel> res;
+        data_list.for_each_with_index([&res, &db, &collection, &key_field_name](size_t index, Json& data)
+        {
+            std::string _id = data["_id"]["$oid"];
+            DataModel dm(db, collection, _id);
+            T key_id = dm[key_field_name];
+
+            res.insert(std::make_pair(key_id, dm));
+        });
+
+        return res;
+    }
 
 protected:
     std::string m_id = "-1";

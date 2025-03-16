@@ -189,22 +189,3 @@ std::vector<DataModel> DataModel::get_data_model_list(const std::string& db, con
 
     return res;
 }
-
-std::unordered_map<std::string, DataModel> DataModel::get_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name)
-{
-    Json data_list = MongoDB::instance()
-        .set_db_and_collection(db, collection)
-        .find_many();
-
-    std::unordered_map<std::string, DataModel> res;
-    data_list.for_each_with_index([&res, &db, &collection, &key_field_name](size_t index, Json& data)
-    {
-        std::string _id = data["_id"]["$oid"];
-        DataModel dm(db, collection, _id);
-        std::string key_id = dm[key_field_name];
-
-        res.insert(std::make_pair(key_id, dm));
-    });
-
-    return res;
-}
