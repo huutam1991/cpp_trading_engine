@@ -2,6 +2,9 @@
 #define ORDER_H
 
 #include <string>
+#include <json/json.h>
+
+using OrderId = uint64_t;
 
 class Order
 {
@@ -24,6 +27,7 @@ public:
         MARKET
     };
 
+    OrderId order_id;
     ExchangeType exchange_type;
     std::string symbol;
     Side side;
@@ -31,15 +35,8 @@ public:
     double price;
     double quantity;
 
-    Order() {}
-    Order(ExchangeType exchange_type_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
-        exchange_type{exchange_type_i},
-        symbol{symbol_i},
-        side{side_i},
-        type{type_i},
-        price{price_i},
-        quantity{quantity_i}
-    {}
+    Order();
+    Order(OrderId order_id_i, ExchangeType exchange_type_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
     inline static std::string to_string(Side side)
     {
@@ -51,17 +48,7 @@ public:
         return type == OrderType::LIMIT ? "LIMIT" : "MARKET";
     }
 
-    Json to_json()
-    {
-        return {
-            {"symbol", symbol},
-            {"exchange_type", exchange_type == ExchangeType::SPOT ? "spot" : "perpetual"},
-            {"side", Order::to_string(side)},
-            {"type", Order::to_string(type)},
-            {"price", price},
-            {"quantity", quantity},
-        };
-    }
+    Json to_json();
 };
 
 #endif //ORDER_H

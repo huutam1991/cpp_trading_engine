@@ -88,6 +88,7 @@ Order StrategyStatePlacing::get_buy_spot_order_by_checkpoint(DataModel& checkpoi
     double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
 
     return Order(
+        OrderManager::instance().generate_order_id(),
         Order::ExchangeType::SPOT,
         symbol,
         Order::Side::BUY,
@@ -108,6 +109,7 @@ Order StrategyStatePlacing::get_sell_perpetual_order_by_checkpoint(DataModel& ch
     double round_up_quantity = m_gateway->round_up_quantity("perpetual", symbol, quantity);
 
     return Order(
+        OrderManager::instance().generate_order_id(),
         Order::ExchangeType::PERPETUAL,
         symbol,
         Order::Side::SELL,

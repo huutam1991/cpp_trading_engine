@@ -5,6 +5,7 @@
 
 #include <gateways/gateway.h>
 #include <strategy/check_points.h>
+#include <order/order_manager.h>
 
 enum StateStatus
 {

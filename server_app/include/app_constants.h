@@ -53,9 +53,6 @@ enum class SourceType
 // Binance trade history collection
 #define BINANCE_TRADE_HISTORY "binance"
 
-// Order collection name
-#define ORDER "order"
-
 // Execution report collection name
 #define EXECUTION_REPORT "execution_report"
 
@@ -70,6 +67,9 @@ enum class SourceType
 
 // App info DB name
 #define APP_INFO_DB_NAME "app_info"
+
+// Order DB name
+#define ORDER_DB_NAME "order"
 
 // Strategy DB name
 #define STRATEGY_DB_NAME "strategy"
@@ -191,6 +191,7 @@ enum NotificationState
 enum EventBaseID
 {
     APP,
+    ORDER,
     STRATEGY
 };
 
