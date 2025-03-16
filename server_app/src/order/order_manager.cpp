@@ -80,6 +80,8 @@ Future<bool> OrderManager::wait_new_order_update()
 
 TaskVoid OrderManager::check_update_order()
 {
+    Order order;
+
     while (true)
     {
         co_await wait_new_order_update();
@@ -87,7 +89,11 @@ TaskVoid OrderManager::check_update_order()
         while (m_order_update_queue.size() > 0)
         {
             // Get order from [m_order_update_queue]
-            Order order = m_order_update_queue.front();
+            {
+                MeasureTime get_order("Get Order", MeasureUnit::NANOSECOND);
+                std::unique_lock lock(m_order_manager_mutex);
+                order = m_order_update_queue.front();
+            }
 
             // Update this order
             handle_update_order(order);
