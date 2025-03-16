@@ -15,6 +15,13 @@ public:
         PERPETUAL
     };
 
+    enum Status
+    {
+        NEW,
+        CANCELED,
+        FILLED,
+    };
+
     enum Side
     {
         BUY,
@@ -29,6 +36,7 @@ public:
 
     OrderId order_id;
     ExchangeType exchange_type;
+    Status status;
     std::string symbol;
     Side side;
     OrderType type;
@@ -36,16 +44,37 @@ public:
     double quantity;
 
     Order();
-    Order(OrderId order_id_i, ExchangeType exchange_type_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
+    Order(OrderId order_id_i, ExchangeType exchange_type_i, Status status_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
-    inline static std::string to_string(Side side)
+    inline static std::string to_string(ExchangeType data)
     {
-        return side == Side::SELL ? "SELL" : "BUY";
+        return data == ExchangeType::SPOT ? "SPOT" : "PERPETUAL";
     }
 
-    inline static std::string to_string(OrderType type)
+    inline static std::string to_string(Status data)
     {
-        return type == OrderType::LIMIT ? "LIMIT" : "MARKET";
+        switch (data)
+        {
+        case Status::NEW:
+            return "NEW";
+        case Status::CANCELED:
+            return "CANCELED";
+        case Status::FILLED:
+            return "FILLED";
+
+        default:
+            return "NEW";
+        }
+    }
+
+    inline static std::string to_string(Side data)
+    {
+        return data == Side::SELL ? "SELL" : "BUY";
+    }
+
+    inline static std::string to_string(OrderType data)
+    {
+        return data == OrderType::LIMIT ? "LIMIT" : "MARKET";
     }
 
     inline static Side side_from_string(std::string data)

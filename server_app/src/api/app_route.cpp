@@ -262,6 +262,7 @@ void add_app_route()
         Order order(
             OrderManager::generate_order_id(),
             Order::ExchangeType::SPOT,
+            Order::Status::NEW,
             "ETHUSDT",
             Order::Side::BUY,
             Order::OrderType::LIMIT,
