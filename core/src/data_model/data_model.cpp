@@ -143,6 +143,16 @@ void DataModel::set_id(const std::string& id)
     m_id = id;
 }
 
+void DataModel::remove()
+{
+    MongoDB::instance()
+        .set_db_and_collection(m_db, m_collection)
+        .delete_one("_id", bsoncxx::oid(m_id));
+
+    // Reset [m_id]
+    m_id = "-1";
+}
+
 Json& DataModel::get_data()
 {
     return *m_data;

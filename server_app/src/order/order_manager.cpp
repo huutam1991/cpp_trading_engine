@@ -58,6 +58,15 @@ void OrderManager::handle_update_order(Order order)
 {
     DataModel order_dm = find_order_by_id(order.order_id);
 
+    // If order is canceled, remove it
+    if (order.status == Order::Status::CANCELED)
+    {
+        m_order_list.erase(order.order_id);
+        order_dm.remove();
+
+        return;
+    }
+
     order_dm = order.to_json();
 }
 

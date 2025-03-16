@@ -48,6 +48,9 @@ public:
     std::string get_id();
     void set_id(const std::string& id);
 
+    // Remove from DB
+    void remove();
+
     void set_callback(std::function<void(Json&)> callback);
     static DataModel load_single_data_model(const std::string& db, const std::string& collection);
     static std::vector<DataModel> load_data_model_list(const std::string& db, const std::string& collection);
