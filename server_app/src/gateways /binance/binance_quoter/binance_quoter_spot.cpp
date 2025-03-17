@@ -4,6 +4,7 @@
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <request_future.h>
+#include <measure_time.h>
 
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
@@ -50,8 +51,6 @@ void BinanceQuoterSpot::init_websocket()
     {
         Json json = Json::parse(buffer);
 
-        ADD_LOG("Spot order ack: " << json);
-
         if (json["e"] == "executionReport")
         {
             Order order
@@ -96,7 +95,7 @@ void BinanceQuoterSpot::init_websocket()
                 order.status = Order::Status::CANCELED;
             }
 
-            ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
+            // ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
             OrderManager::instance().update_order(order);
         }
     });
