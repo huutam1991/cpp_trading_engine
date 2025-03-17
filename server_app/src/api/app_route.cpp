@@ -257,17 +257,25 @@ void add_app_route()
         return HttpResponse(OK_200, response);
     };
 
-    ADD_ROUTE(RequestMethod::GET, "/test_place")
+    ADD_ROUTE(RequestMethod::POST, "/test_place")
     {
+        Json params = request->get_body_json();
+
+        std::string symbol = params["symbol"];
+        std::string side = params["side"];
+        std::string type = params["type"];
+        double price = params["price"];
+        double quantity = params["quantity"];
+
         Order order(
             OrderManager::generate_order_id(),
             Order::ExchangeType::SPOT,
             Order::Status::NEW,
-            "ETHUSDT",
-            Order::Side::BUY,
-            Order::OrderType::LIMIT,
-            1575.0,
-            0.02
+            symbol,
+            Order::side_from_string(side),
+            Order::type_from_string(type),
+            price,
+            quantity
         );
 
         auto task = GatewayManager::instance()
