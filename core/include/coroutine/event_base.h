@@ -7,6 +7,7 @@
 #include <thread>
 #include <iostream>
 #include <mutex>
+#include <util_macros.h>
 
 class EventBase
 {
