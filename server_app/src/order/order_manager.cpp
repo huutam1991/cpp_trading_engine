@@ -90,7 +90,6 @@ TaskVoid OrderManager::check_update_order()
         {
             // Get order from [m_order_update_queue]
             {
-                MeasureTime get_order("Get Order", MeasureUnit::NANOSECOND);
                 std::unique_lock lock(m_order_manager_mutex);
                 order = m_order_update_queue.front();
             }
