@@ -17,12 +17,13 @@ void StrategyStatePlacing::end()
     ADD_LOG("StrategyStatePlacing - end");
 }
 
-TaskVoid StrategyStatePlacing::run(double price)
+TaskVoid StrategyStatePlacing::run(Json data)
 {
     ADD_LOG("StrategyStatePlacing - run");
 
     // Get [price] to place
     double placing_price = StrategyState::get_placing_price();
+    double price = data["price"];
     price = placing_price == -1 ? price : placing_price;
 
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);

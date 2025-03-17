@@ -16,7 +16,7 @@ void StrategyStateCloseAllPositions::end()
     ADD_LOG("StrategyStateCloseAllPositions - end");
 }
 
-TaskVoid StrategyStateCloseAllPositions::run(double price)
+TaskVoid StrategyStateCloseAllPositions::run(Json data)
 {
     DataModel checkpoint = m_checkpoints->get_one_holding_checkpoint();
 

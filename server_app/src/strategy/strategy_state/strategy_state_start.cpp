@@ -16,7 +16,7 @@ void StrategyStateStart::end()
     ADD_LOG("StrategyStateStart - end");
 }
 
-TaskVoid StrategyStateStart::run(double price)
+TaskVoid StrategyStateStart::run(Json data)
 {
     ADD_LOG("StrategyStateStart - run");
 

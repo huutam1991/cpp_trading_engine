@@ -17,9 +17,11 @@ void StrategyStateMonitoring::end()
     ADD_LOG("StrategyStateMonitoring - end");
 }
 
-TaskVoid StrategyStateMonitoring::run(double price)
+TaskVoid StrategyStateMonitoring::run(Json data)
 {
     ADD_LOG("StrategyStateMonitoring - run");
+
+    double price = data["price"];
 
     DataModel checkpoint = m_checkpoints->get_current_checkpoint();
     double mark_price = checkpoint["info"]["price"];

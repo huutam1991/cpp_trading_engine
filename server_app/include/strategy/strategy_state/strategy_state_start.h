@@ -10,6 +10,6 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(double price);
+    virtual TaskVoid run(Json data);
 };
 #endif //STRATEGY_STATE_START_H

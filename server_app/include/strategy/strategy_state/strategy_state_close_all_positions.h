@@ -10,7 +10,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(double price);
+    virtual TaskVoid run(Json data);
 };
 
 #endif //STRATEGY_STATE_CLOSE_ALL_POSITIONS_H

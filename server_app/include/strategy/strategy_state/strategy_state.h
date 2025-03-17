@@ -32,7 +32,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(double price);
+    virtual TaskVoid run(Json data);
 
 protected:
     TaskVoid send_close_spot_order(DataModel& checkpoint);

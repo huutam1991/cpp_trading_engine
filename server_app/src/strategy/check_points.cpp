@@ -106,7 +106,8 @@ DataModel CheckPointList::get_one_holding_checkpoint()
         double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
 
         // [quantity] > 0 means this is a holding checkpoint
-        if (quantity > 0) {
+        if (quantity > 0)
+        {
             return it.second;
         }
     }
@@ -123,7 +124,8 @@ DataModel CheckPointList::get_checkpoint_can_take_profit(double price, double ta
         double move_price = price - mark_price;
 
         // [move_price] >= [take_profit] means this checkpoint can take profit
-        if (move_price >= take_profit && quantity > 0) {
+        if (move_price >= take_profit && quantity > 0)
+        {
             return it.second;
         }
     }

@@ -146,7 +146,11 @@ TaskVoid Strategy::update()
         std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
         std::string status = StrategyState::get_state_status()["status"];
 
-        co_await (*strategy_states)[status]->run(m_current_price);
+        Json data = {
+            {"price", m_current_price}
+        };
+
+        co_await (*strategy_states)[status]->run(data);
     }
 }
 
