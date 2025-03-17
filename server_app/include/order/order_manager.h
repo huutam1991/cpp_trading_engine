@@ -2,6 +2,7 @@
 #define ORDER_MANAGER_H
 
 #include <mutex>
+#include <functional>
 #include <unordered_map>
 #include <queue>
 
@@ -20,6 +21,7 @@ class OrderManager
 private:
     std::unordered_map<OrderId, DataModel> m_order_list;
     std::queue<Order> m_order_update_queue;
+    std::function<void(Order&)> m_order_update_callback = nullptr;
     std::mutex m_order_manager_mutex;
 
     // For handle order create / update
@@ -36,6 +38,7 @@ public:
     static OrderId generate_order_id();
 
     void init();
+    void register_order_update(std::function<void(Order&)>);
     void update_order(Order order);
 
 };

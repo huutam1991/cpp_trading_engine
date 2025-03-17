@@ -81,9 +81,24 @@ void Strategy::init()
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
     m_gateway->register_price_update([this](double price)
     {
-        m_price_update.set_value(price);
+        std::unique_lock lock(m_strategy_mutex);
+
+        m_current_price = price;
+        m_data_update.set_value({
+            {"price", m_current_price}
+        });
     });
     m_gateway->subscribe_symbol(m_symbol);
+
+    // Subscribe order update from OrderManager
+    OrderManager::instance().register_order_update([this](Order& order)
+    {
+        std::unique_lock lock(m_strategy_mutex);
+
+        m_data_update.set_value({
+            {"order", order.to_json()}
+        });
+    });
 
     // Destroy old task
     m_update_task.destroy();
@@ -141,25 +156,21 @@ TaskVoid Strategy::update()
             continue;
         }
 
-        m_current_price = co_await wait_new_price_update();
+        Json data = co_await wait_new_data_update();
 
         std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
         std::string status = StrategyState::get_state_status()["status"];
-
-        Json data = {
-            {"price", m_current_price}
-        };
 
         co_await (*strategy_states)[status]->run(data);
     }
 }
 
 
-Future<double> Strategy::wait_new_price_update()
+Future<Json> Strategy::wait_new_data_update()
 {
-    return Future<double>([this](Future<double>::FutureValue value)
+    return Future<Json>([this](Future<Json>::FutureValue value)
     {
-        m_price_update = value;
+        m_data_update = value;
     });
 }
 

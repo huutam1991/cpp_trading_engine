@@ -15,6 +15,11 @@ void OrderManager::init()
     task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::ORDER));
 }
 
+void OrderManager::register_order_update(std::function<void(Order&)> order_update_callback)
+{
+    m_order_update_callback = order_update_callback;
+}
+
 void OrderManager::update_order(Order order)
 {
     std::unique_lock lock(m_order_manager_mutex);
@@ -95,7 +100,7 @@ void OrderManager::handle_update_order(Order order)
     // Inform about order to strategy
     if (order.status == Order::Status::NEW || order.status == Order::Status::CANCELED || order.status == Order::Status::FILLED)
     {
-
+        m_order_update_callback(order);
     }
 
     order_dm = order.to_json();

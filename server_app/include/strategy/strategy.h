@@ -1,6 +1,8 @@
 #ifndef STRATEGY_H
 #define STRATEGY_H
 
+#include <mutex>
+
 #include <util_macros.h>
 #include <app_constants.h>
 #include <json/json.h>
@@ -16,6 +18,9 @@ class Strategy
     Singleton(Strategy)
 
 private:
+    // Mutex
+    std::mutex m_strategy_mutex;
+
     // Info
     std::string m_symbol;
     double m_buy_volumn;
@@ -37,8 +42,8 @@ private:
 
     // Price update
     TaskVoid m_update_task;
-    Future<double>::FutureValue m_price_update;
-    Future<double> wait_new_price_update();
+    Future<Json>::FutureValue m_data_update;
+    Future<Json> wait_new_data_update();
 
     void start();
     void stop();
