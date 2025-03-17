@@ -41,7 +41,7 @@ public:
             m_task_list.erase(id);
         }
 
-        std::cout << "Total task list remaining: " << m_task_list.size() << std::endl;
+        ADD_LOG("Total task list remaining: " << m_task_list.size());
     }
 
     void set_ready_task(uint64_t task_id)
