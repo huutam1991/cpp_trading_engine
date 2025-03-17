@@ -39,6 +39,11 @@ struct Future
             m_suspending_promise = suspending_promise;
         }
 
+        bool is_value_set()
+        {
+            return *m_is_set;
+        }
+
         void set_value(T& value)
         {
             // Check if this future is already set

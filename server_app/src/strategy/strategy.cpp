@@ -83,11 +83,15 @@ void Strategy::init()
     {
         std::unique_lock lock(m_strategy_mutex);
 
-        m_state_data_queue.push(price);
-        m_current_price = price;
+        // Can miss some price update
+        if (m_has_data_update.is_value_set() == false)
+        {
+            m_state_data_queue.push(price);
+            m_current_price = price;
 
-        // Inform has data update
-        m_has_data_update.set_value(true);
+            // Inform has data update
+            m_has_data_update.set_value(true);
+        }
     });
     m_gateway->subscribe_symbol(m_symbol);
 
