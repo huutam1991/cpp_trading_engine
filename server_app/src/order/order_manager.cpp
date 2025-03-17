@@ -56,6 +56,7 @@ DataModel OrderManager::find_order_by_id(OrderId order_id)
 
 void OrderManager::handle_update_order(Order order)
 {
+    MeasureTime t1("handle_update_order", MeasureUnit::NANOSECOND);
     DataModel order_dm = find_order_by_id(order.order_id);
 
     // If order is canceled, remove it
@@ -65,6 +66,26 @@ void OrderManager::handle_update_order(Order order)
         order_dm.remove();
 
         return;
+    }
+
+    if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
+    {
+        MeasureTime t1("update filled_quantity", MeasureUnit::NANOSECOND);
+
+        // Buy order's [output_quantity] is from [filled_quantity]
+        if (order.side == Order::Side::BUY)
+        {
+            order.output_quantity = order.filled_quantity - order.commission_amount;
+        }
+        // Sell order's [output_quantity] is from [filled_quantity] * [filled_price]
+        else
+        {
+            order.output_quantity = order.filled_quantity * order.filled_price - order.commission_amount;
+        }
+
+        order.filled_quantity += (double)order_dm["filled_quantity"];
+        order.commission_amount += (double)order_dm["commission_amount"];
+        order.output_quantity += (double)order_dm["output_quantity"];
     }
 
     order_dm = order.to_json();

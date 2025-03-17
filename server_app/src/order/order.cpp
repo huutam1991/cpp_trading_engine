@@ -23,6 +23,10 @@ Json Order::to_json()
         {"side", Order::to_string(side)},
         {"type", Order::to_string(type)},
         {"price", price},
-        {"quantity", quantity},
+        {"filled_quantity", filled_quantity},
+        {"output_quantity", output_quantity},
+        {"output_asset", commission_asset},
+        {"commission_amount", commission_amount},
+        {"commission_asset", commission_asset},
     };
 }

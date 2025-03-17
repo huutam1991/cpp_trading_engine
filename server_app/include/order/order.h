@@ -19,6 +19,7 @@ public:
     {
         NEW,
         CANCELED,
+        PARTIALLY_FILLED,
         FILLED,
     };
 
@@ -34,6 +35,7 @@ public:
         MARKET
     };
 
+    // Input data
     OrderId order_id;
     ExchangeType exchange_type;
     Status status;
@@ -42,6 +44,14 @@ public:
     OrderType type;
     double price;
     double quantity;
+
+    // Output data
+    double filled_quantity = 0.0; // Always for base currency
+    double filled_price = 0.0;
+    double commission_amount = 0.0; // Can be either base currency or quote currency
+    double output_quantity = 0.0; // Can be either base currency or quote currency
+    std::string commission_asset = "";
+    std::string output_asset = ""; // The same with commission_asset
 
     Order();
     Order(OrderId order_id_i, ExchangeType exchange_type_i, Status status_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
