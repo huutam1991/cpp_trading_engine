@@ -20,7 +20,7 @@ private:
     MeasureUnit m_measure_unit;
 
 public:
-    MeasureTime(std::string logs, MeasureUnit measure_unit = MeasureUnit::MILLISECOND) : m_logs{logs}, m_measure_unit{measure_unit}
+    MeasureTime(std::string logs, MeasureUnit measure_unit = MeasureUnit::NANOSECOND) : m_logs{logs}, m_measure_unit{measure_unit}
     {
         start = std::chrono::high_resolution_clock::now();
     }
