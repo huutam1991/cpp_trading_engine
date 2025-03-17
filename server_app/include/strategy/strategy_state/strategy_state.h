@@ -1,6 +1,7 @@
 #ifndef STRATEGY_STATE_H
 #define STRATEGY_STATE_H
 
+#include <variant>
 #include <coroutine/task.h>
 
 #include <gateways/gateway.h>
@@ -15,6 +16,8 @@ enum StateStatus
     CLOSING,
     STOP,
 };
+
+using StateData = std::variant<double, Order>;
 
 class StrategyState
 {
@@ -32,7 +35,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(Json data);
+    virtual TaskVoid run(StateData data);
 
 protected:
     TaskVoid send_close_spot_order(DataModel& checkpoint);

@@ -2,6 +2,7 @@
 #define STRATEGY_H
 
 #include <mutex>
+#include <queue>
 
 #include <util_macros.h>
 #include <app_constants.h>
@@ -40,10 +41,11 @@ private:
     // StrategyState
     static std::unordered_map<std::string, StrategyState*>* get_strategy_states();
 
-    // Price update
+    // Data update
     TaskVoid m_update_task;
-    Future<Json>::FutureValue m_data_update;
-    Future<Json> wait_new_data_update();
+    std::queue<StateData> m_state_data_queue;
+    Future<bool>::FutureValue m_has_data_update;
+    Future<bool> wait_new_data_update();
 
     void start();
     void stop();

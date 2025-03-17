@@ -10,6 +10,6 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(Json data);
+    virtual TaskVoid run(StateData data);
 };
 #endif //STRATEGY_STATE_START_H

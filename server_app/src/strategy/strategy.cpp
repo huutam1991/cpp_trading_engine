@@ -83,10 +83,11 @@ void Strategy::init()
     {
         std::unique_lock lock(m_strategy_mutex);
 
+        m_state_data_queue.push(price);
         m_current_price = price;
-        m_data_update.set_value({
-            {"price", m_current_price}
-        });
+
+        // Inform has data update
+        m_has_data_update.set_value(true);
     });
     m_gateway->subscribe_symbol(m_symbol);
 
@@ -95,9 +96,10 @@ void Strategy::init()
     {
         std::unique_lock lock(m_strategy_mutex);
 
-        m_data_update.set_value({
-            {"order", order.to_json()}
-        });
+        m_state_data_queue.push(order);
+
+        // Inform has data update
+        m_has_data_update.set_value(true);
     });
 
     // Destroy old task
@@ -156,21 +158,33 @@ TaskVoid Strategy::update()
             continue;
         }
 
-        Json data = co_await wait_new_data_update();
+        co_await wait_new_data_update();
 
-        std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
-        std::string status = StrategyState::get_state_status()["status"];
+        while (m_state_data_queue.size() > 0)
+        {
+            StateData data;
+            {
+                std::unique_lock lock(m_strategy_mutex);
 
-        co_await (*strategy_states)[status]->run(data);
+                data = m_state_data_queue.front();
+                m_state_data_queue.pop();
+            }
+
+            std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
+            std::string status = StrategyState::get_state_status()["status"];
+
+            co_await (*strategy_states)[status]->run(std::move(data));
+        }
+
     }
 }
 
 
-Future<Json> Strategy::wait_new_data_update()
+Future<bool> Strategy::wait_new_data_update()
 {
-    return Future<Json>([this](Future<Json>::FutureValue value)
+    return Future<bool>([this](Future<bool>::FutureValue value)
     {
-        m_data_update = value;
+        m_has_data_update = value;
     });
 }
 

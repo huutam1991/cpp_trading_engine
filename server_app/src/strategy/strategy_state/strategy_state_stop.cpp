@@ -16,9 +16,14 @@ void StrategyStateStop::end()
     ADD_LOG("StrategyStateStop - end");
 }
 
-TaskVoid StrategyStateStop::run(Json data)
+TaskVoid StrategyStateStop::run(StateData data)
 {
-    ADD_LOG("StrategyStateStop - run: Do nothing, price: " << data["price"]);
+    double price;
+    if (std::holds_alternative<double>(data)) {
+        price = std::get<double>(data);
+    }
+
+    ADD_LOG("StrategyStateStop - run: Do nothing, price: " << price);
 
     co_return;
 }

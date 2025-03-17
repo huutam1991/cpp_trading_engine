@@ -16,13 +16,17 @@ void StrategyStateCloseAllPositions::end()
     ADD_LOG("StrategyStateCloseAllPositions - end");
 }
 
-TaskVoid StrategyStateCloseAllPositions::run(Json data)
+TaskVoid StrategyStateCloseAllPositions::run(StateData data)
 {
-    DataModel checkpoint = m_checkpoints->get_one_holding_checkpoint();
+    double price;
+    if (std::holds_alternative<double>(data)) {
+        price = std::get<double>(data);
+    }
 
+    DataModel checkpoint = m_checkpoints->get_one_holding_checkpoint();
     if (checkpoint.is_null() == true)
     {
-        // ADD_LOG("StrategyStateCloseAllPositions - price: " << price << ", run: Do nothing as there's no holding checkpoint");
+        ADD_LOG("StrategyStateCloseAllPositions - price: " << price << ", run: Do nothing as there's no holding checkpoint");
     }
     else
     {
