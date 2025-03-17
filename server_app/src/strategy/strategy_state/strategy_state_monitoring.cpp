@@ -22,7 +22,8 @@ TaskVoid StrategyStateMonitoring::run(StateData data)
     ADD_LOG("StrategyStateMonitoring - run");
 
     double price;
-    if (std::holds_alternative<double>(data)) {
+    if (std::holds_alternative<double>(data))
+    {
         price = std::get<double>(data);
     }
 

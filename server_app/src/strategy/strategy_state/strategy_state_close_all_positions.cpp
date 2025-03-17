@@ -19,7 +19,8 @@ void StrategyStateCloseAllPositions::end()
 TaskVoid StrategyStateCloseAllPositions::run(StateData data)
 {
     double price = 0.0;
-    if (std::holds_alternative<double>(data)) {
+    if (std::holds_alternative<double>(data))
+    {
         price = std::get<double>(data);
     }
 
@@ -28,7 +29,8 @@ TaskVoid StrategyStateCloseAllPositions::run(StateData data)
     {
         ADD_LOG("StrategyStateCloseAllPositions - price: " << price << ", run: Do nothing as there's no holding checkpoint");
 
-        if (std::holds_alternative<Order>(data)) {
+        if (std::holds_alternative<Order>(data))
+        {
             Order order = std::get<Order>(data);
             ADD_LOG("StrategyStateCloseAllPositions - order: " << order.to_json());
         }

@@ -24,7 +24,8 @@ TaskVoid StrategyStatePlacing::run(StateData data)
     // Get [price] to place
     double placing_price = StrategyState::get_placing_price();
     double price;
-    if (std::holds_alternative<double>(data)) {
+    if (std::holds_alternative<double>(data))
+    {
         price = std::get<double>(data);
     }
     price = placing_price == -1 ? price : placing_price;
@@ -37,7 +38,8 @@ TaskVoid StrategyStatePlacing::run(StateData data)
         .set_db_and_collection(STRATEGY_DB_NAME, "config")
         .find_any();
 
-    if (strategy_config.has_field("max_price_to_place")) {
+    if (strategy_config.has_field("max_price_to_place"))
+    {
         double max_price_to_place = strategy_config["max_price_to_place"];
 
         if (price >= max_price_to_place)
