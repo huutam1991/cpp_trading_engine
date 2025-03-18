@@ -65,7 +65,7 @@ void BinanceQuoterSpot::init_websocket()
                 std::stod((std::string)json["q"]),   // Quantity
             };
 
-            // New order
+            // Parsing order from execution report
             if (json["X"] == "NEW")
             {
                 order.order_id = std::stoull((std::string)json["c"]);

@@ -133,15 +133,7 @@ template<class T>
 DataField& DataField::operator=(const T& data)
 {
     *m_field = data;
-
-    if (m_root_field == m_field)
-    {
-        m_parent->update_field(m_field_name, data);
-    }
-    else
-    {
-        m_parent->update_field(m_field_name, *m_root_field);
-    }
+    m_parent->update_field(m_field_name, *m_root_field);
 
     return *this;
 }
