@@ -29,6 +29,18 @@ void OrderManager::update_order(Order order)
     m_has_order_update.set_value(true);
 }
 
+Future<Order> OrderManager::get_order_result(OrderId order_id)
+{
+    return Future<Order>([this, order_id](Future<Order>::FutureValue value)
+    {
+        if (m_order_list.find(order_id) != m_order_list.end())
+        {
+            Json& order_data = m_order_list[order_id].get_data();
+            value.set_value(Order::from_json(order_data));
+        }
+    });
+}
+
 OrderId OrderManager::generate_order_id()
 {
     auto now = std::chrono::system_clock::now();

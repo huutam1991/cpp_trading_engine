@@ -87,6 +87,35 @@ public:
         return data == OrderType::LIMIT ? "LIMIT" : "MARKET";
     }
 
+    inline static ExchangeType exchange_type_from_string(std::string data)
+    {
+        return data == "SPOT" ? ExchangeType::SPOT : ExchangeType::PERPETUAL;
+    }
+
+    inline static Status status_from_string(std::string data)
+    {
+        Status res;
+
+        if (data == "NEW")
+        {
+            res = Status::NEW;
+        }
+        else if (data == "CANCELED")
+        {
+            res = Status::CANCELED;
+        }
+        else if (data == "PARTIALLY_FILLED")
+        {
+            res = Status::PARTIALLY_FILLED;
+        }
+        else if (data == "FILLED")
+        {
+            res = Status::FILLED;
+        }
+
+        return res;
+    }
+
     inline static Side side_from_string(std::string data)
     {
         return data == "BUY" ? Side::BUY : Side::SELL;
@@ -98,6 +127,7 @@ public:
     }
 
     Json to_json();
+    static Order from_json(Json& data);
 };
 
 #endif //ORDER_H

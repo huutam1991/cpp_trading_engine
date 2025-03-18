@@ -41,6 +41,10 @@ public:
     void register_order_update(std::function<void(Order&)>);
     void update_order(Order order);
 
+    // For getting order data
+    // Return Future because the order's data might not be arrive yet
+    Future<Order> get_order_result(OrderId order_id);
+
 };
 
 #endif // ORDER_MANAGER_H
