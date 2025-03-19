@@ -7,27 +7,26 @@
 #include <queue>
 
 #include <util_macros.h>
-#include <data_model/data_model.h>
 #include <coroutine/task_void.h>
 #include <coroutine/future.h>
 
-#include <app_utils.h>
 #include <order/order.h>
+#include <order/order_data_model_helper.h>
 
 class OrderManager
 {
     Singleton(OrderManager);
 
 private:
-    std::unordered_map<OrderId, DataModel> m_order_list;
+    std::unordered_map<OrderId, Order> m_order_list;
     std::queue<Order> m_order_update_queue;
     std::function<void(Order&)> m_order_update_callback = nullptr;
     std::mutex m_order_manager_mutex;
 
     // For handle order create / update
-    void create_order_data_model(OrderId order_id);
-    DataModel find_order_by_id(OrderId order_id);
+    OrderDataModelHelper m_order_data_model_helper;
     void handle_update_order(Order order);
+    Order find_order_by_id(OrderId order_id);
 
     // For coroutine task
     Future<bool>::FutureValue m_has_order_update;
@@ -43,7 +42,7 @@ public:
 
     // For getting order data
     // Return Future because the order's data might not be arrive yet
-    Future<Order> get_order_result(OrderId order_id);
+    Future<Order> get_order_data(OrderId order_id);
 
 };
 

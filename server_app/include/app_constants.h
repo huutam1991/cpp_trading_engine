@@ -191,8 +191,9 @@ enum NotificationState
 enum EventBaseID
 {
     APP,
-    ORDER,
-    STRATEGY
+    ORDER,                   // OrderManager
+    ORDER_DATA_MODEL_HELPER, // Help to save Order
+    STRATEGY                 // Strategy
 };
 
 #endif //APP_CONSTANTS_H

@@ -3,12 +3,7 @@
 
 void OrderManager::init()
 {
-    m_order_list = DataModel::load_data_model_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
-
-    for (const auto& [order_id, order] : m_order_list)
-    {
-        ADD_LOG("order_id: " << order_id << ", Order: " << order);
-    }
+    m_order_list = m_order_data_model_helper.load_order();
 
     // Start running on EventBaseID::ORDER
     auto task = check_update_order();
@@ -29,14 +24,13 @@ void OrderManager::update_order(Order order)
     m_has_order_update.set_value(true);
 }
 
-Future<Order> OrderManager::get_order_result(OrderId order_id)
+Future<Order> OrderManager::get_order_data(OrderId order_id)
 {
     return Future<Order>([this, order_id](Future<Order>::FutureValue value)
     {
         if (m_order_list.find(order_id) != m_order_list.end())
         {
-            Json& order_data = m_order_list[order_id].get_data();
-            value.set_value(Order::from_json(order_data));
+            value.set_value(m_order_list[order_id]);
         }
     });
 }
@@ -50,23 +44,12 @@ OrderId OrderManager::generate_order_id()
     return static_cast<OrderId>(nanos);
 }
 
-void OrderManager::create_order_data_model(OrderId order_id)
-{
-    DataModel order_dm(ORDER_DB_NAME, "order_list");
-    Order order;
-    order.order_id = order_id;
-
-    // Init data for [order_dm] and insert too [m_order_list]
-    order_dm = order.to_json();
-    m_order_list.insert(std::make_pair(order_id, order_dm));
-}
-
-DataModel OrderManager::find_order_by_id(OrderId order_id)
+Order OrderManager::find_order_by_id(OrderId order_id)
 {
     MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (m_order_list.find(order_id) == m_order_list.end())
     {
-        create_order_data_model(order_id);
+        m_order_list.insert(std::make_pair(order_id, Order()));
     }
 
     return m_order_list[order_id];
@@ -75,17 +58,7 @@ DataModel OrderManager::find_order_by_id(OrderId order_id)
 void OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
-
-    DataModel order_dm = find_order_by_id(order.order_id);
-
-    // If order is canceled, remove it
-    if (order.status == Order::Status::CANCELED)
-    {
-        m_order_list.erase(order.order_id);
-        order_dm.remove();
-
-        return;
-    }
+    Order current_order_data = find_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
     {
@@ -101,9 +74,9 @@ void OrderManager::handle_update_order(Order order)
         }
 
         // Update order's output data
-        order.filled_quantity += (double)order_dm["filled_quantity"];
-        order.commission_amount += (double)order_dm["commission_amount"];
-        order.output_quantity += (double)order_dm["output_quantity"];
+        order.filled_quantity += current_order_data.filled_quantity;
+        order.commission_amount += current_order_data.commission_amount;
+        order.output_quantity += current_order_data.output_quantity;
 
         // If [filled_quantity] == [quantity], order's status is FILLED
         if (order.filled_quantity == order.quantity)
@@ -118,7 +91,7 @@ void OrderManager::handle_update_order(Order order)
         m_order_update_callback(order);
     }
 
-    order_dm = order.to_json();
+    m_order_data_model_helper.update_order(order);
 }
 
 Future<bool> OrderManager::wait_new_order_update()
