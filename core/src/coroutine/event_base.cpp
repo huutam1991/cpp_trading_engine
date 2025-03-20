@@ -1,12 +1,14 @@
 #include <coroutine/event_base.h>
 #include <coroutine/base_promise_type.h>
 
-uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle)
+uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
     std::unique_lock lock(m_mutex);
 
     uint64_t id = get_event_id();
-    m_task_list.insert(std::make_pair(id, handle));
+    m_task_list.insert(std::make_pair(id, TaskInfo {handle, base_promise_type_address}));
+
+    ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining - add: " << m_task_list.size());
 
     return id;
 }
@@ -19,7 +21,7 @@ void EventBase::remove_from_event_base(uint64_t id)
         m_task_list.erase(id);
     }
 
-    ADD_LOG("Total task list remaining: " << m_task_list.size());
+    ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining - remove: " << m_task_list.size());
 }
 
 
@@ -29,9 +31,9 @@ void EventBase::set_ready_task(uint64_t task_id)
     m_ready_tasks.push(task_id);
 }
 
-std::coroutine_handle<> EventBase::get_ready_task()
+EventBase::TaskInfo EventBase::get_ready_task()
 {
-    if (m_ready_tasks.empty()) return nullptr;
+    if (m_ready_tasks.empty()) return TaskInfo{};
 
     std::unique_lock lock(m_mutex);
     uint64_t task_id = m_ready_tasks.front();
@@ -40,19 +42,14 @@ std::coroutine_handle<> EventBase::get_ready_task()
     return m_task_list[task_id];
 }
 
-void EventBase::check_to_remove_task(std::coroutine_handle<> handle)
+void EventBase::check_to_remove_task(TaskInfo task_info)
 {
     // Check if this task is already release, then destroy it's coroutine frame and remove from queue
-    ADD_LOG("check crash " << 4);
-    BasePromiseType* base_promise = static_cast<BasePromiseType*>(handle.address());
-    ADD_LOG("check crash " << 5);
+    BasePromiseType* base_promise = static_cast<BasePromiseType*>(task_info.base_promise_type_address);
     if (base_promise->is_task_release == true)
     {
-        ADD_LOG("check crash " << 6);
         remove_from_event_base(base_promise->task_id);
-        ADD_LOG("check crash " << 7);
-        handle.destroy();
-        ADD_LOG("check crash " << 8);
+        task_info.handle.destroy();
     }
 }
 
@@ -61,19 +58,16 @@ void EventBase::loop()
     while (true)
     {
         // Check if there's any task ready to process
-        std::coroutine_handle<> handle = get_ready_task();
+        TaskInfo task_info = get_ready_task();
 
         // Continue process this task
-        if (handle != nullptr && handle.done() == false)
+        if (task_info.handle != nullptr && task_info.handle.done() == false)
         {
-            ADD_LOG("check crash " << 1);
-            handle.resume();
-            ADD_LOG("check crash " << 2);
+            task_info.handle.resume();
 
-            if (handle.done() == true)
+            if (task_info.handle.done() == true)
             {
-                ADD_LOG("check crash " << 3);
-                check_to_remove_task(handle);
+                check_to_remove_task(task_info);
             }
         }
     }
