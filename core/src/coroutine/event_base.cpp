@@ -1,4 +1,5 @@
 #include <coroutine/event_base.h>
+#include <coroutine/base_promise_type.h>
 
 uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle)
 {
@@ -39,6 +40,22 @@ std::coroutine_handle<> EventBase::get_ready_task()
     return m_task_list[task_id];
 }
 
+void EventBase::check_to_remove_task(std::coroutine_handle<> handle)
+{
+    // Check if this task is already release, then destroy it's coroutine frame and remove from queue
+    ADD_LOG("check crash " << 4);
+    BasePromiseType* base_promise = static_cast<BasePromiseType*>(handle.address());
+    ADD_LOG("check crash " << 5);
+    if (base_promise->is_task_release == true)
+    {
+        ADD_LOG("check crash " << 6);
+        remove_from_event_base(base_promise->task_id);
+        ADD_LOG("check crash " << 7);
+        handle.destroy();
+        ADD_LOG("check crash " << 8);
+    }
+}
+
 void EventBase::loop()
 {
     while (true)
@@ -49,7 +66,15 @@ void EventBase::loop()
         // Continue process this task
         if (handle != nullptr && handle.done() == false)
         {
+            ADD_LOG("check crash " << 1);
             handle.resume();
+            ADD_LOG("check crash " << 2);
+
+            if (handle.done() == true)
+            {
+                ADD_LOG("check crash " << 3);
+                check_to_remove_task(handle);
+            }
         }
     }
 }

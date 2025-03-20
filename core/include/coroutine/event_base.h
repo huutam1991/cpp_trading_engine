@@ -28,6 +28,7 @@ public:
     void remove_from_event_base(uint64_t id);
     void set_ready_task(uint64_t task_id);
     std::coroutine_handle<> get_ready_task();
+    void check_to_remove_task(std::coroutine_handle<> handle);
     void loop();
 };
 

@@ -8,6 +8,7 @@ struct BasePromiseType
     bool m_is_waiting = false;
     BasePromiseType* m_suspending_promise = nullptr;
     EventBase* m_event_base = nullptr;
+    bool is_task_release = false;
     uint64_t task_id = 0;
 
     void register_on(EventBase* event_base, std::coroutine_handle<> handle)

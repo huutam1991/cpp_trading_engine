@@ -57,7 +57,13 @@ struct Task
 
     void destroy(bool complete = true)
     {
-        if (handle && (handle.done() || complete == true))
+        // This is just a Task object with nullptr handle, not a really Task that is created by C++
+        if (handle == nullptr)
+        {
+            return;
+        }
+
+        if (handle.done() || complete == true)
         {
             auto base_promise_type = get_base_promise_type();
             if (base_promise_type->m_event_base != nullptr)
@@ -67,6 +73,11 @@ struct Task
             }
 
             handle.destroy();
+        }
+        else
+        {
+            // Mark this task is already release, then it will be destroy later when it's done
+            get_base_promise_type()->is_task_release = true;
         }
     }
 
