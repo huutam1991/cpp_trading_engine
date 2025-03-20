@@ -39,9 +39,7 @@ DataModel OrderDataModelHelper::find_order_by_id(OrderId order_id)
 
 void OrderDataModelHelper::update_order(Order& order)
 {
-    MeasureTime t("Update OrderDataModelHelper");
     TaskVoid task = task_update_order(order);
-    ADD_LOG("Run on EventBase ORDER_DATA_MODEL_HELPER");
     task.start_running_on(
         EventBaseManager::instance()
             .get_event_base_by_id(EventBaseID::ORDER_DATA_MODEL_HELPER)
