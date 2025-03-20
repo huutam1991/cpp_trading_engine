@@ -19,19 +19,12 @@ class OrderManager
 
 private:
     std::unordered_map<OrderId, Order> m_order_list;
-    std::queue<Order> m_order_update_queue;
     std::function<void(Order&)> m_order_update_callback = nullptr;
-    std::mutex m_order_manager_mutex;
 
     // For handle order create / update
     OrderDataModelHelper m_order_data_model_helper;
-    void handle_update_order(Order order);
+    TaskVoid handle_update_order(Order order);
     Order find_order_by_id(OrderId order_id);
-
-    // For coroutine task
-    Future<bool>::FutureValue m_has_order_update;
-    TaskVoid check_update_order();
-    Future<bool> wait_new_order_update();
 
 public:
     static OrderId generate_order_id();

@@ -4,10 +4,6 @@
 void OrderManager::init()
 {
     m_order_list = m_order_data_model_helper.load_order();
-
-    // Start running on EventBaseID::ORDER
-    auto task = check_update_order();
-    task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::ORDER));
 }
 
 void OrderManager::register_order_update(std::function<void(Order&)> order_update_callback)
@@ -17,11 +13,11 @@ void OrderManager::register_order_update(std::function<void(Order&)> order_updat
 
 void OrderManager::update_order(Order order)
 {
-    std::unique_lock lock(m_order_manager_mutex);
-    m_order_update_queue.push(order);
-
-    // Inform that there's new order in [m_order_update_queue]
-    m_has_order_update.set_value(true);
+    TaskVoid task = handle_update_order(order);
+    task.start_running_on(
+        EventBaseManager::instance()
+            .get_event_base_by_id(EventBaseID::ORDER)
+    );
 }
 
 Future<Order> OrderManager::get_order_data(OrderId order_id)
@@ -55,7 +51,7 @@ Order OrderManager::find_order_by_id(OrderId order_id)
     return m_order_list[order_id];
 }
 
-void OrderManager::handle_update_order(Order order)
+TaskVoid OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
     Order current_order_data = find_order_by_id(order.order_id);
@@ -91,38 +87,8 @@ void OrderManager::handle_update_order(Order order)
         m_order_update_callback(order);
     }
 
+    // Save order to DB, using DataModel implemented in OrderDataModelHelper
     m_order_data_model_helper.update_order(order);
-}
 
-Future<bool> OrderManager::wait_new_order_update()
-{
-    return Future<bool>([this](Future<bool>::FutureValue value)
-    {
-        m_has_order_update = value;
-    });
-}
-
-TaskVoid OrderManager::check_update_order()
-{
-    Order order;
-
-    while (true)
-    {
-        co_await wait_new_order_update();
-
-        while (m_order_update_queue.size() > 0)
-        {
-            // Get order from [m_order_update_queue]
-            {
-                std::unique_lock lock(m_order_manager_mutex);
-                order = m_order_update_queue.front();
-            }
-
-            // Update this order
-            handle_update_order(order);
-
-            // Remove order from [m_order_update_queue]
-            m_order_update_queue.pop();
-        }
-    }
+    co_return;
 }
