@@ -8,7 +8,7 @@ uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base
     uint64_t id = get_event_id();
     m_task_list.insert(std::make_pair(id, TaskInfo {handle, base_promise_type_address}));
 
-    ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining - add: " << m_task_list.size());
+    // ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining - add: " << m_task_list.size());
 
     return id;
 }
