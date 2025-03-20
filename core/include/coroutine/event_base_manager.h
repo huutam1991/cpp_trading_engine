@@ -21,7 +21,7 @@ public:
     {
         if (event_base_list.find(id) == event_base_list.end())
         {
-            auto event_base = std::make_shared<EventBase>();
+            auto event_base = std::make_shared<EventBase>(id);
             event_base_list.insert(std::make_pair(id, event_base));
             threads.emplace_back([event_base]()
             {

@@ -12,6 +12,10 @@
 class EventBase
 {
 public:
+    EventBase() {}
+    EventBase(size_t id) : m_event_base_id {id} {}
+
+    size_t m_event_base_id = 0;
     uint64_t m_event_id = 1;
     std::unordered_map<uint64_t, std::coroutine_handle<>> m_task_list;
     std::queue<uint64_t> m_ready_tasks;
