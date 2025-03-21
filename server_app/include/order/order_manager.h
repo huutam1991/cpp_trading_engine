@@ -35,7 +35,7 @@ public:
 
     // For getting order data
     // Return Future because the order's data might not be arrive yet
-    Future<Order> get_order_data(OrderId order_id);
+    Future<Order> get_order_by_id(OrderId order_id);
 
 };
 

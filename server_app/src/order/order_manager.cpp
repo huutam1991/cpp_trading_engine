@@ -20,7 +20,7 @@ void OrderManager::update_order(Order order)
     );
 }
 
-Future<Order> OrderManager::get_order_data(OrderId order_id)
+Future<Order> OrderManager::get_order_by_id(OrderId order_id)
 {
     return Future<Order>([this, order_id](Future<Order>::FutureValue value)
     {
