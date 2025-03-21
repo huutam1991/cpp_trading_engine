@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 
 #include <timer.h>
 #include "base_promise_type.h"
@@ -16,19 +17,21 @@ struct Future
     private:
         std::shared_ptr<T> m_value;
         std::shared_ptr<bool> m_is_set;
+        std::shared_ptr<std::mutex> m_mutex_future;
         BasePromiseType* m_suspending_promise = nullptr;
 
     public:
         FutureValue() : m_value{std::make_shared<T>()}, m_is_set{std::make_shared<bool>(false)}
         {}
 
-        FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_is_set{copy.m_is_set}, m_suspending_promise{copy.m_suspending_promise}
+        FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_is_set{copy.m_is_set}, m_mutex_future{copy.m_mutex_future}, m_suspending_promise{copy.m_suspending_promise}
         {}
 
         FutureValue& operator=(const FutureValue& copy)
         {
             m_value = copy.m_value;
             m_is_set = copy.m_is_set;
+            m_mutex_future = copy.m_mutex_future;
             m_suspending_promise = copy.m_suspending_promise;
 
             return *this;
@@ -41,11 +44,14 @@ struct Future
 
         bool is_value_set()
         {
+            std::unique_lock lock(*m_mutex_future);
             return *m_is_set;
         }
 
         void set_value(T& value)
         {
+            std::unique_lock lock(*m_mutex_future);
+
             // Check if this future is already set
             if (*m_is_set == true) return;
 
@@ -57,6 +63,8 @@ struct Future
 
         void set_value(T&& value)
         {
+            std::unique_lock lock(*m_mutex_future);
+
             // Check if this future is already set
             if (*m_is_set == true) return;
 
