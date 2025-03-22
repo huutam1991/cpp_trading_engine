@@ -100,6 +100,11 @@ struct Future
     Future(std::function<void(FutureValue)> execute_func) : m_execute_func(execute_func)
     {
     }
+    // Or with a value (ready Future)
+    Future(T& value)
+    {
+        m_value.set_value(value);
+    }
 
     // Static method
     static Future<size_t> sleep_for_milliseconds(size_t milliseconds)
@@ -121,7 +126,7 @@ struct Future
 
     bool await_ready()
     {
-        return false; // Always false as it will be ready in future
+        return m_value.is_value_set(); // If value is set, this Future is ready
     }
 
     template<class promise_type>

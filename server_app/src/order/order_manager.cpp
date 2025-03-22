@@ -22,12 +22,16 @@ void OrderManager::update_order(Order order)
 
 Future<Order> OrderManager::get_order_by_id(OrderId order_id)
 {
+    // If order is on m_order_list, return it
+    if (m_order_list.find(order_id) != m_order_list.end())
+    {
+        return Future<Order>(m_order_list[order_id]);
+    }
+
+    // Otherwise return in future
     return Future<Order>([this, order_id](Future<Order>::FutureValue value)
     {
-        if (m_order_list.find(order_id) != m_order_list.end())
-        {
-            value.set_value(m_order_list[order_id]);
-        }
+
     });
 }
 
