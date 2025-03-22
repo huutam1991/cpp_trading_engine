@@ -4,17 +4,11 @@ My personal trading engine project, using C++, I build every core features in th
 
 # Build command (Linux)
 ```
-cd <project-folder>
-mkdir build
-cd build/
-cmake ..
-make -j
+./install_library.sh
+./build_bash.sh
 ```
 
 # Run command  (Linux)
 ```
-chmod 777 http_server.out
-cp http_server.out ../
-cd ..
-./http_server.out 8080 web_data
+./run_bash.sh
 ```
