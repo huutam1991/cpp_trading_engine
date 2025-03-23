@@ -4,6 +4,7 @@
 void OrderManager::init()
 {
     m_order_list = m_order_data_model_helper.load_order();
+    m_order_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::ORDER);
 }
 
 void OrderManager::register_order_update(std::function<void(Order&)> order_update_callback)
@@ -14,24 +15,60 @@ void OrderManager::register_order_update(std::function<void(Order&)> order_updat
 void OrderManager::update_order(Order order)
 {
     TaskVoid task = handle_update_order(order);
-    task.start_running_on(
-        EventBaseManager::instance()
-            .get_event_base_by_id(EventBaseID::ORDER)
-    );
+    task.start_running_on(m_order_event_base);
 }
 
-Future<Order> OrderManager::get_order_by_id(OrderId order_id)
+void OrderManager::add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
 {
-    // If order is on m_order_list, return it
+    TaskVoid task = handle_add_order_future_value(value, order_id, status);
+    task.start_running_on(m_order_event_base);
+}
+
+void OrderManager::check_set_future_value_for_order(OrderId order_id, Order::Status status)
+{
+    Order order = find_order_by_id(order_id);
+
+    // If order's status is not the expected one, do nothing
+    if (order.status != status)
+    {
+        return;
+    }
+
+    auto key = std::make_pair(order_id, status);
+
+    // If there's no order future value in [m_order_future_value], do nothing
+    if (m_order_future_value.find(key) == m_order_future_value.end())
+    {
+        return;
+    }
+
+    // Otherwise, update value for order's future value
+    std::vector<Future<Order>::FutureValue>& order_future_value_list = m_order_future_value[key];
+    for (Future<Order>::FutureValue& order_future_value : order_future_value_list)
+    {
+        order_future_value.set_value(order);
+    }
+
+    // Remove all of current order's future value, as they are all set
+    order_future_value_list.resize(0);
+}
+
+Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Status status)
+{
+    // If order's status is the expected one, return it
     if (m_order_list.find(order_id) != m_order_list.end())
     {
-        return Future<Order>(m_order_list[order_id]);
+        Order& order = m_order_list[order_id];
+        if (order.status == status)
+        {
+            return Future<Order>(order);
+        }
     }
 
     // Otherwise return in future
-    return Future<Order>([this, order_id](Future<Order>::FutureValue value)
+    return Future<Order>([this, order_id, status](Future<Order>::FutureValue value)
     {
-
+        add_order_future_value(value, order_id, status);
     });
 }
 
@@ -53,6 +90,22 @@ Order OrderManager::find_order_by_id(OrderId order_id)
     }
 
     return m_order_list[order_id];
+}
+
+TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
+{
+    auto key = std::make_pair(order_id, status);
+    if (m_order_future_value.find(key) == m_order_future_value.end())
+    {
+        m_order_future_value.insert(std::make_pair(key, std::vector<Future<Order>::FutureValue>{}));
+    }
+
+    m_order_future_value[key].push_back(value);
+
+    // Check to set future value for order
+    check_set_future_value_for_order(order_id, status);
+
+    co_return;
 }
 
 TaskVoid OrderManager::handle_update_order(Order order)
@@ -89,6 +142,9 @@ TaskVoid OrderManager::handle_update_order(Order order)
     if (order.status == Order::Status::NEW || order.status == Order::Status::CANCELED || order.status == Order::Status::FILLED)
     {
         m_order_update_callback(order);
+
+        // Check to set future value for order
+        check_set_future_value_for_order(order.order_id, order.status);
     }
 
     // Save order to DB, using DataModel implemented in OrderDataModelHelper
