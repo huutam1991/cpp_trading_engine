@@ -21,7 +21,7 @@ struct Future
         BasePromiseType* m_suspending_promise = nullptr;
 
     public:
-        FutureValue() : m_value{std::make_shared<T>()}, m_is_set{std::make_shared<bool>(false)}
+        FutureValue() : m_value{std::make_shared<T>()}, m_is_set{std::make_shared<bool>(false)}, m_mutex_future{std::make_shared<std::mutex>()}
         {}
 
         FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_is_set{copy.m_is_set}, m_mutex_future{copy.m_mutex_future}, m_suspending_promise{copy.m_suspending_promise}
