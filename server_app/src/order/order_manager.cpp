@@ -26,7 +26,7 @@ void OrderManager::add_order_future_value(Future<Order>::FutureValue value, Orde
 
 void OrderManager::check_set_future_value_for_order(OrderId order_id, Order::Status status)
 {
-    Order order = find_order_by_id(order_id);
+    Order order = get_order_by_id(order_id);
 
     // If order's status is not the expected one, do nothing
     if (order.status != status)
@@ -81,7 +81,7 @@ OrderId OrderManager::generate_order_id()
     return static_cast<OrderId>(nanos);
 }
 
-Order OrderManager::find_order_by_id(OrderId order_id)
+Order OrderManager::get_order_by_id(OrderId order_id)
 {
     MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (m_order_list.find(order_id) == m_order_list.end())
@@ -111,7 +111,7 @@ TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue 
 TaskVoid OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
-    Order current_order_data = find_order_by_id(order.order_id);
+    Order current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
     {
@@ -141,6 +141,7 @@ TaskVoid OrderManager::handle_update_order(Order order)
     // Inform about order to strategy
     if (order.status == Order::Status::NEW || order.status == Order::Status::CANCELED || order.status == Order::Status::FILLED)
     {
+        // Invoke callback
         m_order_update_callback(order);
 
         // Check to set future value for order

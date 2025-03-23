@@ -27,7 +27,7 @@ void OrderDataModelHelper::create_order_data_model(OrderId order_id)
     m_order_list.insert(std::make_pair(order_id, order_dm));
 }
 
-DataModel OrderDataModelHelper::find_order_by_id(OrderId order_id)
+DataModel OrderDataModelHelper::get_order_by_id(OrderId order_id)
 {
     if (m_order_list.find(order_id) == m_order_list.end())
     {
@@ -48,7 +48,7 @@ void OrderDataModelHelper::update_order(Order& order)
 
 TaskVoid OrderDataModelHelper::task_update_order(Order order)
 {
-    DataModel order_dm = find_order_by_id(order.order_id);
+    DataModel order_dm = get_order_by_id(order.order_id);
 
     // Remove order if it's status is CANCELED
     if (order.status == Order::Status::CANCELED)

@@ -17,7 +17,7 @@ private:
 
     // For handle order create / update
     void create_order_data_model(OrderId order_id);
-    DataModel find_order_by_id(OrderId order_id);
+    DataModel get_order_by_id(OrderId order_id);
 
 public:
     std::unordered_map<OrderId, Order> load_order();

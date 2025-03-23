@@ -17,6 +17,7 @@ public:
 
     enum Status
     {
+        NOT_AVAILABLE,
         NEW,
         CANCELED,
         PARTIALLY_FILLED,
@@ -38,7 +39,7 @@ public:
     // Input data
     OrderId order_id;
     ExchangeType exchange_type;
-    Status status;
+    Status status = Status::NOT_AVAILABLE;
     std::string symbol;
     Side side;
     OrderType type;
@@ -65,6 +66,8 @@ public:
     {
         switch (data)
         {
+        case Status::NOT_AVAILABLE:
+            return "NOT_AVAILABLE";
         case Status::NEW:
             return "NEW";
         case Status::CANCELED:
@@ -95,8 +98,11 @@ public:
     inline static Status status_from_string(std::string data)
     {
         Status res;
-
-        if (data == "NEW")
+        if (data == "NOT_AVAILABLE")
+        {
+            res = Status::NOT_AVAILABLE;
+        }
+        else if (data == "NEW")
         {
             res = Status::NEW;
         }
