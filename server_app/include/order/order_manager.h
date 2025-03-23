@@ -13,6 +13,15 @@
 #include <order/order.h>
 #include <order/order_data_model_helper.h>
 
+namespace std {
+    template<>
+    struct hash<std::pair<size_t, Order::Status>> {
+        std::size_t operator()(const std::pair<OrderId, Order::Status>& p) const noexcept {
+            return std::hash<size_t>{}(p.first) ^ (std::hash<int>{}(static_cast<int>(p.second)) << 1);
+        }
+    };
+}
+
 class OrderManager
 {
     Singleton(OrderManager);
