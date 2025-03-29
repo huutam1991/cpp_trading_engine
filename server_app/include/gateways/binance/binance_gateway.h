@@ -19,11 +19,13 @@ class BinanceGateway : public Gateway
     // Exchange info
     Json m_symbols_info;
 
+protected:
+    virtual Task<Json> place_on_exchange(Order order) override;
+
 public:
     BinanceGateway(const std::string& key);
 
     virtual void subscribe_symbol(const std::string& symbol) override;
-    virtual Task<Json> place(Order order) override;
     virtual Task<Json> get_balances() override;
     virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) override;
 

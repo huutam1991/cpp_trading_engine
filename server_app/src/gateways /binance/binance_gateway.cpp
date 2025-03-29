@@ -110,7 +110,7 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(best_ask);
 }
 
-Task<Json> BinanceGateway::place(Order order)
+Task<Json> BinanceGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
     BinanceQuoter* quoter = order.exchange_type == Order::ExchangeType::SPOT ?
@@ -120,7 +120,9 @@ Task<Json> BinanceGateway::place(Order order)
     Json response = co_await quoter->place(order);
     response["symbol"] = order.symbol;
 
-    co_return quoter->get_trade_result_from_response(response);
+    // co_return quoter->get_trade_result_from_response(response);
+
+    co_return response;
 }
 
 Task<Json> BinanceGateway::get_balances()

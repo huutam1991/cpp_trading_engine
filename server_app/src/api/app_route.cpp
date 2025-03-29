@@ -283,10 +283,10 @@ void add_app_route()
             ->place(order);
 
         EventBase* strategy_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY);
-        std::future<Json> result = task.start_running_on(strategy_event_base);
-        Json order_response = result.get();
+        std::future<Order> result = task.start_running_on(strategy_event_base);
+        Order order_response = result.get();
 
-        return HttpResponse(OK_200, order_response);
+        return HttpResponse(OK_200, order_response.to_json());
     };
 
     ADD_ROUTE(RequestMethod::POST, "/external_request")
