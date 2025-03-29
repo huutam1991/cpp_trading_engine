@@ -95,6 +95,8 @@ TaskVoid StrategyState::send_close_spot_order(DataModel& checkpoint)
         {"volumn_in_usdt", 0.0},
     };
 
+    checkpoint["is_current_checkpoint"] = false;
+
     co_return;
 }
 

@@ -43,6 +43,7 @@ private:
 
     // Data update
     TaskVoid m_update_task;
+    bool m_is_run_update = false;
     std::queue<StateData> m_state_data_queue;
     Future<bool>::FutureValue m_has_data_update;
     Future<bool> wait_new_data_update();

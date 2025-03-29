@@ -107,10 +107,15 @@ void Strategy::init()
     });
 
     // Destroy old task
-    m_update_task.destroy();
+    // m_update_task.destroy();
     // Create new task
-    m_update_task = update();
-    m_update_task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY));
+    if (m_is_run_update == false)
+    {
+        m_update_task = update();
+        m_update_task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY));
+
+        m_is_run_update = true;
+    }
 }
 
 void Strategy::on_config_change()
