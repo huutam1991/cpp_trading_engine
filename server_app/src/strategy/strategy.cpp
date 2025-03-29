@@ -110,7 +110,7 @@ void Strategy::init()
     m_update_task.destroy();
     // Create new task
     m_update_task = update();
-    // m_update_task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY));
+    m_update_task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY));
 }
 
 void Strategy::on_config_change()

@@ -26,6 +26,11 @@ TaskVoid StrategyStateMonitoring::run(StateData data)
     {
         price = std::get<double>(data);
     }
+    else
+    {
+        // Currently, only handle price update
+        co_return;
+    }
 
     DataModel checkpoint = m_checkpoints->get_current_checkpoint();
     double mark_price = checkpoint["info"]["price"];
