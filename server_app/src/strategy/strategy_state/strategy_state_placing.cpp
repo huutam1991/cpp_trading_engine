@@ -28,6 +28,11 @@ TaskVoid StrategyStatePlacing::run(StateData data)
     {
         price = std::get<double>(data);
     }
+    else
+    {
+        // Currently, only handle price update
+        co_return;
+    }
     price = placing_price == -1 ? price : placing_price;
 
     DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
