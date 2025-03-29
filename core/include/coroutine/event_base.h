@@ -31,7 +31,11 @@ public:
 
     uint64_t get_event_id()
     {
-        return m_event_id++;
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+        return static_cast<uint64_t>(nanos);
     }
 
     uint64_t add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address);
