@@ -95,7 +95,17 @@ Order& OrderManager::get_order_by_id(OrderId order_id)
 
 TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
 {
+    MeasureTime a("handle_add_order_future_value", MeasureUnit::NANOSECOND);
     auto key = std::make_pair(order_id, status);
+    if (m_order_future_value.find(key) == m_order_future_value.end())
+    {
+        m_order_future_value.insert(std::make_pair(key, std::vector<Future<Order>::FutureValue>{}));
+    }
+
+    m_order_future_value[key].push_back(value);
+
+    // Always return order status REJECTED
+    key = std::make_pair(order_id, Order::Status::REJECTED);
     if (m_order_future_value.find(key) == m_order_future_value.end())
     {
         m_order_future_value.insert(std::make_pair(key, std::vector<Future<Order>::FutureValue>{}));
@@ -143,7 +153,10 @@ TaskVoid OrderManager::handle_update_order(Order order)
     current_order_data = order;
 
     // Inform about order to strategy
-    if (order.status == Order::Status::NEW || order.status == Order::Status::CANCELED || order.status == Order::Status::FILLED)
+    if (order.status == Order::Status::NEW ||
+        order.status == Order::Status::CANCELED ||
+        order.status == Order::Status::REJECTED ||
+        order.status == Order::Status::FILLED)
     {
         // Invoke callback
         m_order_update_callback(order);

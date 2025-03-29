@@ -20,6 +20,7 @@ public:
         NOT_AVAILABLE,
         NEW,
         CANCELED,
+        REJECTED,
         PARTIALLY_FILLED,
         FILLED,
     };
@@ -72,6 +73,8 @@ public:
             return "NEW";
         case Status::CANCELED:
             return "CANCELED";
+        case Status::REJECTED:
+            return "REJECTED";
         case Status::FILLED:
             return "FILLED";
 
@@ -109,6 +112,10 @@ public:
         else if (data == "CANCELED")
         {
             res = Status::CANCELED;
+        }
+        else if (data == "REJECTED")
+        {
+            res = Status::REJECTED;
         }
         else if (data == "PARTIALLY_FILLED")
         {

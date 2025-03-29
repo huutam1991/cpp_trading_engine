@@ -270,7 +270,7 @@ void add_app_route()
         Order order(
             OrderManager::generate_order_id(),
             Order::ExchangeType::SPOT,
-            Order::Status::NEW,
+            Order::Status::NOT_AVAILABLE,
             symbol,
             Order::side_from_string(side),
             Order::type_from_string(type),
@@ -280,7 +280,7 @@ void add_app_route()
 
         auto task = GatewayManager::instance()
             .get_gateway(GatewayEnum::BINANCE)
-            ->place(order, Order::Status::NEW);
+            ->place(order, Order::Status::FILLED);
 
         EventBase* strategy_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY);
         std::future<Order> result = task.start_running_on(strategy_event_base);

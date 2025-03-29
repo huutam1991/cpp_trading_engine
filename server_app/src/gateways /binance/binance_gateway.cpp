@@ -118,7 +118,13 @@ Task<Json> BinanceGateway::place_on_exchange(Order order)
         (BinanceQuoter*)&m_quoter_perpetual;
 
     Json response = co_await quoter->place(order);
-    response["symbol"] = order.symbol;
+
+    // Check if order is rejected
+    if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
+    {
+        order.status = Order::REJECTED;
+        OrderManager::instance().update_order(order);
+    }
 
     // co_return quoter->get_trade_result_from_response(response);
 
