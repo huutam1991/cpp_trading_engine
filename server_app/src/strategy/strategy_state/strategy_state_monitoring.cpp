@@ -17,7 +17,7 @@ void StrategyStateMonitoring::end()
     ADD_LOG("StrategyStateMonitoring - end");
 }
 
-TaskVoid StrategyStateMonitoring::run(StateData data)
+TaskVoid StrategyStateMonitoring::run(StrategyData data)
 {
     ADD_LOG("StrategyStateMonitoring - run");
 

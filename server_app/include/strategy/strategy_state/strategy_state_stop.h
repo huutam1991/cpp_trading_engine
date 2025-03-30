@@ -10,7 +10,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StateData data);
+    virtual TaskVoid run(StrategyData data);
 };
 
 #endif //STRATEGY_STATE_STOP_H

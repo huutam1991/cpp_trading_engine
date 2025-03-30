@@ -16,7 +16,7 @@ void StrategyStateStop::end()
     ADD_LOG("StrategyStateStop - end");
 }
 
-TaskVoid StrategyStateStop::run(StateData data)
+TaskVoid StrategyStateStop::run(StrategyData data)
 {
     double price;
     if (std::holds_alternative<double>(data))

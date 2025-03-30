@@ -171,7 +171,7 @@ TaskVoid Strategy::update()
 
         while (m_state_data_queue.size() > 0)
         {
-            StateData data;
+            StrategyData data;
             {
                 std::unique_lock lock(m_strategy_mutex);
 

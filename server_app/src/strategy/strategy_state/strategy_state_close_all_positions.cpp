@@ -16,7 +16,7 @@ void StrategyStateCloseAllPositions::end()
     ADD_LOG("StrategyStateCloseAllPositions - end");
 }
 
-TaskVoid StrategyStateCloseAllPositions::run(StateData data)
+TaskVoid StrategyStateCloseAllPositions::run(StrategyData data)
 {
     double price = 0.0;
     if (std::holds_alternative<double>(data))

@@ -46,7 +46,7 @@ void StrategyState::end()
     ADD_LOG("StrategyState - end");
 }
 
-TaskVoid StrategyState::run(StateData data)
+TaskVoid StrategyState::run(StrategyData data)
 {
     ADD_LOG("StrategyState - run");
 

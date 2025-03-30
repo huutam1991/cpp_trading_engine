@@ -17,7 +17,7 @@ enum StateStatus
     STOP,
 };
 
-using StateData = std::variant<double, Order>;
+using StrategyData = std::variant<double, Order>;
 
 class StrategyState
 {
@@ -35,7 +35,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StateData data);
+    virtual TaskVoid run(StrategyData data);
 
 protected:
     TaskVoid send_close_spot_order(DataModel& checkpoint);
