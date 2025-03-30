@@ -82,6 +82,20 @@ void add_app_route()
         return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
+    ADD_ROUTE(RequestMethod::GET, "/test_random")
+    {
+        DataModel data("test_data_model", "user");
+
+        data["tam"] = 123;
+
+        Json response;
+        response["message"] = "OK";
+        response["data"] = data.get_data();
+        // response["data"] = 123123;
+
+        return HttpResponse(OK_200, response);
+    };
+
     ADD_ROUTE(RequestMethod::POST, "/test_json_parse")
     {
         std::string body = request->get_body();
