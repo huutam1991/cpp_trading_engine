@@ -103,9 +103,18 @@ template<class T, class U>
 bool MongoQuery::update_one(const std::string& find_key, const T& find_value, const std::string& update_key, const U& update_value)
 {
     GET_COLLECTION(m_db, m_collection, collection);
+
+    // MongoDB doesn't support size_t, so have to cast it to int64_t
+    auto update_builder = bsoncxx::builder::stream::document{};
+    if constexpr (std::is_same<U, size_t>::value) {
+        update_builder << update_key << static_cast<int64_t>(update_value);
+    } else {
+        update_builder << update_key << update_value;
+    }
+
     bsoncxx::stdx::optional<mongocxx::result::update> result =
         collection.update_one(document{} << find_key << find_value << finalize,
-        document{} << "$set" << open_document << update_key << update_value << close_document << finalize);
+        document{} << "$set" << update_builder << finalize);
 
     return result ? true : false;
 }

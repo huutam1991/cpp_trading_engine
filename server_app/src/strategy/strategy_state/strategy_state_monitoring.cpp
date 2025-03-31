@@ -34,7 +34,7 @@ Order StrategyStateMonitoring::get_limit_buy_spot_order_by_checkpoint(DataModel&
         symbol,
         Order::Side::BUY,
         Order::OrderType::LIMIT,
-        price, // since type is MARKET, no need to specify price
+        price,
         round_up_quantity
     );
 }
@@ -53,18 +53,18 @@ TaskVoid StrategyStateMonitoring::handle_price_update(double price)
 
         DataModel lower_checkpoint = m_checkpoints->get_checkpoint_by_price(lower_price);
         OrderId order_id;
-        if (lower_checkpoint["order_id"] == std::string("-1"))
+        if (lower_checkpoint["order_id"] == 0)
         {
             Order order = get_limit_buy_spot_order_by_checkpoint(lower_checkpoint);
             co_await m_gateway->place(order, Order::Status::NEW);
 
             order_id = order.order_id;
 
-            lower_checkpoint["order_id"] = std::to_string(order.order_id);
+            lower_checkpoint["order_id"] = (OrderId)order.order_id;
         }
         else
         {
-            order_id = (OrderId)std::stoull((std::string)lower_checkpoint["order_id"]);
+            order_id = (OrderId)lower_checkpoint["order_id"];
         }
 
         if (m_neighbor_checkpoints.find(order_id) == m_neighbor_checkpoints.end())
@@ -121,7 +121,7 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
         if (m_neighbor_checkpoints.find(order.order_id) != m_neighbor_checkpoints.end())
         {
             DataModel checkpoint = m_neighbor_checkpoints[order.order_id];
-            checkpoint["order_id"] = "-1";
+            checkpoint["order_id"] = 0;
         }
     }
 

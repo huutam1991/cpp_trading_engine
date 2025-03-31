@@ -1,4 +1,5 @@
 #include <bsoncxx/json.hpp>
+#include <bsoncxx/types/bson_value/value.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/stdx.hpp>
 #include <mongocxx/uri.hpp>
