@@ -52,19 +52,16 @@ TaskVoid StrategyStateMonitoring::handle_price_update(double price)
         double lower_price = mark_price - move_price * i;
 
         DataModel lower_checkpoint = m_checkpoints->get_checkpoint_by_price(lower_price);
-        OrderId order_id;
-        if (lower_checkpoint["order_id"] == 0)
+        OrderId order_id = lower_checkpoint["order_id"];
+        if (order_id == 0 || OrderManager::instance().is_valid_order(order_id) == false)
         {
+            // Place new limit order
             Order order = get_limit_buy_spot_order_by_checkpoint(lower_checkpoint);
             co_await m_gateway->place(order, Order::Status::NEW);
 
+            // Update [order_id]
             order_id = order.order_id;
-
             lower_checkpoint["order_id"] = (OrderId)order.order_id;
-        }
-        else
-        {
-            order_id = (OrderId)lower_checkpoint["order_id"];
         }
 
         if (m_neighbor_checkpoints.find(order_id) == m_neighbor_checkpoints.end())
