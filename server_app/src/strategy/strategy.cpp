@@ -158,6 +158,9 @@ void Strategy::close_all_positions() {
 
 TaskVoid Strategy::update()
 {
+    std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
+    std::string current_status = "";
+
     while (true)
     {
         // Dont do update when strategy is init
@@ -179,10 +182,28 @@ TaskVoid Strategy::update()
                 m_state_data_queue.pop();
             }
 
-            std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
             std::string status = StrategyState::get_state_status()["status"];
 
-            co_await (*strategy_states)[status]->run(std::move(data));
+            // Check change state
+            if (current_status != status)
+            {
+                // Run end() method of current state
+                if ((*strategy_states).find(current_status) != (*strategy_states).end())
+                {
+                    (*strategy_states)[current_status]->end();
+                }
+
+                // Run begin() method of new state
+                if ((*strategy_states).find(status) != (*strategy_states).end())
+                {
+                    (*strategy_states)[status]->begin();
+                }
+            }
+
+            // Update [current_status]
+            current_status = status;
+
+            co_await (*strategy_states)[current_status]->run(std::move(data));
         }
 
     }

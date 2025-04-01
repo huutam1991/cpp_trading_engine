@@ -8,7 +8,6 @@ StrategyState::StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<
 
 StrategyState::~StrategyState()
 {
-    this->end();
 }
 
 DataModel& StrategyState::get_state_status()
