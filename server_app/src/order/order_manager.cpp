@@ -57,7 +57,7 @@ void OrderManager::check_set_future_value_for_order(OrderId order_id, Order::Sta
 Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Status status)
 {
     // If order's status is the expected one, return it
-    if (m_order_list.find(order_id) != m_order_list.end())
+    if (is_valid_order(order_id) == true)
     {
         Order& order = m_order_list[order_id];
         if (order.status == status)
@@ -85,7 +85,7 @@ OrderId OrderManager::generate_order_id()
 Order& OrderManager::get_order_by_id(OrderId order_id)
 {
     MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
-    if (m_order_list.find(order_id) == m_order_list.end())
+    if (is_valid_order(order_id) == false)
     {
         m_order_list.insert(std::make_pair(order_id, Order()));
     }

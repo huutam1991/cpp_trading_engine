@@ -42,6 +42,12 @@ private:
     void check_set_future_value_for_order(OrderId order_id, Order::Status status);
     void add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status);
 
+    // Helper method
+    bool is_valid_order(OrderId order_id)
+    {
+        return m_order_list.find(order_id) != m_order_list.end();
+    }
+
 public:
     static OrderId generate_order_id();
 
