@@ -1,4 +1,5 @@
 #include <openssl/hmac.h>
+#include <string.h>
 #include <external_request/external_request_ssl.h>
 #include <mongo_db/mongo_db.h>
 

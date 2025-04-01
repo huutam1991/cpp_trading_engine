@@ -207,9 +207,9 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     };
 }
 
-TaskVoid BinanceQuoterSpot::cancel_all()
+TaskVoid BinanceQuoterSpot::cancel_all(std::string symbol)
 {
-    co_await send_binance_request(RequestMethod::DELETE, "/api/v3/openOrders", "");
+    co_await send_binance_request(RequestMethod::DELETE, "/api/v3/openOrders", "symbol=" + symbol);
 
     co_return;
 }

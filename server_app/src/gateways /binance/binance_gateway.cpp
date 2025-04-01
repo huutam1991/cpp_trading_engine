@@ -110,10 +110,10 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(best_ask);
 }
 
-TaskVoid BinanceGateway::cancel_all_on_exchange()
+TaskVoid BinanceGateway::cancel_all_on_exchange(std::string symbol)
 {
     // Currently, only implement for SPOT
-    m_quoter_spot.cancel_all();
+    co_await m_quoter_spot.cancel_all(std::move(symbol));
 
     co_return;
 }

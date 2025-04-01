@@ -41,11 +41,12 @@ private:
 public:
     CheckPointList(const std::string symbol, double volumn, double move_price, double sell_buy_ratio);
 
-    DataModel get_current_checkpoint();
-    DataModel get_one_holding_checkpoint();
-    DataModel get_checkpoint_by_price(double price);
-    DataModel get_checkpoint_can_take_profit(double price, double take_profit);
-    Json      get_current_info();
+    std::string get_symbol() { return m_symbol; }
+    DataModel   get_current_checkpoint();
+    DataModel   get_one_holding_checkpoint();
+    DataModel   get_checkpoint_by_price(double price);
+    DataModel   get_checkpoint_can_take_profit(double price, double take_profit);
+    Json        get_current_info();
 };
 
 #endif //CHECK_POINTS_H

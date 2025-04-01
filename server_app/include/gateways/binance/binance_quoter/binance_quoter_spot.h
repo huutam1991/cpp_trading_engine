@@ -30,7 +30,7 @@ public:
     ~BinanceQuoterSpot();
 
     virtual Json get_trade_result_from_response(Json& response) override;
-    virtual TaskVoid cancel_all() override;
+    virtual TaskVoid cancel_all(std::string symbol) override;
     virtual Task<Json> place(Order order) override;
 
 };

@@ -11,9 +11,9 @@ void Gateway::register_price_update(std::function<void(double)> price_update_cal
     m_price_update_callback = price_update_callback;
 }
 
-void Gateway::cancel_all()
+void Gateway::cancel_all(std::string symbol)
 {
-    cancel_all_on_exchange().start_running_on(m_event_base);
+   cancel_all_on_exchange(std::move(symbol)).start_running_on(m_event_base);
 }
 
 void Gateway::place_none_wait(Order order)
