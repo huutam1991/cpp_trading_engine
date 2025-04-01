@@ -16,6 +16,9 @@ void StrategyStateMonitoring::begin()
 void StrategyStateMonitoring::end()
 {
     ADD_LOG("StrategyStateMonitoring - end");
+
+    // Send cancel all of placed order
+    m_gateway->cancel_all();
 }
 
 Order StrategyStateMonitoring::get_limit_buy_spot_order_by_checkpoint(DataModel& checkpoint)

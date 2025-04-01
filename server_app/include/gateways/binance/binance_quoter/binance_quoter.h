@@ -28,6 +28,7 @@ public:
     Task<Json> get_balances();
 
     virtual Json get_trade_result_from_response(Json& response) = 0;
+    virtual TaskVoid cancel_all() = 0;
     virtual Task<Json> place(Order order) = 0;
 
 };

@@ -110,6 +110,14 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(best_ask);
 }
 
+TaskVoid BinanceGateway::cancel_all_on_exchange()
+{
+    // Currently, only implement for SPOT
+    m_quoter_spot.cancel_all();
+
+    co_return;
+}
+
 Task<Json> BinanceGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]

@@ -160,6 +160,13 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     };
 }
 
+TaskVoid BinanceQuoterPerpetual::cancel_all()
+{
+    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "");
+
+    co_return;
+}
+
 Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
     m_order = order;

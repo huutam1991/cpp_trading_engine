@@ -20,6 +20,7 @@ class BinanceGateway : public Gateway
     Json m_symbols_info;
 
 protected:
+    virtual TaskVoid cancel_all_on_exchange() override;
     virtual Task<Json> place_on_exchange(Order order) override;
 
 public:

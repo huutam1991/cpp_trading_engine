@@ -35,6 +35,7 @@ public:
     ~BinanceQuoterPerpetual();
 
     virtual Json get_trade_result_from_response(Json& response) override;
+    virtual TaskVoid cancel_all() override;
     virtual Task<Json> place(Order order) override;
 };
 

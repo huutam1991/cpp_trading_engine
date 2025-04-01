@@ -7,7 +7,7 @@
 #include <websocket/websocket_server.h>
 
 // App pool
-#define NUMBER_OF_APP_THREADS 5
+#define NUMBER_OF_APP_THREADS 4
 
 // Token
 #define TOKEN_ISSUER "TamNguyen"
@@ -193,6 +193,7 @@ enum EventBaseID
     APP,
     ORDER,                   // OrderManager
     ORDER_DATA_MODEL_HELPER, // Help to save Order
+    GATEWAY,                 // Gateway
     STRATEGY                 // Strategy
 };
 
