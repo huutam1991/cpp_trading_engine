@@ -110,6 +110,18 @@ void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(best_ask);
 }
 
+Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(std::string symbol)
+{
+    std::unordered_set<OrderId> res;
+
+    // Currently, only implement for SPOT
+    Json list = co_await m_quoter_spot.get_open_orders(std::move(symbol));
+
+    ADD_LOG("Tam log, open order: " << list);
+
+    co_return res;
+}
+
 TaskVoid BinanceGateway::cancel_all_on_exchange(std::string symbol)
 {
     // Currently, only implement for SPOT

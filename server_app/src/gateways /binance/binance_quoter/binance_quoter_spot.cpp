@@ -207,6 +207,11 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     };
 }
 
+Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)
+{
+    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);
+}
+
 TaskVoid BinanceQuoterSpot::cancel_all(std::string symbol)
 {
     co_await send_binance_request(RequestMethod::DELETE, "/api/v3/openOrders", "symbol=" + symbol);

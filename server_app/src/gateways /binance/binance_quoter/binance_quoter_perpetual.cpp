@@ -160,10 +160,14 @@ Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
     };
 }
 
+Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
+{
+    co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol);
+}
+
 TaskVoid BinanceQuoterPerpetual::cancel_all(std::string symbol)
 {
-    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "");
-
+    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol);
     co_return;
 }
 
