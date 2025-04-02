@@ -36,6 +36,19 @@ void OrderManager::register_order_update(std::function<void(Order&)> order_updat
     m_order_update_callback = order_update_callback;
 }
 
+void OrderManager::set_cancel_order(OrderId order_id)
+{
+    if (is_valid_order(order_id) == true)
+    {
+        Order order = m_order_list[order_id];
+
+        // Set order's status to CANCELED
+        // Then invoke method update_order(), this order will be removed and notify to the whole engine
+        order.status = Order::Status::CANCELED;
+        update_order(order);
+    }
+}
+
 void OrderManager::update_order(Order order)
 {
     TaskVoid task = handle_update_order(order);
@@ -166,6 +179,12 @@ TaskVoid OrderManager::handle_update_order(Order order)
 
     // Update order
     current_order_data = order;
+
+    // If order is canceled remove it from [m_order_list]
+    if (order.status == Order::Status::CANCELED)
+    {
+        m_order_list.erase(order.order_id);
+    }
 
     // Inform about order to strategy
     if (order.status == Order::Status::NEW ||

@@ -11,6 +11,26 @@ void Gateway::register_price_update(std::function<void(double)> price_update_cal
     m_price_update_callback = price_update_callback;
 }
 
+void Gateway::check_remove_canceled_orders()
+{
+    // Get open orders from gateway
+    std::unordered_set<OrderId> open_orders_from_gateway = get_open_orders_on_exchange()
+        .start_running_on(m_event_base)
+        .get();
+
+    // Get open orders from OrderManager
+    std::vector<OrderId> open_orders = OrderManager::instance().get_open_orders();
+
+    // Set cancel for order that doesn't exist on [open_orders_from_gateway] (because they are canceled somehow)
+    for (OrderId order_id : open_orders)
+    {
+        if (open_orders_from_gateway.find(order_id) == open_orders_from_gateway.end())
+        {
+            OrderManager::instance().set_cancel_order(order_id);
+        }
+    }
+}
+
 void Gateway::cancel_all(std::string symbol)
 {
    cancel_all_on_exchange(std::move(symbol)).start_running_on(m_event_base);

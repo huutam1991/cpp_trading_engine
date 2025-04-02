@@ -53,6 +53,7 @@ public:
 
     void init();
     void register_order_update(std::function<void(Order&)>);
+    void set_cancel_order(OrderId order_id);
     void update_order(Order order);
 
     // Wait order until it get a specific status
