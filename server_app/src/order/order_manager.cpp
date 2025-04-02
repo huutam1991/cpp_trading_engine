@@ -7,6 +7,30 @@ void OrderManager::init()
     m_order_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::ORDER);
 }
 
+OrderId OrderManager::generate_order_id()
+{
+    auto now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+    return static_cast<OrderId>(nanos);
+}
+
+std::vector<OrderId> OrderManager::get_open_orders()
+{
+    std::vector<OrderId> res;
+
+    for (auto& [order_id, order] : m_order_list)
+    {
+        if (order.status == Order::Status::NEW)
+        {
+            res.push_back(order_id);
+        }
+    }
+
+    return res;
+}
+
 void OrderManager::register_order_update(std::function<void(Order&)> order_update_callback)
 {
     m_order_update_callback = order_update_callback;
@@ -71,15 +95,6 @@ Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Statu
     {
         add_order_future_value(value, order_id, status);
     });
-}
-
-OrderId OrderManager::generate_order_id()
-{
-    auto now = std::chrono::system_clock::now();
-    auto duration = now.time_since_epoch();
-    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-
-    return static_cast<OrderId>(nanos);
 }
 
 Order& OrderManager::get_order_by_id(OrderId order_id)

@@ -49,6 +49,7 @@ public:
     {
         return m_order_list.find(order_id) != m_order_list.end();
     }
+    std::vector<OrderId> get_open_orders();
 
     void init();
     void register_order_update(std::function<void(Order&)>);
