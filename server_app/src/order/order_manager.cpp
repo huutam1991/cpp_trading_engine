@@ -180,12 +180,6 @@ TaskVoid OrderManager::handle_update_order(Order order)
     // Update order
     current_order_data = order;
 
-    // If order is canceled remove it from [m_order_list]
-    if (order.status == Order::Status::CANCELED)
-    {
-        m_order_list.erase(order.order_id);
-    }
-
     // Inform about order to strategy
     if (order.status == Order::Status::NEW ||
         order.status == Order::Status::CANCELED ||
@@ -197,6 +191,13 @@ TaskVoid OrderManager::handle_update_order(Order order)
 
         // Check to set future value for order
         check_set_future_value_for_order(order.order_id, order.status);
+    }
+
+    // If order is canceled remove it from [m_order_list]
+    if (order.status == Order::Status::CANCELED)
+    {
+        ADD_LOG("Remove order_id: " << order.order_id);
+        m_order_list.erase(order.order_id);
     }
 
     // Save order to DB, using DataModel implemented in OrderDataModelHelper
