@@ -196,7 +196,6 @@ TaskVoid OrderManager::handle_update_order(Order order)
     // If order is canceled remove it from [m_order_list]
     if (order.status == Order::Status::CANCELED)
     {
-        ADD_LOG("Remove order_id: " << order.order_id);
         m_order_list.erase(order.order_id);
     }
 
