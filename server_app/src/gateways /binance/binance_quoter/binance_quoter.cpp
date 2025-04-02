@@ -71,7 +71,11 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
     }
     else
     {
-        response["code"] = 0;
+        // Only update field code = 0 for object
+        if (response.is_array() == false)
+        {
+            response["code"] = 0;
+        }
     }
 }
 

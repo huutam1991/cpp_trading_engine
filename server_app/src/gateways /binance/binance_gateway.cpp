@@ -115,9 +115,17 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
     std::unordered_set<OrderId> res;
 
     // Currently, only implement for SPOT
-    Json list = co_await m_quoter_spot.get_open_orders(std::move(symbol));
+    Json open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
 
-    ADD_LOG("Tam log, open order: " << list);
+    // Add order_id to [res]
+    if (open_orders.is_array() == true)
+    {
+        open_orders.for_each([&res](Json& order)
+        {
+            OrderId order_id = std::stoull((std::string)order["clientOrderId"]);
+            res.insert(order_id);
+        });
+    }
 
     co_return res;
 }
