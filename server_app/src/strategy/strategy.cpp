@@ -106,6 +106,9 @@ void Strategy::init()
         m_has_data_update.set_value(true);
     });
 
+    //
+    m_gateway->check_remove_canceled_orders(m_symbol);
+
     // Destroy old task
     // m_update_task.destroy();
     // Create new task
