@@ -49,6 +49,12 @@ public:
     {
         return m_order_list.find(order_id) != m_order_list.end();
     }
+    Order::Status get_order_status(OrderId order_id)
+    {
+        return m_order_list.find(order_id) != m_order_list.end() ?
+            m_order_list[order_id].status :
+            Order::Status::NOT_AVAILABLE;
+    }
     std::vector<OrderId> get_open_orders();
 
     void init();
