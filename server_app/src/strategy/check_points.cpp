@@ -38,8 +38,9 @@ DataModel CheckPointList::create_checkpoint_data_model(double price)
         // Id
         {"checkpoint_id", checkpoint_id},
 
-        // Order that related to this checkpoint
-        {"order_id", 0},
+        // Orders that related to this checkpoint
+        {"open_order_id", 0},
+        {"close_order_id", 0},
 
         // Info
         {"info", {
