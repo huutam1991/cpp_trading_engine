@@ -115,7 +115,48 @@ TaskVoid StrategyStateMonitoring::handle_price_update(double price)
 
 TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
 {
-    if (order.status == Order::Status::CANCELED)
+    // NEW - do nothing
+    if (order.status == Order::Status::NEW)
+    {}
+    // FILLED - update data to order's checkpoint
+    else if (order.status == Order::Status::FILLED)
+    {
+        if (m_neighbor_checkpoints.find(order.order_id) != m_neighbor_checkpoints.end())
+        {
+            DataModel& checkpoint = m_neighbor_checkpoints[order.order_id];
+
+            // BUY - update filled data
+            if (order.side == Order::Side::BUY)
+            {
+                checkpoint["positions"]["buy_spot"]["quantity"] = order.output_quantity;
+                checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] = order.output_quantity * order.filled_price;
+            }
+            // SELL - update profit
+            else
+            {
+                // Calculate profit
+                double place_volumn_in_usdt = checkpoint["positions"]["buy_spot"]["volumn_in_usdt"];
+                double close_volumn_in_usdt = order.output_quantity;
+                double profit = close_volumn_in_usdt - place_volumn_in_usdt;
+
+                // Save profit to checkpoint
+                double buy_spot_profit = checkpoint["accounting"]["buy_spot_profit"];
+                double total_profit = checkpoint["accounting"]["total_profit"];
+                checkpoint["accounting"] = Json {
+                    {"buy_spot_profit", buy_spot_profit + profit},
+                    {"total_profit", total_profit + profit}
+                };
+
+                // Close buy spot position
+                checkpoint["positions"]["buy_spot"] = Json{
+                    {"quantity", 0.0},
+                    {"volumn_in_usdt", 0.0},
+                };
+            }
+        }
+    }
+    // CANCELED - update [order_id] = 0 for order's checkpoint
+    else if (order.status == Order::Status::CANCELED)
     {
         if (m_neighbor_checkpoints.find(order.order_id) != m_neighbor_checkpoints.end())
         {
