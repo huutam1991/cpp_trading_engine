@@ -69,6 +69,8 @@ TaskVoid StrategyStatePlacing::run(StrategyData data)
 
         checkpoint["positions"]["buy_spot"]["quantity"] = order.output_quantity;
         checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] = order.output_quantity * order.filled_price;
+
+        checkpoint["buy_order_id"] = (OrderId)order.order_id;
     }
 
     // // Sell Perpetual order
