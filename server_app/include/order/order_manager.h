@@ -34,7 +34,6 @@ private:
     // For handling order create / update
     OrderDataModelHelper m_order_data_model_helper;
     TaskVoid handle_update_order(Order order);
-    Order& get_order_by_id(OrderId order_id);
 
     // For getting order with a specific status
     std::unordered_map<std::pair<OrderId, Order::Status>, std::vector<Future<Order>::FutureValue>> m_order_future_value;
@@ -45,6 +44,7 @@ private:
 public:
     // Helper method
     static OrderId generate_order_id();
+    Order& get_order_by_id(OrderId order_id);
     bool is_valid_order(OrderId order_id)
     {
         return m_order_list.find(order_id) != m_order_list.end();
