@@ -91,10 +91,13 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
         }
 
     }
+
+    co_return;
 }
 
 TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
 {
+    co_return;
 }
 
 TaskVoid StrategyStateMonitoring::handle_price_update(double price)
