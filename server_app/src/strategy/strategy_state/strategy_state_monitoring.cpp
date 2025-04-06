@@ -171,32 +171,32 @@ TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
 
 TaskVoid StrategyStateMonitoring::handle_price_update(double price)
 {
+    // Update current checkpoint
+    DataModel checkpoint = m_checkpoints->get_current_checkpoint();
+    double mark_price = checkpoint["info"]["price"];
+    double move_price = checkpoint["size"]["move_price"];
+
+    // Price go down to lower checkpoint
+    if (price <= mark_price - move_price)
+    {
+        checkpoint["is_current_checkpoint"] = false;
+        DataModel new_checkpoint = m_checkpoints->get_checkpoint_by_price(mark_price - move_price);
+        new_checkpoint["is_current_checkpoint"] = true;
+
+        co_return;
+    }
+    // Price go up to higher checkpoint
+    else if (price >= mark_price + move_price)
+    {
+        checkpoint["is_current_checkpoint"] = false;
+        DataModel new_checkpoint = m_checkpoints->get_checkpoint_by_price(mark_price + move_price);
+        new_checkpoint["is_current_checkpoint"] = true;
+
+        co_return;
+    }
+
     co_await check_place_buy_order(price);
     co_await check_place_sell_order(price);
-
-
-    // // Price go down to lower checkpoint
-    // if (price <= mark_price - move_price)
-    // {
-    //     checkpoint["is_current_checkpoint"] = false;
-
-    //     // Continue with the other checkpoint
-    //     StrategyState::set_placing_price(mark_price - move_price);
-    //     StrategyState::set_state_status("PLACING");
-
-    //     co_return;
-    // }
-    // // Price go up to higher checkpoint
-    // else if (price >= mark_price + move_price)
-    // {
-    //     checkpoint["is_current_checkpoint"] = false;
-
-    //     // Continue with the other checkpoint
-    //     StrategyState::set_placing_price(mark_price + move_price);
-    //     StrategyState::set_state_status("PLACING");
-
-    //     co_return;
-    // }
 
     co_return;
 }
