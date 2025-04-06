@@ -3,6 +3,7 @@
 
 #define MAX_NEIGHBOR_CHECKPOINT 10
 #define MAX_BUY_ORDER 4
+#define MAX_SELL_ORDER 4
 
 StrategyStateMonitoring::StrategyStateMonitoring(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : StrategyState(gateway, checkpoints)
@@ -38,6 +39,34 @@ Order StrategyStateMonitoring::get_limit_buy_spot_order_by_checkpoint(DataModel&
         Order::Side::BUY,
         Order::OrderType::LIMIT,
         price,
+        round_up_quantity
+    );
+}
+
+Order StrategyStateMonitoring::get_limit_sell_spot_order_by_checkpoint(DataModel& checkpoint)
+{
+    Json strategy_config = MongoDB::instance()
+        .set_db_and_collection(STRATEGY_DB_NAME, "config")
+        .find_any();
+
+    double take_profit = 1000.0;
+    if (strategy_config.has_field("take_profit")) {
+        take_profit = (double)strategy_config["take_profit"];
+    }
+
+    std::string symbol = checkpoint["info"]["symbol"];
+    double price = checkpoint["info"]["price"];
+    double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
+    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
+
+    return Order(
+        OrderManager::instance().generate_order_id(),
+        Order::ExchangeType::SPOT,
+        Order::Status::NOT_AVAILABLE,
+        symbol,
+        Order::Side::SELL,
+        Order::OrderType::LIMIT,
+        price + take_profit,
         round_up_quantity
     );
 }
@@ -86,6 +115,7 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
                 if (order.status == Order::Status::NEW)
                 {
                     // Close this order
+                    m_gateway->cancel(order);
                 }
             }
         }
@@ -97,12 +127,52 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
 
 TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
 {
+    DataModel checkpoint = m_checkpoints->get_current_checkpoint();
+    double mark_price = checkpoint["info"]["price"];
+    double move_price = checkpoint["size"]["move_price"];
+
+    int count = 0;
+
+    // Get loop through neighbor checkpoints
+    for (int i = MAX_NEIGHBOR_CHECKPOINT; i >= 0; i--)
+    {
+        double price = mark_price - move_price * i;
+
+        DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(price);
+        OrderId buy_order_id = checkpoint["buy_order_id"];
+
+        // Check if this checkpoint has buy order is filled
+        if (buy_order_id != 0 &&
+            (double)checkpoint["positions"]["buy_spot"]["quantity"] > 0.0 &&
+            (double)checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] > 0.0)
+        {
+            OrderId sell_order_id = checkpoint["sell_order_id"];
+            if (sell_order_id == 0 || OrderManager::instance().is_valid_order(sell_order_id) == false)
+            {
+                // Place new limit order
+                Order order = get_limit_sell_spot_order_by_checkpoint(checkpoint);
+                co_await m_gateway->place(order, Order::Status::NEW);
+
+                // Update [buy_order_id]
+                sell_order_id = order.order_id;
+                checkpoint["sell_order_id"] = (OrderId)order.order_id;
+            }
+
+            if (m_checkpoint_by_order_id.find(sell_order_id) == m_checkpoint_by_order_id.end())
+            {
+                m_checkpoint_by_order_id.insert(std::make_pair(sell_order_id, checkpoint));
+            }
+
+        }
+    }
+
     co_return;
 }
 
 TaskVoid StrategyStateMonitoring::handle_price_update(double price)
 {
     co_await check_place_buy_order(price);
+    co_await check_place_sell_order(price);
 
 
     // // Price go down to lower checkpoint
@@ -126,21 +196,6 @@ TaskVoid StrategyStateMonitoring::handle_price_update(double price)
     //     StrategyState::set_state_status("PLACING");
 
     //     co_return;
-    // }
-
-    // // Check to take profit
-    // Json strategy_config = MongoDB::instance()
-    //     .set_db_and_collection(STRATEGY_DB_NAME, "config")
-    //     .find_any();
-
-    // if (strategy_config.has_field("take_profit")) {
-    //     double take_profit = strategy_config["take_profit"];
-    //     DataModel checkpoint = m_checkpoints->get_checkpoint_can_take_profit(price, take_profit);
-
-    //     // Send close order to take profit
-    //     if (checkpoint.is_null() == false) {
-    //         co_await send_close_spot_order(checkpoint);
-    //     }
     // }
 
     co_return;
@@ -187,6 +242,10 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
                     {"quantity", 0.0},
                     {"volumn_in_usdt", 0.0},
                 };
+
+                // Update [buy_order_id] and [sell_order_id] to 0
+                checkpoint["buy_order_id"] = 0;
+                checkpoint["sell_order_id"] = 0;
             }
         }
     }
@@ -196,7 +255,15 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
         if (m_checkpoint_by_order_id.find(order.order_id) != m_checkpoint_by_order_id.end())
         {
             DataModel checkpoint = m_checkpoint_by_order_id[order.order_id];
-            checkpoint["buy_order_id"] = 0;
+
+            if (order.side == Order::Side::BUY)
+            {
+                checkpoint["buy_order_id"] = 0;
+            }
+            else
+            {
+                checkpoint["sell_order_id"] = 0;
+            }
         }
     }
 
