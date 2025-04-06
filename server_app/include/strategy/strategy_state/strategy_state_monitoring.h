@@ -13,10 +13,13 @@ public:
     virtual TaskVoid run(StrategyData data);
 
 private:
-    std::unordered_map<OrderId, DataModel> m_checkpoint_by_order_id;
+    std::unordered_map<OrderId, DataModel> m_checkpoint_by_open_order_id;
+
+    void remove_open_order_id(OrderId order_id);
 
     Order get_limit_buy_spot_order_by_checkpoint(DataModel& checkpoint);
     Order get_limit_sell_spot_order_by_checkpoint(DataModel& checkpoint);
+
     TaskVoid handle_price_update(double price);
     TaskVoid handle_order_update(Order& order);
 

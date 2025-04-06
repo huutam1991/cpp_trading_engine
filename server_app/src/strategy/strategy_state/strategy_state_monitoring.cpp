@@ -2,8 +2,8 @@
 #include <mongo_db/mongo_db.h>
 
 #define MAX_NEIGHBOR_CHECKPOINT 10
-#define MAX_BUY_ORDER 4
-#define MAX_SELL_ORDER 4
+#define MAX_BUY_ORDER 3
+#define MAX_SELL_ORDER 3
 
 StrategyStateMonitoring::StrategyStateMonitoring(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : StrategyState(gateway, checkpoints)
@@ -21,6 +21,14 @@ void StrategyStateMonitoring::end()
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_checkpoints->get_symbol());
+}
+
+void StrategyStateMonitoring::remove_open_order_id(OrderId order_id)
+{
+    if (m_checkpoint_by_open_order_id.find(order_id) != m_checkpoint_by_open_order_id.end())
+    {
+        m_checkpoint_by_open_order_id.erase(order_id);
+    }
 }
 
 Order StrategyStateMonitoring::get_limit_buy_spot_order_by_checkpoint(DataModel& checkpoint)
@@ -87,7 +95,7 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
         OrderId order_id = checkpoint["buy_order_id"];
 
         // Check place buy order
-        if (i < MAX_BUY_ORDER)
+        if (i <= MAX_BUY_ORDER)
         {
             if (order_id == 0 || OrderManager::instance().is_valid_order(order_id) == false)
             {
@@ -100,22 +108,25 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
                 checkpoint["buy_order_id"] = (OrderId)order.order_id;
             }
 
-            if (m_checkpoint_by_order_id.find(order_id) == m_checkpoint_by_order_id.end())
+            if (m_checkpoint_by_open_order_id.find(order_id) == m_checkpoint_by_open_order_id.end())
             {
-                m_checkpoint_by_order_id.insert(std::make_pair(order_id, checkpoint));
+                m_checkpoint_by_open_order_id.insert(std::make_pair(order_id, checkpoint));
             }
         }
-        // Check close buy order (because these order is at too low price, hard to get filled)
+        // Check to close buy order (because these orders are at too low price, hard to get filled)
         else
         {
             if (order_id != 0 && OrderManager::instance().is_valid_order(order_id) == true)
             {
                 // Check if this is a NEW order (hasn't got filled yet)
-                Order order = OrderManager::instance().get_order_by_id(order_id);
+                Order& order = OrderManager::instance().get_order_by_id(order_id);
                 if (order.status == Order::Status::NEW)
                 {
                     // Close this order
                     m_gateway->cancel(order);
+
+                    // Remove [order_id] from [m_checkpoint_by_open_order_id]
+                    remove_open_order_id(order_id);
                 }
             }
         }
@@ -131,7 +142,7 @@ TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
     double mark_price = checkpoint["info"]["price"];
     double move_price = checkpoint["size"]["move_price"];
 
-    int count = 0;
+    int sell_orders_count = 0;
 
     // Get loop through neighbor checkpoints
     for (int i = MAX_NEIGHBOR_CHECKPOINT; i >= 0; i--)
@@ -147,22 +158,43 @@ TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
             (double)checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] > 0.0)
         {
             OrderId sell_order_id = checkpoint["sell_order_id"];
-            if (sell_order_id == 0 || OrderManager::instance().is_valid_order(sell_order_id) == false)
+            sell_orders_count++;
+
+            if (sell_orders_count <= MAX_SELL_ORDER)
             {
-                // Place new limit order
-                Order order = get_limit_sell_spot_order_by_checkpoint(checkpoint);
-                co_await m_gateway->place(order, Order::Status::NEW);
+                if (sell_order_id == 0 || OrderManager::instance().is_valid_order(sell_order_id) == false)
+                {
+                    // Place new limit order
+                    Order order = get_limit_sell_spot_order_by_checkpoint(checkpoint);
+                    co_await m_gateway->place(order, Order::Status::NEW);
 
-                // Update [buy_order_id]
-                sell_order_id = order.order_id;
-                checkpoint["sell_order_id"] = (OrderId)order.order_id;
+                    // Update [buy_order_id]
+                    sell_order_id = order.order_id;
+                    checkpoint["sell_order_id"] = (OrderId)order.order_id;
+                }
+
+                if (m_checkpoint_by_open_order_id.find(sell_order_id) == m_checkpoint_by_open_order_id.end())
+                {
+                    m_checkpoint_by_open_order_id.insert(std::make_pair(sell_order_id, checkpoint));
+                }
             }
-
-            if (m_checkpoint_by_order_id.find(sell_order_id) == m_checkpoint_by_order_id.end())
+            // Check to cancel Sell order (because these orders are at too high price, hard to get filled)
+            else
             {
-                m_checkpoint_by_order_id.insert(std::make_pair(sell_order_id, checkpoint));
-            }
+                if (sell_order_id != 0 && OrderManager::instance().is_valid_order(sell_order_id) == true)
+                {
+                    // Check if this is a NEW order (hasn't got filled yet)
+                    Order& order = OrderManager::instance().get_order_by_id(sell_order_id);
+                    if (order.status == Order::Status::NEW)
+                    {
+                        // Close this order
+                        m_gateway->cancel(order);
 
+                        // Remove [sell_order_id] from [m_checkpoint_by_open_order_id]
+                        remove_open_order_id(sell_order_id);
+                    }
+                }
+            }
         }
     }
 
@@ -209,9 +241,9 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
     // FILLED - update data to order's checkpoint
     else if (order.status == Order::Status::FILLED)
     {
-        if (m_checkpoint_by_order_id.find(order.order_id) != m_checkpoint_by_order_id.end())
+        if (m_checkpoint_by_open_order_id.find(order.order_id) != m_checkpoint_by_open_order_id.end())
         {
-            DataModel& checkpoint = m_checkpoint_by_order_id[order.order_id];
+            DataModel& checkpoint = m_checkpoint_by_open_order_id[order.order_id];
 
             // BUY - open order - update filled data
             if (order.side == Order::Side::BUY)
@@ -247,14 +279,16 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
                 checkpoint["buy_order_id"] = 0;
                 checkpoint["sell_order_id"] = 0;
             }
+
+            remove_open_order_id(order.order_id);
         }
     }
     // CANCELED - update [order_id] = 0 for order's checkpoint
     else if (order.status == Order::Status::CANCELED)
     {
-        if (m_checkpoint_by_order_id.find(order.order_id) != m_checkpoint_by_order_id.end())
+        if (m_checkpoint_by_open_order_id.find(order.order_id) != m_checkpoint_by_open_order_id.end())
         {
-            DataModel checkpoint = m_checkpoint_by_order_id[order.order_id];
+            DataModel checkpoint = m_checkpoint_by_open_order_id[order.order_id];
 
             if (order.side == Order::Side::BUY)
             {
@@ -264,6 +298,8 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
             {
                 checkpoint["sell_order_id"] = 0;
             }
+
+            remove_open_order_id(order.order_id);
         }
     }
 
