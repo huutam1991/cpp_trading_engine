@@ -13,6 +13,23 @@ StrategyStateMonitoring::StrategyStateMonitoring(std::shared_ptr<Gateway>& gatew
 void StrategyStateMonitoring::begin()
 {
     ADD_LOG("StrategyStateMonitoring - begin");
+
+    Json strategy_config = MongoDB::instance()
+        .set_db_and_collection(STRATEGY_DB_NAME, "config")
+        .find_any();
+
+    if (strategy_config.has_field("take_profit"))
+    {
+        m_take_profit = (double)strategy_config["take_profit"];
+    }
+
+    if (strategy_config.has_field("max_price_to_place"))
+    {
+        m_max_price_to_place = (double)strategy_config["take_profit"];
+    }
+
+    ADD_LOG("StrategyStateMonitoring - take_profit = " << m_take_profit);
+    ADD_LOG("StrategyStateMonitoring - max_price_to_place = " << m_max_price_to_place);
 }
 
 void StrategyStateMonitoring::end()
@@ -53,15 +70,6 @@ Order StrategyStateMonitoring::get_limit_buy_spot_order_by_checkpoint(DataModel&
 
 Order StrategyStateMonitoring::get_limit_sell_spot_order_by_checkpoint(DataModel& checkpoint)
 {
-    Json strategy_config = MongoDB::instance()
-        .set_db_and_collection(STRATEGY_DB_NAME, "config")
-        .find_any();
-
-    double take_profit = 1000.0;
-    if (strategy_config.has_field("take_profit")) {
-        take_profit = (double)strategy_config["take_profit"];
-    }
-
     std::string symbol = checkpoint["info"]["symbol"];
     double price = checkpoint["info"]["price"];
     double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
@@ -74,7 +82,7 @@ Order StrategyStateMonitoring::get_limit_sell_spot_order_by_checkpoint(DataModel
         symbol,
         Order::Side::SELL,
         Order::OrderType::LIMIT,
-        price + take_profit,
+        price + m_take_profit,
         round_up_quantity
     );
 }
@@ -145,7 +153,7 @@ TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
     int sell_orders_count = 0;
 
     // Get loop through neighbor checkpoints
-    for (int i = MAX_NEIGHBOR_CHECKPOINT; i >= 0; i--)
+    for (int i = MAX_NEIGHBOR_CHECKPOINT; i >= -MAX_SELL_ORDER; i--)
     {
         double price = mark_price - move_price * i;
 
@@ -224,6 +232,12 @@ TaskVoid StrategyStateMonitoring::handle_price_update(double price)
         DataModel new_checkpoint = m_checkpoints->get_checkpoint_by_price(mark_price + move_price);
         new_checkpoint["is_current_checkpoint"] = true;
 
+        co_return;
+    }
+
+    // Check [m_max_price_to_place]
+    if (price >= m_max_price_to_place)
+    {
         co_return;
     }
 

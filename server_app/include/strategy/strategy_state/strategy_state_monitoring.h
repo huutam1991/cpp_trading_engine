@@ -14,6 +14,8 @@ public:
 
 private:
     std::unordered_map<OrderId, DataModel> m_checkpoint_by_open_order_id;
+    double m_take_profit;
+    double m_max_price_to_place;
 
     void remove_open_order_id(OrderId order_id);
 
