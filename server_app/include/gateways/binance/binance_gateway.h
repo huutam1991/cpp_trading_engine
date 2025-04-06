@@ -22,6 +22,7 @@ class BinanceGateway : public Gateway
 protected:
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) override;
+    virtual Task<Json> cancel_on_exchange(Order order) override;
     virtual Task<Json> place_on_exchange(Order order) override;
 
 public:

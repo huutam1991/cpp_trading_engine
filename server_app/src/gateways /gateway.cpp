@@ -41,6 +41,11 @@ void Gateway::place_none_wait(Order order)
     place_on_exchange(order).start_running_on(m_event_base);
 }
 
+void Gateway::cancel(Order order)
+{
+    cancel_on_exchange(order).start_running_on(m_event_base);
+}
+
 Task<Order> Gateway::place(Order order, Order::Status wait_status)
 {
     place_on_exchange(order).start_running_on(m_event_base);

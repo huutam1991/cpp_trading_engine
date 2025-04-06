@@ -171,6 +171,12 @@ TaskVoid BinanceQuoterPerpetual::cancel_all(std::string symbol)
     co_return;
 }
 
+Task<Json> BinanceQuoterPerpetual::cancel(Order order)
+{
+    // Need to implement later (current code is wrong)
+    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "");
+}
+
 Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
     m_order = order;
