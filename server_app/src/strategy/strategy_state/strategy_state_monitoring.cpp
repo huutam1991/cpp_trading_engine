@@ -25,7 +25,7 @@ void StrategyStateMonitoring::begin()
 
     if (strategy_config.has_field("max_price_to_place"))
     {
-        m_max_price_to_place = (double)strategy_config["take_profit"];
+        m_max_price_to_place = (double)strategy_config["max_price_to_place"];
     }
 
     ADD_LOG("StrategyStateMonitoring - take_profit = " << m_take_profit);
