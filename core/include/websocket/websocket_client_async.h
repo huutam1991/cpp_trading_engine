@@ -22,6 +22,7 @@ public:
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);
     void close();
+    void set_on_message(std::function<void(std::string)> cb) { m_on_message = std::move(cb); }
     void set_on_disconnect(std::function<void()> cb) { m_on_disconnect = std::move(cb); }
 
 private:

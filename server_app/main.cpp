@@ -64,11 +64,15 @@ int main(int argc, char **argv) {
     net::io_context ioc;
 
     auto client = std::make_shared<WebsocketClientAsync>(ioc);
-    client->connect("echo.websocket.events", "80"); // Public echo server
+    client->set_on_message([&client](std::string message)
+    {
+        ADD_LOG("on message: " << message);
+    });
     client->set_on_disconnect([&client]()
     {
         ADD_LOG("Websocket close as normal");
     });
+    client->connect("echo.websocket.events", "80"); // Public echo server
 
     net::steady_timer timer1(ioc, std::chrono::seconds(1));
     timer1.async_wait([client](auto) {
