@@ -11,7 +11,24 @@ void WebsocketClientAsync::connect(const std::string& host, const std::string& p
 
 void WebsocketClientAsync::send(const std::string& msg)
 {
-    ws_.async_write(net::buffer(msg),
+    net::post(ws_.get_executor(), [w = weak_from_this(), msg = msg]()
+    {
+        if (auto self = w.lock())
+        {
+            bool ready_to_write = self->m_write_queue.empty();
+            self->m_write_queue.push_back(std::move(msg));
+
+            if (ready_to_write)
+            {
+                self->do_write();
+            }
+        }
+    });
+}
+
+void WebsocketClientAsync::do_write()
+{
+    ws_.async_write(net::buffer(m_write_queue.front()),
         beast::bind_front_handler(&WebsocketClientAsync::on_write, shared_from_this()));
 }
 
@@ -88,6 +105,13 @@ void WebsocketClientAsync::on_write(beast::error_code ec, std::size_t bytes_tran
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("write", ec);
+
+    m_write_queue.pop_front();
+
+    if (!m_write_queue.empty())
+    {
+        do_write();
+    }
 }
 
 void WebsocketClientAsync::close()

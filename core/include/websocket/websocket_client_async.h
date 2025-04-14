@@ -7,6 +7,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <iostream>
 
+#include <deque>
+
 namespace beast = boost::beast;          // from <boost/beast.hpp>
 namespace websocket = beast::websocket;  // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;             // from <boost/asio.hpp>
@@ -37,12 +39,16 @@ private:
     std::function<void()> m_on_disconnect;
     std::function<void()> m_on_close;
 
+    // Write queue
+    std::deque<std::string> m_write_queue;
+
     void on_resolve(beast::error_code ec, tcp::resolver::results_type results);
     void on_connect(beast::error_code ec, tcp::resolver::iterator);
     void on_handshake(beast::error_code ec);
     void on_read(beast::error_code ec, std::size_t bytes_transferred);
     void on_write(beast::error_code ec, std::size_t bytes_transferred);
     void on_close(beast::error_code ec);
+    void do_write();
     void fail(const std::string& where, beast::error_code ec);
 };
 
