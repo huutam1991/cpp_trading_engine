@@ -65,8 +65,20 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
         return;
     }
 
-    std::cout << "Received: " << beast::make_printable(buffer_.data()) << std::endl;
+    std::string data = beast::buffers_to_string(buffer_.data());
     buffer_.consume(buffer_.size());
+
+    std::cout << "Received: " << data << std::endl;
+
+    // Separate base on new line
+    std::stringstream ss(data);
+    std::string line;
+    while (std::getline(ss, line)) {
+        if (!line.empty())
+        {
+            if (m_on_message) m_on_message(line);
+        }
+    }
 
     // Continue reading
     ws_.async_read(buffer_,

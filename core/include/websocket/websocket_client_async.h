@@ -31,7 +31,8 @@ private:
     std::string host_;
     std::string path_;
 
-    // Callback on disconnect
+    // Callbacks
+    std::function<void(std::string)> m_on_message;
     std::function<void()> m_on_disconnect;
     std::function<void()> m_on_close;
 
