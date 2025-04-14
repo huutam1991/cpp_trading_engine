@@ -46,7 +46,24 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
 {
     boost::ignore_unused(bytes_transferred);
 
-    if (ec) return fail("read", ec);
+    if (ec)
+    {
+        std::cerr << "on_read error: " << ec.message() << "\n";
+
+        if (
+            ec == websocket::error::closed ||                     // WebSocket close
+            ec == boost::asio::error::eof ||                      // TCP close
+            ec == boost::asio::error::connection_reset ||         // Server reset
+            ec == boost::asio::error::operation_aborted ||        // Socket aborted
+            ec == boost::asio::error::broken_pipe ||              // Gửi khi socket đã đóng (Linux)
+            ec == boost::asio::error::timed_out                   // Timeout
+        )
+        {
+            if (m_on_disconnect) m_on_disconnect();
+        }
+
+        return;
+    }
 
     std::cout << "Received: " << beast::make_printable(buffer_.data()) << std::endl;
     buffer_.consume(buffer_.size());
@@ -60,6 +77,22 @@ void WebsocketClientAsync::on_write(beast::error_code ec, std::size_t bytes_tran
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("write", ec);
+}
+
+void WebsocketClientAsync::close()
+{
+    ws_.async_close(websocket::close_code::normal,
+        beast::bind_front_handler(&WebsocketClientAsync::on_close, shared_from_this()));
+}
+
+void WebsocketClientAsync::on_close(beast::error_code ec)
+{
+    if (ec)
+    {
+        std::cerr << "Close error: " << ec.message() << "\n";
+    }
+
+    if (m_on_close) m_on_close();
 }
 
 void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)

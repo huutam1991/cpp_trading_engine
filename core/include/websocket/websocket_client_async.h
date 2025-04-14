@@ -21,6 +21,8 @@ public:
 
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);
+    void close();
+    void set_on_disconnect(std::function<void()> cb) { m_on_disconnect = std::move(cb); }
 
 private:
     tcp::resolver resolver_;
@@ -29,11 +31,16 @@ private:
     std::string host_;
     std::string path_;
 
+    // Callback on disconnect
+    std::function<void()> m_on_disconnect;
+    std::function<void()> m_on_close;
+
     void on_resolve(beast::error_code ec, tcp::resolver::results_type results);
     void on_connect(beast::error_code ec, tcp::resolver::iterator);
     void on_handshake(beast::error_code ec);
     void on_read(beast::error_code ec, std::size_t bytes_transferred);
     void on_write(beast::error_code ec, std::size_t bytes_transferred);
+    void on_close(beast::error_code ec);
     void fail(const std::string& where, beast::error_code ec);
 };
 

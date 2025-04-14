@@ -6,6 +6,7 @@
 #include <app_constants.h>
 #include <http_server.h>
 #include <https_server.h>
+#include <websocket/websocket_client_async.h>
 #include <websocket/websocket_server.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
@@ -60,13 +61,42 @@ int main(int argc, char **argv) {
     // });
     // WebSocketServerType::instance().start();
 
-    GatewayManager::instance().init();
-    OrderManager::instance().init();
-    Strategy::instance().init();
+    net::io_context ioc;
 
-    // Server
-    HttpsServer server(port, web_data_path);
-    server.start();
+    auto client = std::make_shared<WebsocketClientAsync>(ioc);
+    client->connect("echo.websocket.events", "80"); // Public echo server
+    client->set_on_disconnect([&client]()
+    {
+        ADD_LOG("Websocket close as normal");
+    });
+
+    net::steady_timer timer1(ioc, std::chrono::seconds(1));
+    timer1.async_wait([client](auto) {
+        client->send("Hello WebSocket: 1");
+    });
+    net::steady_timer timer2(ioc, std::chrono::seconds(2));
+    timer2.async_wait([client](auto) {
+        client->send("Hello WebSocket: 2");
+    });
+    net::steady_timer timer3(ioc, std::chrono::seconds(3));
+    timer3.async_wait([client](auto) {
+        client->send("Hello WebSocket: 3");
+    });
+    net::steady_timer timer4(ioc, std::chrono::seconds(4));
+    timer4.async_wait([client](auto) {
+        client->send("Hello WebSocket: 4");
+        client->close();
+    });
+
+    ioc.run();
+
+    // GatewayManager::instance().init();
+    // OrderManager::instance().init();
+    // Strategy::instance().init();
+
+    // // Server
+    // HttpsServer server(port, web_data_path);
+    // server.start();
 
     LOG(INFO) << "Main exit" << std::endl;
 
