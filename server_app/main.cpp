@@ -72,23 +72,28 @@ int main(int argc, char **argv) {
     {
         ADD_LOG("Websocket close as normal");
     });
-    client->connect("echo.websocket.events", "80"); // Public echo server
+    client->connect("echo.websocket.events", "443"); // Public echo server
 
-    net::steady_timer timer1(ioc, std::chrono::seconds(1));
+    int i = 1;
+
+    net::steady_timer timer1(ioc, std::chrono::seconds(i + 1));
     timer1.async_wait([client](auto) {
         client->send("Hello WebSocket: 1");
     });
-    net::steady_timer timer2(ioc, std::chrono::seconds(2));
+    net::steady_timer timer2(ioc, std::chrono::seconds(i + 2));
     timer2.async_wait([client](auto) {
         client->send("Hello WebSocket: 2");
     });
-    net::steady_timer timer3(ioc, std::chrono::seconds(3));
+    net::steady_timer timer3(ioc, std::chrono::seconds(i + 3));
     timer3.async_wait([client](auto) {
         client->send("Hello WebSocket: 3");
     });
-    net::steady_timer timer4(ioc, std::chrono::seconds(4));
+    net::steady_timer timer4(ioc, std::chrono::seconds(i + 4));
     timer4.async_wait([client](auto) {
         client->send("Hello WebSocket: 4");
+    });
+    net::steady_timer timer5(ioc, std::chrono::seconds(i + 7));
+    timer5.async_wait([client](auto) {
         client->close();
     });
 

@@ -2,6 +2,7 @@
 #define WEBSOCKET_CLIENT_ASYNC_H
 
 #include <boost/beast/core.hpp>
+#include <boost/beast/ssl.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -18,8 +19,12 @@ class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClient
 public:
     WebsocketClientAsync(net::io_context& ioc)
         : resolver_(ioc),
-          ws_(ioc)
-    {}
+          ssl_ctx_(boost::asio::ssl::context::tlsv12_client),
+          ws_(ioc, ssl_ctx_)
+    {
+        ssl_ctx_.set_verify_mode(boost::asio::ssl::verify_peer);
+        ssl_ctx_.set_default_verify_paths();
+    }
 
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);
@@ -29,7 +34,8 @@ public:
 
 private:
     tcp::resolver resolver_;
-    websocket::stream<tcp::socket> ws_;
+    boost::asio::ssl::context ssl_ctx_;
+    websocket::stream<beast::ssl_stream<tcp::socket>> ws_;
     beast::flat_buffer buffer_;
     std::string host_;
     std::string path_;
@@ -44,6 +50,7 @@ private:
 
     void on_resolve(beast::error_code ec, tcp::resolver::results_type results);
     void on_connect(beast::error_code ec, tcp::resolver::iterator);
+    void on_ssl_handshake(beast::error_code ec);
     void on_handshake(beast::error_code ec);
     void on_read(beast::error_code ec, std::size_t bytes_transferred);
     void on_write(beast::error_code ec, std::size_t bytes_transferred);

@@ -36,7 +36,12 @@ void WebsocketClientAsync::on_resolve(beast::error_code ec, tcp::resolver::resul
 {
     if (ec) return fail("resolve", ec);
 
-    net::async_connect(ws_.next_layer(), results.begin(), results.end(),
+    if (SSL_set_tlsext_host_name(ws_.next_layer().native_handle(), host_.c_str()) == false) {
+        beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
+        return fail("SNI set", ec);
+    }
+
+    net::async_connect(ws_.next_layer().next_layer(), results.begin(), results.end(),
         beast::bind_front_handler(&WebsocketClientAsync::on_connect, shared_from_this()));
 }
 
@@ -44,6 +49,16 @@ void WebsocketClientAsync::on_connect(beast::error_code ec, tcp::resolver::itera
 {
     if (ec) return fail("connect", ec);
 
+    // SSL handshake before WebSocket handshake
+    ws_.next_layer().async_handshake(boost::asio::ssl::stream_base::client,
+        beast::bind_front_handler(&WebsocketClientAsync::on_ssl_handshake, shared_from_this()));
+}
+
+void WebsocketClientAsync::on_ssl_handshake(beast::error_code ec)
+{
+    if (ec) return fail("ssl_handshake", ec);
+
+    // Then do WebSocket handshake
     ws_.async_handshake(host_, path_,
         beast::bind_front_handler(&WebsocketClientAsync::on_handshake, shared_from_this()));
 }
