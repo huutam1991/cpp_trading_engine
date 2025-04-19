@@ -61,48 +61,13 @@ int main(int argc, char **argv) {
     // });
     // WebSocketServerType::instance().start();
 
-    net::io_context ioc;
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
+    Strategy::instance().init();
 
-    auto client = std::make_shared<WebsocketClientAsync>();
-    client->set_on_message([&client](std::string message)
-    {
-        ADD_LOG("on message: " << message);
-    });
-    client->set_on_disconnect([&client]()
-    {
-        ADD_LOG("Websocket close as normal");
-    });
-    client->connect("stream.binance.com", "9443", "/ws"); // Public echo server
-
-    int i = 4;
-
-    net::steady_timer timer1(ioc, std::chrono::seconds(i + 1));
-    timer1.async_wait([client](auto) {
-
-        Json params;
-        params[0] = "btcusdt@depth5@100ms";
-
-        Json subcribe;
-        subcribe["method"] = "SUBSCRIBE";
-        subcribe["params"] = params;
-        subcribe["id"] = 1;
-        client->send(subcribe.get_string_value());
-    });
-
-    net::steady_timer timer5(ioc, std::chrono::seconds(i + 7));
-    timer5.async_wait([&client](auto) {
-        client = nullptr;
-    });
-
-    ioc.run();
-
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
-    // Strategy::instance().init();
-
-    // // Server
-    // HttpsServer server(port, web_data_path);
-    // server.start();
+    // Server
+    HttpsServer server(port, web_data_path);
+    server.start();
 
     LOG(INFO) << "Main exit" << std::endl;
 

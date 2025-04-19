@@ -1,11 +1,12 @@
 #include <websocket/websocket_client_async.h>
 #include <util_macros.h>
 
-WebsocketClientAsync::WebsocketClientAsync() :
+WebsocketClientAsync::WebsocketClientAsync(EventBase* event_base) :
     m_ioc(WebsocketClientAsync::get_ioc()),
     m_resolver(m_ioc),
     m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
-    m_ws(m_ioc, m_ssl_ctx)
+    m_ws(m_ioc, m_ssl_ctx),
+    m_event_base(event_base)
 {
     m_ssl_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
     m_ssl_ctx.set_default_verify_paths();
@@ -16,6 +17,14 @@ WebsocketClientAsync::~WebsocketClientAsync()
     close();
 }
 
+void WebsocketClientAsync::set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close)
+{
+    m_on_connect = std::move(on_connect);
+    m_on_message = std::move(on_message);
+    m_on_disconnect = std::move(on_disconnect);
+    m_on_close = std::move(on_close);
+}
+
 void WebsocketClientAsync::connect(const std::string& host, const std::string& port, const std::string& path)
 {
     m_host = host;
@@ -23,29 +32,6 @@ void WebsocketClientAsync::connect(const std::string& host, const std::string& p
 
     m_resolver.async_resolve(host, port,
         beast::bind_front_handler(&WebsocketClientAsync::on_resolve, shared_from_this()));
-}
-
-void WebsocketClientAsync::send(const std::string& msg)
-{
-    net::post(m_ws.get_executor(), [w = weak_from_this(), msg = msg]()
-    {
-        if (auto self = w.lock())
-        {
-            bool ready_to_write = self->m_write_queue.empty();
-            self->m_write_queue.push_back(msg);
-
-            if (ready_to_write)
-            {
-                self->do_write();
-            }
-        }
-    });
-}
-
-void WebsocketClientAsync::do_write()
-{
-    m_ws.async_write(net::buffer(m_write_queue.front()),
-        beast::bind_front_handler(&WebsocketClientAsync::on_write, shared_from_this()));
 }
 
 void WebsocketClientAsync::on_resolve(beast::error_code ec, tcp::resolver::results_type results)
@@ -87,6 +73,9 @@ void WebsocketClientAsync::on_handshake(beast::error_code ec)
     // Start reading
     m_ws.async_read(m_buffer,
         beast::bind_front_handler(&WebsocketClientAsync::on_read, shared_from_this()));
+
+    // Invoke [m_on_connect]
+    invoke_callback(m_on_connect);
 }
 
 void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferred)
@@ -106,7 +95,8 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
             ec == boost::asio::error::timed_out                   // Timeout
         )
         {
-            if (m_on_disconnect) m_on_disconnect();
+            // Invoke [m_on_disconnect]
+            invoke_callback(m_on_disconnect);
         }
 
         return;
@@ -122,13 +112,37 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
     {
         if (!line.empty())
         {
-            if (m_on_message) m_on_message(std::move(line));
+            // Invoke [m_on_message]
+            invoke_callback(m_on_message, std::move(line));
         }
     }
 
     // Continue reading
     m_ws.async_read(m_buffer,
         beast::bind_front_handler(&WebsocketClientAsync::on_read, shared_from_this()));
+}
+
+void WebsocketClientAsync::send(const std::string& msg)
+{
+    net::post(m_ws.get_executor(), [w = weak_from_this(), msg = msg]()
+    {
+        if (auto self = w.lock())
+        {
+            bool ready_to_write = self->m_write_queue.empty();
+            self->m_write_queue.push_back(std::move(msg));
+
+            if (ready_to_write)
+            {
+                self->do_write();
+            }
+        }
+    });
+}
+
+void WebsocketClientAsync::do_write()
+{
+    m_ws.async_write(net::buffer(m_write_queue.front()),
+        beast::bind_front_handler(&WebsocketClientAsync::on_write, shared_from_this()));
 }
 
 void WebsocketClientAsync::on_write(beast::error_code ec, std::size_t bytes_transferred)
@@ -157,12 +171,20 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
         ADD_LOG("WebsocketClientAsync - Close error: " << ec.message());
     }
 
-    if (m_on_close) m_on_close();
+    // Invoke [m_on_close]
+    invoke_callback(m_on_close);
 }
 
 void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
 {
     ADD_LOG("WebsocketClientAsync - Error in " << where << ": " << ec.message());
+}
+
+template<class T, class... Args>
+void WebsocketClientAsync::invoke_callback(T& cb, Args&&... args)
+{
+    auto task = cb(std::forward<Args>(args)...);
+    task.start_running_on(m_event_base);
 }
 
 net::io_context& WebsocketClientAsync::get_ioc()

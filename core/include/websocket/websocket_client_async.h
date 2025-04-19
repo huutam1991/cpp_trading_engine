@@ -10,6 +10,9 @@
 #include <deque>
 #include <thread>
 
+#include <coroutine/event_base.h>
+#include <coroutine/task_void.h>
+
 namespace beast = boost::beast;          // from <boost/beast.hpp>
 namespace websocket = beast::websocket;  // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;             // from <boost/asio.hpp>
@@ -17,14 +20,13 @@ using tcp = net::ip::tcp;
 
 class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> {
 public:
-    WebsocketClientAsync();
+    WebsocketClientAsync(EventBase* event_base);
     ~WebsocketClientAsync();
 
+    void set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close);
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);
     void close();
-    void set_on_message(std::function<void(std::string)> cb) { m_on_message = std::move(cb); }
-    void set_on_disconnect(std::function<void()> cb) { m_on_disconnect = std::move(cb); }
 
 private:
     net::io_context& m_ioc;
@@ -32,13 +34,17 @@ private:
     boost::asio::ssl::context m_ssl_ctx;
     websocket::stream<beast::ssl_stream<tcp::socket>> m_ws;
     beast::flat_buffer m_buffer;
+
+    EventBase* m_event_base = nullptr;
+
     std::string m_host;
     std::string m_path;
 
     // Callbacks
-    std::function<void(std::string)> m_on_message;
-    std::function<void()> m_on_disconnect;
-    std::function<void()> m_on_close;
+    std::function<TaskVoid()> m_on_connect;
+    std::function<TaskVoid(std::string)> m_on_message;
+    std::function<TaskVoid()> m_on_disconnect;
+    std::function<TaskVoid()> m_on_close;
 
     // Write queue
     std::deque<std::string> m_write_queue;
@@ -52,6 +58,10 @@ private:
     void on_close(beast::error_code ec);
     void do_write();
     void fail(const std::string& where, beast::error_code ec);
+
+    // Common method for invoking callbacks
+    template<class T, class... Args>
+    void invoke_callback(T& cb, Args&&... args);
 
     // Static ioc context
     static net::io_context& get_ioc();
