@@ -72,26 +72,23 @@ int main(int argc, char **argv) {
     {
         ADD_LOG("Websocket close as normal");
     });
-    client->connect("echo.websocket.events", "443"); // Public echo server
+    client->connect("stream.binance.com", "9443", "/ws"); // Public echo server
 
-    int i = 1;
+    int i = 4;
 
     net::steady_timer timer1(ioc, std::chrono::seconds(i + 1));
     timer1.async_wait([client](auto) {
-        client->send("Hello WebSocket: 1");
+
+        Json params;
+        params[0] = "btcusdt@depth5@1000ms";
+
+        Json subcribe;
+        subcribe["method"] = "SUBSCRIBE";
+        subcribe["params"] = params;
+        subcribe["id"] = 1;
+        client->send(subcribe.get_string_value());
     });
-    net::steady_timer timer2(ioc, std::chrono::seconds(i + 2));
-    timer2.async_wait([client](auto) {
-        client->send("Hello WebSocket: 2");
-    });
-    net::steady_timer timer3(ioc, std::chrono::seconds(i + 3));
-    timer3.async_wait([client](auto) {
-        client->send("Hello WebSocket: 3");
-    });
-    net::steady_timer timer4(ioc, std::chrono::seconds(i + 4));
-    timer4.async_wait([client](auto) {
-        client->send("Hello WebSocket: 4");
-    });
+
     net::steady_timer timer5(ioc, std::chrono::seconds(i + 7));
     timer5.async_wait([client](auto) {
         client->close();
