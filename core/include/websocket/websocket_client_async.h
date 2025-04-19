@@ -17,15 +17,8 @@ using tcp = net::ip::tcp;
 
 class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> {
 public:
-    WebsocketClientAsync()
-        : m_ioc(WebsocketClientAsync::get_ioc()),
-          m_resolver(m_ioc),
-          m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
-          m_ws(m_ioc, m_ssl_ctx)
-    {
-        m_ssl_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
-        m_ssl_ctx.set_default_verify_paths();
-    }
+    WebsocketClientAsync();
+    ~WebsocketClientAsync();
 
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);

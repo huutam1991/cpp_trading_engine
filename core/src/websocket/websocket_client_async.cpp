@@ -1,6 +1,21 @@
 #include <websocket/websocket_client_async.h>
 #include <util_macros.h>
 
+WebsocketClientAsync::WebsocketClientAsync() :
+    m_ioc(WebsocketClientAsync::get_ioc()),
+    m_resolver(m_ioc),
+    m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
+    m_ws(m_ioc, m_ssl_ctx)
+{
+    m_ssl_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+    m_ssl_ctx.set_default_verify_paths();
+}
+
+WebsocketClientAsync::~WebsocketClientAsync()
+{
+    close();
+}
+
 void WebsocketClientAsync::connect(const std::string& host, const std::string& port, const std::string& path)
 {
     m_host = host;
