@@ -9,21 +9,19 @@ BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& 
     m_url(url),
     m_port(port)
 {
-    // Set period time to check websocket stream is stop at every 10 seconds
-    add_timer_to_check_websocket_stream_is_stop(10000);
+    // Default is GATEWAY
+    m_event_base = EventBaseManager::instance() .get_event_base_by_id(EventBaseID::GATEWAY);
 }
 
 BinanceMarketData::~BinanceMarketData()
 {
-    del_timer_to_check_websocket_stream_is_stop();
+    // del_timer_to_check_websocket_stream_is_stop();
     ADD_LOG("~BinanceMarketData, " << m_symbol);
 }
 
 void BinanceMarketData::start()
 {
-    m_websocket = std::make_shared<WebsocketClientAsync>(EventBaseManager::instance()
-        .get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
-    );
+    m_websocket = std::make_shared<WebsocketClientAsync>(m_event_base);
 
     m_websocket->set_callbacks(
         // on_connect
@@ -53,13 +51,10 @@ void BinanceMarketData::start()
         // on_message
         [this](std::string buffer) -> TaskVoid
         {
-            // Increase m_websocket_data_counter (should find a better solution)
-            m_websocket_data_counter++;
-
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
             {
-                ADD_LOG("Stream depth: " << this->m_symbol);
+                // ADD_LOG("Stream depth: " << depth);
                 if (m_on_callback != nullptr)
                 {
                     m_on_callback(m_symbol, depth);
@@ -116,6 +111,7 @@ void BinanceMarketData::subscribe_symbol(const std::string& symbol, std::functio
 bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
 {
     Json order_book = Json::parse(data);
+
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {
         // symbol
@@ -146,29 +142,9 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
             B.push_back(j);
         });
         depth["bids"] = B;
+
         return true;
     }
+
     return false;
-}
-
-void BinanceMarketData::add_timer_to_check_websocket_stream_is_stop(size_t period)
-{
-    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    {
-        if (m_websocket_data_counter == 0)
-        {
-            this->start();
-        }
-
-        m_websocket_data_counter = 0;
-    },
-    period);
-}
-
-void BinanceMarketData::del_timer_to_check_websocket_stream_is_stop()
-{
-    if (m_schedule_task_id != 0)
-    {
-        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
-    }
 }

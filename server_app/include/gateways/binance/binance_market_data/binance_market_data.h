@@ -23,16 +23,12 @@ private:
     std::string m_port;
     std::string m_symbol;
 
+    EventBase* m_event_base = nullptr;
+
     std::shared_ptr<WebsocketClientAsync> m_websocket;
     std::function<void(const std::string& symbol, Json& payload)> m_on_callback = nullptr;
 
     size_t get_stream_id_count();
-
-    // For checking websocket stream is stop
-    size_t m_websocket_data_counter = 0;
-    size_t m_schedule_task_id = 0;
-    void add_timer_to_check_websocket_stream_is_stop(size_t period);
-    void del_timer_to_check_websocket_stream_is_stop();
 };
 
 #endif //BINANCE_MARKET_DATA_H
