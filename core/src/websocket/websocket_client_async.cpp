@@ -1,17 +1,18 @@
 #include <websocket/websocket_client_async.h>
+#include <util_macros.h>
 
 void WebsocketClientAsync::connect(const std::string& host, const std::string& port, const std::string& path)
 {
-    host_ = host;
-    path_ = path;
+    m_host = host;
+    m_path = path;
 
-    resolver_.async_resolve(host, port,
+    m_resolver.async_resolve(host, port,
         beast::bind_front_handler(&WebsocketClientAsync::on_resolve, shared_from_this()));
 }
 
 void WebsocketClientAsync::send(const std::string& msg)
 {
-    net::post(ws_.get_executor(), [w = weak_from_this(), msg = msg]()
+    net::post(m_ws.get_executor(), [w = weak_from_this(), msg = msg]()
     {
         if (auto self = w.lock())
         {
@@ -28,7 +29,7 @@ void WebsocketClientAsync::send(const std::string& msg)
 
 void WebsocketClientAsync::do_write()
 {
-    ws_.async_write(net::buffer(m_write_queue.front()),
+    m_ws.async_write(net::buffer(m_write_queue.front()),
         beast::bind_front_handler(&WebsocketClientAsync::on_write, shared_from_this()));
 }
 
@@ -36,12 +37,13 @@ void WebsocketClientAsync::on_resolve(beast::error_code ec, tcp::resolver::resul
 {
     if (ec) return fail("resolve", ec);
 
-    if (SSL_set_tlsext_host_name(ws_.next_layer().native_handle(), host_.c_str()) == false) {
+    if (SSL_set_tlsext_host_name(m_ws.next_layer().native_handle(), m_host.c_str()) == false)
+    {
         beast::error_code ec{static_cast<int>(::ERR_get_error()), net::error::get_ssl_category()};
         return fail("SNI set", ec);
     }
 
-    net::async_connect(ws_.next_layer().next_layer(), results.begin(), results.end(),
+    net::async_connect(m_ws.next_layer().next_layer(), results.begin(), results.end(),
         beast::bind_front_handler(&WebsocketClientAsync::on_connect, shared_from_this()));
 }
 
@@ -50,7 +52,7 @@ void WebsocketClientAsync::on_connect(beast::error_code ec, tcp::resolver::itera
     if (ec) return fail("connect", ec);
 
     // SSL handshake before WebSocket handshake
-    ws_.next_layer().async_handshake(boost::asio::ssl::stream_base::client,
+    m_ws.next_layer().async_handshake(boost::asio::ssl::stream_base::client,
         beast::bind_front_handler(&WebsocketClientAsync::on_ssl_handshake, shared_from_this()));
 }
 
@@ -59,7 +61,7 @@ void WebsocketClientAsync::on_ssl_handshake(beast::error_code ec)
     if (ec) return fail("ssl_handshake", ec);
 
     // Then do WebSocket handshake
-    ws_.async_handshake(host_, path_,
+    m_ws.async_handshake(m_host, m_path,
         beast::bind_front_handler(&WebsocketClientAsync::on_handshake, shared_from_this()));
 }
 
@@ -67,10 +69,8 @@ void WebsocketClientAsync::on_handshake(beast::error_code ec)
 {
     if (ec) return fail("handshake", ec);
 
-    std::cout << "Connected!\n";
-
     // Start reading
-    ws_.async_read(buffer_,
+    m_ws.async_read(m_buffer,
         beast::bind_front_handler(&WebsocketClientAsync::on_read, shared_from_this()));
 }
 
@@ -80,7 +80,7 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
 
     if (ec)
     {
-        std::cerr << "on_read error: " << ec.message() << "\n";
+        ADD_LOG("WebsocketClientAsync - on_read error: " << ec.message());
 
         if (
             ec == websocket::error::closed ||                     // WebSocket close
@@ -97,8 +97,8 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
         return;
     }
 
-    std::string data = beast::buffers_to_string(buffer_.data());
-    buffer_.consume(buffer_.size());
+    std::string data = beast::buffers_to_string(m_buffer.data());
+    m_buffer.consume(m_buffer.size());
 
     // Separate base on new line
     std::stringstream ss(data);
@@ -112,7 +112,7 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
     }
 
     // Continue reading
-    ws_.async_read(buffer_,
+    m_ws.async_read(m_buffer,
         beast::bind_front_handler(&WebsocketClientAsync::on_read, shared_from_this()));
 }
 
@@ -131,7 +131,7 @@ void WebsocketClientAsync::on_write(beast::error_code ec, std::size_t bytes_tran
 
 void WebsocketClientAsync::close()
 {
-    ws_.async_close(websocket::close_code::normal,
+    m_ws.async_close(websocket::close_code::normal,
         beast::bind_front_handler(&WebsocketClientAsync::on_close, shared_from_this()));
 }
 
@@ -139,7 +139,7 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
 {
     if (ec)
     {
-        std::cerr << "Close error: " << ec.message() << "\n";
+        ADD_LOG("WebsocketClientAsync - Close error: " << ec.message());
     }
 
     if (m_on_close) m_on_close();
@@ -147,5 +147,17 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
 
 void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
 {
-    std::cerr << "Error in " << where << ": " << ec.message() << "\n";
+    ADD_LOG("WebsocketClientAsync - Error in " << where << ": " << ec.message());
+}
+
+net::io_context& WebsocketClientAsync::get_ioc()
+{
+    static net::io_context ioc;
+    static auto guard = net::make_work_guard(ioc);
+    static std::thread t([ioc = &ioc]()
+    {
+        ioc->run();
+    });
+
+    return ioc;
 }

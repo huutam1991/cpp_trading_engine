@@ -6,9 +6,9 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <iostream>
 
 #include <deque>
+#include <thread>
 
 namespace beast = boost::beast;          // from <boost/beast.hpp>
 namespace websocket = beast::websocket;  // from <boost/beast/websocket.hpp>
@@ -17,13 +17,14 @@ using tcp = net::ip::tcp;
 
 class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> {
 public:
-    WebsocketClientAsync(net::io_context& ioc)
-        : resolver_(ioc),
-          ssl_ctx_(boost::asio::ssl::context::tlsv12_client),
-          ws_(ioc, ssl_ctx_)
+    WebsocketClientAsync()
+        : m_ioc(WebsocketClientAsync::get_ioc()),
+          m_resolver(m_ioc),
+          m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
+          m_ws(m_ioc, m_ssl_ctx)
     {
-        ssl_ctx_.set_verify_mode(boost::asio::ssl::verify_peer);
-        ssl_ctx_.set_default_verify_paths();
+        m_ssl_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
+        m_ssl_ctx.set_default_verify_paths();
     }
 
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
@@ -33,12 +34,13 @@ public:
     void set_on_disconnect(std::function<void()> cb) { m_on_disconnect = std::move(cb); }
 
 private:
-    tcp::resolver resolver_;
-    boost::asio::ssl::context ssl_ctx_;
-    websocket::stream<beast::ssl_stream<tcp::socket>> ws_;
-    beast::flat_buffer buffer_;
-    std::string host_;
-    std::string path_;
+    net::io_context& m_ioc;
+    tcp::resolver m_resolver;
+    boost::asio::ssl::context m_ssl_ctx;
+    websocket::stream<beast::ssl_stream<tcp::socket>> m_ws;
+    beast::flat_buffer m_buffer;
+    std::string m_host;
+    std::string m_path;
 
     // Callbacks
     std::function<void(std::string)> m_on_message;
@@ -57,6 +59,9 @@ private:
     void on_close(beast::error_code ec);
     void do_write();
     void fail(const std::string& where, beast::error_code ec);
+
+    // Static ioc context
+    static net::io_context& get_ioc();
 };
 
 #endif //WEBSOCKET_CLIENT_ASYNC_H

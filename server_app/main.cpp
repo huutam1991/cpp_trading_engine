@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     net::io_context ioc;
 
-    auto client = std::make_shared<WebsocketClientAsync>(ioc);
+    auto client = std::make_shared<WebsocketClientAsync>();
     client->set_on_message([&client](std::string message)
     {
         ADD_LOG("on message: " << message);
