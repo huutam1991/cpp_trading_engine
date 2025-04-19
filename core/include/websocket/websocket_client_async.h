@@ -41,10 +41,10 @@ private:
     std::string m_path;
 
     // Callbacks
-    std::function<TaskVoid()> m_on_connect;
-    std::function<TaskVoid(std::string)> m_on_message;
-    std::function<TaskVoid()> m_on_disconnect;
-    std::function<TaskVoid()> m_on_close;
+    std::function<TaskVoid()> m_on_connect = nullptr;
+    std::function<TaskVoid(std::string)> m_on_message = nullptr;
+    std::function<TaskVoid()> m_on_disconnect = nullptr;
+    std::function<TaskVoid()> m_on_close = nullptr;
 
     // Write queue
     std::deque<std::string> m_write_queue;

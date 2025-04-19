@@ -91,7 +91,7 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
             ec == boost::asio::error::eof ||                      // TCP close
             ec == boost::asio::error::connection_reset ||         // Server reset
             ec == boost::asio::error::operation_aborted ||        // Socket aborted
-            ec == boost::asio::error::broken_pipe ||              // Gửi khi socket đã đóng (Linux)
+            ec == boost::asio::error::broken_pipe ||              // Send when socket is closed (Linux)
             ec == boost::asio::error::timed_out                   // Timeout
         )
         {
@@ -183,8 +183,11 @@ void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
 template<class T, class... Args>
 void WebsocketClientAsync::invoke_callback(T& cb, Args&&... args)
 {
-    auto task = cb(std::forward<Args>(args)...);
-    task.start_running_on(m_event_base);
+    if (cb != nullptr)
+    {
+        auto task = cb(std::forward<Args>(args)...);
+        task.start_running_on(m_event_base);
+    }
 }
 
 net::io_context& WebsocketClientAsync::get_ioc()

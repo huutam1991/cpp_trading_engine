@@ -2,7 +2,7 @@
 #define BINANCE_MARKET_DATA_H
 
 #include <functional>
-#include <websocket/websocket_client.h>
+#include <websocket/websocket_client_async.h>
 #include <json/json.h>
 
 class BinanceMarketData
@@ -23,7 +23,7 @@ private:
     std::string m_port;
     std::string m_symbol;
 
-    std::shared_ptr<WebsocketClient> m_websocket;
+    std::shared_ptr<WebsocketClientAsync> m_websocket;
     std::function<void(const std::string& symbol, Json& payload)> m_on_callback = nullptr;
 
     size_t get_stream_id_count();
