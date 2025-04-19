@@ -34,89 +34,101 @@ std::string& BinanceQuoterSpot::get_port()
 
 void BinanceQuoterSpot::init_websocket()
 {
-    auto task = this->get_listen_key();
-    m_listen_key = task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY)).get();
+    // Event base: GATEWAY
+    EventBase* event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::GATEWAY);
 
+    // Get listen key
+    auto task = this->get_listen_key();
+    m_listen_key = task.start_running_on(event_base).get();
     // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
     add_timer_keep_alive_listen_key(1800000);
 
-    m_websocket = std::make_shared<WebsocketClient>(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
+    m_websocket = std::make_shared<WebsocketClientAsync>(event_base);
 
-    m_websocket->on_connect([this](WebsocketClientHandle& ws)
-    {
-        ADD_LOG("BinanceQuoterSpot websocket connected");
-    });
-
-    m_websocket->on_message([this](const std::string& buffer, WebsocketClientHandle& ws)
-    {
-        Json json = Json::parse(buffer);
-
-        if (json["e"] == "executionReport")
+    m_websocket->set_callbacks(
+        // on_connect
+        [this]() -> TaskVoid
         {
-            Order order
-            {
-                1,                                   // Order Id
-                Order::ExchangeType::SPOT,           // Exchange Type
-                Order::Status::NEW,                  // Status
-                json["s"],                           // Symbol
-                Order::side_from_string(json["S"]),  // Side
-                Order::type_from_string(json["o"]),  // Type
-                std::stod((std::string)json["p"]),   // Price
-                std::stod((std::string)json["q"]),   // Quantity
-            };
+            ADD_LOG("BinanceQuoterSpot websocket connected");
 
-            // Parsing order from execution report
-            if (json["X"] == "NEW")
+            co_return;
+        },
+        // on_message
+        [this](std::string buffer) -> TaskVoid
+        {
+            Json json = Json::parse(buffer);
+
+            if (json["e"] == "executionReport")
             {
-                order.order_id = std::stoull((std::string)json["c"]);
-                order.status = Order::Status::NEW;
-            }
-            else if (json["X"] == "FILLED")
-            {
-                order.order_id = std::stoull((std::string)json["c"]);
-                order.status = Order::Status::FILLED;
-                order.filled_quantity = std::stod((std::string)json["l"]);
-                order.filled_price = std::stod((std::string)json["L"]);
-                order.commission_amount = std::stod((std::string)json["n"]);
-                order.commission_asset = (std::string)json["N"];
-            }
-            else if (json["X"] == "PARTIALLY_FILLED")
-            {
-                order.order_id = std::stoull((std::string)json["c"]);
-                order.status = Order::Status::PARTIALLY_FILLED;
-                order.filled_quantity = std::stod((std::string)json["l"]);
-                order.filled_price = std::stod((std::string)json["L"]);
-                order.commission_amount = std::stod((std::string)json["n"]);
-                order.commission_asset = (std::string)json["N"];
-            }
-            else if (json["X"] == "CANCELED")
-            {
-                order.order_id = std::stoull((std::string)json["C"]);
-                order.status = Order::Status::CANCELED;
+                Order order
+                {
+                    1,                                   // Order Id
+                    Order::ExchangeType::SPOT,           // Exchange Type
+                    Order::Status::NEW,                  // Status
+                    json["s"],                           // Symbol
+                    Order::side_from_string(json["S"]),  // Side
+                    Order::type_from_string(json["o"]),  // Type
+                    std::stod((std::string)json["p"]),   // Price
+                    std::stod((std::string)json["q"]),   // Quantity
+                };
+
+                // Parsing order from execution report
+                if (json["X"] == "NEW")
+                {
+                    order.order_id = std::stoull((std::string)json["c"]);
+                    order.status = Order::Status::NEW;
+                }
+                else if (json["X"] == "FILLED")
+                {
+                    order.order_id = std::stoull((std::string)json["c"]);
+                    order.status = Order::Status::FILLED;
+                    order.filled_quantity = std::stod((std::string)json["l"]);
+                    order.filled_price = std::stod((std::string)json["L"]);
+                    order.commission_amount = std::stod((std::string)json["n"]);
+                    order.commission_asset = (std::string)json["N"];
+                }
+                else if (json["X"] == "PARTIALLY_FILLED")
+                {
+                    order.order_id = std::stoull((std::string)json["c"]);
+                    order.status = Order::Status::PARTIALLY_FILLED;
+                    order.filled_quantity = std::stod((std::string)json["l"]);
+                    order.filled_price = std::stod((std::string)json["L"]);
+                    order.commission_amount = std::stod((std::string)json["n"]);
+                    order.commission_asset = (std::string)json["N"];
+                }
+                else if (json["X"] == "CANCELED")
+                {
+                    order.order_id = std::stoull((std::string)json["C"]);
+                    order.status = Order::Status::CANCELED;
+                }
+
+                // ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
+                OrderManager::instance().update_order(order);
             }
 
-            // ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
-            OrderManager::instance().update_order(order);
-        }
-    });
-
-    m_websocket->on_close([this](websocket::close_code close_code)
-    {
-        ADD_LOG("BinanceQuoterSpot on_close, close_code = " << close_code);
-
-        // Unexpected close, need to re-start
-        if (close_code == websocket::close_code::internal_error)
+            co_return;
+        },
+        // on_disconnect
+        [this]() -> TaskVoid
         {
             // Delete current schedule task to re-active m_listen_key
             this->del_timer_keep_alive_listen_key();
 
             // Re-start
-            ADD_LOG("BinanceFutures - re-starting");
+            ADD_LOG("BinanceQuoterSpot - disconnect, re-starting");
             this->init_websocket();
-        }
-    });
 
-    m_websocket->run();
+            co_return;
+        },
+        // on_close
+        []() -> TaskVoid
+        {
+            ADD_LOG("BinanceQuoterSpot close");
+            co_return;
+        }
+    );
+
+    m_websocket->connect(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
 }
 
 Task<std::string> BinanceQuoterSpot::get_listen_key()
