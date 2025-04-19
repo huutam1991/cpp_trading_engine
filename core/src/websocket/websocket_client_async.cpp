@@ -17,7 +17,7 @@ void WebsocketClientAsync::send(const std::string& msg)
         if (auto self = w.lock())
         {
             bool ready_to_write = self->m_write_queue.empty();
-            self->m_write_queue.push_back(std::move(msg));
+            self->m_write_queue.push_back(msg);
 
             if (ready_to_write)
             {

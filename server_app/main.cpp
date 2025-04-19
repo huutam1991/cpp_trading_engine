@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     timer1.async_wait([client](auto) {
 
         Json params;
-        params[0] = "btcusdt@depth5@1000ms";
+        params[0] = "btcusdt@depth5@100ms";
 
         Json subcribe;
         subcribe["method"] = "SUBSCRIBE";
