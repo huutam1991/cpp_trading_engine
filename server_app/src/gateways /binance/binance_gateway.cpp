@@ -122,9 +122,34 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
     {
         open_orders.for_each([&res](Json& order)
         {
-            OrderId order_id = std::stoull((std::string)order["clientOrderId"]);
-            res.insert(order_id);
+            if (order.has_field("clientOrderId"))
+            {
+                // Method to check if a string contains all of digits
+                // (Some orders placed manually using Iphone has [clientOrderId] like this: "ios_47d0a66fc34f421d8f56e4d4048bc8d4")
+                // (Which cause error when force cast to std::stoull)
+                auto is_all_digit = [](std::string& str)
+                {
+                    for (char c : str)
+                    {
+                        if (!std::isdigit(static_cast<unsigned char>(c)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                };
+
+                std::string client_order_id = order["clientOrderId"];
+
+                if (is_all_digit(client_order_id))
+                {
+                    OrderId order_id = std::stoull(client_order_id);
+                    res.insert(order_id);
+                }
+            }
         });
+
     }
 
     co_return res;
