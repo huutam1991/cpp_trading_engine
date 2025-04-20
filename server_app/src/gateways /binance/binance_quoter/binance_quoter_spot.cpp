@@ -105,7 +105,6 @@ void BinanceQuoterSpot::init_websocket()
                 // ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
 
                 // Only update order if [order.order_id] != 0
-                ADD_LOG("Tam log, order_id = " << order.order_id);
                 if (order.order_id != 0)
                 {
                     OrderManager::instance().update_order(order);

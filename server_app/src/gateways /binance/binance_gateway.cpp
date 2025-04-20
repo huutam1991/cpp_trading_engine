@@ -127,8 +127,6 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
             {
                 OrderId order_id = AppUtils::instance().parse_order_id(order["clientOrderId"]);
 
-                ADD_LOG("Tam log, order_id = " << order_id);
-
                 if (order_id != 0)
                 {
                     res.insert(order_id);
