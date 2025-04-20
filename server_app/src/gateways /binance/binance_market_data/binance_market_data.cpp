@@ -16,7 +16,7 @@ BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& 
 BinanceMarketData::~BinanceMarketData()
 {
     // del_timer_to_check_websocket_stream_is_stop();
-    ADD_LOG("~BinanceMarketData, " << m_symbol);
+    ADD_LOG("~BinanceMarketData");
 }
 
 void BinanceMarketData::start()
@@ -66,7 +66,7 @@ void BinanceMarketData::start()
                 // ADD_LOG("Stream depth: " << depth);
                 if (m_on_callback != nullptr)
                 {
-                    m_on_callback(m_symbol, depth);
+                    m_on_callback("BTCUSDT", depth);
                 }
             }
             else
@@ -111,9 +111,9 @@ void BinanceMarketData::update_url_and_port(const std::string& url, const std::s
     m_port = port;
 }
 
-void BinanceMarketData::subscribe_symbol(const std::string& symbol, std::function<void(const std::string& symbol, Json& payload)> call_back)
+void BinanceMarketData::subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back)
 {
-    m_symbol = symbol;
+    m_symbols = std::move(symbols);
     m_on_callback = std::move(call_back);
 }
 
@@ -121,10 +121,12 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
 {
     Json order_book = Json::parse(data);
 
+    ADD_LOG(order_book);
+
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {
         // symbol
-        depth["s"] = m_symbol;
+        depth["s"] = "m_symbol";
         // event name
         depth["e"] = "depthUpdate";
 

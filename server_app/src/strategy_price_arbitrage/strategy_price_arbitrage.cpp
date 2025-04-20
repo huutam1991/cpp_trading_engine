@@ -78,7 +78,7 @@ void StrategyPriceArbitrage::init()
             m_has_data_update.set_value(true);
         }
     });
-    m_gateway->subscribe_symbol(m_config.symbol_1);
+    m_gateway->subscribe_symbol({m_config.symbol_1, m_config.symbol_2});
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)

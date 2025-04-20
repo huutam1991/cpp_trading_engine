@@ -29,7 +29,7 @@ public:
     void cancel(Order order);
     Task<Order> place(Order order, Order::Status wait_status = Order::Status::FILLED);
 
-    virtual void subscribe_symbol(const std::string& symbol) = 0;
+    virtual void subscribe_symbol(std::vector<std::string> symbols) = 0;
 
     // Util methods
     virtual Task<Json> get_balances() = 0;

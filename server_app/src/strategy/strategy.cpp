@@ -93,7 +93,7 @@ void Strategy::init()
             m_has_data_update.set_value(true);
         }
     });
-    m_gateway->subscribe_symbol(m_symbol);
+    m_gateway->subscribe_symbol({m_symbol});
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)

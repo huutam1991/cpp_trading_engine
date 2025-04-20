@@ -13,7 +13,7 @@ public:
 
     void update_url_and_port(const std::string& url, const std::string& port);
     virtual void start();
-    void subscribe_symbol(const std::string& symbol, std::function<void(const std::string& symbol, Json& payload)> call_back);
+    void subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back);
 
 protected:
     virtual bool standardize_data(const std::string& buffer, Json& data);
@@ -21,7 +21,7 @@ protected:
 private:
     std::string m_url;
     std::string m_port;
-    std::string m_symbol;
+    std::vector<std::string> m_symbols;
 
     EventBase* m_event_base = nullptr;
 

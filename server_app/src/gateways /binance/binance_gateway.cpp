@@ -85,10 +85,10 @@ std::string BinanceGateway::round_string_number(const std::string& str_number, s
     return str_number;
 }
 
-void BinanceGateway::subscribe_symbol(const std::string& symbol)
+void BinanceGateway::subscribe_symbol(std::vector<std::string> symbols)
 {
     // Spot
-    m_market_data_spot.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)
+    m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
     {
         this->on_depth_update(symbol, payload);
     });
