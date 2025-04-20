@@ -121,7 +121,7 @@ void StrategyPriceArbitrage::on_config_change()
 
 void StrategyPriceArbitrage::run()
 {
-    StrategyPriceArbitrageState::set_state_status("START");
+    StrategyPriceArbitrageState::set_state_status("RUN");
 }
 
 void StrategyPriceArbitrage::stop()
@@ -181,7 +181,6 @@ TaskVoid StrategyPriceArbitrage::update()
 
     }
 }
-
 
 Future<bool> StrategyPriceArbitrage::wait_new_data_update()
 {

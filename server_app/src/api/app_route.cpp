@@ -15,6 +15,8 @@
 // Strategy
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <api_handler/api_handler_strategy/api_handler_strategy_current_info.h>
+#include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_config.h>
+#include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_current_info.h>
 
 #include <gateways/gateway_manager.h>
 #include <strategy/strategy.h>
@@ -388,5 +390,23 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/strategy_current_info")
     {
         return APIHandlerStrategyCurrentInfo(request).handle();
+    };
+
+    // Update strategy's config
+    ADD_ROUTE(RequestMethod::POST, "/strategy_price_arbitrage_config")
+    {
+        return APIHandlerStrategyPAConfig(request).handle();
+    };
+
+    // Get strategy's config
+    ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_config")
+    {
+        return APIHandlerStrategyPAConfig(request).handle();
+    };
+
+    // Update strategy's config
+    ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_current_info")
+    {
+        return APIHandlerStrategyPACurrentInfo(request).handle();
     };
 }
