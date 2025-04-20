@@ -23,8 +23,9 @@ void BinanceMarketData::start()
 {
     if (m_websocket != nullptr)
     {
-        m_websocket->close();
+        auto websocket_ptr = m_websocket.get();
         m_websocket = nullptr;
+        websocket_ptr->close();
 
         return;
     }
