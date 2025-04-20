@@ -24,6 +24,8 @@ private:
 
     void remove_open_order_id(OrderId order_id);
     Order get_limit_buy_spot_order_by_price(double price);
+    Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
+    Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
 };
 
 #endif //STRATEGY_PA_STATE_RUN_H

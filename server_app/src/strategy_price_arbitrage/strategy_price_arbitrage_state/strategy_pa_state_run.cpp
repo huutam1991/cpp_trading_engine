@@ -1,4 +1,5 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
+#include <measure_time.h>
 
 #define PRICE_DELTA 5
 #define TOO_LOW_PRICE_DELTA 220
@@ -32,9 +33,26 @@ void StrategyPriceArbitrageStateRun::remove_open_order_id(OrderId order_id)
 
 Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double current_price)
 {
-    std::string symbol = m_config.symbol_1;
+    // MeasureTime t("get_limit_buy_spot_order_by_price");
+
     double price = current_price - m_config.buy_at_lower_price;
     double quantity = m_config.buy_volumn / price;
+    double round_up_quantity = m_gateway->round_up_quantity("spot", m_config.symbol_1, quantity);
+
+    return Order(
+        OrderManager::instance().generate_order_id(),
+        Order::ExchangeType::SPOT,
+        Order::Status::NOT_AVAILABLE,
+        m_config.symbol_1,
+        Order::Side::BUY,
+        Order::OrderType::LIMIT,
+        price,
+        round_up_quantity
+    );
+}
+
+Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
+{
     double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
 
     return Order(
@@ -43,8 +61,24 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double c
         Order::Status::NOT_AVAILABLE,
         symbol,
         Order::Side::BUY,
-        Order::OrderType::LIMIT,
-        price,
+        Order::OrderType::MARKET,
+        0.0, // since type is MARKET, no need to specify price
+        round_up_quantity
+    );
+}
+
+Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
+{
+    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
+
+    return Order(
+        OrderManager::instance().generate_order_id(),
+        Order::ExchangeType::SPOT,
+        Order::Status::NOT_AVAILABLE,
+        symbol,
+        Order::Side::SELL,
+        Order::OrderType::MARKET,
+        0.0, // since type is MARKET, no need to specify price
         round_up_quantity
     );
 }
@@ -81,7 +115,15 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     // FILLED - update data to order's checkpoint
     else if (order.status == Order::Status::FILLED)
     {
-        // TBD
+        // Buy symbol 2 from symbol 1
+        double symbol_2_quantity = order.output_quantity;
+        Order symbol_2_order = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, symbol_2_quantity);
+        symbol_2_order = co_await m_gateway->place(symbol_2_order, Order::Status::FILLED);
+
+        // Sell symbol 3 from symbol 2
+        double symbol_3_quantity = symbol_2_order.output_quantity;
+        Order symbol_3_order = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, symbol_3_quantity);
+        symbol_3_order = co_await m_gateway->place(symbol_3_order, Order::Status::FILLED);
     }
     // CANCELED - update [order_id] = 0 for order's checkpoint
     else if (order.status == Order::Status::CANCELED)
