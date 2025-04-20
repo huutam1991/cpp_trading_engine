@@ -21,6 +21,14 @@ BinanceMarketData::~BinanceMarketData()
 
 void BinanceMarketData::start()
 {
+    if (m_websocket != nullptr)
+    {
+        m_websocket->close();
+        m_websocket = nullptr;
+
+        return;
+    }
+
     m_websocket = std::make_shared<WebsocketClientAsync>(m_event_base);
 
     m_websocket->set_callbacks(
@@ -105,7 +113,7 @@ void BinanceMarketData::update_url_and_port(const std::string& url, const std::s
 void BinanceMarketData::subscribe_symbol(const std::string& symbol, std::function<void(const std::string& symbol, Json& payload)> call_back)
 {
     m_symbol = symbol;
-    m_on_callback = call_back;
+    m_on_callback = std::move(call_back);
 }
 
 bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)

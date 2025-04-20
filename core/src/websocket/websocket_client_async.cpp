@@ -14,7 +14,7 @@ WebsocketClientAsync::WebsocketClientAsync(EventBase* event_base) :
 
 WebsocketClientAsync::~WebsocketClientAsync()
 {
-    close();
+    ADD_LOG("Close WebsocketClientAsync");
 }
 
 void WebsocketClientAsync::set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close)

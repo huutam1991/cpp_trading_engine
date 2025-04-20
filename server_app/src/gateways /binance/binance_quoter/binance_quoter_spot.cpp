@@ -34,6 +34,14 @@ std::string& BinanceQuoterSpot::get_port()
 
 void BinanceQuoterSpot::init_websocket()
 {
+    if (m_websocket != nullptr)
+    {
+        m_websocket->close();
+        m_websocket = nullptr;
+
+        return;
+    }
+
     // Event base: GATEWAY
     EventBase* event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::GATEWAY);
 

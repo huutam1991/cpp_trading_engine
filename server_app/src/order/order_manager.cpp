@@ -33,7 +33,7 @@ std::vector<OrderId> OrderManager::get_open_orders()
 
 void OrderManager::register_order_update(std::function<void(Order&)> order_update_callback)
 {
-    m_order_update_callback = order_update_callback;
+    m_order_update_callback = std::move(order_update_callback);
 }
 
 void OrderManager::set_cancel_order(OrderId order_id)
