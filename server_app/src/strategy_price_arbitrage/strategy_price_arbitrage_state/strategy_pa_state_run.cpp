@@ -1,9 +1,9 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <measure_time.h>
 
-#define PRICE_DELTA 5
-#define TOO_LOW_PRICE_DELTA 220
-#define TOO_HIGH_PRICE_DELTA 190
+#define PRICE_DELTA 10
+#define TOO_LOW_PRICE_DELTA 100
+#define TOO_HIGH_PRICE_DELTA 50
 
 StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway>& gateway, StrategyPriceArbitrageConfig& config)
     : StrategyPriceArbitrageState(gateway, config)
