@@ -263,7 +263,7 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
             {
                 checkpoint["positions"]["buy_spot"] = Json {
                     {"quantity", order.output_quantity},
-                    {"volumn_in_usdt", order.output_quantity * order.filled_price}
+                    {"volumn_in_usdt", order.volumn_in_quote_currency}
                 };
             }
             // SELL - close order - update profit
@@ -271,7 +271,7 @@ TaskVoid StrategyStateMonitoring::handle_order_update(Order& order)
             {
                 // Calculate profit
                 double place_volumn_in_usdt = checkpoint["positions"]["buy_spot"]["volumn_in_usdt"];
-                double close_volumn_in_usdt = order.output_quantity;
+                double close_volumn_in_usdt = order.volumn_in_quote_currency;
                 double profit = close_volumn_in_usdt - place_volumn_in_usdt;
 
                 // Save profit to checkpoint
