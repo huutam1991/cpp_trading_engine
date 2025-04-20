@@ -194,7 +194,25 @@ Future<bool> StrategyPriceArbitrage::wait_new_data_update()
 
 Json StrategyPriceArbitrage::get_current_info()
 {
-    Json info;
+    Json info = Json::create_array();
+
+    Json orders = MongoDB::instance()
+        .set_db_and_collection("order", "order_list")
+        .find_many();
+
+    orders.for_each([&info](Json& order)
+    {
+        if (order["status"] == "FILLED")
+        {
+            order.remove_field("_id");
+            info.push_back(order);
+        }
+    });
+
+    info.sort([](Json& a, Json& b)
+    {
+        return (size_t)a["order_id"] < (size_t)b["order_id"];
+    });
 
     return info;
 }
