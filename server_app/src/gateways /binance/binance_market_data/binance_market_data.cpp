@@ -40,7 +40,7 @@ void BinanceMarketData::start()
 
             // Subcribe for depth
             size_t stream_id = get_stream_id_count();
-            std::string lower_case_symbol = m_symbol;
+            std::string lower_case_symbol = m_symbols[0];
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
