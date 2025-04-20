@@ -52,6 +52,7 @@ public:
     double filled_price = 0.0;
     double commission_amount = 0.0; // Can be either base currency or quote currency
     double output_quantity = 0.0; // Can be either base currency or quote currency
+    double volumn_in_quote_currency = 0.0; // Volumn of the order in quote currency
     std::string commission_asset = "";
     std::string output_asset = ""; // The same with commission_asset
 

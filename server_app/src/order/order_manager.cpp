@@ -154,21 +154,26 @@ TaskVoid OrderManager::handle_update_order(Order order)
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
     {
-        // Buy order's [output_quantity] is from [filled_quantity]
         if (order.side == Order::Side::BUY)
         {
+            // Buy order's [output_quantity] is from [filled_quantity]
             order.output_quantity = order.filled_quantity - order.commission_amount;
+            // Buy order's [volumn_in_quote_currency] is from [filled_quantity] * [filled_price] (without minus [commission_amount])
+            order.volumn_in_quote_currency = order.filled_quantity * order.filled_price;
         }
-        // Sell order's [output_quantity] is from [filled_quantity] * [filled_price]
         else
         {
+            // Sell order's [output_quantity] is from [filled_quantity] * [filled_price]
             order.output_quantity = order.filled_quantity * order.filled_price - order.commission_amount;
+            // Sell order's [output_quantity] is from [output_quantity]
+            order.volumn_in_quote_currency = order.output_quantity;
         }
 
         // Update order's output data
         order.filled_quantity += current_order_data.filled_quantity;
         order.commission_amount += current_order_data.commission_amount;
         order.output_quantity += current_order_data.output_quantity;
+        order.volumn_in_quote_currency += current_order_data.volumn_in_quote_currency;
 
         // If [filled_quantity] == [quantity], order's status is FILLED
         if (order.filled_quantity == order.quantity)
