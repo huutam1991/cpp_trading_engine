@@ -19,7 +19,7 @@ void StrategyPriceArbitrageStateRun::end()
     ADD_LOG("StrategyPriceArbitrageStateRun - end");
 
     // Send cancel all of placed order
-    m_gateway->cancel_all(m_config.get_symbol());
+    m_gateway->cancel_all(m_config.symbol_1);
 }
 
 void StrategyPriceArbitrageStateRun::remove_open_order_id(OrderId order_id)
@@ -32,7 +32,7 @@ void StrategyPriceArbitrageStateRun::remove_open_order_id(OrderId order_id)
 
 Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double current_price)
 {
-    std::string symbol = m_config.get_symbol();
+    std::string symbol = m_config.symbol_1;
     double price = current_price - m_config.buy_at_lower_price;
     double quantity = m_config.buy_volumn / price;
     double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);

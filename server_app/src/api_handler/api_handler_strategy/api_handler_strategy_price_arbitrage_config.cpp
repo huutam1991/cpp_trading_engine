@@ -7,9 +7,9 @@ APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : A
     m_need_check_authentication = true;
 
     add_mandatory_body_params({
-        "base_currency_1",
-        "base_currency_2",
-        "quote_currency",
+        "symbol_1",
+        "symbol_2",
+        "symbol_3",
         "buy_volumn",
         "buy_at_lower_price",
         "is_running"
@@ -38,7 +38,9 @@ HttpResponse APIHandlerStrategyPAConfig::child_handle()
     else
     {
         Json config = m_request->get_body_json();
-        std::string symbol = (std::string)config["base_currency_1"] + (std::string)config["quote_currency"];
+        std::string symbol_1 = config["symbol_1"];
+        std::string symbol_2 = config["symbol_2"];
+        std::string symbol_3 = config["symbol_3"];
         double buy_volumn = config["buy_volumn"];
         double buy_at_lower_price = config["buy_at_lower_price"];
 
@@ -57,7 +59,7 @@ HttpResponse APIHandlerStrategyPAConfig::child_handle()
 
         // Response
         response["data"] = config;
-        response["msg"] = "update config for strategy [price arbitrage] [" + symbol + "_" + std::to_string((size_t)buy_volumn) + "_" + std::to_string((size_t)buy_at_lower_price) + "] successfully";
+        response["msg"] = "update config for strategy [price arbitrage] [" + symbol_1 + "-" + symbol_2 + "-" + symbol_3 + "] successfully";
         response["status_code"] = OK_200;
         response["error"] = false;
     }

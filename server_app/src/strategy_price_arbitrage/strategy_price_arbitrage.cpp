@@ -35,30 +35,30 @@ void StrategyPriceArbitrage::init()
     DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "price_arbitrage_config");
 
     // If there's no config data available, add default config
-    if (config.get_data().has_field("base_currency_1") == false)
+    if (config.get_data().has_field("symbol_1") == false)
     {
         config = {
-            {"base_currency_1", "BTC"},
-            {"base_currency_2", "ETH"},
-            {"quote_currency", "USDT"},
+            {"symbol_1", "BTCUSDT"},
+            {"symbol_2", "ETHBTC"},
+            {"symbol_3", "ETHUSDT"},
             {"buy_volumn", (long)300},
             {"buy_at_lower_price", (long)200},
             {"is_running", false}
         };
     }
 
-    m_config.base_currency_1 = std::string(config["base_currency_1"]);
-    m_config.base_currency_2 = std::string(config["base_currency_2"]);
-    m_config.quote_currency = std::string(config["quote_currency"]);
+    m_config.symbol_1 = std::string(config["symbol_1"]);
+    m_config.symbol_2 = std::string(config["symbol_2"]);
+    m_config.symbol_3 = std::string(config["symbol_3"]);
     m_config.buy_volumn = (double)config["buy_volumn"];
     m_config.buy_at_lower_price = (double)config["buy_at_lower_price"];
     m_config.is_running = (bool)config["is_running"];
 
     // Log config
     ADD_LOG("StrategyPriceArbitrage config:");
-    ADD_LOG("- base_currency_1: " << m_config.base_currency_1);
-    ADD_LOG("- base_currency_2: " << m_config.base_currency_2);
-    ADD_LOG("- quote_currency: " << m_config.quote_currency);
+    ADD_LOG("- symbol_1: " << m_config.symbol_1);
+    ADD_LOG("- symbol_2: " << m_config.symbol_2);
+    ADD_LOG("- symbol_3: " << m_config.symbol_3);
     ADD_LOG("- buy_volumn: " << m_config.buy_volumn);
     ADD_LOG("- buy_at_lower_price: " << m_config.buy_at_lower_price);
     ADD_LOG("- is_running: " << m_config.is_running);
@@ -78,7 +78,7 @@ void StrategyPriceArbitrage::init()
             m_has_data_update.set_value(true);
         }
     });
-    m_gateway->subscribe_symbol(m_config.get_symbol());
+    m_gateway->subscribe_symbol(m_config.symbol_1);
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)
@@ -92,7 +92,7 @@ void StrategyPriceArbitrage::init()
     });
 
     //
-    m_gateway->check_remove_canceled_orders(m_config.get_symbol());
+    m_gateway->check_remove_canceled_orders(m_config.symbol_1);
 
     if (m_is_run_update == false)
     {
