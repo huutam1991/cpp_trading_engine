@@ -63,7 +63,7 @@ void OrderManager::add_order_future_value(Future<Order>::FutureValue value, Orde
 
 void OrderManager::check_set_future_value_for_order(OrderId order_id, Order::Status status)
 {
-    MeasureTime t("check_set_future_value_for_order");
+    // MeasureTime t("check_set_future_value_for_order");
     Order& order = get_order_by_id(order_id);
 
     // If order's status is not the expected one, do nothing
@@ -112,7 +112,7 @@ Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Statu
 
 Order& OrderManager::get_order_by_id(OrderId order_id)
 {
-    MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
+    // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
         m_order_list.insert(std::make_pair(order_id, Order()));
@@ -123,7 +123,7 @@ Order& OrderManager::get_order_by_id(OrderId order_id)
 
 TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
 {
-    MeasureTime a("handle_add_order_future_value", MeasureUnit::NANOSECOND);
+    // MeasureTime a("handle_add_order_future_value", MeasureUnit::NANOSECOND);
     auto key = std::make_pair(order_id, status);
     if (m_order_future_value.find(key) == m_order_future_value.end())
     {
@@ -149,7 +149,7 @@ TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue 
 
 TaskVoid OrderManager::handle_update_order(Order order)
 {
-    MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
+    // MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
     Order& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)

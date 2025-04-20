@@ -29,7 +29,7 @@ BinanceGateway::BinanceGateway(const std::string& key) :
 
 Json BinanceGateway::get_spot_symbols_info()
 {
-    ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\",\"BTCUSDC\",\"ETHUSDC\"]", RequestMethod::GET);
+    ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\",\"BTCUSDC\",\"ETHUSDC\",\"ETHBTC\"]", RequestMethod::GET);
 
     Json exchange_info = Json::parse(binance_request.send_request());
     Json symbols_info;

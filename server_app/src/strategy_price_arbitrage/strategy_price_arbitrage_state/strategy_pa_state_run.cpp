@@ -33,7 +33,7 @@ void StrategyPriceArbitrageStateRun::remove_open_order_id(OrderId order_id)
 
 Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double current_price)
 {
-    // MeasureTime t("get_limit_buy_spot_order_by_price");
+    // // MeasureTime t("get_limit_buy_spot_order_by_price");
 
     double price = current_price - m_config.buy_at_lower_price;
     double quantity = m_config.buy_volumn / price;
@@ -123,15 +123,20 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     // FILLED - update data to order's checkpoint
     else if (order.status == Order::Status::FILLED)
     {
-        // Buy symbol 2 from symbol 1
-        double symbol_2_quantity = order.output_quantity;
-        Order symbol_2_order = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, symbol_2_quantity);
-        symbol_2_order = co_await m_gateway->place(symbol_2_order, Order::Status::FILLED);
+        if (order.type == Order::OrderType::LIMIT)
+        {
+            // Buy symbol 2 from symbol 1
+            double symbol_2_quantity = order.output_quantity / m_symbol_2_price;
+            Order symbol_2_order = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, symbol_2_quantity);
+            symbol_2_order = co_await m_gateway->place(symbol_2_order, Order::Status::FILLED);
 
-        // Sell symbol 3 from symbol 2
-        double symbol_3_quantity = symbol_2_order.output_quantity;
-        Order symbol_3_order = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, symbol_3_quantity);
-        symbol_3_order = co_await m_gateway->place(symbol_3_order, Order::Status::FILLED);
+            // Sell symbol 3 from symbol 2
+            double symbol_3_quantity = symbol_2_order.output_quantity;
+            Order symbol_3_order = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, symbol_3_quantity);
+            symbol_3_order = co_await m_gateway->place(symbol_3_order, Order::Status::FILLED);
+
+            remove_open_order_id(order.order_id);
+        }
     }
     // CANCELED - update [order_id] = 0 for order's checkpoint
     else if (order.status == Order::Status::CANCELED)
@@ -144,8 +149,6 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
 
 TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
 {
-    ADD_LOG("StrategyPriceArbitrageStateRun - run");
-
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))
     {
