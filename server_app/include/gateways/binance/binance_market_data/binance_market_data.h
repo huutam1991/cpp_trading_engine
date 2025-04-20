@@ -25,7 +25,7 @@ private:
 
     EventBase* m_event_base = nullptr;
 
-    std::shared_ptr<WebsocketClientAsync> m_websocket;
+    std::vector<std::shared_ptr<WebsocketClientAsync>> m_websockets;
     std::function<void(const std::string& symbol, Json& payload)> m_on_callback = nullptr;
 
     size_t get_stream_id_count();

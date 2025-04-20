@@ -21,82 +21,90 @@ BinanceMarketData::~BinanceMarketData()
 
 void BinanceMarketData::start()
 {
-    if (m_websocket != nullptr)
+    for (auto& websocket : m_websockets)
     {
-        auto websocket_ptr = m_websocket.get();
-        m_websocket = nullptr;
-        websocket_ptr->close();
+        if (websocket != nullptr)
+        {
+            auto websocket_ptr = websocket.get();
+            websocket = nullptr;
+            websocket_ptr->close();
 
-        return;
+            return;
+        }
     }
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(m_event_base);
+    m_websockets.resize(0);
 
-    m_websocket->set_callbacks(
-        // on_connect
-        [this]() -> TaskVoid
-        {
-            ADD_LOG("Binance websocket depth connected");
+    for (size_t i = 0; i < m_symbols.size(); i++)
+    {
+        m_websockets.push_back(std::make_shared<WebsocketClientAsync>(m_event_base));
 
-            // Subcribe for depth
-            size_t stream_id = get_stream_id_count();
-            std::string lower_case_symbol = m_symbols[0];
-            STRING_LOWER_CASE(lower_case_symbol);
-
-            Json params;
-            params[0] = lower_case_symbol + "@depth5@1000ms";
-
-            Json subcribe;
-            subcribe["method"] = "SUBSCRIBE";
-            subcribe["params"] = params;
-            subcribe["id"] = stream_id;
-
-            ADD_LOG("subcribe = " << subcribe);
-
-            m_websocket->send(subcribe.get_string_value());
-
-            co_return;
-        },
-        // on_message
-        [this](std::string buffer) -> TaskVoid
-        {
-            Json depth = Json();
-            if (this->standardize_data(buffer, depth))
+        m_websockets[i]->set_callbacks(
+            // on_connect
+            [this, i]() -> TaskVoid
             {
-                // ADD_LOG("Stream depth: " << depth);
-                if (m_on_callback != nullptr)
+                ADD_LOG("Binance websocket depth connected");
+
+                // Subcribe for depth
+                size_t stream_id = get_stream_id_count();
+                std::string lower_case_symbol = m_symbols[i];
+                STRING_LOWER_CASE(lower_case_symbol);
+
+                Json params;
+                params[0] = lower_case_symbol + "@depth5@1000ms";
+
+                Json subcribe;
+                subcribe["method"] = "SUBSCRIBE";
+                subcribe["params"] = params;
+                subcribe["id"] = stream_id;
+
+                ADD_LOG("subcribe = " << subcribe);
+
+                m_websockets[i]->send(subcribe.get_string_value());
+
+                co_return;
+            },
+            // on_message
+            [this, symbol = m_symbols[i]](std::string buffer) -> TaskVoid
+            {
+                Json depth = Json();
+                if (this->standardize_data(buffer, depth))
                 {
-                    m_on_callback("BTCUSDT", depth);
+                    // ADD_LOG("Stream depth: " << depth);
+                    if (m_on_callback != nullptr)
+                    {
+                        m_on_callback(symbol, depth);
+                    }
                 }
-            }
-            else
+                else
+                {
+                    // Save this none json data for checking error
+                    MongoDB::instance()
+                        .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
+                        .insert_one(Json::parse(buffer));
+                }
+
+                co_return;
+            },
+            // on_disconnect
+            [this]() -> TaskVoid
             {
-                // Save this none json data for checking error
-                MongoDB::instance()
-                    .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                    .insert_one(Json::parse(buffer));
+                // Re-start
+                ADD_LOG("Disconnect, re-start BinanceMarketData");
+                this->start();
+
+                co_return;
+            },
+            // on_close
+            []() -> TaskVoid
+            {
+                ADD_LOG("BinanceMarketData close");
+                co_return;
             }
+        );
 
-            co_return;
-        },
-        // on_disconnect
-        [this]() -> TaskVoid
-        {
-            // Re-start
-            ADD_LOG("Disconnect, re-start BinanceMarketData");
-            this->start();
-
-            co_return;
-        },
-        // on_close
-        []() -> TaskVoid
-        {
-            ADD_LOG("BinanceMarketData close");
-            co_return;
-        }
-    );
-
-    m_websocket->connect(m_url, m_port, "/ws");
+        m_websockets[i]->connect(m_url, m_port, "/ws");
+    }
 }
 
 size_t BinanceMarketData::get_stream_id_count()
