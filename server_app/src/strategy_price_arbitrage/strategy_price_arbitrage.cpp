@@ -69,7 +69,7 @@ void StrategyPriceArbitrage::init()
     {
         std::unique_lock lock(m_strategy_mutex);
 
-        ADD_LOG("symbol: " << symbol << ", price: " << price);
+        // ADD_LOG("symbol: " << symbol << ", price: " << price);
 
         // Can miss some price update
         if (m_has_data_update.is_value_set() == false)
