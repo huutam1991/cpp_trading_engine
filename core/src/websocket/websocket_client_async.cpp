@@ -95,8 +95,11 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
             ec == boost::asio::error::timed_out                   // Timeout
         )
         {
-            // Invoke [m_on_disconnect]
-            invoke_callback(m_on_disconnect);
+            if (m_intend_close == false)
+            {
+                // Invoke [m_on_disconnect]
+                invoke_callback(m_on_disconnect);
+            }
         }
 
         return;
@@ -160,6 +163,7 @@ void WebsocketClientAsync::on_write(beast::error_code ec, std::size_t bytes_tran
 
 void WebsocketClientAsync::close()
 {
+    m_intend_close = true;
     m_ws.async_close(websocket::close_code::normal,
         beast::bind_front_handler(&WebsocketClientAsync::on_close, shared_from_this()));
 }

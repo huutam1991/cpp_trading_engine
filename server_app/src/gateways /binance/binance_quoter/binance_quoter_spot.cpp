@@ -36,11 +36,7 @@ void BinanceQuoterSpot::init_websocket()
 {
     if (m_websocket != nullptr)
     {
-        auto websocket_ptr = m_websocket.get();
-        m_websocket = nullptr;
-        websocket_ptr->close();
-
-        return;
+        m_websocket->close();
     }
 
     // Event base: GATEWAY

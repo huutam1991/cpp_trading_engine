@@ -49,6 +49,9 @@ private:
     // Write queue
     std::deque<std::string> m_write_queue;
 
+    // Intend close
+    bool m_intend_close = false;
+
     void on_resolve(beast::error_code ec, tcp::resolver::results_type results);
     void on_connect(beast::error_code ec, tcp::resolver::iterator);
     void on_ssl_handshake(beast::error_code ec);
