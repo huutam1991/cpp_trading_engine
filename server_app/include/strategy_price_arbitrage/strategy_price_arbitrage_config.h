@@ -11,6 +11,11 @@ struct StrategyPriceArbitrageConfig
     double buy_volumn;
     double buy_at_lower_price;
     bool is_running;
+
+    std::string get_symbol()
+    {
+        return base_currency_1 + quote_currency;
+    }
 };
 
 

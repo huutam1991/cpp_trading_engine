@@ -13,6 +13,9 @@ void StrategyPriceArbitrageStateRun::begin()
 void StrategyPriceArbitrageStateRun::end()
 {
     ADD_LOG("StrategyPriceArbitrageStateRun - end");
+
+    // Send cancel all of placed order
+    m_gateway->cancel_all(m_config.get_symbol());
 }
 
 TaskVoid StrategyPriceArbitrageStateRun::run(StrategyData data)

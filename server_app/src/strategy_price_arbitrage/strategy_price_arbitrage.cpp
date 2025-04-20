@@ -78,7 +78,7 @@ void StrategyPriceArbitrage::init()
             m_has_data_update.set_value(true);
         }
     });
-    m_gateway->subscribe_symbol(m_config.base_currency_1 + m_config.quote_currency);
+    m_gateway->subscribe_symbol(m_config.get_symbol());
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)
@@ -92,7 +92,7 @@ void StrategyPriceArbitrage::init()
     });
 
     //
-    m_gateway->check_remove_canceled_orders(m_config.base_currency_1 + m_config.quote_currency);
+    m_gateway->check_remove_canceled_orders(m_config.get_symbol());
 
     if (m_is_run_update == false)
     {
