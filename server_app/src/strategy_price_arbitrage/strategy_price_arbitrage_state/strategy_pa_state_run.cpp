@@ -83,8 +83,16 @@ Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_q
     );
 }
 
-TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(double price)
+TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
 {
+    if (price_update.symbol == m_config.symbol_2)
+    {
+        m_symbol_2_price = price_update.price;
+        co_return;
+    }
+
+    double price = price_update.price;
+
     // Place new order if current price is moving > PRICE_DELTA compare to current order's price
     if (std::abs(m_current_order.price - (price - m_config.buy_at_lower_price)) > PRICE_DELTA)
     {
@@ -134,15 +142,15 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     co_return;
 }
 
-TaskVoid StrategyPriceArbitrageStateRun::run(StrategyData data)
+TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
 {
     ADD_LOG("StrategyPriceArbitrageStateRun - run");
 
-    double price;
-    if (std::holds_alternative<double>(data))
+    PriceUpdate price_update;
+    if (std::holds_alternative<PriceUpdate>(data))
     {
-        double price = std::get<double>(data);
-        co_await handle_price_update(price);
+        price_update = std::get<PriceUpdate>(data);
+        co_await handle_price_update(price_update);
     }
     else
     {

@@ -13,12 +13,13 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StrategyData data);
+    virtual TaskVoid run(StrategyPriceArbitrageData data);
 
-    TaskVoid handle_price_update(double price);
+    TaskVoid handle_price_update(PriceUpdate price);
     TaskVoid handle_order_update(Order& order);
 
 private:
+    double m_symbol_2_price;
     Order m_current_order;
     std::unordered_map<OrderId, Order> m_current_open_orders;
 

@@ -45,7 +45,7 @@ void StrategyPriceArbitrageState::end()
     ADD_LOG("StrategyPriceArbitrageState - end");
 }
 
-TaskVoid StrategyPriceArbitrageState::run(StrategyData data)
+TaskVoid StrategyPriceArbitrageState::run(StrategyPriceArbitrageData data)
 {
     ADD_LOG("StrategyPriceArbitrageState - run");
 

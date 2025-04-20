@@ -9,7 +9,13 @@
 
 #include <strategy_price_arbitrage/strategy_price_arbitrage_config.h>
 
-using StrategyData = std::variant<double, Order>;
+struct PriceUpdate
+{
+    std::string symbol;
+    double price;
+};
+
+using StrategyPriceArbitrageData = std::variant<PriceUpdate, Order>;
 
 class StrategyPriceArbitrageState
 {
@@ -26,7 +32,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StrategyData data);
+    virtual TaskVoid run(StrategyPriceArbitrageData data);
 
 protected:
 };

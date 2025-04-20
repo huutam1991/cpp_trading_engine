@@ -15,15 +15,15 @@ void StrategyPriceArbitrageStateStop::end()
     ADD_LOG("StrategyPriceArbitrageStateStop - end");
 }
 
-TaskVoid StrategyPriceArbitrageStateStop::run(StrategyData data)
+TaskVoid StrategyPriceArbitrageStateStop::run(StrategyPriceArbitrageData data)
 {
-    double price;
-    if (std::holds_alternative<double>(data))
+    PriceUpdate price_update;
+    if (std::holds_alternative<PriceUpdate>(data))
     {
-        price = std::get<double>(data);
+        price_update = std::get<PriceUpdate>(data);
     }
 
-    ADD_LOG("StrategyPriceArbitrageStateStop - run: Do nothing, price: " << price);
+    ADD_LOG("StrategyPriceArbitrageStateStop - run: Do nothing, symbol: " << price_update.symbol << ", price: " << price_update.price);
 
     co_return;
 }

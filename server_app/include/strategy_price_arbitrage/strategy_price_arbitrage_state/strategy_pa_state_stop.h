@@ -10,7 +10,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StrategyData data);
+    virtual TaskVoid run(StrategyPriceArbitrageData data);
 };
 
 #endif //STRATEGY_PA_STATE_STOP_H

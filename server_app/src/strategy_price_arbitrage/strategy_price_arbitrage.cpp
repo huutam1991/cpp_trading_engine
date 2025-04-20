@@ -74,7 +74,7 @@ void StrategyPriceArbitrage::init()
         // Can miss some price update
         if (m_has_data_update.is_value_set() == false)
         {
-            m_state_data_queue.push(price);
+            m_state_data_queue.push(PriceUpdate{std::move(symbol), price});
 
             // Inform has data update
             m_has_data_update.set_value(true);
@@ -149,7 +149,7 @@ TaskVoid StrategyPriceArbitrage::update()
 
         while (m_state_data_queue.size() > 0)
         {
-            StrategyData data;
+            StrategyPriceArbitrageData data;
             {
                 std::unique_lock lock(m_strategy_mutex);
 
