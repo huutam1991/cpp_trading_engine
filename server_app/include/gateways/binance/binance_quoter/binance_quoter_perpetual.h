@@ -1,7 +1,7 @@
 #ifndef BINANCE_QUOTER_PERPETUAL_H
 #define BINANCE_QUOTER_PERPETUAL_H
 
-#include <websocket/websocket_client.h>
+#include <websocket/websocket_client_async.h>
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 
 class BinanceQuoterPerpetual : public BinanceQuoter
@@ -18,7 +18,7 @@ private:
     void update_order_result(const Json& order_result);
 
     // Websocket to get order data
-    std::shared_ptr<WebsocketClient> m_websocket;
+    std::shared_ptr<WebsocketClientAsync> m_websocket;
     std::string m_listen_key;
     size_t m_schedule_task_id = 0;
     void init_websocket();

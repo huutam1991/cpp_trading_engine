@@ -31,58 +31,69 @@ std::string& BinanceQuoterPerpetual::get_port()
 
 void BinanceQuoterPerpetual::init_websocket()
 {
-    m_listen_key = this->get_listen_key();
+    // Event base: GATEWAY
+    EventBase* event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::GATEWAY);
 
+    m_listen_key = this->get_listen_key();
     // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
     add_timer_keep_alive_listen_key(1800000);
 
-    m_websocket = std::make_shared<WebsocketClient>(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
+    m_websocket = std::make_shared<WebsocketClientAsync>(event_base);
 
-    m_websocket->on_connect([this](WebsocketClientHandle& ws)
-    {
-        ADD_LOG("BinanceQuoterPerpetual websocket connected");
-    });
-
-    m_websocket->on_message([this](const std::string& buffer, WebsocketClientHandle& ws)
-    {
-        Json json = Json::parse(buffer);
-
-        if (json["e"] == "ORDER_TRADE_UPDATE")
+    m_websocket->set_callbacks(
+        // on_connect
+        [this]() -> TaskVoid
         {
-            Json order = json["o"];
-            if (order["X"] == "FILLED")
+            ADD_LOG("BinanceQuoterPerpetual websocket connected");
+
+            co_return;
+        },
+        // on_message
+        [this](std::string buffer) -> TaskVoid
+        {
+            Json json = Json::parse(buffer);
+
+            if (json["e"] == "ORDER_TRADE_UPDATE")
             {
-                Json data = {
-                    {"status", "FILLED"},
-                    {"symbol", order["s"]},
-                    {"price", std::stod(std::string(order["ap"]))},
-                    {"quantity", std::stod(std::string(order["z"]))}
-                };
+                Json order = json["o"];
+                if (order["X"] == "FILLED")
+                {
+                    Json data = {
+                        {"status", "FILLED"},
+                        {"symbol", order["s"]},
+                        {"price", std::stod(std::string(order["ap"]))},
+                        {"quantity", std::stod(std::string(order["z"]))}
+                    };
 
-                ADD_LOG("BinanceQuoterPerpetual Filled: " << data);
+                    ADD_LOG("BinanceQuoterPerpetual Filled: " << data);
 
-                update_order_result(data);
+                    update_order_result(data);
+                }
             }
-        }
-    });
 
-    m_websocket->on_close([this](websocket::close_code close_code)
-    {
-        ADD_LOG("BinanceQuoterPerpetual on_close, close_code = " << close_code);
-
-        // Unexpected close, need to re-start
-        if (close_code == websocket::close_code::internal_error)
+            co_return;
+        },
+        // on_disconnect
+        [this]() -> TaskVoid
         {
             // Delete current schedule task to re-active m_listen_key
             this->del_timer_keep_alive_listen_key();
 
             // Re-start
-            ADD_LOG("BinanceFutures - re-starting");
+            ADD_LOG("BinanceQuoterPerpetual - disconnect, re-starting");
             this->init_websocket();
-        }
-    });
 
-    m_websocket->run();
+            co_return;
+        },
+        // on_close
+        []() -> TaskVoid
+        {
+            ADD_LOG("BinanceQuoterPerpetual close");
+            co_return;
+        }
+    );
+
+    m_websocket->connect(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
 }
 
 std::string BinanceQuoterPerpetual::get_listen_key()
