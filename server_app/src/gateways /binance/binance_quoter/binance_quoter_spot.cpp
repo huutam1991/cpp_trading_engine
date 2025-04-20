@@ -62,7 +62,7 @@ void BinanceQuoterSpot::init_websocket()
             {
                 Order order
                 {
-                    1,                                   // Order Id
+                    0,                                   // Order Id
                     Order::ExchangeType::SPOT,           // Exchange Type
                     Order::Status::NEW,                  // Status
                     json["s"],                           // Symbol
@@ -75,12 +75,12 @@ void BinanceQuoterSpot::init_websocket()
                 // Parsing order from execution report
                 if (json["X"] == "NEW")
                 {
-                    order.order_id = std::stoull((std::string)json["c"]);
+                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
                     order.status = Order::Status::NEW;
                 }
                 else if (json["X"] == "FILLED")
                 {
-                    order.order_id = std::stoull((std::string)json["c"]);
+                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
                     order.status = Order::Status::FILLED;
                     order.filled_quantity = std::stod((std::string)json["l"]);
                     order.filled_price = std::stod((std::string)json["L"]);
@@ -89,7 +89,7 @@ void BinanceQuoterSpot::init_websocket()
                 }
                 else if (json["X"] == "PARTIALLY_FILLED")
                 {
-                    order.order_id = std::stoull((std::string)json["c"]);
+                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
                     order.status = Order::Status::PARTIALLY_FILLED;
                     order.filled_quantity = std::stod((std::string)json["l"]);
                     order.filled_price = std::stod((std::string)json["L"]);
@@ -98,12 +98,18 @@ void BinanceQuoterSpot::init_websocket()
                 }
                 else if (json["X"] == "CANCELED")
                 {
-                    order.order_id = std::stoull((std::string)json["C"]);
+                    order.order_id = AppUtils::instance().parse_order_id(json["C"]);
                     order.status = Order::Status::CANCELED;
                 }
 
                 // ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
-                OrderManager::instance().update_order(order);
+
+                // Only update order if [order.order_id] != 0
+                ADD_LOG("Tam log, order_id = " << order.order_id);
+                if (order.order_id != 0)
+                {
+                    OrderManager::instance().update_order(order);
+                }
             }
 
             co_return;

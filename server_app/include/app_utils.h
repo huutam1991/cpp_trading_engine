@@ -8,6 +8,8 @@
 #include <mongo_db/mongo_db.h>
 #include <coroutine/event_base_manager.h>
 
+#include <order/order.h>
+
 class AppUtils
 {
     Singleton(AppUtils);
@@ -20,6 +22,8 @@ private:
 
 public:
     bool is_long_number(const std::string& number_str);
+    bool is_all_digit(const std::string& str);
+    OrderId parse_order_id(const std::string& str);
 
     ThreadPool* get_app_pool();
     EventBase* get_app_event_base();

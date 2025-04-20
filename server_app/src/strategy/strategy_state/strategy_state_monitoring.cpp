@@ -96,7 +96,6 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
     // Get loop through neighbor checkpoints
     for (int i = 0; i <= MAX_NEIGHBOR_CHECKPOINT; i++)
     {
-        double higher_price = mark_price + move_price * i;
         double lower_price = mark_price - move_price * i;
 
         DataModel checkpoint = m_checkpoints->get_checkpoint_by_price(lower_price);

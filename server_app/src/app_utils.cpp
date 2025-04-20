@@ -49,3 +49,29 @@ bool AppUtils::is_long_number(const std::string& number_str)
         return false;
     }
 }
+
+// Method to check if a string contains all of digits
+// (Some orders placed manually using Iphone has [clientOrderId] like this: "ios_47d0a66fc34f421d8f56e4d4048bc8d4")
+// (Which cause error when force cast to std::stoull)
+bool AppUtils::is_all_digit(const std::string& str)
+{
+    for (char c : str)
+    {
+        if (!std::isdigit(static_cast<unsigned char>(c)))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+OrderId AppUtils::parse_order_id(const std::string& str)
+{
+    if (is_all_digit(str) == false)
+    {
+        return 0;
+    }
+
+    return std::stoull(str);
+}
