@@ -79,7 +79,7 @@ void Strategy::init()
 
     // Add price callback + subscribe to symbol
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
-    m_gateway->register_price_update([this](double price)
+    m_gateway->register_price_update([this](std::string symbol, double price)
     {
         std::unique_lock lock(m_strategy_mutex);
 

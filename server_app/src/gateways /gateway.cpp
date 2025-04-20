@@ -6,7 +6,7 @@ Gateway::Gateway() : m_event_base {
     }
 {}
 
-void Gateway::register_price_update(std::function<void(double)> price_update_callback)
+void Gateway::register_price_update(std::function<void(std::string,double)> price_update_callback)
 {
     m_price_update_callback = std::move(price_update_callback);
 }

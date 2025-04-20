@@ -12,7 +12,7 @@
 class Gateway
 {
 protected:
-    std::function<void(double)> m_price_update_callback;
+    std::function<void(std::string,double)> m_price_update_callback;
     EventBase* m_event_base = nullptr;
 
     Gateway();
@@ -22,7 +22,7 @@ protected:
     virtual Task<Json> place_on_exchange(Order order) = 0;
 
 public:
-    void register_price_update(std::function<void(double)> price_update_callback);
+    void register_price_update(std::function<void(std::string,double)> price_update_callback);
     void check_remove_canceled_orders(std::string symbol);
     void cancel_all(std::string symbol);
     void place_none_wait(Order order);

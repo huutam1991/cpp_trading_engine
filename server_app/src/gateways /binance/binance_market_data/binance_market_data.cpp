@@ -129,7 +129,7 @@ bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
 {
     Json order_book = Json::parse(data);
 
-    ADD_LOG(order_book);
+    // ADD_LOG(order_book);
 
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {
