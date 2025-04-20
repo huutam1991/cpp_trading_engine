@@ -14,6 +14,7 @@
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
 #include <strategy/strategy.h>
+#include <strategy_price_arbitrage/strategy_price_arbitrage.h>
 
 extern void add_app_route();
 extern void add_bad_request();
@@ -63,7 +64,10 @@ int main(int argc, char **argv) {
 
     GatewayManager::instance().init();
     OrderManager::instance().init();
-    Strategy::instance().init();
+
+    // Strategy
+    // Strategy::instance().init();
+    StrategyPriceArbitrage::instance().init();
 
     // Server
     HttpsServer server(port, web_data_path);
