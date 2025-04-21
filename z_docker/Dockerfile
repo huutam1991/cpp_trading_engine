@@ -14,8 +14,6 @@ ADD web_data /cpp_trading_engine/web_data
 ADD build_bash.sh /cpp_trading_engine
 ADD CMakeLists.txt /cpp_trading_engine
 ADD run_bash.sh /cpp_trading_engine
-ADD server-certificate.crt /cpp_trading_engine
-ADD server-private-key.pem /cpp_trading_engine
 
 # Add lib to system path
 #ENV ARM64="True"
