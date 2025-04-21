@@ -15,12 +15,11 @@ protected:
     std::string m_api_secret;
 
     bool m_is_testnet = false;
-    Order m_order;
     virtual std::string& get_url() = 0;
     virtual std::string& get_port() = 0;
 
     Task<Json> send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str);
-    void check_save_resonse_error(Json& response, const std::string& query);
+    void check_save_resonse_error(Json& response, const std::string& query, RequestMethod method);
 
 public:
     BinanceQuoter(const std::string& key);

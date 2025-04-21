@@ -195,8 +195,6 @@ Task<Json> BinanceQuoterPerpetual::cancel(Order order)
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
-    m_order = order;
-
     // Update order result to "placing", mean need to wait until it get filled
     update_order_result({
         {"status", "PLACING"},

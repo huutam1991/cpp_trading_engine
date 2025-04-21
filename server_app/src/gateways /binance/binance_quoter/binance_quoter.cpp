@@ -56,13 +56,13 @@ std::string BinanceQuoter::getSignature(std::string& query)
 	return encryptWithHMAC(m_api_secret.c_str(), query.c_str());
 }
 
-void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& query)
+void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& query, RequestMethod method)
 {
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
     {
         Json error;
         error["query"] = query;
-        error["order"] = m_order.to_json();
+        error["method"] = request_method_map_string.at((size_t)method);
         error["response"] = response;
 
         MongoDB::instance()
@@ -93,7 +93,7 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::
     Json response = co_await binance_request.send_request();
 
     // Check to save error
-    check_save_resonse_error(response, new_query_std);
+    check_save_resonse_error(response, new_query_std, method);
 
     co_return response;
 }

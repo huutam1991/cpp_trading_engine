@@ -71,6 +71,17 @@ const std::unordered_map<std::string, RequestMethod> request_method_map =
     {"PATCH",   RequestMethod::PATCH   },
 };
 
+const std::unordered_map<size_t, std::string> request_method_map_string =
+{
+    {(size_t)RequestMethod::OPTIONS, "OPTIONS"},
+    {(size_t)RequestMethod::GET    , "GET"    },
+    {(size_t)RequestMethod::HEAD   , "HEAD"   },
+    {(size_t)RequestMethod::POST   , "POST"   },
+    {(size_t)RequestMethod::PUT    , "PUT"    },
+    {(size_t)RequestMethod::DELETE , "DELETE" },
+    {(size_t)RequestMethod::PATCH  , "PATCH"  },
+};
+
 enum ResponseStatusCode
 {
     OK_200                      = 200,
