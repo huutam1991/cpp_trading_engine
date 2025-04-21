@@ -21,7 +21,7 @@ void EventBase::remove_from_event_base(uint64_t id)
         m_task_list.erase(id);
     }
 
-    // ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining: " << m_task_list.size());
+    ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining: " << m_task_list.size());
 }
 
 
