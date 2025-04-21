@@ -12,6 +12,7 @@ StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<G
 
 void StrategyPriceArbitrageStateRun::begin()
 {
+    m_current_price = 0.0;
     ADD_LOG("StrategyPriceArbitrageStateRun - begin");
 }
 
@@ -23,11 +24,11 @@ void StrategyPriceArbitrageStateRun::end()
     m_gateway->cancel_all(m_config.symbol_1);
 }
 
-void StrategyPriceArbitrageStateRun::remove_open_order_id(OrderId order_id)
+void StrategyPriceArbitrageStateRun::remove_open_order_by_price(double price)
 {
-    if (m_current_open_orders.find(order_id) != m_current_open_orders.end())
+    if (m_current_open_orders.find(price) != m_current_open_orders.end())
     {
-        m_current_open_orders.erase(order_id);
+        m_current_open_orders.erase(price);
     }
 }
 
@@ -83,6 +84,18 @@ Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_q
     );
 }
 
+void StrategyPriceArbitrageStateRun::check_place_order_at_price(double price)
+{
+    if (m_current_open_orders.find(price) == m_current_open_orders.end())
+    {
+        Order order = get_limit_buy_spot_order_by_price(price);
+        m_gateway->place_none_wait(order);
+
+        // Insert to [m_current_open_orders]
+        m_current_open_orders.insert(std::make_pair(price, order));
+    }
+}
+
 TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
 {
     if (price_update.symbol == m_config.symbol_2)
@@ -92,18 +105,24 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
     }
 
     double price = price_update.price;
+    m_current_price = m_current_price == 0.0 ? price : m_current_price;
 
-    // Place new order if current price is moving > PRICE_DELTA compare to current order's price
-    if (std::abs(m_current_order.price - (price - m_config.buy_at_lower_price)) > PRICE_DELTA)
+    // Place new order if current price is moving a PRICE_DELTA compare to current price
+    if (price <= m_current_price - PRICE_DELTA)
     {
-        Order order = get_limit_buy_spot_order_by_price(price);
-        m_gateway->place(order);
+        m_current_price -= PRICE_DELTA;
+    }
+    else if (price >= m_current_price + PRICE_DELTA)
+    {
+        m_current_price += PRICE_DELTA;
     }
 
+    check_place_order_at_price(m_current_price - m_config.buy_at_lower_price);
+
     // Cancel all of orders that price is too low or too high
-    for (auto& [order_id, order] : m_current_open_orders)
+    for (auto& [order_price, order] : m_current_open_orders)
     {
-        if (order.price <= price - TOO_LOW_PRICE_DELTA || order.price >= price - TOO_HIGH_PRICE_DELTA)
+        if (order_price <= price - TOO_LOW_PRICE_DELTA || order_price >= price - TOO_HIGH_PRICE_DELTA)
         {
             m_gateway->cancel(order);
         }
@@ -114,10 +133,9 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
 
 TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
 {
-    // NEW - insert to [m_current_open_orders]
+    // NEW - do nothing
     if (order.status == Order::Status::NEW)
     {
-        m_current_open_orders.insert(std::make_pair(order.order_id, order));
     }
     // FILLED - check to continue place chain of orders
     else if (order.status == Order::Status::FILLED)
@@ -128,9 +146,9 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             // Buy symbol 2 from symbol 1
             double quantity = order.output_quantity / m_symbol_2_price;
             Order order_2 = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, quantity);
-            m_gateway->place(order_2);
+            m_gateway->place_none_wait(order_2);
 
-            remove_open_order_id(order.order_id);
+            remove_open_order_by_price(order.price);
         }
         // 2nd order (MARKET)
         else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_2)
@@ -138,20 +156,17 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             // Sell symbol 3 from symbol 2
             double quantity = order.output_quantity;
             Order order_3 = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, quantity);
-            m_gateway->place(order_3);
-
-            remove_open_order_id(order.order_id);
+            m_gateway->place_none_wait(order_3);
         }
         // 3rd order (MARKET)
         else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_3)
         {
-            remove_open_order_id(order.order_id);
         }
     }
     // CANCELED - remove from [m_current_open_orders]
-    else if (order.status == Order::Status::CANCELED)
+    else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
-        remove_open_order_id(order.order_id);
+        remove_open_order_by_price(order.price);
     }
 
     co_return;
@@ -163,7 +178,7 @@ TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
-        co_await handle_price_update(price_update);
+        co_await handle_price_update(std::move(price_update));
     }
     else
     {

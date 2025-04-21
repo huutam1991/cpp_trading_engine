@@ -15,18 +15,21 @@ public:
     virtual void end();
     virtual TaskVoid run(StrategyPriceArbitrageData data);
 
-    TaskVoid handle_price_update(PriceUpdate price);
-    TaskVoid handle_order_update(Order& order);
-
 private:
     double m_symbol_2_price;
-    Order m_current_order;
-    std::unordered_map<OrderId, Order> m_current_open_orders;
+    double m_current_price = 0.0;
 
-    void remove_open_order_id(OrderId order_id);
+    // Current open orders by price
+    std::unordered_map<double, Order> m_current_open_orders;
+
+    void remove_open_order_by_price(double price);
     Order get_limit_buy_spot_order_by_price(double price);
     Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
     Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
+
+    void check_place_order_at_price(double price);
+    TaskVoid handle_price_update(PriceUpdate price);
+    TaskVoid handle_order_update(Order& order);
 };
 
 #endif //STRATEGY_PA_STATE_RUN_H
