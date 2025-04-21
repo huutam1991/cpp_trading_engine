@@ -1,21 +1,5 @@
 #!/bin/bash
 
-# Check if OpenSSL is installed
-if ! command -v openssl &> /dev/null; then
-    echo "OpenSSL is not installed. Attempting to install..."
-
-    # Check if the system is Debian/Ubuntu-based
-    if [ -f /etc/debian_version ]; then
-        sudo apt update
-        sudo apt install -y openssl
-    else
-        echo "Automatic installation is not supported on this system. Please install OpenSSL manually."
-        exit 1
-    fi
-else
-    echo "OpenSSL is already installed: $(openssl version)"
-fi
-
 # Generate a 2048-bit RSA private key and save to file
 openssl genrsa -out private_key_in_pkcs1.pem 2048
 
