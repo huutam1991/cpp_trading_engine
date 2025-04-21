@@ -3,6 +3,7 @@
 
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state.h>
 #include <unordered_map>
+#include <array>
 
 #include <order/order_manager.h>
 
