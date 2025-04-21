@@ -97,10 +97,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
     if (std::abs(m_current_order.price - (price - m_config.buy_at_lower_price)) > PRICE_DELTA)
     {
         Order order = get_limit_buy_spot_order_by_price(price);
-        m_current_order = co_await m_gateway->place(order, Order::Status::NEW);
-
-        // Insert to [m_current_open_orders]
-        m_current_open_orders.insert(std::make_pair(m_current_order.order_id, m_current_order));
+        m_gateway->place(order);
     }
 
     // Cancel all of orders that price is too low or too high
@@ -117,28 +114,41 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
 
 TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
 {
-    // NEW - do nothing
+    // NEW - insert to [m_current_open_orders]
     if (order.status == Order::Status::NEW)
-    {}
-    // FILLED - update data to order's checkpoint
+    {
+        m_current_open_orders.insert(std::make_pair(order.order_id, order));
+    }
+    // FILLED - check to continue place chain of orders
     else if (order.status == Order::Status::FILLED)
     {
+        // 1st order (LIMIT)
         if (order.type == Order::OrderType::LIMIT)
         {
             // Buy symbol 2 from symbol 1
-            double symbol_2_quantity = order.output_quantity / m_symbol_2_price;
-            Order symbol_2_order = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, symbol_2_quantity);
-            symbol_2_order = co_await m_gateway->place(symbol_2_order, Order::Status::FILLED);
-
-            // Sell symbol 3 from symbol 2
-            double symbol_3_quantity = symbol_2_order.output_quantity;
-            Order symbol_3_order = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, symbol_3_quantity);
-            symbol_3_order = co_await m_gateway->place(symbol_3_order, Order::Status::FILLED);
+            double quantity = order.output_quantity / m_symbol_2_price;
+            Order order_2 = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, quantity);
+            m_gateway->place(order_2);
 
             remove_open_order_id(order.order_id);
         }
+        // 2nd order (MARKET)
+        else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_2)
+        {
+            // Sell symbol 3 from symbol 2
+            double quantity = order.output_quantity;
+            Order order_3 = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, quantity);
+            m_gateway->place(order_3);
+
+            remove_open_order_id(order.order_id);
+        }
+        // 3rd order (MARKET)
+        else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_3)
+        {
+            remove_open_order_id(order.order_id);
+        }
     }
-    // CANCELED - update [order_id] = 0 for order's checkpoint
+    // CANCELED - remove from [m_current_open_orders]
     else if (order.status == Order::Status::CANCELED)
     {
         remove_open_order_id(order.order_id);
