@@ -7,7 +7,7 @@
 #include <websocket/websocket_server.h>
 
 // App pool
-#define NUMBER_OF_APP_THREADS 4
+#define NUMBER_OF_APP_THREADS 8
 
 // Token
 #define TOKEN_ISSUER "TamNguyen"
