@@ -1,10 +1,6 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <measure_time.h>
 
-#define PRICE_DELTA 5
-#define TOO_LOW_PRICE_DELTA 90
-#define TOO_HIGH_PRICE_DELTA 30
-
 StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway>& gateway, StrategyPriceArbitrageConfig& config)
     : StrategyPriceArbitrageState(gateway, config)
 {
@@ -24,11 +20,10 @@ void StrategyPriceArbitrageStateRun::end()
     m_gateway->cancel_all(m_config.symbol_1);
 }
 
-Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double current_price)
+Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double price)
 {
     // // MeasureTime t("get_limit_buy_spot_order_by_price");
 
-    double price = current_price - m_config.buy_at_lower_price;
     double quantity = m_config.buy_volumn / price;
     double round_up_quantity = m_gateway->round_up_quantity("spot", m_config.symbol_1, quantity);
 
@@ -108,18 +103,18 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
     m_current_price = m_current_price == 0.0 ? price : m_current_price;
 
     // Place new order if current price is moving a PRICE_DELTA compare to current price
-    if (price <= m_current_price - PRICE_DELTA)
+    if (price <= m_current_price - m_config.price_delta)
     {
-        while (price <= m_current_price - PRICE_DELTA)
+        while (price <= m_current_price - m_config.price_delta)
         {
-            m_current_price -= PRICE_DELTA;
+            m_current_price -= m_config.price_delta;
         }
     }
-    else if (price >= m_current_price + PRICE_DELTA)
+    else if (price >= m_current_price + m_config.price_delta)
     {
-        while (price >= m_current_price + PRICE_DELTA)
+        while (price >= m_current_price + m_config.price_delta)
         {
-            m_current_price += PRICE_DELTA;
+            m_current_price += m_config.price_delta;
         }
     }
 
@@ -130,7 +125,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
     size_t cancel_count = 0;
     for (auto& [order_price, order] : m_current_open_orders)
     {
-        if (order_price <= price - TOO_LOW_PRICE_DELTA || order_price >= price - TOO_HIGH_PRICE_DELTA)
+        if (order_price <= price - m_config.too_low_price_delta || order_price >= price - m_config.too_high_price_delta)
         {
             m_gateway->cancel(order);
             cancel_price_list[cancel_count++] = order_price;

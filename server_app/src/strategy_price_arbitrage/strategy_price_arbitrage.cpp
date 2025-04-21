@@ -43,6 +43,9 @@ void StrategyPriceArbitrage::init()
             {"symbol_3", "ETHUSDT"},
             {"buy_volumn", (long)300},
             {"buy_at_lower_price", (long)200},
+            {"price_delta", (long)10},
+            {"too_low_price_delta", (long)90},
+            {"too_high_price_delta", (long)30},
             {"is_running", false}
         };
     }
@@ -52,6 +55,9 @@ void StrategyPriceArbitrage::init()
     m_config.symbol_3 = std::string(config["symbol_3"]);
     m_config.buy_volumn = (double)config["buy_volumn"];
     m_config.buy_at_lower_price = (double)config["buy_at_lower_price"];
+    m_config.price_delta = (double)config["price_delta"];
+    m_config.too_low_price_delta = (double)config["too_low_price_delta"];
+    m_config.too_high_price_delta = (double)config["too_high_price_delta"];
     m_config.is_running = (bool)config["is_running"];
 
     // Log config
@@ -61,6 +67,9 @@ void StrategyPriceArbitrage::init()
     ADD_LOG("- symbol_3: " << m_config.symbol_3);
     ADD_LOG("- buy_volumn: " << m_config.buy_volumn);
     ADD_LOG("- buy_at_lower_price: " << m_config.buy_at_lower_price);
+    ADD_LOG("- price_delta: " << m_config.price_delta);
+    ADD_LOG("- too_low_price_delta: " << m_config.too_low_price_delta);
+    ADD_LOG("- too_high_price_delta: " << m_config.too_high_price_delta);
     ADD_LOG("- is_running: " << m_config.is_running);
 
     // Add price callback + subscribe to symbol

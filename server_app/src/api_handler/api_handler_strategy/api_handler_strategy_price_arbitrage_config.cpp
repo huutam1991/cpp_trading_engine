@@ -12,6 +12,9 @@ APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : A
         "symbol_3",
         "buy_volumn",
         "buy_at_lower_price",
+        "price_delta",
+        "too_low_price_delta",
+        "too_high_price_delta",
         "is_running"
     });
 }
