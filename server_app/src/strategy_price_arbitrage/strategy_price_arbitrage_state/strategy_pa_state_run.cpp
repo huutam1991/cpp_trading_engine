@@ -91,6 +91,34 @@ void StrategyPriceArbitrageStateRun::check_place_order_at_price(double price)
     }
 }
 
+void StrategyPriceArbitrageStateRun::check_cancel_order_at_price(double price)
+{
+    static double cancel_price_list[20];
+    size_t cancel_count = 0;
+
+    // Cancel all of orders that price is too low or too high
+    for (auto& [order_price, order] : m_current_open_orders)
+    {
+        if (order_price <= price - m_config.too_low_price_delta || order_price >= price - m_config.too_high_price_delta)
+        {
+            m_gateway->cancel(order);
+            cancel_price_list[cancel_count++] = order_price;
+        }
+    }
+
+    // Execute remove from open order by price
+    for (size_t i = 0; i < cancel_count; i++)
+    {
+        remove_open_order_by_price(cancel_price_list[i]);
+    }
+}
+
+void StrategyPriceArbitrageStateRun::update_orders_at_price(double price)
+{
+    check_place_order_at_price(price - m_config.buy_at_lower_price);
+    check_cancel_order_at_price(price);
+}
+
 TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
 {
     if (price_update.symbol == m_config.symbol_2)
@@ -108,6 +136,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
         while (price <= m_current_price - m_config.price_delta)
         {
             m_current_price -= m_config.price_delta;
+            update_orders_at_price(m_current_price);
         }
     }
     else if (price >= m_current_price + m_config.price_delta)
@@ -115,28 +144,11 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
         while (price >= m_current_price + m_config.price_delta)
         {
             m_current_price += m_config.price_delta;
+            update_orders_at_price(m_current_price);
         }
     }
 
-    check_place_order_at_price(m_current_price - m_config.buy_at_lower_price);
 
-    // Cancel all of orders that price is too low or too high
-    static double cancel_price_list[20];
-    size_t cancel_count = 0;
-    for (auto& [order_price, order] : m_current_open_orders)
-    {
-        if (order_price <= price - m_config.too_low_price_delta || order_price >= price - m_config.too_high_price_delta)
-        {
-            m_gateway->cancel(order);
-            cancel_price_list[cancel_count++] = order_price;
-        }
-    }
-
-    // Execute remove from open order by price
-    for (size_t i = 0; i < cancel_count; i++)
-    {
-        remove_open_order_by_price(cancel_price_list[i]);
-    }
 
     co_return;
 }

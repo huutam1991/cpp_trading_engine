@@ -50,7 +50,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
-            params[0] = lower_case_symbol + "@depth5@1000ms";
+            params[0] = lower_case_symbol + "@depth5@100ms";
 
             Json subcribe;
             subcribe["method"] = "SUBSCRIBE";
