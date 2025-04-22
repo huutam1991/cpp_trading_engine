@@ -20,8 +20,14 @@ private:
     double m_symbol_2_price;
     double m_current_price = 0.0;
 
+    struct OrderInfo
+    {
+        Order order;
+        bool is_handeling = false;
+    };
+
     // Current open orders by price
-    std::unordered_map<double, Order> m_current_open_orders;
+    std::unordered_map<double, OrderInfo> m_current_open_orders;
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);

@@ -87,29 +87,25 @@ void StrategyPriceArbitrageStateRun::check_place_order_at_price(double price)
         m_gateway->place_none_wait(order);
 
         // Insert to [m_current_open_orders]
-        m_current_open_orders.insert(std::make_pair(price, order));
+        m_current_open_orders.insert(std::make_pair(price, OrderInfo{std::move(order), true}));
     }
 }
 
 void StrategyPriceArbitrageStateRun::check_cancel_order_at_price(double price)
 {
-    static double cancel_price_list[20];
-    size_t cancel_count = 0;
-
     // Cancel all of orders that price is too low or too high
-    for (auto& [order_price, order] : m_current_open_orders)
+    for (auto& [order_price, order_info] : m_current_open_orders)
     {
+        if (order_info.is_handeling == true)
+        {
+            continue;
+        }
+
         if (order_price <= price - m_config.too_low_price_delta || order_price >= price - m_config.too_high_price_delta)
         {
-            m_gateway->cancel(order);
-            cancel_price_list[cancel_count++] = order_price;
+            order_info.is_handeling = true;
+            m_gateway->cancel(order_info.order);
         }
-    }
-
-    // Execute remove from open order by price
-    for (size_t i = 0; i < cancel_count; i++)
-    {
-        remove_open_order_by_price(cancel_price_list[i]);
     }
 }
 
@@ -148,8 +144,6 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
         }
     }
 
-
-
     co_return;
 }
 
@@ -158,6 +152,15 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     // NEW - do nothing
     if (order.status == Order::Status::NEW)
     {
+        if (m_current_open_orders.find(order.price) != m_current_open_orders.end())
+        {
+            m_current_open_orders[order.price].is_handeling = false;
+        }
+        else
+        {
+            // Insert to [m_current_open_orders]
+            m_current_open_orders.insert(std::make_pair(order.price, OrderInfo{order, false}));
+        }
     }
     // FILLED - check to continue place chain of orders
     else if (order.status == Order::Status::FILLED)
