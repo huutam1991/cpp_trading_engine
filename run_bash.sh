@@ -7,4 +7,14 @@ export GLOG_logbufsecs=0
 chmod 777 z_util_scripts/generate_server_certificate.sh
 ./z_util_scripts/generate_server_certificate.sh
 
-./http_server_cpp 8080 web_data
+chmod 777 z_util_scripts/generate_server_certificate.sh
+./z_util_scripts/generate_server_certificate.sh
+
+# Detect port
+if [[ "$DOCKER" == "1" ]]; then
+    PORT=443
+else
+    PORT=8081
+fi
+
+./http_server_cpp "$PORT" web_data

@@ -33,4 +33,4 @@ RUN ./z_util_scripts/generate_server_certificate.sh
 EXPOSE 443 80 8081
 
 # run the command
-CMD ["./http_server_cpp", "443", "web_data"]
+CMD ["./run_bash.sh"]
