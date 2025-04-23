@@ -50,14 +50,14 @@ TaskVoid OrderDataModelHelper::task_update_order(Order order)
 {
     DataModel order_dm = get_order_by_id(order.order_id);
 
-    // Remove order if it's status is CANCELED
-    if (order.status == Order::Status::CANCELED)
-    {
-        order_dm.remove();
-        m_order_list.erase(order.order_id);
+    // // Remove order if it's status is CANCELED
+    // if (order.status == Order::Status::CANCELED)
+    // {
+    //     order_dm.remove();
+    //     m_order_list.erase(order.order_id);
 
-        co_return;
-    }
+    //     co_return;
+    // }
 
     // otherwise, save order
     order_dm = order.to_json();
