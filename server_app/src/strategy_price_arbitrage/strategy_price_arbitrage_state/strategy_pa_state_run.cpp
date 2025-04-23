@@ -150,7 +150,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
 TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
 {
     // NEW - do nothing
-    if (order.status == Order::Status::NEW)
+    if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)
     {
         if (m_current_open_orders.find(order.price) != m_current_open_orders.end())
         {

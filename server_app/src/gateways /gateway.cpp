@@ -38,7 +38,7 @@ void Gateway::cancel_all(std::string symbol)
 
 void Gateway::place_none_wait(Order order)
 {
-    place_on_exchange(order).start_running_on(m_event_base);
+    place_on_exchange(std::move(order)).start_running_on(m_event_base);
 }
 
 void Gateway::cancel(Order order)
