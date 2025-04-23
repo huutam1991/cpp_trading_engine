@@ -79,7 +79,7 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
     }
 }
 
-Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str)
+Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str)
 {
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();

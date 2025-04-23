@@ -150,7 +150,7 @@ TaskVoid BinanceGateway::cancel_all_on_exchange(std::string symbol)
 Task<Json> BinanceGateway::cancel_on_exchange(Order order)
 {
     // Currently, only implement for SPOT
-    co_return co_await m_quoter_spot.cancel(order);
+    co_return co_await m_quoter_spot.cancel(std::move(order));
 }
 
 Task<Json> BinanceGateway::place_on_exchange(Order order)

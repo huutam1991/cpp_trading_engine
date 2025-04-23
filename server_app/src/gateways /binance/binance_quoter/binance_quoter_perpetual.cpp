@@ -214,5 +214,5 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
         query_str += "&price=" + std::to_string(order.price);
     }
 
-    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", query_str);
+    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", std::move(query_str));
 }

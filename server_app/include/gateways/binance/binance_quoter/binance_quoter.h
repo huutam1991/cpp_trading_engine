@@ -18,7 +18,7 @@ protected:
     virtual std::string& get_url() = 0;
     virtual std::string& get_port() = 0;
 
-    Task<Json> send_binance_request(RequestMethod method, const std::string& api_path, const std::string& query_str);
+    Task<Json> send_binance_request(RequestMethod method, std::string api_path, std::string query_str);
     void check_save_resonse_error(Json& response, const std::string& query, RequestMethod method);
 
 public:

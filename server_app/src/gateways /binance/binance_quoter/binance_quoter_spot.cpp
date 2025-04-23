@@ -249,7 +249,7 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
     query_str += "symbol=" + order.symbol;
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);
 
-    co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", query_str);
+    co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str));
 }
 
 Task<Json> BinanceQuoterSpot::place(Order order)
@@ -271,5 +271,5 @@ Task<Json> BinanceQuoterSpot::place(Order order)
 
     ADD_LOG("query: " << query_str);
 
-    co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", query_str);
+    co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str));
 }
