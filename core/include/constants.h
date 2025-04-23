@@ -10,7 +10,7 @@
 #define BACKLOG_SOCKET 125                     // number of connections
 #define BACKLOG_EPOLL 125                      // number of epoll events
 #define BUFFER_SIZE 2048                      // size of buffer for reading request data
-#define NUMBER_OF_HTTPS_SERVER_THREADS 5                  // number of threads
+#define NUMBER_OF_HTTPS_SERVER_THREADS 2                  // number of threads
 #define NUMBER_OF_WEBSOCKET_CLIENT_THREADS 0 // number of websocket client threads
 #define NUMBER_OF_WEBSOCKET_SERVER_THREADS 0  // number of websocket server threads
 #define NUMBER_OF_CORE_COMMON_THREADS 1      // number of core common threads

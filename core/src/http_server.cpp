@@ -16,6 +16,7 @@
 
 HttpServer::HttpServer(int port, std::string dir_path) : m_port(port), m_dir_path(dir_path)
 {
+    signal(SIGPIPE, SIG_IGN);
     init_socket();
     m_epoll       = new EPollWrapper(m_server_fd);
     m_thread_pool = new ThreadPool(NUMBER_OF_HTTPS_SERVER_THREADS, "Server Pool");
