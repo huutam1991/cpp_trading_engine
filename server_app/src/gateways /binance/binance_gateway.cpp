@@ -180,7 +180,7 @@ Task<Json> BinanceGateway::get_balances()
 
     balances["balances"].for_each([](Json& balance)
     {
-        balance["available"] = balance["free"];
+        balance["available"] = (double)balance["free"] + (double)balance["freeze"];
 
         balance.remove_field("btcValuation");
         balance.remove_field("withdrawing");
