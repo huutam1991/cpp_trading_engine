@@ -201,7 +201,7 @@ Future<bool> StrategyPriceArbitrage::wait_new_data_update()
     });
 }
 
-Json StrategyPriceArbitrage::get_current_info()
+Json StrategyPriceArbitrage::get_orders_chain()
 {
     Json info = Json::create_array();
 
@@ -224,4 +224,18 @@ Json StrategyPriceArbitrage::get_current_info()
     });
 
     return info;
+}
+
+Json StrategyPriceArbitrage::get_open_orders()
+{
+    std::unordered_map<std::string, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
+    std::string status = StrategyPriceArbitrageState::get_state_status()["status"];
+
+    // Run get_open_orders() method of new state
+    if ((*strategy_states).find(status) != (*strategy_states).end())
+    {
+        return (*strategy_states)[status]->get_open_orders();
+    }
+
+    return Json::create_array();
 }

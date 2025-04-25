@@ -47,7 +47,8 @@ public:
     void on_config_change();
     TaskVoid update();
 
-    Json   get_current_info();
+    Json get_orders_chain();
+    Json get_open_orders();
 };
 
 class PriceArbitrageSimpleGuard

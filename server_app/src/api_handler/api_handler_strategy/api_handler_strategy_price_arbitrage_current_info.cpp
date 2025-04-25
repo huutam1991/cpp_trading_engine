@@ -4,14 +4,27 @@
 APIHandlerStrategyPACurrentInfo::APIHandlerStrategyPACurrentInfo(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
+    add_mandatory_params({"type"});
 }
 
 HttpResponse APIHandlerStrategyPACurrentInfo::child_handle()
 {
-    Json response;
+    Json data;
+
+    // Check request parameter
+    std::string type = m_request->get_query_param("type");
+    if (type == "orders_chain")
+    {
+        data = StrategyPriceArbitrage::instance().get_orders_chain();
+    }
+    else if (type == "open_orders")
+    {
+        data = StrategyPriceArbitrage::instance().get_open_orders();
+    }
 
     // Response
-    response["data"] = StrategyPriceArbitrage::instance().get_current_info();
+    Json response;
+    response["data"] = data;
     response["msg"] = "";
     response["status_code"] = OK_200;
     response["error"] = false;
