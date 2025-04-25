@@ -213,3 +213,15 @@ TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
 
     co_return;
 }
+
+Json StrategyPriceArbitrageStateRun::get_open_orders()
+{
+    Json res = Json::create_array();
+
+    for (auto& [_, order_info] : m_current_open_orders)
+    {
+        res.push_back(order_info.order.to_json());
+    }
+
+    return res;
+}

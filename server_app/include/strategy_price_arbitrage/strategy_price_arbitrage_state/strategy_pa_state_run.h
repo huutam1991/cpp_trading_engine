@@ -16,6 +16,8 @@ public:
     virtual void end();
     virtual TaskVoid run(StrategyPriceArbitrageData data);
 
+    virtual Json get_open_orders() override;
+
 private:
     double m_symbol_2_price;
     double m_current_price = 0.0;

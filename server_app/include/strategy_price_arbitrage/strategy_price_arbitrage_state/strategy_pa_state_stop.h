@@ -11,6 +11,8 @@ public:
     virtual void begin();
     virtual void end();
     virtual TaskVoid run(StrategyPriceArbitrageData data);
+
+    virtual Json get_open_orders() override;
 };
 
 #endif //STRATEGY_PA_STATE_STOP_H

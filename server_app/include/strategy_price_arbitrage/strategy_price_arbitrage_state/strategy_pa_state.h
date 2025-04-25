@@ -34,6 +34,8 @@ public:
     virtual void end();
     virtual TaskVoid run(StrategyPriceArbitrageData data);
 
+    virtual Json get_open_orders() = 0;
+
 protected:
 };
 

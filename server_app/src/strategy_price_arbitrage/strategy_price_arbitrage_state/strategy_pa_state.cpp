@@ -51,4 +51,3 @@ TaskVoid StrategyPriceArbitrageState::run(StrategyPriceArbitrageData data)
 
     co_return;
 }
-

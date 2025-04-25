@@ -27,3 +27,8 @@ TaskVoid StrategyPriceArbitrageStateStop::run(StrategyPriceArbitrageData data)
 
     co_return;
 }
+
+Json StrategyPriceArbitrageStateStop::get_open_orders()
+{
+    return Json::create_array();
+}
