@@ -113,7 +113,6 @@ void StrategyPriceArbitrageStateRun::check_cancel_order_at_price(double price)
 void StrategyPriceArbitrageStateRun::update_orders_at_price(double price)
 {
     check_place_order_at_price(price - m_config.buy_at_lower_price);
-    check_cancel_order_at_price(price);
 }
 
 TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
@@ -144,6 +143,8 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
             update_orders_at_price(m_current_price);
         }
     }
+
+    check_cancel_order_at_price(price);
 
     co_return;
 }
