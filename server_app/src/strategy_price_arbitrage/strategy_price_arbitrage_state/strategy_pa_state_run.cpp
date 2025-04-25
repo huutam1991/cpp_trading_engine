@@ -18,6 +18,7 @@ void StrategyPriceArbitrageStateRun::end()
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol_1);
+    m_current_open_orders.clear();
 }
 
 Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double price)
@@ -154,7 +155,9 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     {
         if (m_current_open_orders.find(order.price) != m_current_open_orders.end())
         {
-            m_current_open_orders[order.price].is_handeling = false;
+            OrderInfo& order_info = m_current_open_orders[order.price];
+            order_info.is_handeling = false;
+            order_info.order = order;
         }
         else
         {
@@ -216,12 +219,17 @@ TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
 
 Json StrategyPriceArbitrageStateRun::get_open_orders()
 {
-    Json res = Json::create_array();
+    Json open_orders = Json::create_array();
 
     for (auto& [_, order_info] : m_current_open_orders)
     {
-        res.push_back(order_info.order.to_json());
+        open_orders.push_back(order_info.order.to_json());
     }
 
-    return res;
+    return {
+        {"current_price", m_current_price},
+        {"too_low_price", m_current_price - m_config.too_low_price_delta},
+        {"too_high_price", m_current_price - m_config.too_high_price_delta},
+        {"order", open_orders}
+    };
 }
