@@ -58,7 +58,7 @@ void BinanceQuoterSpot::init_websocket()
             del_timer_keep_alive_listen_key();
 
             // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
-            add_timer_keep_alive_listen_key(5000);
+            add_timer_keep_alive_listen_key(1800000);
 
             co_return;
         },
