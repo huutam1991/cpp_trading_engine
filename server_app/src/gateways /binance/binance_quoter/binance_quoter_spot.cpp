@@ -37,6 +37,7 @@ void BinanceQuoterSpot::init_websocket()
     if (m_websocket != nullptr)
     {
         m_websocket->close();
+        m_websocket = nullptr;
     }
 
     // Event base: GATEWAY
@@ -45,16 +46,19 @@ void BinanceQuoterSpot::init_websocket()
     // Get listen key
     auto task = this->get_listen_key();
     m_listen_key = task.start_running_on(event_base).get();
-    // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
-    add_timer_keep_alive_listen_key(1800000);
 
     m_websocket = std::make_shared<WebsocketClientAsync>(event_base);
-
     m_websocket->set_callbacks(
         // on_connect
         [this]() -> TaskVoid
         {
             ADD_LOG("BinanceQuoterSpot websocket connected");
+
+            // Delete old [m_schedule_task_id]
+            del_timer_keep_alive_listen_key();
+
+            // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
+            add_timer_keep_alive_listen_key(5000);
 
             co_return;
         },
@@ -121,9 +125,6 @@ void BinanceQuoterSpot::init_websocket()
         // on_disconnect
         [this]() -> TaskVoid
         {
-            // Delete current schedule task to re-active m_listen_key
-            this->del_timer_keep_alive_listen_key();
-
             // Re-start
             ADD_LOG("BinanceQuoterSpot - disconnect, re-starting");
             this->init_websocket();
@@ -131,7 +132,7 @@ void BinanceQuoterSpot::init_websocket()
             co_return;
         },
         // on_close
-        []() -> TaskVoid
+        [this]() -> TaskVoid
         {
             ADD_LOG("BinanceQuoterSpot close");
             co_return;
@@ -170,6 +171,7 @@ void BinanceQuoterSpot::del_timer_keep_alive_listen_key()
     if (m_schedule_task_id != 0)
     {
         Timer::instance().delete_schedule_task(this->m_schedule_task_id);
+        m_schedule_task_id = 0;
     }
 }
 
