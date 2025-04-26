@@ -125,6 +125,18 @@ void BinanceQuoterSpot::init_websocket()
         // on_disconnect
         [this]() -> TaskVoid
         {
+            // Save when websocket spot disconnect
+            auto now = std::chrono::system_clock::now();
+            auto duration = now.time_since_epoch();
+            auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+            MongoDB::instance()
+                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_spot_issue")
+                .insert_one({
+                    {"type", "disconnect"},
+                    {"time", nanos}
+                });
+
             // Re-start
             ADD_LOG("BinanceQuoterSpot - disconnect, re-starting");
             this->init_websocket();
@@ -135,6 +147,19 @@ void BinanceQuoterSpot::init_websocket()
         [this]() -> TaskVoid
         {
             ADD_LOG("BinanceQuoterSpot close");
+
+            // Save when websocket spot close
+            auto now = std::chrono::system_clock::now();
+            auto duration = now.time_since_epoch();
+            auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+            MongoDB::instance()
+                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_spot_issue")
+                .insert_one({
+                    {"type", "close"},
+                    {"time", nanos}
+                });
+
             co_return;
         }
     );
