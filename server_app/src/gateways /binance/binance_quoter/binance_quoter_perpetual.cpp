@@ -34,22 +34,26 @@ void BinanceQuoterPerpetual::init_websocket()
     if (m_websocket != nullptr)
     {
         m_websocket->close();
+        m_websocket = nullptr;
     }
 
     // Event base: GATEWAY
     EventBase* event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::GATEWAY);
 
     m_listen_key = this->get_listen_key();
-    // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
-    add_timer_keep_alive_listen_key(1800000);
 
     m_websocket = std::make_shared<WebsocketClientAsync>(event_base);
-
     m_websocket->set_callbacks(
         // on_connect
         [this]() -> TaskVoid
         {
             ADD_LOG("BinanceQuoterPerpetual websocket connected");
+
+            // Delete old [m_schedule_task_id]
+            del_timer_keep_alive_listen_key();
+
+            // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
+            add_timer_keep_alive_listen_key(1800000);
 
             co_return;
         },
@@ -81,9 +85,6 @@ void BinanceQuoterPerpetual::init_websocket()
         // on_disconnect
         [this]() -> TaskVoid
         {
-            // Delete current schedule task to re-active m_listen_key
-            this->del_timer_keep_alive_listen_key();
-
             // Re-start
             ADD_LOG("BinanceQuoterPerpetual - disconnect, re-starting");
             this->init_websocket();
