@@ -25,10 +25,6 @@ RUN chmod 777 build_bash.sh
 RUN chmod 777 run_bash.sh
 RUN ./build_bash.sh
 
-# Generate server certificate
-RUN chmod 777 z_util_scripts/generate_server_certificate.sh
-RUN ./z_util_scripts/generate_server_certificate.sh
-
 # tell the port number the container should expose
 EXPOSE 443 80 8081
 
