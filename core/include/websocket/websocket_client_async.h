@@ -26,6 +26,7 @@ public:
     void set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close);
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);
+    void send_ping();
     void close();
 
 private:
@@ -58,6 +59,7 @@ private:
     void on_handshake(beast::error_code ec);
     void on_read(beast::error_code ec, std::size_t bytes_transferred);
     void on_write(beast::error_code ec, std::size_t bytes_transferred);
+    void on_ping(beast::error_code ec);
     void on_close(beast::error_code ec);
     void do_write();
     void fail(const std::string& where, beast::error_code ec);

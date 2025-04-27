@@ -161,6 +161,24 @@ void WebsocketClientAsync::on_write(beast::error_code ec, std::size_t bytes_tran
     }
 }
 
+void WebsocketClientAsync::send_ping()
+{
+    m_ws.async_ping({}, beast::bind_front_handler(&WebsocketClientAsync::on_ping, shared_from_this()));
+}
+
+void WebsocketClientAsync::on_ping(beast::error_code ec)
+{
+    if (ec)
+    {
+        if (m_on_disconnect)
+        {
+            m_on_disconnect();
+        }
+
+        return fail("on_ping", ec);
+    }
+}
+
 void WebsocketClientAsync::close()
 {
     m_intend_close = true;
