@@ -1,6 +1,5 @@
 #include <external_request/external_request_ssl.h>
 #include <timer.h>
-#include <coroutine/event_base_manager.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <request_future.h>
@@ -14,6 +13,10 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
     // websocket
     m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_URL : BINANCE_SPOT_WS_URL;
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
+
+    // Event base: GATEWAY
+    m_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::GATEWAY);
+
     init_websocket();
 }
 
@@ -40,14 +43,11 @@ void BinanceQuoterSpot::init_websocket()
         m_websocket = nullptr;
     }
 
-    // Event base: GATEWAY
-    EventBase* event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::GATEWAY);
-
     // Get listen key
     auto task = this->get_listen_key();
-    m_listen_key = task.start_running_on(event_base).get();
+    m_listen_key = task.start_running_on(m_event_base).get();
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(event_base);
+    m_websocket = std::make_shared<WebsocketClientAsync>(m_event_base);
     m_websocket->set_callbacks(
         // on_connect
         [this]() -> TaskVoid
@@ -176,17 +176,23 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     co_return data["listenKey"];
 }
 
+TaskVoid BinanceQuoterSpot::keep_listen_key()
+{
+    RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
+    binance_request.add_header("X-MBX-APIKEY", m_api_key);
+    co_await binance_request.send_request();
+
+    ADD_LOG("BinanceQuoterSpot, re-active m_listen_key = " << m_listen_key);
+
+    // Send ping
+    m_websocket->send_ping();
+}
+
 void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
 {
     m_schedule_task_id = Timer::instance().add_schedule_task([this]()
     {
-        ExternalRequestSsl binance_request(m_url, "443", "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
-        binance_request.add_header("X-MBX-APIKEY", m_api_key);
-
-        ADD_LOG("BinanceQuoterSpot re-active m_listen_key = " << m_listen_key);
-
-        std::string res = binance_request.send_request();
-        Json data = Json::parse(res);
+        keep_listen_key().start_running_on(m_event_base);
     },
     period);
 }
