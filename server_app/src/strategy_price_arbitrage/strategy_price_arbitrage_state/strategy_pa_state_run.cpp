@@ -144,6 +144,12 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
         }
     }
 
+    // Place 1 order if there's no order
+    if (m_current_open_orders.size() == 0)
+    {
+        update_orders_at_price(price);
+    }
+
     check_cancel_order_at_price(price);
 
     co_return;
