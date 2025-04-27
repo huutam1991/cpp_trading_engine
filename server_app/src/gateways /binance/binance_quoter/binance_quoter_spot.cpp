@@ -1,9 +1,11 @@
 #include <external_request/external_request_ssl.h>
 #include <timer.h>
-
-#include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <request_future.h>
 #include <measure_time.h>
+
+#include <gateways/binance/binance_quoter/binance_quoter_spot.h>
+
+#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
@@ -57,8 +59,8 @@ void BinanceQuoterSpot::init_websocket()
             // Delete old [m_schedule_task_id]
             del_timer_keep_alive_listen_key();
 
-            // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
-            add_timer_keep_alive_listen_key(1800000);
+            // Set period time to re-active m_listen_key at every 30 seconds
+            add_timer_keep_alive_listen_key(CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
 
             co_return;
         },
