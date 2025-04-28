@@ -82,6 +82,12 @@ void StrategyPriceArbitrageStateRun::remove_open_order_by_price(double price)
 
 void StrategyPriceArbitrageStateRun::check_place_order_at_price(double price)
 {
+    // Only place 1 order at a time, and dont place new LIMIT order when chain orders is placing
+    if (is_placing_chain_orders == true || m_current_open_orders.size() > 0)
+    {
+        return;
+    }
+
     if (m_current_open_orders.find(price) == m_current_open_orders.end())
     {
         Order order = get_limit_buy_spot_order_by_price(price);
@@ -178,6 +184,9 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             m_gateway->place_none_wait(order_2);
 
             remove_open_order_by_price(order.price);
+
+            // Mark [is_placing_chain_orders] to true, no new LIMIT order will be placed until the chain orders is finished
+            is_placing_chain_orders = true;
         }
         // 2nd order (MARKET)
         else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_2)
@@ -190,6 +199,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
         // 3rd order (MARKET)
         else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_3)
         {
+            is_placing_chain_orders = false;
         }
     }
     // CANCELED - remove from [m_current_open_orders]

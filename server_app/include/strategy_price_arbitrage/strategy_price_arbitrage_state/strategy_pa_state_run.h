@@ -21,6 +21,7 @@ public:
 private:
     double m_symbol_2_price;
     double m_current_price = 0.0;
+    bool is_placing_chain_orders = false;
 
     struct OrderInfo
     {
