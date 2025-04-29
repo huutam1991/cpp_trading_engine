@@ -132,24 +132,25 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
     double price = price_update.price;
     m_current_price = m_current_price == 0.0 ? price : m_current_price;
 
-    // Place new order if current price is moving a PRICE_DELTA compare to current price
-    if (price <= m_current_price - m_config.price_delta)
-    {
-        while (price <= m_current_price - m_config.price_delta)
-        {
-            m_current_price -= m_config.price_delta;
-            update_orders_at_price(m_current_price);
-        }
-    }
-    else if (price >= m_current_price + m_config.price_delta)
-    {
-        while (price >= m_current_price + m_config.price_delta)
-        {
-            m_current_price += m_config.price_delta;
-            update_orders_at_price(m_current_price);
-        }
-    }
+    // // Place new order if current price is moving a PRICE_DELTA compare to current price
+    // if (price <= m_current_price - m_config.price_delta)
+    // {
+    //     while (price <= m_current_price - m_config.price_delta)
+    //     {
+    //         m_current_price -= m_config.price_delta;
+    //         update_orders_at_price(m_current_price);
+    //     }
+    // }
+    // else if (price >= m_current_price + m_config.price_delta)
+    // {
+    //     while (price >= m_current_price + m_config.price_delta)
+    //     {
+    //         m_current_price += m_config.price_delta;
+    //         update_orders_at_price(m_current_price);
+    //     }
+    // }
 
+    update_orders_at_price(price);
     check_cancel_order_at_price(price);
 
     co_return;
