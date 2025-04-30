@@ -36,8 +36,8 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Handles full order lifecycle: quote → execute → cross conversion → settle
 
 - **Built-in Latency Profiling**
-  - Millisecond-level timing for each phase: 
-    - market data receive → decision → order send → fill confirmation
+  - `Microsecond`-level timing for each phase: 
+    - market data receive → decision → order send (millisecond) → fill confirmation
 
 - **Dockerized & Cloud-Ready**
   - Fully containerized using minimal Docker image
