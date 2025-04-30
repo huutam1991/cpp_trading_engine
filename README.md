@@ -6,32 +6,32 @@ This project is a fully self-designed, low-latency trading engine written in mod
 
 ### Core Features:
 
-- **Custom Coroutine Engine (C++20)**
+- **Custom Coroutine Engine (C++20)** ([`coroutine/`](core/include/coroutine))
   - Built without any coroutine library
   - Includes custom `promise_type`, awaiters (`co_await`, `co_return`), and scheduling logic
   - Enables fully async flow across market data, order processing, and state transitions
 
-- **Internal REST API System**
+- **Internal REST API System** ([`https_server/`](core/include/https_server.h) + [`route/`](core/include/route) + [`request/`](core/include/request) + [`response/`](core/include/response))
   - Native C++ HTTPs server (using `epoll`, `openssl`)
   - Fully self-implemented parser and request routing
   - Used for engine control, monitoring, and inter-process communication
 
-- **Self-Built JSON Handling Layer**
+- **Self-Built JSON Handling Layer** ([`json/`](core/include/json))
   - Lightweight JSON parser and serializer
   - Zero external dependencies
   - Used for config loading, logging, REST I/O
 
-- **MongoDB Integration**
+- **MongoDB Integration** ([`mongodb/`](core/include/mongo_db))
   - Raw BSON serialization layer with no ORM
   - Used for storing order fills, commissions, output tokens
   - All write/read flow implemented manually
 
-- **Order Lifecycle & Matching Logic**
+- **Order Lifecycle & Matching Logic** ([`order/`](server_app/include/order))
   - Clean abstraction of limit/market orders
   - Fill tracking, status transitions, and live audit
   - Modeled after real exchange behavior
 
-- **Strategy Layer: Triangular Arbitrage Execution**
+- **Strategy Layer: Triangular Arbitrage Execution** ([`strategy_price_arbitrage/`](server_app/include/strategy_price_arbitrage))
   - Implements spot-based triangular arbitrage across three trading pairs
   - Handles full order lifecycle: quote → execute → cross conversion → settle
 
@@ -39,7 +39,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - `Microsecond`-level timing for each phase: 
     - market data receive → decision → order send (millisecond) → fill confirmation
 
-- **Dockerized & Cloud-Ready**
+- **Dockerized & Cloud-Ready** ([`z_docker/`](z_docker))
   - Fully containerized using minimal Docker image
   - Deployed and tested in live conditions on **AWS EC2**, allowing real production-like evaluation
 
