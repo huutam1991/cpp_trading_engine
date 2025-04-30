@@ -8,11 +8,11 @@ This project is a fully self-designed, low-latency trading engine written in mod
 
 - **Custom Coroutine Engine (C++20)**
   - Built without any coroutine library
-  - Includes custom `promise_type`, awaiters, and scheduling logic
+  - Includes custom `promise_type`, awaiters (`co_await`, `co_return`), and scheduling logic
   - Enables fully async flow across market data, order processing, and state transitions
 
 - **Internal REST API System**
-  - Native C++ async HTTPs server and client
+  - Native C++ HTTPs server (using `epoll`, `openssl`)
   - Fully self-implemented parser and request routing
   - Used for engine control, monitoring, and inter-process communication
 
@@ -21,7 +21,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Zero external dependencies
   - Used for config loading, logging, REST I/O
 
-- **MongoDB Integration (raw driver layer)**
+- **MongoDB Integration**
   - Raw BSON serialization layer with no ORM
   - Used for storing order fills, commissions, output tokens
   - All write/read flow implemented manually
@@ -38,6 +38,10 @@ This project is a fully self-designed, low-latency trading engine written in mod
 - **Built-in Latency Profiling**
   - Millisecond-level timing for each phase: 
     - market data receive → decision → order send → fill confirmation
+
+- **Dockerized & Cloud-Ready**
+  - Fully containerized using minimal Docker image
+  - Deployed and tested in live conditions on **AWS EC2**, allowing real production-like evaluation
 
 ---
 
