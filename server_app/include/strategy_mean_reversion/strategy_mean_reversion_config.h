@@ -1,0 +1,16 @@
+#ifndef STRATEGY_MEAN_REVERSION_CONFIG_H
+#define STRATEGY_MEAN_REVERSION_CONFIG_H
+
+#include <string>
+
+struct StrategyMeanReversionConfig
+{
+    std::string symbol; // BTCUSDT
+    double buy_volumn;
+    double buy_at_lower_price;
+    double sell_at_higher_price;
+    bool is_running;
+};
+
+
+#endif //STRATEGY_MEAN_REVERSION_CONFIG_H
