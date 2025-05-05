@@ -10,7 +10,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StrategyMeanReversionConfig data);
+    virtual TaskVoid run(StrategyMeanReversionData data);
 
     virtual Json get_open_orders() override;
 };

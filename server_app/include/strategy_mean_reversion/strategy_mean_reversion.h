@@ -11,31 +11,31 @@
 #include <coroutine/task.h>
 #include <coroutine/future.h>
 
-#include <strategy_price_arbitrage/strategy_price_arbitrage_config.h>
-#include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state.h>
+#include <strategy_mean_reversion/strategy_mean_reversion_config.h>
+#include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
 
-class StrategyPriceArbitrage
+class StrategyMeanReversion
 {
-    Singleton(StrategyPriceArbitrage)
+    Singleton(StrategyMeanReversion)
 
 private:
     // Mutex
     std::mutex m_strategy_mutex;
 
     // Info
-    StrategyPriceArbitrageConfig m_config;
+    StrategyMeanReversionConfig m_config;
     bool m_is_init = false;
 
     // Gateway
     std::shared_ptr<Gateway> m_gateway;
 
     // StrategyState
-    static std::unordered_map<std::string, StrategyPriceArbitrageState*>* get_strategy_states();
+    static std::unordered_map<std::string, StrategyMeanReversionState*>* get_strategy_states();
 
     // Data update
     TaskVoid m_update_task;
     bool m_is_run_update = false;
-    std::queue<StrategyPriceArbitrageData> m_state_data_queue;
+    std::queue<StrategyMeanReversionData> m_state_data_queue;
     Future<bool>::FutureValue m_has_data_update;
     Future<bool> wait_new_data_update();
 

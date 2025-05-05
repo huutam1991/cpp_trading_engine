@@ -9,6 +9,8 @@ struct StrategyMeanReversionConfig
     double buy_volumn;
     double buy_at_lower_price;
     double sell_at_higher_price;
+    double too_low_price_delta;
+    double too_high_price_delta;
     bool is_running;
 };
 
