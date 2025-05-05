@@ -100,7 +100,7 @@ void StrategyMeanReversionStateRun::check_cancel_order_at_price(double price)
         }
 
         double lower_price = price - m_config.buy_at_lower_price;
-        if (order_price <= lower_price - m_config.too_low_price_delta || order_price >= lower_price - m_config.too_high_price_delta)
+        if (order_price <= lower_price - m_config.too_low_price_delta || order_price >= lower_price + m_config.too_high_price_delta)
         {
             order_info.is_handeling = true;
             m_gateway->cancel(order_info.order);
@@ -115,10 +115,10 @@ void StrategyMeanReversionStateRun::update_orders_at_price(double price)
 
 TaskVoid StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_update)
 {
-    double price = price_update.price;
+    m_current_price = price_update.price;
 
-    update_orders_at_price(price);
-    check_cancel_order_at_price(price);
+    update_orders_at_price(m_current_price);
+    check_cancel_order_at_price(m_current_price);
 
     co_return;
 }
@@ -200,7 +200,7 @@ Json StrategyMeanReversionStateRun::get_open_orders()
     return {
         {"current_price", m_current_price},
         {"too_low_price", m_current_price - m_config.buy_at_lower_price - m_config.too_low_price_delta},
-        {"too_high_price", m_current_price - m_config.buy_at_lower_price - m_config.too_high_price_delta},
+        {"too_high_price", m_current_price - m_config.buy_at_lower_price + m_config.too_high_price_delta},
         {"order", open_orders}
     };
 }
