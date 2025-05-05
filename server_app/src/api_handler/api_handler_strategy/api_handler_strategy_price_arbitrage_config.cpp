@@ -33,8 +33,10 @@ APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : A
 HttpResponse APIHandlerStrategyPAConfig::child_handle()
 {
     Json response;
+    // MongoQuery query = MongoDB::instance()
+    //     .set_db_and_collection(STRATEGY_DB_NAME, "price_arbitrage_config");
     MongoQuery query = MongoDB::instance()
-        .set_db_and_collection(STRATEGY_DB_NAME, "price_arbitrage_config");
+        .set_db_and_collection(STRATEGY_DB_NAME, "mean_reversion_config");
     Json current_config = query.find_any();
 
     // GET

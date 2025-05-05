@@ -117,7 +117,7 @@ std::string HttpRequestPost::check_missing_body_params(const std::vector<std::st
     {
         if (m_body_json.has_field(fields[i]) == false)
         {
-            return "Missing " + fields[i];
+            return "Missing body param: [" + fields[i] + "]";
         }
     }
 

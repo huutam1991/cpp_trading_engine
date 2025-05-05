@@ -35,7 +35,7 @@ void StrategyMeanReversion::init()
     DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "mean_reversion_config");
 
     // If there's no config data available, add default config
-    if (config.get_data().has_field("symbol_1") == false)
+    if (config.get_data().has_field("symbol") == false)
     {
         config = {
             {"symbol", "BTCUSDT"},
