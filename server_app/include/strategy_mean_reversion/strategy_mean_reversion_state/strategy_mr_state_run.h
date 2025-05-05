@@ -41,7 +41,7 @@ private:
     void check_place_order_at_price(double price);
     void check_cancel_order_at_price(double price);
     void update_orders_at_price(double price);
-    TaskVoid handle_price_update(PriceUpdate price);
+    TaskVoid handle_price_update(MRPriceUpdate price);
     TaskVoid handle_order_update(Order& order);
 };
 

@@ -17,10 +17,10 @@ void StrategyMeanReversionStateStop::end()
 
 TaskVoid StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
 {
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
+    MRPriceUpdate price_update;
+    if (std::holds_alternative<MRPriceUpdate>(data))
     {
-        price_update = std::get<PriceUpdate>(data);
+        price_update = std::get<MRPriceUpdate>(data);
     }
 
     ADD_LOG("StrategyMeanReversionStateStop - run: Do nothing, symbol: " << price_update.symbol << ", price: " << price_update.price);

@@ -17,7 +17,7 @@ DataModel& StrategyMeanReversionState::get_state_status()
     if (state_status.is_null())
     {
         // Load from DB
-        state_status = DataModel::load_single_data_model(STRATEGY_DB_NAME, "price_arbitrage_status");
+        state_status = DataModel::load_single_data_model(STRATEGY_DB_NAME, "mean_reversion_status");
 
         // Default status is STOP
         if (state_status.get_data().has_field("status") == false)

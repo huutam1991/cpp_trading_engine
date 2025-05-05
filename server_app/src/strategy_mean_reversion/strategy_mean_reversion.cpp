@@ -32,7 +32,7 @@ void StrategyMeanReversion::init()
     MeanReversionSimpleGuard g(m_is_init);
 
     // Load current strategy info
-    DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "price_arbitrage_config");
+    DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "mean_reversion_config");
 
     // If there's no config data available, add default config
     if (config.get_data().has_field("symbol_1") == false)
@@ -77,7 +77,7 @@ void StrategyMeanReversion::init()
         // Can miss some price update
         if (m_has_data_update.is_value_set() == false)
         {
-            m_state_data_queue.push(PriceUpdate{std::move(symbol), price});
+            m_state_data_queue.push(MRPriceUpdate{std::move(symbol), price});
 
             // Inform has data update
             m_has_data_update.set_value(true);

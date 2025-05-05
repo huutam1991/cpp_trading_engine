@@ -1,18 +1,29 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_config.h>
 #include <mongo_db/mongo_db.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
+#include <strategy_mean_reversion/strategy_mean_reversion.h>
 
 APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
 
+    // add_mandatory_body_params({
+    //     "symbol_1",
+    //     "symbol_2",
+    //     "symbol_3",
+    //     "buy_volumn",
+    //     "buy_at_lower_price",
+    //     "price_delta",
+    //     "too_low_price_delta",
+    //     "too_high_price_delta",
+    //     "is_running"
+    // });
+
     add_mandatory_body_params({
-        "symbol_1",
-        "symbol_2",
-        "symbol_3",
+        "symbol",
         "buy_volumn",
         "buy_at_lower_price",
-        "price_delta",
+        "sell_at_higher_price",
         "too_low_price_delta",
         "too_high_price_delta",
         "is_running"
@@ -41,11 +52,7 @@ HttpResponse APIHandlerStrategyPAConfig::child_handle()
     else
     {
         Json config = m_request->get_body_json();
-        std::string symbol_1 = config["symbol_1"];
-        std::string symbol_2 = config["symbol_2"];
-        std::string symbol_3 = config["symbol_3"];
-        double buy_volumn = config["buy_volumn"];
-        double buy_at_lower_price = config["buy_at_lower_price"];
+        std::string symbol = config["symbol"];
 
         if (current_config.is_null() == true)
         {
@@ -58,11 +65,12 @@ HttpResponse APIHandlerStrategyPAConfig::child_handle()
         }
 
         // Re-init Strategy with new config
-        StrategyPriceArbitrage::instance().on_config_change();
+        // StrategyPriceArbitrage::instance().on_config_change();
+        StrategyMeanReversion::instance().on_config_change();
 
         // Response
         response["data"] = config;
-        response["msg"] = "update config for strategy [price arbitrage] [" + symbol_1 + "-" + symbol_2 + "-" + symbol_3 + "] successfully";
+        response["msg"] = "update config for strategy [price arbitrage] [" + symbol + "] successfully";
         response["status_code"] = OK_200;
         response["error"] = false;
     }

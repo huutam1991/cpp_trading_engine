@@ -121,7 +121,7 @@ void StrategyMeanReversionStateRun::update_orders_at_price(double price)
     check_place_order_at_price(price - m_config.buy_at_lower_price);
 }
 
-TaskVoid StrategyMeanReversionStateRun::handle_price_update(PriceUpdate price_update)
+TaskVoid StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_update)
 {
     double price = price_update.price;
     m_current_price = m_current_price == 0.0 ? price : m_current_price;
@@ -208,10 +208,10 @@ TaskVoid StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
 TaskVoid StrategyMeanReversionStateRun::run(StrategyMeanReversionData data)
 {
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
+    MRPriceUpdate price_update;
+    if (std::holds_alternative<MRPriceUpdate>(data))
     {
-        price_update = std::get<PriceUpdate>(data);
+        price_update = std::get<MRPriceUpdate>(data);
         co_await handle_price_update(std::move(price_update));
     }
     else

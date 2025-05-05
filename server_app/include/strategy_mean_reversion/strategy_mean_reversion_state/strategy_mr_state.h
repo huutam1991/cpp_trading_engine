@@ -9,13 +9,13 @@
 
 #include <strategy_mean_reversion/strategy_mean_reversion_config.h>
 
-struct PriceUpdate
+struct MRPriceUpdate
 {
     std::string symbol;
     double price;
 };
 
-using StrategyMeanReversionData = std::variant<PriceUpdate, Order>;
+using StrategyMeanReversionData = std::variant<MRPriceUpdate, Order>;
 
 class StrategyMeanReversionState
 {

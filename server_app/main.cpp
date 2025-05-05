@@ -15,6 +15,7 @@
 #include <order/order_manager.h>
 #include <strategy/strategy.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
+#include <strategy_mean_reversion/strategy_mean_reversion.h>
 
 extern void add_app_route();
 extern void add_bad_request();
@@ -67,7 +68,9 @@ int main(int argc, char **argv) {
 
     // Strategy
     // Strategy::instance().init();
-    StrategyPriceArbitrage::instance().init();
+    // StrategyPriceArbitrage::instance().init();
+    StrategyMeanReversion::instance().init();
+
 
     // Server
     HttpsServer server(port, web_data_path);

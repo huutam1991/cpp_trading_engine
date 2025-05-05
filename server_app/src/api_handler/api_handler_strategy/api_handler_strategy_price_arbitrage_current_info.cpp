@@ -1,5 +1,6 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_current_info.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
+#include <strategy_mean_reversion/strategy_mean_reversion.h>
 
 APIHandlerStrategyPACurrentInfo::APIHandlerStrategyPACurrentInfo(HttpRequest* request) : APIHandler(request)
 {
@@ -15,11 +16,13 @@ HttpResponse APIHandlerStrategyPACurrentInfo::child_handle()
     std::string type = m_request->get_query_param("type");
     if (type == "orders_chain")
     {
-        data = StrategyPriceArbitrage::instance().get_orders_chain();
+        // data = StrategyPriceArbitrage::instance().get_orders_chain();
+        data = StrategyMeanReversion::instance().get_orders_chain();
     }
     else if (type == "open_orders")
     {
-        data = StrategyPriceArbitrage::instance().get_open_orders();
+        // data = StrategyPriceArbitrage::instance().get_open_orders();
+        data = StrategyMeanReversion::instance().get_open_orders();
     }
 
     // Response
