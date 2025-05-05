@@ -19,9 +19,8 @@ public:
     virtual Json get_open_orders() override;
 
 private:
-    double m_symbol_2_price;
     double m_current_price = 0.0;
-    bool is_placing_chain_orders = false;
+    bool is_taking_profit = false;
 
     struct OrderInfo
     {
@@ -34,8 +33,7 @@ private:
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
-    Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
-    Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
+    Order get_limit_sell_spot_order_by_price_and_quantity(double price, double quantity);
 
     void remove_open_order_by_price(double price);
     void check_place_order_at_price(double price);

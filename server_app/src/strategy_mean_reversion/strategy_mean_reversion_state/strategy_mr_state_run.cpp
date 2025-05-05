@@ -19,6 +19,7 @@ void StrategyMeanReversionStateRun::end()
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol);
     m_current_open_orders.clear();
+    is_taking_profit = false;
 }
 
 Order StrategyMeanReversionStateRun::get_limit_buy_spot_order_by_price(double price)
@@ -40,34 +41,18 @@ Order StrategyMeanReversionStateRun::get_limit_buy_spot_order_by_price(double pr
     );
 }
 
-Order StrategyMeanReversionStateRun::get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
+Order StrategyMeanReversionStateRun::get_limit_sell_spot_order_by_price_and_quantity(double price, double quantity)
 {
-    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
+    double round_up_quantity = m_gateway->round_up_quantity("spot", m_config.symbol, quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         Order::ExchangeType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        symbol,
-        Order::Side::BUY,
-        Order::OrderType::MARKET,
-        0.0, // since type is MARKET, no need to specify price
-        round_up_quantity
-    );
-}
-
-Order StrategyMeanReversionStateRun::get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
-{
-    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
-
-    return Order(
-        OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::SPOT,
-        Order::Status::NOT_AVAILABLE,
-        symbol,
+        m_config.symbol,
         Order::Side::SELL,
-        Order::OrderType::MARKET,
-        0.0, // since type is MARKET, no need to specify price
+        Order::OrderType::LIMIT,
+        price,
         round_up_quantity
     );
 }
@@ -83,7 +68,7 @@ void StrategyMeanReversionStateRun::remove_open_order_by_price(double price)
 void StrategyMeanReversionStateRun::check_place_order_at_price(double price)
 {
     // Only place 1 order at a time, and dont place new LIMIT order when chain orders is placing
-    if (is_placing_chain_orders == true || m_current_open_orders.size() > 0)
+    if (is_taking_profit == true || m_current_open_orders.size() > 0)
     {
         return;
     }
@@ -108,7 +93,8 @@ void StrategyMeanReversionStateRun::check_cancel_order_at_price(double price)
             continue;
         }
 
-        if (order_price <= price - m_config.too_low_price_delta || order_price >= price - m_config.too_high_price_delta)
+        double lower_price = price - m_config.buy_at_lower_price;
+        if (order_price <= lower_price - m_config.too_low_price_delta || order_price >= lower_price - m_config.too_high_price_delta)
         {
             order_info.is_handeling = true;
             m_gateway->cancel(order_info.order);
@@ -124,25 +110,6 @@ void StrategyMeanReversionStateRun::update_orders_at_price(double price)
 TaskVoid StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_update)
 {
     double price = price_update.price;
-    m_current_price = m_current_price == 0.0 ? price : m_current_price;
-
-    // // Place new order if current price is moving a PRICE_DELTA compare to current price
-    // if (price <= m_current_price - m_config.price_delta)
-    // {
-    //     while (price <= m_current_price - m_config.price_delta)
-    //     {
-    //         m_current_price -= m_config.price_delta;
-    //         update_orders_at_price(m_current_price);
-    //     }
-    // }
-    // else if (price >= m_current_price + m_config.price_delta)
-    // {
-    //     while (price >= m_current_price + m_config.price_delta)
-    //     {
-    //         m_current_price += m_config.price_delta;
-    //         update_orders_at_price(m_current_price);
-    //     }
-    // }
 
     update_orders_at_price(price);
     check_cancel_order_at_price(price);
@@ -170,32 +137,24 @@ TaskVoid StrategyMeanReversionStateRun::handle_order_update(Order& order)
     // FILLED - check to continue place chain of orders
     else if (order.status == Order::Status::FILLED)
     {
-        // 1st order (LIMIT)
-        if (order.type == Order::OrderType::LIMIT)
+        // 1st order (BUY)
+        if (order.side == Order::Side::BUY)
         {
             // Buy symbol 2 from symbol 1
-            double quantity = order.output_quantity / m_symbol_2_price;
-            Order order_2 = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol, quantity);
+            double quantity = order.output_quantity;
+            double price = order.price + m_config.sell_at_higher_price;
+            Order order_2 = get_limit_sell_spot_order_by_price_and_quantity(price, quantity);
             m_gateway->place_none_wait(order_2);
 
             remove_open_order_by_price(order.price);
 
             // Mark [is_placing_chain_orders] to true, no new LIMIT order will be placed until the chain orders is finished
-            is_placing_chain_orders = true;
+            is_taking_profit = true;
         }
-        // // 2nd order (MARKET)
-        // else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_2)
-        // {
-        //     // Sell symbol 3 from symbol 2
-        //     double quantity = order.output_quantity;
-        //     Order order_3 = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, quantity);
-        //     m_gateway->place_none_wait(order_3);
-        // }
-        // // 3rd order (MARKET)
-        // else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_3)
-        // {
-        //     is_placing_chain_orders = false;
-        // }
+        else if (order.side == Order::Side::SELL)
+        {
+            is_taking_profit = false;
+        }
     }
     // CANCELED - remove from [m_current_open_orders]
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
@@ -234,8 +193,8 @@ Json StrategyMeanReversionStateRun::get_open_orders()
 
     return {
         {"current_price", m_current_price},
-        {"too_low_price", m_current_price - m_config.too_low_price_delta},
-        {"too_high_price", m_current_price - m_config.too_high_price_delta},
+        {"too_low_price", m_current_price - m_config.buy_at_lower_price - m_config.too_low_price_delta},
+        {"too_high_price", m_current_price - m_config.buy_at_lower_price - m_config.too_high_price_delta},
         {"order", open_orders}
     };
 }
