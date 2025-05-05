@@ -108,16 +108,11 @@ void StrategyMeanReversionStateRun::check_cancel_order_at_price(double price)
     }
 }
 
-void StrategyMeanReversionStateRun::update_orders_at_price(double price)
-{
-    check_place_order_at_price(price - m_config.buy_at_lower_price);
-}
-
 TaskVoid StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_update)
 {
     m_current_price = price_update.price;
 
-    update_orders_at_price(m_current_price);
+    check_place_order_at_price(m_current_price - m_config.buy_at_lower_price);
     check_cancel_order_at_price(m_current_price);
 
     co_return;
@@ -153,12 +148,11 @@ TaskVoid StrategyMeanReversionStateRun::handle_order_update(Order& order)
             m_gateway->place_none_wait(order_2);
 
             remove_open_order_by_price(order.price);
-
-            // Mark [is_placing_chain_orders] to true, no new LIMIT order will be placed until the chain orders is finished
             is_taking_profit = true;
         }
         else if (order.side == Order::Side::SELL)
         {
+            remove_open_order_by_price(order.price);
             is_taking_profit = false;
         }
     }
