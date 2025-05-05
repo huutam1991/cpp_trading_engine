@@ -85,6 +85,12 @@ void StrategyMeanReversionStateRun::check_place_order_at_price(double price)
 
 void StrategyMeanReversionStateRun::check_cancel_order_at_price(double price)
 {
+    // Dont cancel taking profit order
+    if (is_taking_profit == true)
+    {
+        return;
+    }
+
     // Cancel all of orders that price is too low or too high
     for (auto& [order_price, order_info] : m_current_open_orders)
     {
