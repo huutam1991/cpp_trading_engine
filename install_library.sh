@@ -31,6 +31,13 @@ cmake --build . --target install
 cd /
 curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.7/mongo-cxx-driver-r3.6.7.tar.gz
 tar -xzf mongo-cxx-driver-r3.6.7.tar.gz
+# Patch all .hpp files that use std::uintXX_t or std::intXX_t but are missing <cstdint> (not nice, but works)
+find /mongo-cxx-driver-r3.6.7/src -name "*.hpp" | while read file; do
+  if grep -qE 'std::(u?int(8|16|32|64)_t)' "$file" && ! grep -q '<cstdint>' "$file"; then
+    echo "Patching $file"
+    sed -i '/#pragma once/a #include <cstdint>' "$file"
+  fi
+done
 cd /mongo-cxx-driver-r3.6.7/build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build . -j 4
