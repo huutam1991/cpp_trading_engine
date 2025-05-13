@@ -3,6 +3,7 @@
 #include <app_constants.h>
 #include <gateways/gateway_manager.h>
 #include <gateways/binance/binance_gateway.h>
+#include <gateways/coinbase/coinbase_gateway.h>
 
 void GatewayManager::init()
 {
@@ -16,11 +17,22 @@ void GatewayManager::init()
     {
         std::string exchange = activate_account["exchange"];
         std::string key = activate_account["key"];
+        
+        // Skip in-active key
+        if (activate_account.has_field("is_active") == false || (bool)activate_account["is_active"] == false)
+        {
+            return;
+        }
+
         GatewayEnum gateway_enum = gateway_name_to_enum(exchange);
 
         if (gateway_enum == GatewayEnum::BINANCE)
         {
             m_gateways.insert(std::make_pair(GatewayEnum::BINANCE, std::make_shared<BinanceGateway>(key)));
+        }
+        else if (gateway_enum == GatewayEnum::COINBASE)
+        {
+            m_gateways.insert(std::make_pair(GatewayEnum::COINBASE, std::make_shared<CoinbaseGateway>(key)));
         }
         else
         {
