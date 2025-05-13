@@ -136,6 +136,13 @@ enum class SourceType
 #define COINBASE_REALNET_WS_URL "ws-feed.exchange.coinbase.com" // Need check
 #define COINBASE_REALNET_WS_PORT "9443"
 
+// Coinbase advance realnet
+#define COINBASE_ADVANCE_REALNET_DB_SOURCE_NAME "coinbase_advance_real"
+#define COINBASE_ADVANCE_REALNET_URL "api.coinbase.com"
+#define COINBASE_ADVANCE_REALNET_PORT "443"
+#define COINBASE_ADVANCE_REALNET_WS_URL "advanced-trade-ws.coinbase.com"
+#define COINBASE_ADVANCE_REALNET_WS_PORT "443"
+
 // FTX testnet
 #define FTX_TESTNET_DB_SOURCE_NAME "ftx_test"
 #define FTX_TESTNET_URL "testnet.ftx.vision"
