@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/core/include",
+                "${workspaceFolder}/core/src",
                 "${workspaceFolder}/server_app/include",
                 "${workspaceFolder}/server_app/src",
                 "/usr/local/include/**",

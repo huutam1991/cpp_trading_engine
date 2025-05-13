@@ -259,13 +259,6 @@ std::string Utils::round_string_number(const std::string& str_number, size_t pre
     return str_number;
 }
 
-// Global function that is declared in util_macros.h
-std::string get_time_now_in_string()
-{
-    Utils& utils = Utils::instance();
-    return utils.get_string_time(utils.get_time_now_in_utc());
-}
-
 // Global Thread Pool (common) for features in core
 std::mutex core_common_pool_mutex;
 ThreadPool* Utils::get_core_common_pool()

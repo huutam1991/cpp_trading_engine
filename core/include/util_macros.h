@@ -4,6 +4,7 @@
 #include <iostream>
 #include <chrono>
 #include <glog/logging.h>
+#include <time_log.h>
 
 #define Singleton(className) \
 public: \
@@ -24,9 +25,12 @@ static type& get_##propertyName() \
     return m_##propertyName; \
 } \
 
-std::string get_time_now_in_string();
+namespace time_log
+{
+    std::string get_time_now_in_string();
+};
 
-#define ADD_LOG(...) std::cout << get_time_now_in_string() << " | " << __VA_ARGS__ << std::endl
+#define ADD_LOG(...) std::cout << time_log::get_time_now_in_string() << " | " << __VA_ARGS__ << std::endl;
 // #define ADD_LOG(...) LOG(INFO) << __VA_ARGS__
 #define SAFE_RELEASE(pointer) if (pointer != nullptr) { delete pointer; pointer = nullptr; }
 
