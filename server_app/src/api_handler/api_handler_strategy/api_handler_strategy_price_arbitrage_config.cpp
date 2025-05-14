@@ -7,36 +7,36 @@ APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : A
 {
     m_need_check_authentication = true;
 
-    // add_mandatory_body_params({
-    //     "symbol_1",
-    //     "symbol_2",
-    //     "symbol_3",
-    //     "buy_volumn",
-    //     "buy_at_lower_price",
-    //     "price_delta",
-    //     "too_low_price_delta",
-    //     "too_high_price_delta",
-    //     "is_running"
-    // });
-
     add_mandatory_body_params({
-        "symbol",
+        "symbol_1",
+        "symbol_2",
+        "symbol_3",
         "buy_volumn",
         "buy_at_lower_price",
-        "sell_at_higher_price",
+        "price_delta",
         "too_low_price_delta",
         "too_high_price_delta",
         "is_running"
     });
+
+    // add_mandatory_body_params({
+    //     "symbol",
+    //     "buy_volumn",
+    //     "buy_at_lower_price",
+    //     "sell_at_higher_price",
+    //     "too_low_price_delta",
+    //     "too_high_price_delta",
+    //     "is_running"
+    // });
 }
 
 HttpResponse APIHandlerStrategyPAConfig::child_handle()
 {
     Json response;
-    // MongoQuery query = MongoDB::instance()
-    //     .set_db_and_collection(STRATEGY_DB_NAME, "price_arbitrage_config");
     MongoQuery query = MongoDB::instance()
-        .set_db_and_collection(STRATEGY_DB_NAME, "mean_reversion_config");
+        .set_db_and_collection(STRATEGY_DB_NAME, "price_arbitrage_config");
+    // MongoQuery query = MongoDB::instance()
+    //     .set_db_and_collection(STRATEGY_DB_NAME, "mean_reversion_config");
     Json current_config = query.find_any();
 
     // GET
@@ -67,8 +67,8 @@ HttpResponse APIHandlerStrategyPAConfig::child_handle()
         }
 
         // Re-init Strategy with new config
-        // StrategyPriceArbitrage::instance().on_config_change();
-        StrategyMeanReversion::instance().on_config_change();
+        StrategyPriceArbitrage::instance().on_config_change();
+        // StrategyMeanReversion::instance().on_config_change();
 
         // Response
         response["data"] = config;
