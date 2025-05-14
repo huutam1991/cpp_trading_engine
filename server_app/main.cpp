@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     // google::InitGoogleLogging(argv[0]);
 
     if (!std::filesystem::is_directory(std::filesystem::path(web_data_path))) {
-        LOG(ERROR) << "Invalid web data directory\n";
+        // LOG(ERROR) << "Invalid web data directory\n";
         return EXIT_FAILURE;
     }
 
@@ -68,15 +68,15 @@ int main(int argc, char **argv) {
 
     // Strategy
     // Strategy::instance().init();
-    // StrategyPriceArbitrage::instance().init();
-    StrategyMeanReversion::instance().init();
+    StrategyPriceArbitrage::instance().init();
+    // StrategyMeanReversion::instance().init();
 
 
     // Server
     HttpsServer server(port, web_data_path);
     server.start();
 
-    LOG(INFO) << "Main exit" << std::endl;
+    // LOG(INFO) << "Main exit" << std::endl;
 
     return EXIT_SUCCESS;
 }
