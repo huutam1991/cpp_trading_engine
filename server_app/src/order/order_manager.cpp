@@ -149,7 +149,7 @@ TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue 
 
 TaskVoid OrderManager::handle_update_order(Order order)
 {
-    // MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
+    MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
     Order& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)

@@ -67,6 +67,7 @@ void BinanceQuoterSpot::init_websocket()
         // on_message
         [this](std::string buffer) -> TaskVoid
         {
+            MeasureTime a("Handle order data", MeasureUnit::MICROSECOND);
             Json json = Json::parse(buffer);
 
             if (json["e"] == "executionReport")
