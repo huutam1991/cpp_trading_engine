@@ -1,5 +1,4 @@
-#ifndef USER_H
-#define USER_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -14,4 +13,3 @@ private:
     std::string m_user_id;
 };
 
-#endif //USER_H

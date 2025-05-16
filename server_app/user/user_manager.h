@@ -1,5 +1,4 @@
-#ifndef USER_MANAGER_H
-#define USER_MANAGER_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -22,5 +21,3 @@ private:
     std::unordered_map<std::string, std::shared_ptr<User>> m_user_list;
 
 };
-
-#endif //USER_MANAGER_H
