@@ -1,5 +1,4 @@
-#ifndef ORDER_MANAGER_H
-#define ORDER_MANAGER_H
+#pragma once
 
 #include <mutex>
 #include <functional>
@@ -66,5 +65,3 @@ public:
     Future<Order> wait_for_order_status(OrderId order_id, Order::Status status);
 
 };
-
-#endif // ORDER_MANAGER_H

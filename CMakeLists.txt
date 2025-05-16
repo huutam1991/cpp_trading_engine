@@ -14,8 +14,10 @@ include_directories(${LIBMONGOCXX_INCLUDE_DIR})
 include_directories(${LIBBSONCXX_INCLUDE_DIR})
 include_directories("/usr/local/lib")
 include_directories(core/include)
+include_directories(core)
 include_directories(server_app/include)
 include_directories(server_app/src)
+include_directories(server_app)
 
 # Header files
 file (GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS

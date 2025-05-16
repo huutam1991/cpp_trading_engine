@@ -1,5 +1,4 @@
-#ifndef ORDER_DATA_MODEL_HELPER_H
-#define ORDER_DATA_MODEL_HELPER_H
+#pragma once
 
 #include <unordered_map>
 
@@ -26,5 +25,3 @@ public:
     void update_order(Order& order);
     TaskVoid task_update_order(Order order);
 };
-
-#endif // ORDER_DATA_MODEL_HELPER_H

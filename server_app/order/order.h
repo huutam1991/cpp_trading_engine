@@ -1,5 +1,4 @@
-#ifndef ORDER_H
-#define ORDER_H
+#pragma once
 
 #include <string>
 #include <json/json.h>
@@ -143,5 +142,3 @@ public:
     Json to_json();
     static Order from_json(Json& data);
 };
-
-#endif //ORDER_H

@@ -5,8 +5,10 @@
             "includePath": [
                 "${workspaceFolder}/core/include",
                 "${workspaceFolder}/core/src",
+                "${workspaceFolder}/core",
                 "${workspaceFolder}/server_app/include",
                 "${workspaceFolder}/server_app/src",
+                "${workspaceFolder}/server_app",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
