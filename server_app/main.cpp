@@ -17,6 +17,8 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
 #include <strategy_mean_reversion/strategy_mean_reversion.h>
 
+#include <external_request/https_client_async.h>
+
 extern void add_app_route();
 extern void add_bad_request();
 
@@ -63,20 +65,40 @@ int main(int argc, char **argv) {
     // });
     // WebSocketServerType::instance().start();
 
-    GatewayManager::instance().init();
-    OrderManager::instance().init();
+    // GatewayManager::instance().init();
+    // OrderManager::instance().init();
 
-    // Strategy
-    // Strategy::instance().init();
-    StrategyPriceArbitrage::instance().init();
-    // StrategyMeanReversion::instance().init();
+    // // Strategy
+    // // Strategy::instance().init();
+    // StrategyPriceArbitrage::instance().init();
+    // // StrategyMeanReversion::instance().init();
 
 
-    // Server
-    HttpsServer server(port, web_data_path);
-    server.start();
+    // // Server
+    // HttpsServer server(port, web_data_path);
+    // server.start();
 
-    // LOG(INFO) << "Main exit" << std::endl;
+    // To use:
+
+    net::io_context ioc;
+    auto guard = net::make_work_guard(ioc);
+    std::thread t([ioc = &ioc]()
+    {
+        ioc->run();
+    });
+
+    ssl::context ssl_ctx(ssl::context::tlsv12_client);
+    ssl_ctx.set_verify_mode(ssl::verify_peer);
+    ssl_ctx.set_default_verify_paths();
+
+    auto client = std::make_shared<HttpsClientAsync>(ioc, ssl_ctx);
+    client->fetch("api.binance.com", "443", "/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
+        std::cout << "Response: " << res << std::endl;
+    });
+
+    t.join();
+
+    ADD_LOG("Main exit");
 
     return EXIT_SUCCESS;
 }
