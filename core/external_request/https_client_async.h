@@ -27,15 +27,15 @@ public:
     void fetch(const std::string& target, ResponseCallback cb);
 
 private:
-    tcp::resolver resolver_;
-    beast::ssl_stream<beast::tcp_stream> stream_;
-    beast::flat_buffer buffer_;
-    http::request<http::empty_body> req_;
-    http::response<http::string_body> res_;
+    tcp::resolver m_resolver;
+    beast::ssl_stream<beast::tcp_stream> m_stream;
+    beast::flat_buffer m_buffer;
+    http::request<http::empty_body> m_request;
+    http::response<http::string_body> m_res;
     std::string m_host;
     tcp::resolver::results_type m_resolve_result;
-    std::string target_;
-    ResponseCallback callback_;
+    std::string m_target;
+    ResponseCallback m_callback;
 
     static ssl::context& get_ssl_ctx();
 
