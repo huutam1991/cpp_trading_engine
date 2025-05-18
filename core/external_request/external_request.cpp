@@ -56,7 +56,7 @@ std::string ExternalRequest::send_request(bool wait_response)
     }
     catch(std::exception const& e)
     {
-        LOG(ERROR) << "Error: " << e.what() << std::endl;
+        ADD_LOG("Error: " << e.what());
         return "";
     }
 

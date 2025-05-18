@@ -1,8 +1,6 @@
-#ifndef EXTERNAL_REQUEST_H
-#define EXTERNAL_REQUEST_H
+#pragma once
 
 #include <string>
-
 #include <constants.h>
 
 class ExternalRequest
@@ -21,5 +19,3 @@ public:
     std::string send_request(bool wait_response = true);
 
 };
-
-#endif //EXTERNAL_REQUEST_H

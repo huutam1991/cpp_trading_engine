@@ -1,5 +1,4 @@
-#ifndef EXTERNAL_REQUEST_SSL_H
-#define EXTERNAL_REQUEST_SSL_H
+#pragma once
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
@@ -51,5 +50,3 @@ public:
     http::verb transform_request_method(RequestMethod method);
 
 };
-
-#endif //EXTERNAL_REQUEST_SSL_H
