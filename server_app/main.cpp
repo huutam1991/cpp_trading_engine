@@ -18,6 +18,7 @@
 #include <strategy_mean_reversion/strategy_mean_reversion.h>
 
 #include <external_request/https_client_async.h>
+#include <ioc_pool.h>
 
 extern void add_app_route();
 extern void add_bad_request();
@@ -73,24 +74,14 @@ int main(int argc, char **argv) {
     // StrategyPriceArbitrage::instance().init();
     // // StrategyMeanReversion::instance().init();
 
-
-    // // Server
-    // HttpsServer server(port, web_data_path);
-    // server.start();
-    
-    net::io_context ioc;
-    auto guard = net::make_work_guard(ioc);
-    std::thread t([ioc = &ioc]()
-    {
-        ioc->run();
-    });
-
-    auto client = std::make_shared<HttpsClientAsync>(ioc, "api.binance.com", 443);
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), "api.binance.com", 443);
     client->fetch("/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
         std::cout << "Response: " << res << std::endl;
     });
 
-    t.join();
+    // Server
+    HttpsServer server(port, web_data_path);
+    server.start();
 
     ADD_LOG("Main exit");
 
