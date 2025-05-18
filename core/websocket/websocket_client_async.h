@@ -1,5 +1,4 @@
-#ifndef WEBSOCKET_CLIENT_ASYNC_H
-#define WEBSOCKET_CLIENT_ASYNC_H
+#pragma once
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
@@ -71,5 +70,3 @@ private:
     // Static ioc context
     static net::io_context& get_ioc();
 };
-
-#endif //WEBSOCKET_CLIENT_ASYNC_H

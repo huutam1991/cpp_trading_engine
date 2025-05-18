@@ -1,5 +1,4 @@
-#ifndef WEBSOCKET_CLIENT_H
-#define WEBSOCKET_CLIENT_H
+#pragma once
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
@@ -78,4 +77,3 @@ public:
     void run();
 
 };
-#endif //WEBSOCKET_CLIENT_H

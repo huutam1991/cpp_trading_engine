@@ -1,5 +1,4 @@
-#ifndef WEBSOCKET_SERVER_H
-#define WEBSOCKET_SERVER_H
+#pragma once
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
@@ -816,5 +815,3 @@ void WebsocketServer<SessionType,ListenerType>::send_data_through_channel(std::s
 
     // ADD_LOG("Websocket Server - total write = " << subscribed_session_id.size());
 }
-
-#endif //WEBSOCKET_SERVER_H

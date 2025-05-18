@@ -77,9 +77,7 @@ int main(int argc, char **argv) {
     // // Server
     // HttpsServer server(port, web_data_path);
     // server.start();
-
-    // To use:
-
+    
     net::io_context ioc;
     auto guard = net::make_work_guard(ioc);
     std::thread t([ioc = &ioc]()

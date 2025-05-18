@@ -1,5 +1,4 @@
-#ifndef WEBSOCKET_SERVER_SSL_H
-#define WEBSOCKET_SERVER_SSL_H
+#pragma once
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
@@ -422,5 +421,3 @@ private:
         do_accept();
     }
 };
-
-#endif //WEBSOCKET_SERVER_SSL_H
