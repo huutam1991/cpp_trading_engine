@@ -23,8 +23,8 @@ class HttpsClientAsync : public std::enable_shared_from_this<HttpsClientAsync>
 public:
     using ResponseCallback = std::function<void(std::string)>;
 
-    HttpsClientAsync(net::io_context& ioc, ssl::context& ssl_ctx);
-    void fetch(const std::string& host, const std::string& port, const std::string& target, ResponseCallback cb);
+    HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port);
+    void fetch(const std::string& target, ResponseCallback cb);
 
 private:
     tcp::resolver resolver_;
@@ -32,11 +32,13 @@ private:
     beast::flat_buffer buffer_;
     http::request<http::empty_body> req_;
     http::response<http::string_body> res_;
-    std::string host_;
+    std::string m_host;
+    tcp::resolver::results_type m_resolve_result;
     std::string target_;
     ResponseCallback callback_;
 
-    void on_resolve(beast::error_code ec, tcp::resolver::results_type results);
+    static ssl::context& get_ssl_ctx();
+
     void on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type);
     void on_handshake(beast::error_code ec);
     void on_write(beast::error_code ec, std::size_t bytes_transferred);

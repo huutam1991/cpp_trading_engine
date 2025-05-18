@@ -1,24 +1,37 @@
 #include <external_request/https_client_async.h>
 
-HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, ssl::context& ssl_ctx)
-        : resolver_(ioc), stream_(ioc, ssl_ctx) 
-{}
-
-void HttpsClientAsync::fetch(const std::string& host, const std::string& port, const std::string& target, ResponseCallback cb) 
+HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port)
+        : resolver_(ioc), stream_{ioc, get_ssl_ctx()}, m_host{host}
 {
-    host_ = host;
+    beast::error_code ec;
+    m_resolve_result = resolver_.resolve(host, port, ec);
+    if (ec) {
+        throw std::runtime_error("Resolve failed: " + ec.message());
+    }
+
+    std::cout << "Resolve ec: " << ec << std::endl;
+}
+
+ssl::context& HttpsClientAsync::get_ssl_ctx()
+{
+    static ssl::context ssl_ctx(ssl::context::tlsv12_client);
+    static bool initialized = [] 
+    {
+        ssl_ctx.set_verify_mode(ssl::verify_peer);
+        ssl_ctx.set_default_verify_paths();
+        return true;
+    }();
+
+    return ssl_ctx;
+}
+
+void HttpsClientAsync::fetch(const std::string& target, ResponseCallback cb) 
+{
     target_ = target;
     callback_ = std::move(cb);
 
-    resolver_.async_resolve(host, port,
-        beast::bind_front_handler(&HttpsClientAsync::on_resolve, shared_from_this()));
-}
-
-void HttpsClientAsync::on_resolve(beast::error_code ec, tcp::resolver::results_type results) 
-{
-    if (ec) return fail("resolve", ec);
     beast::get_lowest_layer(stream_).async_connect(
-        results,
+        m_resolve_result,
         beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
 }
 
@@ -36,7 +49,7 @@ void HttpsClientAsync::on_handshake(beast::error_code ec)
     req_.version(11);
     req_.method(http::verb::get);
     req_.target(target_);
-    req_.set(http::field::host, host_);
+    req_.set(http::field::host, m_host);
     req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
     http::async_write(stream_, req_,

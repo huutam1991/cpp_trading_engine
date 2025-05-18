@@ -87,12 +87,8 @@ int main(int argc, char **argv) {
         ioc->run();
     });
 
-    ssl::context ssl_ctx(ssl::context::tlsv12_client);
-    ssl_ctx.set_verify_mode(ssl::verify_peer);
-    ssl_ctx.set_default_verify_paths();
-
-    auto client = std::make_shared<HttpsClientAsync>(ioc, ssl_ctx);
-    client->fetch("api.binance.com", "443", "/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
+    auto client = std::make_shared<HttpsClientAsync>(ioc, "api.binance.com", "443");
+    client->fetch("/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
         std::cout << "Response: " << res << std::endl;
     });
 
