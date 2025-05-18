@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
         ioc->run();
     });
 
-    auto client = std::make_shared<HttpsClientAsync>(ioc, "api.binance.com", "443");
+    auto client = std::make_shared<HttpsClientAsync>(ioc, "api.binance.com", 443);
     client->fetch("/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
         std::cout << "Response: " << res << std::endl;
     });

@@ -1,10 +1,10 @@
 #include <external_request/https_client_async.h>
 
-HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port)
-        : m_resolver(ioc), m_stream{ioc, get_ssl_ctx()}, m_host{host}
+HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host, size_t port)
+    : m_resolver(ioc), m_stream{ioc, get_ssl_ctx()}, m_host{host}
 {
     beast::error_code ec;
-    m_resolve_result = m_resolver.resolve(host, port, ec);
+    m_resolve_result = m_resolver.resolve(host, std::to_string(port), ec);
     if (ec) 
     {
         throw std::runtime_error("Resolve failed: " + ec.message());

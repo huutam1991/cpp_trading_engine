@@ -23,7 +23,7 @@ class HttpsClientAsync : public std::enable_shared_from_this<HttpsClientAsync>
 public:
     using ResponseCallback = std::function<void(std::string)>;
 
-    HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port);
+    HttpsClientAsync(net::io_context& ioc, const std::string& host, size_t port);
     void fetch(const std::string& target, ResponseCallback cb);
 
 private:
