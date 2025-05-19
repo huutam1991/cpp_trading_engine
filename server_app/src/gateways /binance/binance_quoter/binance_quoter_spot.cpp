@@ -173,21 +173,6 @@ void BinanceQuoterSpot::init_websocket()
 
 Task<std::string> BinanceQuoterSpot::get_listen_key()
 {
-    // RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
-    // binance_request.add_header("X-MBX-APIKEY", m_api_key);
-    // Json data = co_await binance_request.send_request();
-
-    // Future<Json> future([&](Future<Json>::FutureValue value) mutable
-    // {   
-        
-
-    //     client->post("/api/v3/userDataStream ", "", [value](const std::string& res) mutable
-    //     {
-    //         Json response = Json::parse(res);
-    //         value.set_value(response);
-    //     });
-    // });
-
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), m_url, std::stoi(m_port));
     client->add_header("X-MBX-APIKEY", m_api_key);
 
