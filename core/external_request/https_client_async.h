@@ -28,11 +28,9 @@ public:
     HttpsClientAsync(net::io_context& ioc, const std::string& host, size_t port);
     void add_header(const std::string& key, const std::string value);
 
-    void get(const std::string& endpoint, ResponseCallback cb);
-    void post(const std::string& endpoint, std::string body, ResponseCallback cb);
-    void del(const std::string& endpoint, std::string body, ResponseCallback cb);
-
+    Future<std::string> get(const std::string& endpoint);
     Future<std::string> post(const std::string& endpoint, std::string body);
+    Future<std::string> del(const std::string& endpoint, std::string body);
 
 private:
     tcp::resolver m_resolver;
@@ -46,7 +44,6 @@ private:
     std::string m_endpoint;
     std::string m_body;
     std::unordered_map<std::string, std::string> m_headers;
-    ResponseCallback m_callback;
     Future<std::string>::FutureValue m_future_value;
 
     static ssl::context& get_ssl_ctx();

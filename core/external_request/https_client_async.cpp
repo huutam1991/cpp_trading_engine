@@ -29,40 +29,22 @@ void HttpsClientAsync::add_header(const std::string& key, const std::string valu
     m_headers.insert(std::make_pair(key, value));
 }
 
-void HttpsClientAsync::get(const std::string& endpoint, ResponseCallback cb) 
+Future<std::string> HttpsClientAsync::get(const std::string& endpoint) 
 {
     m_method = http::verb::get;
     m_endpoint = endpoint;
     m_body = "";
-    m_callback = std::move(cb);
+    
+    Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
+    {
+        self->m_future_value = value;
+        
+        beast::get_lowest_layer(self->m_stream).async_connect(
+            self->m_resolve_result,
+            beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
+    });
 
-    beast::get_lowest_layer(m_stream).async_connect(
-        m_resolve_result,
-        beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
-}
-
-void HttpsClientAsync::post(const std::string& endpoint, std::string body, ResponseCallback cb)
-{
-    m_method = http::verb::post;
-    m_endpoint = endpoint;
-    m_body = std::move(body);
-    m_callback = std::move(cb);
-
-    beast::get_lowest_layer(m_stream).async_connect(
-        m_resolve_result,
-        beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
-}
-
-void HttpsClientAsync::del(const std::string& endpoint, std::string body, ResponseCallback cb)
-{
-    m_method = http::verb::delete_;
-    m_endpoint = endpoint;
-    m_body = std::move(body);
-    m_callback = std::move(cb);
-
-    beast::get_lowest_layer(m_stream).async_connect(
-        m_resolve_result,
-        beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
+    return future;
 }
 
 Future<std::string> HttpsClientAsync::post(const std::string& endpoint, std::string body)
@@ -70,8 +52,25 @@ Future<std::string> HttpsClientAsync::post(const std::string& endpoint, std::str
     m_method = http::verb::post;
     m_endpoint = endpoint;
     m_body = std::move(body);
-    m_callback = nullptr;
     
+    Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
+    {
+        self->m_future_value = value;
+        
+        beast::get_lowest_layer(self->m_stream).async_connect(
+            self->m_resolve_result,
+            beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
+    });
+
+    return future;
+}
+
+Future<std::string> HttpsClientAsync::del(const std::string& endpoint, std::string body)
+{
+    m_method = http::verb::delete_;
+    m_endpoint = endpoint;
+    m_body = std::move(body);
+
     Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
     {
         self->m_future_value = value;
@@ -128,16 +127,7 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("read", ec);
 
-    // This is using callback
-    if (m_callback) 
-    {
-        m_callback(m_res.body());
-    }
-    // This is using future
-    else
-    {
-        m_future_value.set_value(m_res.body());
-    }
+    m_future_value.set_value(m_res.body());
 
     beast::error_code shutdown_ec;
     m_stream.shutdown(shutdown_ec);
