@@ -27,8 +27,8 @@ public:
     void add_header(const std::string& key, const std::string value);
 
     void get(const std::string& endpoint, ResponseCallback cb);
-    void post(const std::string& endpoint, const std::string& body, ResponseCallback cb);
-    void del(const std::string& endpoint, const std::string& body, ResponseCallback cb);
+    void post(const std::string& endpoint, std::string body, ResponseCallback cb);
+    void del(const std::string& endpoint, std::string body, ResponseCallback cb);
 
 private:
     tcp::resolver m_resolver;

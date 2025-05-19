@@ -43,11 +43,11 @@ void HttpsClientAsync::get(const std::string& endpoint, ResponseCallback cb)
         beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
 }
 
-void HttpsClientAsync::post(const std::string& endpoint, const std::string& body, ResponseCallback cb)
+void HttpsClientAsync::post(const std::string& endpoint, std::string body, ResponseCallback cb)
 {
     m_method = http::verb::post;
     m_endpoint = endpoint;
-    m_body = body;
+    m_body = std::move(body);
     m_callback = std::move(cb);
 
     beast::get_lowest_layer(m_stream).async_connect(
@@ -55,11 +55,11 @@ void HttpsClientAsync::post(const std::string& endpoint, const std::string& body
         beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
 }
 
-void HttpsClientAsync::del(const std::string& endpoint, const std::string& body, ResponseCallback cb)
+void HttpsClientAsync::del(const std::string& endpoint, std::string body, ResponseCallback cb)
 {
     m_method = http::verb::delete_;
     m_endpoint = endpoint;
-    m_body = body;
+    m_body = std::move(body);
     m_callback = std::move(cb);
 
     beast::get_lowest_layer(m_stream).async_connect(
