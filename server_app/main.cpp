@@ -75,8 +75,14 @@ int main(int argc, char **argv) {
     // // StrategyMeanReversion::instance().init();
 
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), "api.binance.com", 443);
-    client->fetch("/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
+    client->get("/api/v3/depth?symbol=BTCUSDT&limit=5", [](const std::string& res) {
         std::cout << "Response: " << res << std::endl;
+    });
+
+    
+    auto client2 = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), "httpbin.org", 443);
+    client2->post("/post ", "{}", [](const std::string& res) {
+        std::cout << "Response post: " << res << std::endl;
     });
 
     // Server

@@ -24,17 +24,21 @@ public:
     using ResponseCallback = std::function<void(std::string)>;
 
     HttpsClientAsync(net::io_context& ioc, const std::string& host, size_t port);
-    void fetch(const std::string& target, ResponseCallback cb);
+    void get(const std::string& endpoint, ResponseCallback cb);
+    void post(const std::string& endpoint, const std::string& body, ResponseCallback cb);
+    void del(const std::string& endpoint, const std::string& body, ResponseCallback cb);
 
 private:
     tcp::resolver m_resolver;
     beast::ssl_stream<beast::tcp_stream> m_stream;
     beast::flat_buffer m_buffer;
-    http::request<http::empty_body> m_request;
+    http::request<http::string_body> m_request;
     http::response<http::string_body> m_res;
-    std::string m_host;
     tcp::resolver::results_type m_resolve_result;
-    std::string m_target;
+    http::verb m_method;
+    std::string m_host;
+    std::string m_endpoint;
+    std::string m_body;
     ResponseCallback m_callback;
 
     static ssl::context& get_ssl_ctx();

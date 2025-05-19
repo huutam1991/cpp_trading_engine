@@ -26,9 +26,35 @@ ssl::context& HttpsClientAsync::get_ssl_ctx()
     return ssl_ctx;
 }
 
-void HttpsClientAsync::fetch(const std::string& target, ResponseCallback cb) 
+void HttpsClientAsync::get(const std::string& endpoint, ResponseCallback cb) 
 {
-    m_target = target;
+    m_method = http::verb::get;
+    m_endpoint = endpoint;
+    m_body = "";
+    m_callback = std::move(cb);
+
+    beast::get_lowest_layer(m_stream).async_connect(
+        m_resolve_result,
+        beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
+}
+
+void HttpsClientAsync::post(const std::string& endpoint, const std::string& body, ResponseCallback cb)
+{
+    m_method = http::verb::post;
+    m_endpoint = endpoint;
+    m_body = body;
+    m_callback = std::move(cb);
+
+    beast::get_lowest_layer(m_stream).async_connect(
+        m_resolve_result,
+        beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
+}
+
+void HttpsClientAsync::del(const std::string& endpoint, const std::string& body, ResponseCallback cb)
+{
+    m_method = http::verb::delete_;
+    m_endpoint = endpoint;
+    m_body = body;
     m_callback = std::move(cb);
 
     beast::get_lowest_layer(m_stream).async_connect(
@@ -47,10 +73,15 @@ void HttpsClientAsync::on_handshake(beast::error_code ec)
 {
     if (ec) return fail("handshake", ec);
 
+    std::string body;
+
     m_request.version(11);
-    m_request.method(http::verb::get);
-    m_request.target(m_target);
+    m_request.method(m_method);
+    m_request.target(m_endpoint);
+    m_request.body() = body;
     m_request.set(http::field::host, m_host);
+    m_request.set(http::field::content_type, "application/json");
+    m_request.set(http::field::content_length, std::to_string(body.size()));
     m_request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
     http::async_write(m_stream, m_request,
