@@ -1,4 +1,5 @@
-#include <external_request/external_request_ssl.h>
+#include <external_request/https_client_async.h>
+#include <ioc_pool.h>
 #include <timer.h>
 #include <request_future.h>
 #include <measure_time.h>
@@ -172,10 +173,26 @@ void BinanceQuoterSpot::init_websocket()
 
 Task<std::string> BinanceQuoterSpot::get_listen_key()
 {
-    RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
-    binance_request.add_header("X-MBX-APIKEY", m_api_key);
+    // RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
+    // binance_request.add_header("X-MBX-APIKEY", m_api_key);
+    // Json data = co_await binance_request.send_request();
 
-    Json data = co_await binance_request.send_request();
+    Future<Json> future([&](Future<Json>::FutureValue value) mutable
+    {   
+        auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), m_url, std::stoi(m_port));
+        client->add_header("X-MBX-APIKEY", m_api_key);
+
+        client->post("/api/v3/userDataStream ", "", [value](const std::string& res) mutable
+        {
+            Json response = Json::parse(res);
+            value.set_value(response);
+        });
+    });
+
+    Json data = co_await future;
+
+    ADD_LOG("listenKey: " << data);
+
     co_return data["listenKey"];
 }
 

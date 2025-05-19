@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <mutex>
+#include <unordered_map>
 #include <boost/asio.hpp>
 
 namespace net = boost::asio;

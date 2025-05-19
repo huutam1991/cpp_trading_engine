@@ -9,8 +9,6 @@ HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host
     {
         throw std::runtime_error("Resolve failed: " + ec.message());
     }
-
-    std::cout << "Resolve ec: " << ec << std::endl;
 }
 
 ssl::context& HttpsClientAsync::get_ssl_ctx()
