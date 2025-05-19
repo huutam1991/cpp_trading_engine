@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 
     
     auto client2 = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), "httpbin.org", 443);
-    client2->post("/post ", "{}", [](const std::string& res) {
+    client2->post("/post ", "{\"name\":\"Tam\"}", [](const std::string& res) {
         std::cout << "Response post: " << res << std::endl;
     });
 

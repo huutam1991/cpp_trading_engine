@@ -26,6 +26,11 @@ ssl::context& HttpsClientAsync::get_ssl_ctx()
     return ssl_ctx;
 }
 
+void HttpsClientAsync::add_header(const std::string& key, const std::string value)
+{
+    m_headers.insert(std::make_pair(key, value));
+}
+
 void HttpsClientAsync::get(const std::string& endpoint, ResponseCallback cb) 
 {
     m_method = http::verb::get;
@@ -73,16 +78,20 @@ void HttpsClientAsync::on_handshake(beast::error_code ec)
 {
     if (ec) return fail("handshake", ec);
 
-    std::string body;
-
     m_request.version(11);
     m_request.method(m_method);
     m_request.target(m_endpoint);
-    m_request.body() = body;
+    m_request.body() = m_body;
     m_request.set(http::field::host, m_host);
     m_request.set(http::field::content_type, "application/json");
-    m_request.set(http::field::content_length, std::to_string(body.size()));
+    m_request.set(http::field::content_length, std::to_string(m_body.size()));
     m_request.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+    // Custom header
+    for (auto it = m_headers.begin(); it != m_headers.end(); it++)
+    {
+        m_request.set(it->first, it->second);
+    }
 
     http::async_write(m_stream, m_request,
         beast::bind_front_handler(&HttpsClientAsync::on_write, shared_from_this()));

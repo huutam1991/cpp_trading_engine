@@ -24,6 +24,8 @@ public:
     using ResponseCallback = std::function<void(std::string)>;
 
     HttpsClientAsync(net::io_context& ioc, const std::string& host, size_t port);
+    void add_header(const std::string& key, const std::string value);
+
     void get(const std::string& endpoint, ResponseCallback cb);
     void post(const std::string& endpoint, const std::string& body, ResponseCallback cb);
     void del(const std::string& endpoint, const std::string& body, ResponseCallback cb);
@@ -39,6 +41,7 @@ private:
     std::string m_host;
     std::string m_endpoint;
     std::string m_body;
+    std::unordered_map<std::string, std::string> m_headers;
     ResponseCallback m_callback;
 
     static ssl::context& get_ssl_ctx();
