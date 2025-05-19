@@ -177,19 +177,22 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     // binance_request.add_header("X-MBX-APIKEY", m_api_key);
     // Json data = co_await binance_request.send_request();
 
-    Future<Json> future([&](Future<Json>::FutureValue value) mutable
-    {   
-        auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), m_url, std::stoi(m_port));
-        client->add_header("X-MBX-APIKEY", m_api_key);
+    // Future<Json> future([&](Future<Json>::FutureValue value) mutable
+    // {   
+        
 
-        client->post("/api/v3/userDataStream ", "", [value](const std::string& res) mutable
-        {
-            Json response = Json::parse(res);
-            value.set_value(response);
-        });
-    });
+    //     client->post("/api/v3/userDataStream ", "", [value](const std::string& res) mutable
+    //     {
+    //         Json response = Json::parse(res);
+    //         value.set_value(response);
+    //     });
+    // });
 
-    Json data = co_await future;
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), m_url, std::stoi(m_port));
+    client->add_header("X-MBX-APIKEY", m_api_key);
+
+    std::string str = co_await client->post("/api/v3/userDataStream ", "");
+    Json data = Json::parse(str);
 
     ADD_LOG("listenKey: " << data);
 

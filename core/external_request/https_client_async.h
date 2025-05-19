@@ -12,6 +12,8 @@
 #include <memory>
 #include <functional>
 
+#include <coroutine/future.h>
+
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
@@ -30,6 +32,8 @@ public:
     void post(const std::string& endpoint, std::string body, ResponseCallback cb);
     void del(const std::string& endpoint, std::string body, ResponseCallback cb);
 
+    Future<std::string> post(const std::string& endpoint, std::string body);
+
 private:
     tcp::resolver m_resolver;
     beast::ssl_stream<beast::tcp_stream> m_stream;
@@ -43,6 +47,7 @@ private:
     std::string m_body;
     std::unordered_map<std::string, std::string> m_headers;
     ResponseCallback m_callback;
+    Future<std::string>::FutureValue m_future_value;
 
     static ssl::context& get_ssl_ctx();
 

@@ -65,6 +65,25 @@ void HttpsClientAsync::del(const std::string& endpoint, std::string body, Respon
         beast::bind_front_handler(&HttpsClientAsync::on_connect, shared_from_this()));
 }
 
+Future<std::string> HttpsClientAsync::post(const std::string& endpoint, std::string body)
+{
+    m_method = http::verb::post;
+    m_endpoint = endpoint;
+    m_body = std::move(body);
+    m_callback = nullptr;
+    
+    Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
+    {
+        self->m_future_value = value;
+        
+        beast::get_lowest_layer(self->m_stream).async_connect(
+            self->m_resolve_result,
+            beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
+    });
+
+    return future;
+}
+
 void HttpsClientAsync::on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type) 
 {
     if (ec) return fail("connect", ec);
@@ -109,9 +128,15 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("read", ec);
 
+    // This is using callback
     if (m_callback) 
     {
         m_callback(m_res.body());
+    }
+    // This is using future
+    else
+    {
+        m_future_value.set_value(m_res.body());
     }
 
     beast::error_code shutdown_ec;
