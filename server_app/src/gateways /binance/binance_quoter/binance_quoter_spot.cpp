@@ -1,7 +1,6 @@
 #include <external_request/https_client_async.h>
 #include <ioc_pool.h>
 #include <timer.h>
-#include <request_future.h>
 #include <measure_time.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
@@ -176,7 +175,7 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
     client->add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string str = co_await client->post("/api/v3/userDataStream ", "");
+    std::string str = co_await client->post("/api/v3/userDataStream", "");
     Json data = Json::parse(str);
 
     ADD_LOG("listenKey: " << data);
@@ -186,9 +185,11 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
 
 TaskVoid BinanceQuoterSpot::keep_listen_key()
 {
-    RequestFuture binance_request(m_url, m_port, "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
-    binance_request.add_header("X-MBX-APIKEY", m_api_key);
-    co_await binance_request.send_request();
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
+    client->add_header("X-MBX-APIKEY", m_api_key);
+
+    std::string str = co_await client->put("/api/v3/userDataStream?listenKey=" + m_listen_key, "");
+    Json data = Json::parse(str);
 
     ADD_LOG("BinanceQuoterSpot, re-active m_listen_key = " << m_listen_key);
 
