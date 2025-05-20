@@ -19,7 +19,7 @@ void TimerNew::check_valid_io_context()
     }
 }
 
-void TimerNew::add_schedule_task(std::function<void(void)> callback, size_t tick_interval, TimerUnit unit)
+void TimerNew::add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit)
 {
     check_valid_io_context();
 
@@ -30,15 +30,14 @@ void TimerNew::add_schedule_task(std::function<void(void)> callback, size_t tick
 
 Future<size_t> TimerNew::sleep_for(size_t tick_interval, TimerUnit unit)
 {
-    check_valid_io_context();
-
     size_t tick = tick_interval * unit; // Tick in nanoseconds
+
     return Future<size_t>([tick](Future<size_t>::FutureValue value)
     {
-        add_schedule_task([tick, value]() mutable
+        add_schedule_task([tick, value = value]() mutable
         {
             value.set_value(tick);
-        }, tick);
+        }, tick, TimerUnit::NANOSECOND);
     });
 }
 

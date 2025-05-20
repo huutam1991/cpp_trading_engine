@@ -26,7 +26,7 @@ public:
     static void init(boost::asio::io_context& io_context);
     static boost::asio::io_context*& get_io_context();
     static void check_valid_io_context();
-    static void add_schedule_task(std::function<void(void)> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
+    static void add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
     static Future<size_t> sleep_for(size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
 
 private:
