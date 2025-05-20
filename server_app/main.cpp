@@ -67,32 +67,12 @@ int main(int argc, char **argv) {
     // WebSocketServerType::instance().start();
 
     GatewayManager::instance().init();
-    // OrderManager::instance().init();
+    OrderManager::instance().init();
 
     // // Strategy
     // // Strategy::instance().init();
-    // StrategyPriceArbitrage::instance().init();
+    StrategyPriceArbitrage::instance().init();
     // // StrategyMeanReversion::instance().init();
-
-    // auto get = []() -> TaskVoid
-    // {
-    //     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), "api.binance.com", 443);
-    //     std::string str = co_await client->get("/api/v3/depth?symbol=BTCUSDT&limit=5");
-
-    //     std::cout << "Get: " << str << std::endl;
-    // };
-    // TaskVoid task1 = get();
-    // task1.start_running_on(EventBaseManager::instance().get_event_base_by_id(0));
-
-    // auto post = []() -> TaskVoid
-    // {
-    //     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(0), "httpbin.org", 443);
-    //     std::string str = co_await client->post("/post ", "{\"name\":\"Tam\"}");
-
-    //     std::cout << "Post: " << str << std::endl;
-    // };
-    // TaskVoid task2 = post();
-    // task2.start_running_on(EventBaseManager::instance().get_event_base_by_id(0));
 
     // Server
     HttpsServer server(port, web_data_path);
