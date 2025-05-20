@@ -46,8 +46,8 @@ private:
     std::unordered_map<std::string, std::string> m_headers;
     Future<std::string>::FutureValue m_future_value;
 
-    static ssl::context& get_ssl_ctx();
     static tcp::resolver::results_type& get_resolve_result_cache(tcp::resolver& resolver, const std::string& host, const std::string& port);
+    static ssl::context& get_ssl_ctx();
 
     void on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type);
     void on_handshake(beast::error_code ec);
