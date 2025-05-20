@@ -7,6 +7,8 @@
 #include <boost/bind/bind.hpp>
 #include <memory>
 
+#include <coroutine/future.h>
+
 using namespace boost::placeholders;
 namespace net = boost::asio;
 
@@ -21,9 +23,11 @@ public:
         NANOSECOND = 1,
     };
 
-    static void init(boost::asio::io_context& ioc_context);
-    static boost::asio::io_context*& get_ioc_context();
+    static void init(boost::asio::io_context& io_context);
+    static boost::asio::io_context*& get_io_context();
+    static void check_valid_io_context();
     static void add_schedule_task(std::function<void(void)> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
+    static Future<size_t> sleep_for(size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
 
 private:
     // Class Task (has it's own [m_timer])
