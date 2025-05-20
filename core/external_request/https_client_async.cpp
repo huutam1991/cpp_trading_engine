@@ -1,5 +1,6 @@
 #include <external_request/https_client_async.h>
 #include <unordered_map>
+#include <mutex>
 
 HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port)
     : m_resolver(ioc), m_resolve_result{get_resolve_result_cache(m_resolver, host, port)}, m_stream{ioc, get_ssl_ctx()}, m_host{host}
@@ -26,6 +27,10 @@ tcp::resolver::results_type& HttpsClientAsync::get_resolve_result_cache(tcp::res
 
     if (resolve_results_map.find(key) == resolve_results_map.end())
     {
+        // Protect [resolve_results_map] from race condition
+        static std::mutex resolve_mutex;
+        std::lock_guard<std::mutex> lock(resolve_mutex);
+        
         beast::error_code ec;
         auto resolve_result = resolver.resolve(host, port, ec);
         if (ec) 
