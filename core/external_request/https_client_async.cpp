@@ -53,43 +53,27 @@ void HttpsClientAsync::add_header(const std::string& key, const std::string valu
 
 Future<std::string> HttpsClientAsync::get(const std::string& endpoint) 
 {
-    m_method = http::verb::get;
-    m_endpoint = endpoint;
-    m_body = "";
-    
-    Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
-    {
-        self->m_future_value = value;
-        
-        beast::get_lowest_layer(self->m_stream).async_connect(
-            self->m_resolve_result,
-            beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
-    });
-
-    return future;
+    return send_request(http::verb::get, endpoint, "");
 }
 
 Future<std::string> HttpsClientAsync::post(const std::string& endpoint, std::string body)
 {
-    m_method = http::verb::post;
-    m_endpoint = endpoint;
-    m_body = std::move(body);
-    
-    Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
-    {
-        self->m_future_value = value;
-        
-        beast::get_lowest_layer(self->m_stream).async_connect(
-            self->m_resolve_result,
-            beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
-    });
-
-    return future;
+    return send_request(http::verb::post, endpoint, std::move(body));
 }
 
 Future<std::string> HttpsClientAsync::del(const std::string& endpoint, std::string body)
 {
-    m_method = http::verb::delete_;
+    return send_request(http::verb::delete_, endpoint, std::move(body));
+}
+
+Future<std::string> HttpsClientAsync::put(const std::string& endpoint, std::string body)
+{
+    return send_request(http::verb::put, endpoint, std::move(body));
+}
+
+Future<std::string> HttpsClientAsync::send_request(http::verb method, const std::string& endpoint, std::string body)
+{
+    m_method = method;
     m_endpoint = endpoint;
     m_body = std::move(body);
 
