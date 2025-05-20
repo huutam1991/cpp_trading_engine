@@ -259,25 +259,6 @@ std::string Utils::round_string_number(const std::string& str_number, size_t pre
     return str_number;
 }
 
-// Global Thread Pool (common) for features in core
-std::mutex core_common_pool_mutex;
-ThreadPool* Utils::get_core_common_pool()
-{
-    static ThreadPool* core_common_pool = nullptr;
-
-    if (core_common_pool == nullptr)
-    {
-        std::unique_lock lock(core_common_pool_mutex);
-        if (core_common_pool == nullptr)
-        {
-            core_common_pool = new ThreadPool(NUMBER_OF_CORE_COMMON_THREADS, "Core Common Pool");
-            core_common_pool->set_write_log(false);
-        }
-    }
-
-    return core_common_pool;
-}
-
 long double Utils::round_with_decimal(const long double value, const long decimal_places)
 {
     long double multiplier = std::pow(10.0, decimal_places);

@@ -20,8 +20,6 @@ class Utils
     Singleton(Utils);
 
 public:
-    ThreadPool* get_core_common_pool();
-
     size_t get_time_now_in_utc_milliseconds();
     size_t get_time_now_in_utc();
     size_t get_0h_today_in_utc();

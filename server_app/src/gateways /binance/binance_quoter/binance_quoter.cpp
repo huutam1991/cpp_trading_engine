@@ -7,6 +7,8 @@
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 #include <account/account.h>
 
+#include <measure_time.h>
+
 BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 {
     Json account = Account::load_account_by_key(key);
@@ -87,9 +89,13 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     auto signature = getSignature(new_query_std);
     new_query_std += "&signature=" + signature;
 
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), get_url(), get_port());
-    client->add_header("X-MBX-APIKEY", m_api_key);
-    
+    std::shared_ptr<HttpsClientAsync> client; 
+    {
+        MeasureTime t("Create HttpsClientAsync", MeasureUnit::NANOSECOND);
+        client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), get_url(), get_port());
+        client->add_header("X-MBX-APIKEY", m_api_key);
+    }
+
     std::string str_response;
     if (method == RequestMethod::GET)
     {
