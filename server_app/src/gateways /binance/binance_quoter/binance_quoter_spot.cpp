@@ -1,6 +1,7 @@
 #include <external_request/https_client_async.h>
 #include <ioc_pool.h>
 #include <timer.h>
+#include <timer_new.h>
 #include <measure_time.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
@@ -195,15 +196,23 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
 
     // Send ping
     m_websocket->send_ping();
+
+    // Re-schedule to keep listen key
+    add_timer_keep_alive_listen_key(CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
 }
 
 void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
 {
-    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
+    // m_schedule_task_id = Timer::instance().add_schedule_task([this]()
+    // {
+    //     keep_listen_key().start_running_on(m_event_base);
+    // },
+    // period);
+
+    TimerNew::instance().add_schedule_task([this]()
     {
         keep_listen_key().start_running_on(m_event_base);
-    },
-    period);
+    }, 3000);
 }
 
 void BinanceQuoterSpot::del_timer_keep_alive_listen_key()

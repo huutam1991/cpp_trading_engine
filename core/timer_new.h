@@ -29,7 +29,7 @@ public:
     void add_schedule_task(std::function<void(void)> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
 
 private:
-    boost::asio::io_context* m_io_context;
+    boost::asio::io_context* m_io_context = nullptr;
 
     // Class Task (has it's own [m_timer])
     class Task : public std::enable_shared_from_this<Task>
