@@ -1,14 +1,42 @@
 #include <external_request/https_client_async.h>
+#include <unordered_map>
 
 HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port)
-    : m_resolver(ioc), m_stream{ioc, get_ssl_ctx()}, m_host{host}
+    : m_resolver(ioc), m_resolve_result{get_resolve_result_cache(m_resolver, host, port)}, m_stream{ioc, get_ssl_ctx()}, m_host{host}
 {
-    beast::error_code ec;
-    m_resolve_result = m_resolver.resolve(host, port, ec);
-    if (ec) 
+}
+
+namespace std {
+    template <>
+    struct hash<std::pair<std::string, std::string>> {
+        std::size_t operator()(const std::pair<std::string, std::string>& p) const {
+            std::size_t h1 = std::hash<std::string>{}(p.first);
+            std::size_t h2 = std::hash<std::string>{}(p.second);
+            return h1 ^ (h2 << 1); 
+        }
+    };
+}
+
+tcp::resolver::results_type& HttpsClientAsync::get_resolve_result_cache(tcp::resolver& resolver, const std::string& host, const std::string& port)
+{
+    static std::unordered_map<std::pair<std::string, std::string>, tcp::resolver::results_type> resolve_results_map;
+
+    // Create pair of [host/port]
+    auto key = std::make_pair(host, port);
+
+    if (resolve_results_map.find(key) == resolve_results_map.end())
     {
-        throw std::runtime_error("Resolve failed: " + ec.message());
+        beast::error_code ec;
+        auto resolve_result = resolver.resolve(host, port, ec);
+        if (ec) 
+        {
+            throw std::runtime_error("Resolve failed: " + ec.message());
+        }
+
+        resolve_results_map.insert(std::make_pair(key, resolve_result));
     }
+
+    return resolve_results_map[key];
 }
 
 ssl::context& HttpsClientAsync::get_ssl_ctx()

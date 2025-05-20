@@ -34,11 +34,11 @@ public:
 
 private:
     tcp::resolver m_resolver;
+    tcp::resolver::results_type m_resolve_result;
     beast::ssl_stream<beast::tcp_stream> m_stream;
     beast::flat_buffer m_buffer;
     http::request<http::string_body> m_request;
     http::response<http::string_body> m_res;
-    tcp::resolver::results_type m_resolve_result;
     http::verb m_method;
     std::string m_host;
     std::string m_endpoint;
@@ -47,6 +47,7 @@ private:
     Future<std::string>::FutureValue m_future_value;
 
     static ssl::context& get_ssl_ctx();
+    static tcp::resolver::results_type& get_resolve_result_cache(tcp::resolver& resolver, const std::string& host, const std::string& port);
 
     void on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type);
     void on_handshake(beast::error_code ec);
