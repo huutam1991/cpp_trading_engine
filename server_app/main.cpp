@@ -10,6 +10,7 @@
 #include <websocket/websocket_server.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
+#include <timer_new.h>
 
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
@@ -65,6 +66,9 @@ int main(int argc, char **argv) {
     //     CHANNEL_SCANNING_MARKET_NOTIFICATION
     // });
     // WebSocketServerType::instance().start();
+
+    // Init Timer with ioc TIMER
+    TimerNew::instance().init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
     GatewayManager::instance().init();
     OrderManager::instance().init();
