@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>
 
-#include <timer.h>
 #include "base_promise_type.h"
 
 // Future is not a coroutine, it's just a awaitable
@@ -104,24 +103,6 @@ struct Future
     Future(T& value)
     {
         m_value.set_value(value);
-    }
-
-    // Static method
-    static Future<size_t> sleep_for_milliseconds(size_t milliseconds)
-    {
-        return Future<size_t>([milliseconds](Future<size_t>::FutureValue value) mutable
-        {
-            Timer::instance().add_time_out([milliseconds, value]() mutable
-            {
-                value.set_value(milliseconds);
-            },
-            milliseconds);
-        });
-    }
-
-    static Future<size_t> sleep_for_seconds(size_t seconds)
-    {
-        return sleep_for_milliseconds(seconds * 1000);
     }
 
     bool await_ready()
