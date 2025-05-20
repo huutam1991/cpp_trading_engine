@@ -44,7 +44,7 @@ private:
     std::thread m_thread;
     std::mutex m_list_mutex;
     boost::asio::io_service m_io_service;
-    std::shared_ptr<boost::asio::deadline_timer> m_timer;
+    std::shared_ptr<boost::asio::steady_timer> m_timer;
     std::unordered_map<size_t, std::unique_ptr<Task>> m_taks_list;
 
     size_t get_new_task_id();

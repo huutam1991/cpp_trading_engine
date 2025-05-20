@@ -17,20 +17,20 @@ Timer::Timer()
 
 void Timer::init()
 {
-    m_thread = std::thread([this]()
+    m_thread = std::thread([this]() 
     {
-        m_timer = std::make_unique<boost::asio::deadline_timer>(m_io_service, boost::posix_time::milliseconds(1));
+        m_timer = std::make_unique<boost::asio::steady_timer>(m_io_service, std::chrono::milliseconds(1));
         m_timer->async_wait(boost::bind(&Timer::on_tick, this));
 
         m_io_service.run();
     });
 }
+
 void Timer::on_tick()
 {
     reschedule_next_tick();
 
     std::unique_lock lock(m_list_mutex);
-
     std::vector<size_t> remove_task_list;
 
     for (auto it = m_taks_list.begin(); it != m_taks_list.end(); it++)
@@ -60,7 +60,7 @@ void Timer::on_tick()
 void Timer::reschedule_next_tick()
 {
     // Reschedule the timer for 1 milisecond second in the future:
-    m_timer->expires_at(m_timer->expires_at() + boost::posix_time::milliseconds(1));
+    m_timer->expires_at(m_timer->expiry() + std::chrono::milliseconds(1));
     // Posts the timer event
     m_timer->async_wait(boost::bind(&Timer::on_tick, this));
 }
@@ -74,20 +74,16 @@ size_t Timer::get_new_task_id()
 size_t Timer::add_schedule_task(std::function<void(void)> work, size_t period)
 {
     std::unique_lock lock(m_list_mutex);
-
     size_t task_id = get_new_task_id();
     m_taks_list[task_id] = std::make_unique<Task>(work, period);
-
     return task_id;
 }
 
 size_t Timer::add_time_out(std::function<void(void)> work, size_t period)
 {
     std::unique_lock lock(m_list_mutex);
-
     size_t task_id = get_new_task_id();
     m_taks_list[task_id] = std::make_unique<Task>(work, period, true);
-
     return task_id;
 }
 
