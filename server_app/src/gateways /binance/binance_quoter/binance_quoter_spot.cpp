@@ -209,7 +209,7 @@ void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
     // },
     // period);
 
-    TimerNew::instance().add_schedule_task([this]()
+    TimerNew::add_schedule_task([this]()
     {
         keep_listen_key().start_running_on(m_event_base);
     }, 3000);

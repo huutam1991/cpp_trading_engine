@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     // WebSocketServerType::instance().start();
 
     // Init Timer with ioc TIMER
-    TimerNew::instance().init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    TimerNew::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
     GatewayManager::instance().init();
     OrderManager::instance().init();

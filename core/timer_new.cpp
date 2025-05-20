@@ -2,18 +2,26 @@
 
 void TimerNew::init(boost::asio::io_context& ioc_context)
 {
-    m_io_context = &ioc_context;
+    get_ioc_context() = &ioc_context;
+}
+
+boost::asio::io_context*& TimerNew::get_ioc_context()
+{
+    static boost::asio::io_context* io_context = nullptr;
+    return io_context;
 }
 
 void TimerNew::add_schedule_task(std::function<void(void)> callback, size_t tick_interval, TimerUnit unit)
 {
-    if (m_io_context == nullptr)
+    boost::asio::io_context*& io_context = get_ioc_context();
+
+    if (io_context == nullptr)
     {
         throw std::runtime_error("Schedule task with [m_io_context] is nullptr ");
     }
 
     size_t tick_in_nanoseconds = tick_interval * unit;
-    auto task = std::make_shared<TimerNew::Task>(*m_io_context, std::move(callback), tick_in_nanoseconds);
+    auto task = std::make_shared<TimerNew::Task>(*io_context, std::move(callback), tick_in_nanoseconds);
     task->start();
 }
 
