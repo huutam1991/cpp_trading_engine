@@ -1,11 +1,11 @@
 #include <openssl/hmac.h>
 #include <string.h>
-#include <external_request/external_request_ssl.h>
+#include <external_request/https_client_async.h>
+#include <ioc_pool.h>
 #include <mongo_db/mongo_db.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 #include <account/account.h>
-#include <request_future.h>
 
 BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 {
@@ -87,10 +87,27 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     auto signature = getSignature(new_query_std);
     new_query_std += "&signature=" + signature;
 
-    RequestFuture binance_request(get_url(), get_port(), api_path + "?" + new_query_std, method);
-    binance_request.add_header("X-MBX-APIKEY", m_api_key);
-
-    Json response = co_await binance_request.send_request();
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), get_url(), get_port());
+    
+    std::string str_response;
+    if (method == RequestMethod::GET)
+    {
+        str_response = co_await client->get(api_path + "?" + new_query_std);
+    }
+    else if (method == RequestMethod::POST)
+    {
+        str_response = co_await client->post(api_path + "?" + new_query_std, "");
+    }
+    else if (method == RequestMethod::DELETE)
+    {
+        str_response = co_await client->del(api_path + "?" + new_query_std, "");
+    }
+    else if (method == RequestMethod::PUT)
+    {
+        str_response = co_await client->put(api_path + "?" + new_query_std, "");
+    }
+    
+    Json response = Json::parse(str_response);
 
     // Check to save error
     check_save_resonse_error(response, new_query_std, method);
