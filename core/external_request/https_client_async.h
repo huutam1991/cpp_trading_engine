@@ -25,7 +25,7 @@ class HttpsClientAsync : public std::enable_shared_from_this<HttpsClientAsync>
 public:
     using ResponseCallback = std::function<void(std::string)>;
 
-    HttpsClientAsync(net::io_context& ioc, const std::string& host, size_t port);
+    HttpsClientAsync(net::io_context& ioc, const std::string& host, const std::string& port);
     void add_header(const std::string& key, const std::string value);
 
     Future<std::string> get(const std::string& endpoint);

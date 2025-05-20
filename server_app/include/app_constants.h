@@ -195,6 +195,12 @@ enum NotificationState
     NOTIFICATION_STATE_TRADE_ERROR              = 3
 };
 
+enum IOCId
+{
+    MARKET_DATA,
+    ORDER_ENTRY, 
+};
+
 enum EventBaseID
 {
     APP,
