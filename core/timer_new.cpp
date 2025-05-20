@@ -34,7 +34,7 @@ Future<size_t> TimerNew::sleep_for(size_t tick_interval, TimerUnit unit)
 
     return Future<size_t>([tick](Future<size_t>::FutureValue value)
     {
-        add_schedule_task([tick, value = value]() mutable
+        add_schedule_task([tick, value]() mutable
         {
             value.set_value(tick);
         }, tick, TimerUnit::NANOSECOND);
