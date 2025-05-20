@@ -7,23 +7,12 @@ HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host
 {
 }
 
-namespace std {
-    template <>
-    struct hash<std::pair<std::string, std::string>> {
-        std::size_t operator()(const std::pair<std::string, std::string>& p) const {
-            std::size_t h1 = std::hash<std::string>{}(p.first);
-            std::size_t h2 = std::hash<std::string>{}(p.second);
-            return h1 ^ (h2 << 1); 
-        }
-    };
-}
-
 tcp::resolver::results_type& HttpsClientAsync::get_resolve_result_cache(tcp::resolver& resolver, const std::string& host, const std::string& port)
 {
-    static std::unordered_map<std::pair<std::string, std::string>, tcp::resolver::results_type> resolve_results_map;
+    static std::unordered_map<std::string, tcp::resolver::results_type> resolve_results_map;
 
-    // Create pair of [host/port]
-    auto key = std::make_pair(host, port);
+    // Create pair of [host/port] = host + port
+    auto key = host + port;
 
     if (resolve_results_map.find(key) == resolve_results_map.end())
     {
