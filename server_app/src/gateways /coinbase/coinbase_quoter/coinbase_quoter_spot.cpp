@@ -1,6 +1,5 @@
 #include <external_request/external_request_ssl.h>
 #include <timer.h>
-#include <request_future.h>
 #include <measure_time.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_spot.h>
@@ -171,23 +170,27 @@ void CoinbaseQuoterSpot::init_websocket()
 
 Task<std::string> CoinbaseQuoterSpot::get_listen_key()
 {
-    RequestFuture coinbase_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
-    coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
+    // RequestFuture coinbase_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
+    // coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    Json data = co_await coinbase_request.send_request();
-    co_return data["listenKey"];
+    // Json data = co_await coinbase_request.send_request();
+    // co_return data["listenKey"];
+
+    co_return "listenKey";
 }
 
 TaskVoid CoinbaseQuoterSpot::keep_listen_key()
 {
-    RequestFuture coinbase_request(m_url, m_port, "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
-    coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
-    co_await coinbase_request.send_request();
+    // RequestFuture coinbase_request(m_url, m_port, "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
+    // coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
+    // co_await coinbase_request.send_request();
 
-    ADD_LOG("CoinbaseQuoterSpot, re-active m_listen_key = " << m_listen_key);
+    // ADD_LOG("CoinbaseQuoterSpot, re-active m_listen_key = " << m_listen_key);
 
-    // Send ping
-    m_websocket->send_ping();
+    // // Send ping
+    // m_websocket->send_ping();
+
+    co_return;
 }
 
 void CoinbaseQuoterSpot::add_timer_keep_alive_listen_key(size_t period)

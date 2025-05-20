@@ -88,6 +88,7 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     new_query_std += "&signature=" + signature;
 
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), get_url(), get_port());
+    client->add_header("X-MBX-APIKEY", m_api_key);
     
     std::string str_response;
     if (method == RequestMethod::GET)
