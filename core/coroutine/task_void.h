@@ -1,5 +1,4 @@
-#ifndef TASK_VOID_H
-#define TASK_VOID_H
+#pragma once
 
 #include <future>
 #include "base_promise_type.h"
@@ -128,5 +127,3 @@ struct TaskVoid
         return;
     }
 };
-
-#endif // TASK_VOID_H

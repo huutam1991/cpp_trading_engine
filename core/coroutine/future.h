@@ -1,5 +1,4 @@
-#ifndef FUTURE_H
-#define FUTURE_H
+#pragma once
 
 #include <functional>
 #include <memory>
@@ -130,5 +129,3 @@ struct Future
         return m_value.get_value();
     }
 };
-
-#endif // FUTURE_H

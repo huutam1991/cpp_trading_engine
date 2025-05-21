@@ -1,5 +1,4 @@
-#ifndef EVENT_BASE_MANAGER_H
-#define EVENT_BASE_MANAGER_H
+#pragma once
 
 #include <thread>
 #include <mutex>
@@ -33,5 +32,3 @@ public:
         return event_base_list[id].get();
     }
 };
-
-#endif // EVENT_BASE_MANAGER_H

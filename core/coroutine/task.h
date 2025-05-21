@@ -1,5 +1,4 @@
-#ifndef TASK_H
-#define TASK_H
+#pragma once
 
 #include <future>
 #include "task_void.h"
@@ -138,5 +137,3 @@ struct Task
         return handle.promise().value;
     }
 };
-
-#endif // TASK_H

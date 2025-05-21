@@ -1,5 +1,4 @@
-#ifndef BASE_PROMISE_TYPE
-#define BASE_PROMISE_TYPE
+#pragma once
 
 #include "event_base.h"
 
@@ -33,5 +32,3 @@ struct BasePromiseType
         return m_is_waiting;
     }
 };
-
-#endif // BASE_PROMISE_TYPE

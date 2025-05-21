@@ -1,5 +1,4 @@
-#ifndef EVENT_BASE_H
-#define EVENT_BASE_H
+#pragma once
 
 #include <unordered_map>
 #include <queue>
@@ -45,5 +44,3 @@ public:
     void check_to_remove_task(TaskInfo task_info);
     void loop();
 };
-
-#endif // EVENT_BASE_H
