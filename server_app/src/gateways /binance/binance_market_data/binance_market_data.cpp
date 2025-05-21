@@ -1,6 +1,7 @@
 #include <gateways/binance/binance_market_data/binance_market_data.h>
 #include <timer.h>
 #include <mongo_db/mongo_db.h>
+#include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 
 #include <app_constants.h>
@@ -35,7 +36,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         m_websockets.erase(symbol);
     }
 
-    auto websocket = std::make_shared<WebsocketClientAsync>(m_event_base);
+    auto websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
     m_websockets.insert(std::make_pair(symbol, websocket));
 
     websocket->set_callbacks(

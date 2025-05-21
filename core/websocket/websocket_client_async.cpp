@@ -1,8 +1,8 @@
 #include <websocket/websocket_client_async.h>
 #include <util_macros.h>
 
-WebsocketClientAsync::WebsocketClientAsync(EventBase* event_base) :
-    m_ioc(WebsocketClientAsync::get_ioc()),
+WebsocketClientAsync::WebsocketClientAsync(net::io_context& io_context, EventBase* event_base) :
+    m_ioc(io_context),
     m_resolver(m_ioc),
     m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
     m_ws(m_ioc, m_ssl_ctx),
@@ -210,16 +210,4 @@ void WebsocketClientAsync::invoke_callback(T& cb, Args&&... args)
         auto task = cb(std::forward<Args>(args)...);
         task.start_running_on(m_event_base);
     }
-}
-
-net::io_context& WebsocketClientAsync::get_ioc()
-{
-    static net::io_context ioc;
-    static auto guard = net::make_work_guard(ioc);
-    static std::thread t([ioc = &ioc]()
-    {
-        ioc->run();
-    });
-
-    return ioc;
 }

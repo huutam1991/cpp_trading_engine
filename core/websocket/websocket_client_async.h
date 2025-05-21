@@ -19,7 +19,7 @@ using tcp = net::ip::tcp;
 
 class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> {
 public:
-    WebsocketClientAsync(EventBase* event_base);
+    WebsocketClientAsync(net::io_context& io_context, EventBase* event_base);
     ~WebsocketClientAsync();
 
     void set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close);
@@ -66,7 +66,4 @@ private:
     // Common method for invoking callbacks
     template<class T, class... Args>
     void invoke_callback(T& cb, Args&&... args);
-
-    // Static ioc context
-    static net::io_context& get_ioc();
 };

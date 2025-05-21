@@ -1,5 +1,6 @@
 #include <external_request/external_request_ssl.h>
 #include <timer.h>
+#include <ioc_pool.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_perpetual.h>
 
@@ -42,7 +43,7 @@ void CoinbaseQuoterPerpetual::init_websocket()
 
     m_listen_key = this->get_listen_key();
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(event_base);
+    m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), event_base);
     m_websocket->set_callbacks(
         // on_connect
         [this]() -> TaskVoid
