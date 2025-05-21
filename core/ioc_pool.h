@@ -9,7 +9,6 @@ namespace net = boost::asio;
 
 class IOCPool 
 {
-
 public:
     static net::io_context& get_ioc_by_id(size_t id)
     {

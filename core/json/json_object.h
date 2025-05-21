@@ -1,5 +1,4 @@
-#ifndef JSON_OBJECT_H
-#define JSON_OBJECT_H
+#pragma once
 
 #include <unordered_map>
 #include <vector>
@@ -64,5 +63,3 @@ Json::Json(const std::string& key, const T& value)
     JsonObject& json_object = *(JsonObject*)m_value.get();
     json_object[key] = value;
 }
-
-#endif //JSON_OBJECT_H

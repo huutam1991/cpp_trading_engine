@@ -1,5 +1,4 @@
-#ifndef JSON_VALUE_H
-#define JSON_VALUE_H
+#pragma once
 
 #include <sstream>
 
@@ -47,4 +46,3 @@ const std::string JsonValue<T>::get_string_value() const
     return res;
 }
 
-#endif //JSON_VALUE_H

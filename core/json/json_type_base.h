@@ -1,5 +1,4 @@
-#ifndef JSON_TYPE_BASE_H
-#define JSON_TYPE_BASE_H
+#pragma once
 
 #include <string>
 #include <memory>
@@ -17,5 +16,3 @@ public:
     virtual const std::string get_string_value() const = 0;
     virtual std::shared_ptr<JsonTypeBase> get_clone(const std::shared_ptr<JsonTypeBase>&) = 0;
 };
-
-#endif //JSON_TYPE_BASE_H

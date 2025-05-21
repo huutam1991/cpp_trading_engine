@@ -1,5 +1,4 @@
-#ifndef JSON_DEFINE_H
-#define JSON_DEFINE_H
+#pragma once
 
 #include <memory>
 #include <functional>
@@ -190,5 +189,3 @@ struct JsonNull
 public:
     friend std::stringstream& operator<<(std::stringstream& ss, const JsonNull& json_null);
 };
-
-#endif //JSON_DEFINE_H

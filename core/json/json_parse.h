@@ -1,5 +1,4 @@
-#ifndef JSON_PARSE_H
-#define JSON_PARSE_H
+#pragma once
 
 #include "json_define.h"
 
@@ -21,5 +20,3 @@ public:
     std::string parse_key(size_t& start_pos);
     std::string parse_value_string(size_t& start_pos);
 };
-
-#endif //JSON_PARSE_H
