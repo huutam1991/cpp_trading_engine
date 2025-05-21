@@ -298,7 +298,7 @@ void add_app_route()
             .get_gateway(GatewayEnum::BINANCE)
             ->place(order, Order::Status::FILLED);
 
-        EventBase* strategy_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY);
+        EventBase* strategy_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::STRATEGY);
         std::future<Order> result = task.start_running_on(strategy_event_base);
         Order order_response = result.get();
 

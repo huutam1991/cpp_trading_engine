@@ -26,7 +26,7 @@ EventBase* AppUtils::get_app_event_base()
         std::unique_lock lock(m_app_pool_mutex);
         if (m_event_base == nullptr)
         {
-            m_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::APP);
+            m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::APP);
         }
     }
 

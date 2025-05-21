@@ -1,9 +1,8 @@
 #include <gateways/gateway.h>
 
 Gateway::Gateway() : m_event_base {
-    EventBaseManager::instance()
-        .get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
-    }
+    EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
+}
 {}
 
 void Gateway::register_price_update(std::function<void(std::string,double)> price_update_callback)

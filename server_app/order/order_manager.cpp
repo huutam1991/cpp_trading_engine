@@ -4,7 +4,7 @@
 void OrderManager::init()
 {
     m_order_list = m_order_data_model_helper.load_order();
-    m_order_event_base = EventBaseManager::instance().get_event_base_by_id(EventBaseID::ORDER);
+    m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
 }
 
 OrderId OrderManager::generate_order_id()

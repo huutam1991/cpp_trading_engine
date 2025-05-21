@@ -103,7 +103,7 @@ void StrategyMeanReversion::init()
     if (m_is_run_update == false)
     {
         m_update_task = update();
-        m_update_task.start_running_on(EventBaseManager::instance().get_event_base_by_id(EventBaseID::STRATEGY));
+        m_update_task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::STRATEGY));
 
         m_is_run_update = true;
     }

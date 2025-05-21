@@ -11,7 +11,7 @@ BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& 
     m_port(port)
 {
     // Default is GATEWAY
-    m_event_base = EventBaseManager::instance() .get_event_base_by_id(EventBaseID::GATEWAY);
+    m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
 }
 
 BinanceMarketData::~BinanceMarketData()
