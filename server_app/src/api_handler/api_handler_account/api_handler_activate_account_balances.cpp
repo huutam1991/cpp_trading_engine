@@ -28,10 +28,15 @@ HttpResponse APIHandlerActivateAccountBalances::child_handle()
         .find_many();
     std::string exchange = activate_accounts[0]["exchange"];
 
+    ADD_LOG("Tam log - activate_accounts: " << activate_accounts);
+
     // Use coroutine
     EventBase* app_event = AppUtils::instance().get_app_event_base();
     Task<Json> balance_task = GatewayManager::instance().get_gateway(exchange)->get_balances();
     Json balances = balance_task.start_running_on(app_event).get();
+
+    
+    ADD_LOG("Tam log - balances: " << balances);
 
     // Form response data from [balances] + [symbols_set]
     Json data;

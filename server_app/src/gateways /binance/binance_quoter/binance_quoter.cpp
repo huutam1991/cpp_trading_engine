@@ -56,11 +56,12 @@ std::string BinanceQuoter::getSignature(std::string& query)
 	return encryptWithHMAC(m_api_secret.c_str(), query.c_str());
 }
 
-void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& query, RequestMethod method)
+void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& query, const std::string& api_path, RequestMethod method)
 {
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
     {
         Json error;
+        error["endpoint"] = api_path;
         error["query"] = query;
         error["method"] = request_method_map_string.at((size_t)method);
         error["response"] = response;
@@ -111,7 +112,7 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     Json response = Json::parse(str_response);
 
     // Check to save error
-    check_save_resonse_error(response, new_query_std, method);
+    check_save_resonse_error(response, api_path, new_query_std, method);
 
     co_return response;
 }
