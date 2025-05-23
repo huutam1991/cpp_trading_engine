@@ -5,9 +5,6 @@ apt-get install -y wget curl git
 apt-get install -y build-essential
 apt-get install -y libgflags-dev
 
-apt update
-apt install g++-11
-
 # Install the MongoDB C Driver (libmongoc) and BSON library (libbson)¶
 cd /
 apt-get install libmongoc-1.0-0 -y
@@ -43,14 +40,18 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build . -j 4
 cmake --build . --target install
 
+# # Install Boost
+# #apt-get install libboost-all-dev -y
+# cd /
+# wget https://archives.boost.io/release/1.71.0/source/boost_1_71_0.tar.gz
+# tar xzf boost_1_71_0.tar.gz
+# cd /boost_1_71_0
+# ./bootstrap.sh
+# ./b2 install --prefix=/usr/
+
 # Install Boost
-#apt-get install libboost-all-dev -y
-cd /
-wget https://archives.boost.io/release/1.71.0/source/boost_1_71_0.tar.gz
-tar xzf boost_1_71_0.tar.gz
-cd /boost_1_71_0
-./bootstrap.sh
-./b2 install --prefix=/usr/
+apt update -y
+apt install -y libboost-all-dev
 
 # Install GLog
 cd /
