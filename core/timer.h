@@ -12,7 +12,7 @@
 using namespace boost::placeholders;
 namespace net = boost::asio;
 
-class TimerNew
+class Timer
 {
 public:
     enum TimerUnit

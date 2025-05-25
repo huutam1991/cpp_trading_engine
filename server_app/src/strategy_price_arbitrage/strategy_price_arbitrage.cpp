@@ -4,7 +4,7 @@
 #include <gateways/gateway_manager.h>
 #include <mongo_db/mongo_db.h>
 #include <json/json.h>
-#include <timer_new.h>
+#include <timer.h>
 #include <app_constants.h>
 #include <app_utils.h>
 
@@ -151,7 +151,7 @@ TaskVoid StrategyPriceArbitrage::update()
         // Dont do update when strategy is init
         if (m_is_init == true)
         {
-            co_await TimerNew::sleep_for(2000);
+            co_await Timer::sleep_for(2000);
             continue;
         }
 
