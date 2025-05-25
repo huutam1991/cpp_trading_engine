@@ -202,6 +202,26 @@ void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
     ADD_LOG("WebsocketClientAsync - Error in " << where << ": " << ec.message());
 }
 
+void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds)
+{
+    TimerNew::add_schedule_task([weak_ptr = weak_from_this(), kal = std::move(keep_alive_logic), tick = tick_in_milliseconds]()
+    {
+        if (auto self = weak_ptr.lock())
+        {
+            self->on_keep_websocket_alive(std::move(kal), tick);
+        }
+    }, tick_in_milliseconds);
+}
+
+void WebsocketClientAsync::on_keep_websocket_alive(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds)
+{
+    if (keep_alive_logic != nullptr && m_event_base != nullptr)
+    {
+        keep_alive_logic().start_running_on(m_event_base);
+        add_keep_websocket_alive_task(std::move(keep_alive_logic), tick_in_milliseconds);
+    }
+}
+
 template<class T, class... Args>
 void WebsocketClientAsync::invoke_callback(T& cb, Args&&... args)
 {

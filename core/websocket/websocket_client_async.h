@@ -8,16 +8,19 @@
 
 #include <deque>
 #include <thread>
+#include <functional>
 
 #include <coroutine/event_base.h>
 #include <coroutine/task_void.h>
+#include <timer_new.h>
 
 namespace beast = boost::beast;          // from <boost/beast.hpp>
 namespace websocket = beast::websocket;  // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;             // from <boost/asio.hpp>
 using tcp = net::ip::tcp;
 
-class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> {
+class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> 
+{
 public:
     WebsocketClientAsync(net::io_context& io_context, EventBase* event_base);
     ~WebsocketClientAsync();
@@ -27,6 +30,8 @@ public:
     void send(const std::string& msg);
     void send_ping();
     void close();
+
+    void add_keep_websocket_alive_task(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds);
 
 private:
     net::io_context& m_ioc;
@@ -62,6 +67,7 @@ private:
     void on_close(beast::error_code ec);
     void do_write();
     void fail(const std::string& where, beast::error_code ec);
+    void on_keep_websocket_alive(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds);
 
     // Common method for invoking callbacks
     template<class T, class... Args>

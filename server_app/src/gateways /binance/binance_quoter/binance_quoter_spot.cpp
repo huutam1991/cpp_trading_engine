@@ -7,7 +7,7 @@
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
+#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 3000
 
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
@@ -26,7 +26,6 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
 
 BinanceQuoterSpot::~BinanceQuoterSpot()
 {
-    del_timer_keep_alive_listen_key();
 }
 
 std::string& BinanceQuoterSpot::get_url()
@@ -58,11 +57,11 @@ void BinanceQuoterSpot::init_websocket()
         {
             ADD_LOG("BinanceQuoterSpot websocket connected");
 
-            // Delete old [m_schedule_task_id]
-            del_timer_keep_alive_listen_key();
-
             // Set period time to re-active m_listen_key at every 30 seconds
-            add_timer_keep_alive_listen_key(CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
+            m_websocket->add_keep_websocket_alive_task([this]() -> TaskVoid
+            {
+                return keep_listen_key();
+            }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
 
             co_return;
         },
@@ -197,32 +196,6 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
 
     // Send ping
     m_websocket->send_ping();
-
-    // Re-schedule to keep listen key
-    add_timer_keep_alive_listen_key(CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
-}
-
-void BinanceQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
-{
-    // m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    // {
-    //     keep_listen_key().start_running_on(m_event_base);
-    // },
-    // period);
-
-    TimerNew::add_schedule_task([this]()
-    {
-        keep_listen_key().start_running_on(m_event_base);
-    }, 3000);
-}
-
-void BinanceQuoterSpot::del_timer_keep_alive_listen_key()
-{
-    if (m_schedule_task_id != 0)
-    {
-        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
-        m_schedule_task_id = 0;
-    }
 }
 
 Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
