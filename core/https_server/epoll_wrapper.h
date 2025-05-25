@@ -1,5 +1,4 @@
-#ifndef EPOLL_WRAPPER_H
-#define EPOLL_WRAPPER_H
+#pragma once
 
 #include <functional>
 
@@ -22,4 +21,3 @@ public:
     int del_client_fd(int client_fd);
 };
 
-#endif //EPOLL_WRAPPER_H
