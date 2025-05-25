@@ -1,5 +1,4 @@
-#ifndef HTTP_REQUEST_H
-#define HTTP_REQUEST_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -63,4 +62,3 @@ public:
     static void add_custom_bad_request_getter(RequestHandleFunction bad_request_getter);
 };
 
-#endif //HTTP_REQUEST_H

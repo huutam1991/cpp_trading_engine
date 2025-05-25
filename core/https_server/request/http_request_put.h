@@ -1,5 +1,4 @@
-#ifndef HTTP_REQUEST_PUT_H
-#define HTTP_REQUEST_PUT_H
+#pragma once
 
 #include "http_request_post.h"
 
@@ -11,4 +10,3 @@ public:
     virtual RequestMethod get_request_method() { return RequestMethod::PUT; }
 };
 
-#endif //HTTP_REQUEST_PUT_H

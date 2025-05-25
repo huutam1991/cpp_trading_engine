@@ -2,11 +2,11 @@
 #include <fstream>
 #include <filesystem>
 
-#include <request/http_request.h>
-#include <request/http_request_get.h>
-#include <request/http_request_post.h>
-#include <request/http_request_put.h>
-#include <request/http_request_delete.h>
+#include <https_server/request/http_request.h>
+#include <https_server/request/http_request_get.h>
+#include <https_server/request/http_request_post.h>
+#include <https_server/request/http_request_put.h>
+#include <https_server/request/http_request_delete.h>
 #include <constants.h>
 #include <util_macros.h>
 #include <utils.h>
@@ -50,7 +50,8 @@ void HttpRequest::deserialize_url(const std::string& content)
     size_t end_of_url_pos = content.find_first_of(' ', end_of_method_pos + 1);
     if (end_of_url_pos == std::string::npos)
     {
-        LOG(INFO) << "deserialize_url No URL substring found" << std::endl;
+        // LOG(INFO) << "deserialize_url No URL substring found" << std::endl;
+        ADD_LOG("deserialize_url No URL substring found");
         return;
     }
     m_url = content.substr(end_of_method_pos + 1, end_of_url_pos - end_of_method_pos - 1);
@@ -317,7 +318,8 @@ HttpRequest* HttpRequest::CreateNewHttpRequest(const std::string& content, const
 
     size_t end_of_method_pos = content.find_first_of(' ', 0);
     if (end_of_method_pos == std::string::npos) {
-        LOG(INFO) << "No HTTP-Method substring found" << std::endl;
+        // LOG(INFO) << "No HTTP-Method substring found" << std::endl;
+        ADD_LOG("No HTTP-Method substring found");
         // exit(EXIT_FAILURE);
         return nullptr;
     }
@@ -326,7 +328,8 @@ HttpRequest* HttpRequest::CreateNewHttpRequest(const std::string& content, const
     // Get Enum method of request
     auto method_it = request_method_map.find(request_method_str);
     if (method_it == request_method_map.end()) {
-        LOG(INFO) << "No valid HTTP-Method found" << std::endl;
+        // LOG(INFO) << "No valid HTTP-Method found" << std::endl;
+        ADD_LOG("No valid HTTP-Method found");
         // exit(EXIT_FAILURE);
         return nullptr;
     }

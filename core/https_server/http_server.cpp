@@ -10,7 +10,7 @@
 #include <constants.h>
 #include <util_macros.h>
 #include <https_server/http_server.h>
-#include <request/http_request.h>
+#include <https_server/request/http_request.h>
 #include <external_request/external_request.h>
 #include <util_macros.h>
 

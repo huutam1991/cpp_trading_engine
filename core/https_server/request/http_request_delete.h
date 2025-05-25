@@ -1,5 +1,4 @@
-#ifndef HTTP_REQUEST_DELETE_H
-#define HTTP_REQUEST_DELETE_H
+#pragma once
 
 #include "http_request_post.h"
 
@@ -12,5 +11,3 @@ public:
 
     virtual RequestMethod get_request_method() { return RequestMethod::DELETE; }
 };
-
-#endif //HTTP_REQUEST_DELETE_H

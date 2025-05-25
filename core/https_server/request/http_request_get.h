@@ -1,5 +1,4 @@
-#ifndef HTTP_REQUEST_GET_H
-#define HTTP_REQUEST_GET_H
+#pragma once
 
 #include "http_request.h"
 
@@ -12,4 +11,3 @@ public:
     virtual std::string get_body() { return std::string(""); }
 };
 
-#endif //HTTP_REQUEST_GET_H

@@ -1,5 +1,4 @@
-#ifndef HTTP_REQUEST_POST_H
-#define HTTP_REQUEST_POST_H
+#pragma once
 
 #include "http_request.h"
 
@@ -24,4 +23,3 @@ public:
     virtual std::string   check_missing_body_params(const std::vector<std::string> fields);
 };
 
-#endif //HTTP_REQUEST_POST_H
