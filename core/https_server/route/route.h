@@ -1,5 +1,4 @@
-#ifndef ROUTE_H
-#define ROUTE_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -22,5 +21,3 @@ public:
     void operator+(RequestHandleFunction handle_function);
     RequestHandleFunction& get_handle_function();
 };
-
-#endif //ROUTE_H

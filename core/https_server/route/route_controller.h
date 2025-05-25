@@ -1,5 +1,4 @@
-#ifndef ROUTE_CONTROLLER_H
-#define ROUTE_CONTROLLER_H
+#pragma once
 
 #include <string>
 #include <unordered_map>
@@ -29,4 +28,3 @@ public:
     std::string handle_request_base_on_route(HttpRequest* request);
 };
 
-#endif //ROUTE_CONTROLLER_H
