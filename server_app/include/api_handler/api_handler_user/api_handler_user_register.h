@@ -9,7 +9,7 @@ public:
     APIHandlerUserRegister(HttpRequest* request);
 
 private:
-    virtual HttpResponse child_handle();
+    virtual Task<HttpResponse> child_handle();
 };
 
 #endif //API_HANDLER_USER_REGISTER_H

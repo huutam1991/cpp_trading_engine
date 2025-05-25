@@ -8,7 +8,7 @@ APIHandlerStrategyPACurrentInfo::APIHandlerStrategyPACurrentInfo(HttpRequest* re
     add_mandatory_params({"type"});
 }
 
-HttpResponse APIHandlerStrategyPACurrentInfo::child_handle()
+Task<HttpResponse> APIHandlerStrategyPACurrentInfo::child_handle()
 {
     Json data;
 
@@ -32,5 +32,5 @@ HttpResponse APIHandlerStrategyPACurrentInfo::child_handle()
     response["status_code"] = OK_200;
     response["error"] = false;
 
-    return HttpResponse(OK_200, response);;
+    co_return HttpResponse(OK_200, response);;
 }

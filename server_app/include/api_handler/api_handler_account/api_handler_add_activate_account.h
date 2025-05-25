@@ -9,7 +9,7 @@ public:
     APIHandlerAddActivateAccount(HttpRequest* request);
 
 private:
-    virtual HttpResponse child_handle();
+    virtual Task<HttpResponse> child_handle();
 };
 
 #endif //API_HANDLER_ADD_ACTIVATE_ACCOUNT_H

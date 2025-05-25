@@ -11,7 +11,7 @@ APIHandlerUserLogin::APIHandlerUserLogin(HttpRequest* request) : APIHandler(requ
     add_mandatory_body_params({"username", "password"});
 }
 
-HttpResponse APIHandlerUserLogin::child_handle()
+Task<HttpResponse> APIHandlerUserLogin::child_handle()
 {
     Json response;
     Json custom_header = JsonNull();
@@ -19,7 +19,7 @@ HttpResponse APIHandlerUserLogin::child_handle()
     std::string password = m_request->get_body_param_string("password");
 
     unsigned char hash[SHA256_DIGEST_LENGTH];
-    unsigned char upassword[password.size()];
+    unsigned char upassword[100];
     std::copy(password.begin(), password.end(), upassword);
 
     SHA256(upassword, password.size(), hash);
@@ -73,5 +73,5 @@ HttpResponse APIHandlerUserLogin::child_handle()
         res.add_custom_header(custom_header);
     }
 
-    return res;
+    co_return res;
 }

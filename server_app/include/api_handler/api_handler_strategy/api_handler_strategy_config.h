@@ -9,7 +9,7 @@ public:
     APIHandlerStrategyConfig(HttpRequest* request);
 
 private:
-    virtual HttpResponse child_handle();
+    virtual Task<HttpResponse> child_handle();
 };
 
 #endif //API_HANDLER_STRATEGY_CONFIG_H

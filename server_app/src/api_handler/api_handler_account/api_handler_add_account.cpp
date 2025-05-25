@@ -7,7 +7,7 @@ APIHandlerAddAccount::APIHandlerAddAccount(HttpRequest* request) : APIHandler(re
     add_mandatory_body_params({"key"});
 }
 
-HttpResponse APIHandlerAddAccount::child_handle()
+Task<HttpResponse> APIHandlerAddAccount::child_handle()
 {
     Json response;
     Json account = m_request->get_body_json();
@@ -33,5 +33,5 @@ HttpResponse APIHandlerAddAccount::child_handle()
         response["error"] = false;
     }
 
-    return HttpResponse(OK_200, response);
+    co_return HttpResponse(OK_200, response);
 }

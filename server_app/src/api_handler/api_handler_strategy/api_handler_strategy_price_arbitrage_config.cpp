@@ -30,7 +30,7 @@ APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : A
     // });
 }
 
-HttpResponse APIHandlerStrategyPAConfig::child_handle()
+Task<HttpResponse> APIHandlerStrategyPAConfig::child_handle()
 {
     Json response;
     MongoQuery query = MongoDB::instance()
@@ -77,5 +77,5 @@ HttpResponse APIHandlerStrategyPAConfig::child_handle()
         response["error"] = false;
     }
 
-    return HttpResponse(OK_200, response);;
+    co_return HttpResponse(OK_200, response);;
 }

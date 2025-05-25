@@ -6,7 +6,7 @@ APIHandlerUserRegister::APIHandlerUserRegister(HttpRequest* request) : APIHandle
     add_mandatory_body_params({"username", "password"});
 }
 
-HttpResponse APIHandlerUserRegister::child_handle()
+Task<HttpResponse> APIHandlerUserRegister::child_handle()
 {
     Json response;
     std::string username = m_request->get_body_param_string("username");
@@ -32,5 +32,5 @@ HttpResponse APIHandlerUserRegister::child_handle()
         response["error"] = false;
     }
 
-    return HttpResponse(OK_200, response);;
+    co_return HttpResponse(OK_200, response);;
 }

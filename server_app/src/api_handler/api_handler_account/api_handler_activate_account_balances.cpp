@@ -12,7 +12,7 @@ APIHandlerActivateAccountBalances::APIHandlerActivateAccountBalances(HttpRequest
     add_mandatory_body_params({"symbols"});
 }
 
-HttpResponse APIHandlerActivateAccountBalances::child_handle()
+Task<HttpResponse> APIHandlerActivateAccountBalances::child_handle()
 {
     // Get [symbols_set] from request
     std::set<std::string> symbols_set;
@@ -31,9 +31,7 @@ HttpResponse APIHandlerActivateAccountBalances::child_handle()
     ADD_LOG("Tam log - activate_accounts: " << activate_accounts);
 
     // Use coroutine
-    EventBase* app_event = AppUtils::instance().get_app_event_base();
-    Task<Json> balance_task = GatewayManager::instance().get_gateway(exchange)->get_balances();
-    Json balances = balance_task.start_running_on(app_event).get();
+    Json balances = co_await GatewayManager::instance().get_gateway(exchange)->get_balances();
 
     
     ADD_LOG("Tam log - balances: " << balances);
@@ -57,5 +55,5 @@ HttpResponse APIHandlerActivateAccountBalances::child_handle()
     response["status_code"] = OK_200;
     response["error"] = true;
 
-    return HttpResponse(OK_200, response);
+    co_return HttpResponse(OK_200, response);
 }

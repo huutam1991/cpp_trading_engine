@@ -6,7 +6,7 @@ APIHandlerStrategyCurrentInfo::APIHandlerStrategyCurrentInfo(HttpRequest* reques
     m_need_check_authentication = true;
 }
 
-HttpResponse APIHandlerStrategyCurrentInfo::child_handle()
+Task<HttpResponse> APIHandlerStrategyCurrentInfo::child_handle()
 {
     Json response;
 
@@ -16,5 +16,5 @@ HttpResponse APIHandlerStrategyCurrentInfo::child_handle()
     response["status_code"] = OK_200;
     response["error"] = false;
 
-    return HttpResponse(OK_200, response);;
+    co_return HttpResponse(OK_200, response);;
 }

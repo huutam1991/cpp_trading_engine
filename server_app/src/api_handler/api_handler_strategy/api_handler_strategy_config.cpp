@@ -8,7 +8,7 @@ APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHa
     add_mandatory_body_params({"symbol", "buy_volumn", "move_price", "is_running", "sell_buy_ratio"});
 }
 
-HttpResponse APIHandlerStrategyConfig::child_handle()
+Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
 {
     Json response;
     MongoQuery query = MongoDB::instance()
@@ -54,5 +54,5 @@ HttpResponse APIHandlerStrategyConfig::child_handle()
         response["error"] = false;
     }
 
-    return HttpResponse(OK_200, response);;
+    co_return HttpResponse(OK_200, response);;
 }

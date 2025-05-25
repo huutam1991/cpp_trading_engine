@@ -7,7 +7,7 @@ APIHandlerAddActivateAccount::APIHandlerAddActivateAccount(HttpRequest* request)
     add_mandatory_body_params({"key", "exchange"});
 }
 
-HttpResponse APIHandlerAddActivateAccount::child_handle()
+Task<HttpResponse> APIHandlerAddActivateAccount::child_handle()
 {
     Json response;
     Json account = m_request->get_body_json();
@@ -55,5 +55,5 @@ HttpResponse APIHandlerAddActivateAccount::child_handle()
 
     }
 
-    return HttpResponse(OK_200, response);
+    co_return HttpResponse(OK_200, response);
 }

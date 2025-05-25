@@ -9,7 +9,7 @@ public:
     APIHandlerActivateAccountBalances(HttpRequest* request);
 
 private:
-    virtual HttpResponse child_handle();
+    virtual Task<HttpResponse> child_handle();
 };
 
 #endif //API_HANDLER_ACTIVATE_ACCOUNT_BALANCES_H

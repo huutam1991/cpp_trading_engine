@@ -9,7 +9,7 @@ public:
     APIHandlerUserLogin(HttpRequest* request);
 
 private:
-    virtual HttpResponse child_handle();
+    virtual Task<HttpResponse> child_handle();
 };
 
 #endif //API_HANDLER_USER_LOGIN_H

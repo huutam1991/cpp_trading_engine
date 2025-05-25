@@ -26,7 +26,7 @@ protected:
     bool m_need_check_none_source = false;
 
     virtual std::string check_authentication();
-    virtual HttpResponse child_handle() = 0;
+    virtual Task<HttpResponse> child_handle() = 0;
 
 public:
     APIHandler() = delete;
@@ -35,7 +35,7 @@ public:
 
     void add_mandatory_params(const std::vector<std::string>& mandatory_params);
     void add_mandatory_body_params(const std::vector<std::string>& mandatory_body_params);
-    HttpResponse handle();
+    Task<HttpResponse> handle();
 };
 
 #endif //API_HANDLER_H

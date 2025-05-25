@@ -63,14 +63,14 @@ std::string APIHandler::check_authentication()
     return res;
 }
 
-HttpResponse APIHandler::handle()
+Task<HttpResponse> APIHandler::handle()
 {
     // Check authentication
     std::string check_valid_token;
     if (m_need_check_authentication && (check_valid_token = check_authentication()) != VALID_TOKEN)
     {
         LOG(ERROR) << "Authentication, " << check_valid_token;
-        return HttpRequest::response_unauthorized_request_401(check_valid_token);
+        co_return HttpRequest::response_unauthorized_request_401(check_valid_token);
     }
 
     if (m_need_check_none_source)
@@ -82,15 +82,15 @@ HttpResponse APIHandler::handle()
     std::string missing_param = m_request->check_missing_params(m_mandatory_params);
     if (missing_param != PARAM_NO_MISSING)
     {
-        return HttpRequest::response_bad_request_400(missing_param);
+        co_return HttpRequest::response_bad_request_400(missing_param);
     }
 
     // Check missing body params
     missing_param = m_request->check_missing_body_params(m_mandatory_body_params);
     if (missing_param != PARAM_NO_MISSING)
     {
-        return HttpRequest::response_bad_request_400(missing_param);
+        co_return HttpRequest::response_bad_request_400(missing_param);
     }
 
-    return child_handle();
+    co_return co_await child_handle();
 }

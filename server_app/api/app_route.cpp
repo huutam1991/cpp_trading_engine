@@ -347,66 +347,66 @@ void add_app_route()
     // Register new user
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
     {
-        co_return APIHandlerUserRegister(request).handle();
+        co_return co_await APIHandlerUserRegister(request).handle();
     };
 
     // User's login
     ADD_ROUTE(RequestMethod::POST, "/login")
     {
-        co_return APIHandlerUserLogin(request).handle();
+        co_return co_await APIHandlerUserLogin(request).handle();
     };
 
     // Add account
     ADD_ROUTE(RequestMethod::POST, "/add_account")
     {
-        co_return APIHandlerAddAccount(request).handle();
+        co_return co_await APIHandlerAddAccount(request).handle();
     };
 
     // Add activate account
     ADD_ROUTE(RequestMethod::POST, "/add_activate_account")
     {
-        co_return APIHandlerAddActivateAccount(request).handle();
+        co_return co_await APIHandlerAddActivateAccount(request).handle();
     };
 
     // Add activate account
     ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
     {
-        co_return APIHandlerActivateAccountBalances(request).handle();
+        co_return co_await APIHandlerActivateAccountBalances(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::POST, "/strategy_config")
     {
-        co_return APIHandlerStrategyConfig(request).handle();
+        co_return co_await APIHandlerStrategyConfig(request).handle();
     };
 
     // Get strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_config")
     {
-        co_return APIHandlerStrategyConfig(request).handle();
+        co_return co_await APIHandlerStrategyConfig(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_current_info")
     {
-        co_return APIHandlerStrategyCurrentInfo(request).handle();
+        co_return co_await APIHandlerStrategyCurrentInfo(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::POST, "/strategy_price_arbitrage_config")
     {
-        co_return APIHandlerStrategyPAConfig(request).handle();
+        co_return co_await APIHandlerStrategyPAConfig(request).handle();
     };
 
     // Get strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_config")
     {
-        co_return APIHandlerStrategyPAConfig(request).handle();
+        co_return co_await APIHandlerStrategyPAConfig(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_current_info")
     {
-        co_return APIHandlerStrategyPACurrentInfo(request).handle();
+        co_return co_await APIHandlerStrategyPACurrentInfo(request).handle();
     };
 }
