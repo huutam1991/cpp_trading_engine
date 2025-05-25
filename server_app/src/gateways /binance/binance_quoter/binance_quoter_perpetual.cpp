@@ -17,7 +17,6 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key) : Binance
 
 BinanceQuoterPerpetual::~BinanceQuoterPerpetual()
 {
-    del_timer_keep_alive_listen_key();
 }
 
 std::string& BinanceQuoterPerpetual::get_url()
@@ -49,9 +48,6 @@ void BinanceQuoterPerpetual::init_websocket()
         [this]() -> TaskVoid
         {
             ADD_LOG("BinanceQuoterPerpetual websocket connected");
-
-            // Delete old [m_schedule_task_id]
-            del_timer_keep_alive_listen_key();
 
             // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
             add_timer_keep_alive_listen_key(1800000);
@@ -115,26 +111,18 @@ std::string BinanceQuoterPerpetual::get_listen_key()
 
 void BinanceQuoterPerpetual::add_timer_keep_alive_listen_key(size_t period)
 {
-    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    {
-        ExternalRequestSsl binance_request(m_url, "443", "/fapi/v1/listenKey?listenKey=" + m_listen_key, RequestMethod::PUT);
-        binance_request.add_header("X-MBX-APIKEY", m_api_key);
+    // m_schedule_task_id = Timer::instance().add_schedule_task([this]()
+    // {
+    //     ExternalRequestSsl binance_request(m_url, "443", "/fapi/v1/listenKey?listenKey=" + m_listen_key, RequestMethod::PUT);
+    //     binance_request.add_header("X-MBX-APIKEY", m_api_key);
 
-        ADD_LOG("BinanceQuoterPerpetual re-active m_listen_key = " << m_listen_key);
+    //     ADD_LOG("BinanceQuoterPerpetual re-active m_listen_key = " << m_listen_key);
 
-        std::string res = binance_request.send_request();
-        Json data = Json::parse(res);
-        ADD_LOG("re-active data: " << data.get_string_value());
-    },
-    period);
-}
-
-void BinanceQuoterPerpetual::del_timer_keep_alive_listen_key()
-{
-    if (m_schedule_task_id != 0)
-    {
-        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
-    }
+    //     std::string res = binance_request.send_request();
+    //     Json data = Json::parse(res);
+    //     ADD_LOG("re-active data: " << data.get_string_value());
+    // },
+    // period);
 }
 
 void BinanceQuoterPerpetual::update_order_result(const Json& order_result)

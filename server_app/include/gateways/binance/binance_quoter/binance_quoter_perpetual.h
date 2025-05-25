@@ -20,11 +20,9 @@ private:
     // Websocket to get order data
     std::shared_ptr<WebsocketClientAsync> m_websocket;
     std::string m_listen_key;
-    size_t m_schedule_task_id = 0;
     void init_websocket();
     std::string get_listen_key();
     void add_timer_keep_alive_listen_key(size_t period);
-    void del_timer_keep_alive_listen_key();
 
 protected:
     virtual std::string& get_url() override;
