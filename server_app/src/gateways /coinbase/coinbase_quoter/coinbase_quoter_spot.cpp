@@ -1,5 +1,4 @@
 #include <external_request/external_request_ssl.h>
-#include <timer.h>
 #include <measure_time.h>
 #include <ioc_pool.h>
 
@@ -24,7 +23,6 @@ CoinbaseQuoterSpot::CoinbaseQuoterSpot(const std::string& key) : CoinbaseQuoter(
 
 CoinbaseQuoterSpot::~CoinbaseQuoterSpot()
 {
-    del_timer_keep_alive_listen_key();
 }
 
 std::string& CoinbaseQuoterSpot::get_url()
@@ -55,12 +53,6 @@ void CoinbaseQuoterSpot::init_websocket()
         [this]() -> TaskVoid
         {
             ADD_LOG("CoinbaseQuoterSpot websocket connected");
-
-            // Delete old [m_schedule_task_id]
-            del_timer_keep_alive_listen_key();
-
-            // Set period time to re-active m_listen_key at every 30 seconds
-            add_timer_keep_alive_listen_key(CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
 
             co_return;
         },
@@ -192,24 +184,6 @@ TaskVoid CoinbaseQuoterSpot::keep_listen_key()
     // m_websocket->send_ping();
 
     co_return;
-}
-
-void CoinbaseQuoterSpot::add_timer_keep_alive_listen_key(size_t period)
-{
-    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    {
-        keep_listen_key().start_running_on(m_event_base);
-    },
-    period);
-}
-
-void CoinbaseQuoterSpot::del_timer_keep_alive_listen_key()
-{
-    if (m_schedule_task_id != 0)
-    {
-        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
-        m_schedule_task_id = 0;
-    }
 }
 
 Json CoinbaseQuoterSpot::get_trade_result_from_response(Json& response)

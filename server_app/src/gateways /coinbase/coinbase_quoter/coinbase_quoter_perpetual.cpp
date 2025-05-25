@@ -17,7 +17,6 @@ CoinbaseQuoterPerpetual::CoinbaseQuoterPerpetual(const std::string& key) : Coinb
 
 CoinbaseQuoterPerpetual::~CoinbaseQuoterPerpetual()
 {
-    del_timer_keep_alive_listen_key();
 }
 
 std::string& CoinbaseQuoterPerpetual::get_url()
@@ -49,12 +48,6 @@ void CoinbaseQuoterPerpetual::init_websocket()
         [this]() -> TaskVoid
         {
             ADD_LOG("CoinbaseQuoterPerpetual websocket connected");
-
-            // Delete old [m_schedule_task_id]
-            del_timer_keep_alive_listen_key();
-
-            // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
-            add_timer_keep_alive_listen_key(1800000);
 
             co_return;
         },
@@ -111,30 +104,6 @@ std::string CoinbaseQuoterPerpetual::get_listen_key()
     std::string res = coinbase_request.send_request();
     Json data = Json::parse(res);
     return data["listenKey"];
-}
-
-void CoinbaseQuoterPerpetual::add_timer_keep_alive_listen_key(size_t period)
-{
-    m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    {
-        ExternalRequestSsl coinbase_request(m_url, "443", "/fapi/v1/listenKey?listenKey=" + m_listen_key, RequestMethod::PUT);
-        coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
-
-        ADD_LOG("CoinbaseQuoterPerpetual re-active m_listen_key = " << m_listen_key);
-
-        std::string res = coinbase_request.send_request();
-        Json data = Json::parse(res);
-        ADD_LOG("re-active data: " << data.get_string_value());
-    },
-    period);
-}
-
-void CoinbaseQuoterPerpetual::del_timer_keep_alive_listen_key()
-{
-    if (m_schedule_task_id != 0)
-    {
-        Timer::instance().delete_schedule_task(this->m_schedule_task_id);
-    }
 }
 
 void CoinbaseQuoterPerpetual::update_order_result(const Json& order_result)
