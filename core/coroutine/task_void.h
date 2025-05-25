@@ -36,16 +36,25 @@ struct TaskVoid
     std::coroutine_handle<promise_type> handle = nullptr;
     TaskVoid(std::coroutine_handle<promise_type> h) : handle(h) {}
     TaskVoid() {};
-    TaskVoid(const TaskVoid& copy) : handle{copy.handle} {}
+    TaskVoid(const TaskVoid& copy) = delete;
+    TaskVoid(TaskVoid&& copy) : handle{std::move(copy.handle)} { copy.handle = nullptr; }
     ~TaskVoid()
     {
         // Light destroy, lol
         destroy(false);
     }
 
-    TaskVoid& operator=(const TaskVoid& copy)
+    TaskVoid& operator=(const TaskVoid& copy) = delete;
+
+    TaskVoid& operator=(TaskVoid&& copy)
     {
-        handle = copy.handle;
+        if (handle != nullptr)
+        {
+            destroy();
+        }
+
+        handle = std::move(copy.handle);
+        copy.handle = nullptr;
         return *this;
     }
 

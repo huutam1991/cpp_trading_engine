@@ -41,16 +41,25 @@ struct Task
     std::coroutine_handle<promise_type> handle = nullptr;
     Task(std::coroutine_handle<promise_type> h) : handle(h) {}
     Task() {};
-    Task(const Task& copy) : handle{copy.handle} {}
+    Task(const Task& copy) = delete;
+    Task(Task&& copy) : handle{std::move(copy.handle)} { copy.handle = nullptr; }
     ~Task()
     {
         // Light destroy, lol
         destroy(false);
     }
 
-    Task& operator=(const Task& copy)
+    Task& operator=(const Task& copy) = delete;
+
+    Task& operator=(Task&& copy)
     {
-        handle = copy.handle;
+        if (handle != nullptr)
+        {
+            destroy();
+        }
+
+        handle = std::move(copy.handle);
+        copy.handle = nullptr;
         return *this;
     }
 
