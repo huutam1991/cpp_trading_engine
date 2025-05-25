@@ -3,7 +3,6 @@
 
 #include <https_server.h>
 #include <util_macros.h>
-#include <timer.h>
 
 HttpsServer::HttpsServer(int port, std::string dir_path) : HttpServer(port, dir_path)
 {

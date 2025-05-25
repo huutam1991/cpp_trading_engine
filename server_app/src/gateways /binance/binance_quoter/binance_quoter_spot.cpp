@@ -1,6 +1,5 @@
 #include <external_request/https_client_async.h>
 #include <ioc_pool.h>
-#include <timer.h>
 #include <timer_new.h>
 #include <measure_time.h>
 #include <ioc_pool.h>

@@ -1,5 +1,4 @@
 #include <external_request/external_request_ssl.h>
-#include <timer.h>
 #include <ioc_pool.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_perpetual.h>
