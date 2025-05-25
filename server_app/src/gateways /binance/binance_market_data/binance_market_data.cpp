@@ -2,6 +2,7 @@
 #include <mongo_db/mongo_db.h>
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
+#include <measure_time.h>
 
 #include <app_constants.h>
 
@@ -66,6 +67,8 @@ void BinanceMarketData::start_websocket(std::string symbol)
         // on_message
         [this, symbol](std::string buffer) -> TaskVoid
         {
+            // MeasureTime t("Handle price update", MeasureUnit::MICROSECOND);
+
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
             {
