@@ -6,7 +6,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
 
 ### Core Features:
 
-- **Custom Coroutine Engine (C++20)** ([`coroutine/`](core/include/coroutine))
+- **Custom Coroutine Engine (C++20)** ([`coroutine/`](core/coroutine))
   - Built without any coroutine library
   - Includes custom `promise_type`, awaiters (`co_await`, `co_return`), and scheduling logic
   - Enables fully async flow across market data, order processing, and state transitions
@@ -16,7 +16,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Fully self-implemented parser and request routing
   - Used for engine control, monitoring, and inter-process communication
 
-- **Self-Built JSON Handling Layer** ([`json/`](core/include/json))
+- **Self-Built JSON Handling Layer** ([`json/`](core/json))
   - Lightweight JSON parser and serializer
   - Zero external dependencies
   - Used for config loading, logging, REST I/O
@@ -26,7 +26,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Used for storing order fills, commissions, output tokens
   - All write/read flow implemented manually
 
-- **Order Lifecycle & Matching Logic** ([`order/`](server_app/include/order))
+- **Order Lifecycle & Matching Logic** ([`order/`](server_app/order))
   - Clean abstraction of limit/market orders
   - Fill tracking, status transitions, and live audit
   - Modeled after real exchange behavior
