@@ -28,7 +28,7 @@ void TimerNew::add_schedule_task(std::function<void()> callback, size_t tick_int
     task->start();
 }
 
-void TimerNew::add_schedule_task_on_ioc(boost::asio::io_context& ioc, std::function<void()> callback, size_t tick_interval, TimerUnit unit)
+void TimerNew::add_schedule_task_on_ioc(std::function<void()> callback, boost::asio::io_context& ioc, size_t tick_interval, TimerUnit unit)
 {
     size_t tick = tick_interval * unit; // Tick in nanoseconds
     auto task = std::make_shared<TimerNew::Task>(ioc, std::move(callback), tick);
