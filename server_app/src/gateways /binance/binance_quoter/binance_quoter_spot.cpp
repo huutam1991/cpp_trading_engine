@@ -7,7 +7,7 @@
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 3000
+#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
