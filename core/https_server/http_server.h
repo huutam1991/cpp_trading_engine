@@ -1,13 +1,12 @@
-#ifndef HTTP_SERVER_H
-#define HTTP_SERVER_H
+#pragma once
 
 #include <string>
 #include <unordered_map>
 #include <queue>
 
-#include "epoll_wrapper.h"
-#include "thread_pool.h"
-#include "route/route_controller.h"
+#include <epoll_wrapper.h>
+#include <thread_pool.h>
+#include <route/route_controller.h>
 #include <util_macros.h>
 
 class HttpServer
@@ -36,4 +35,3 @@ public:
     virtual void write_to_socket_io(int client_fd, const char* buffer, std::uint32_t size);
 };
 
-#endif //HTTP_SERVER_H

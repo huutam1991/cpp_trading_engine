@@ -1,11 +1,10 @@
-#ifndef HTTPS_SERVER_H
-#define HTTPS_SERVER_H
+#pragma once
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <mutex>
 
-#include "http_server.h"
+#include <https_server/http_server.h>
 
 enum SSL_ACCEPT_STATUS
 {
@@ -38,4 +37,3 @@ public:
     virtual void write_to_socket_io(int client_fd, const char* buffer, std::uint32_t size);
 };
 
-#endif //HTTPS_SERVER_H
