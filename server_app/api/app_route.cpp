@@ -31,57 +31,57 @@ void add_app_route()
 
     ADD_ROUTE_GROUP(RequestMethod::GET, "libraries")
     {
-        return request->send_file_from_directory(request->get_url());
+        co_return request->send_file_from_directory(request->get_url());
     };
 
     ADD_ROUTE_GROUP(RequestMethod::GET, "templates")
     {
-        return request->send_file_from_directory(request->get_url());
+        co_return request->send_file_from_directory(request->get_url());
     };
 
     ADD_ROUTE_GROUP(RequestMethod::GET, "#/")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/favicon.ico")
     {
-        return request->send_file_from_directory("templates/favicon.ico");
+        co_return request->send_file_from_directory("templates/favicon.ico");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/websocket_client")
     {
-        return request->send_file_from_directory("templates/websocket_client.html");
+        co_return request->send_file_from_directory("templates/websocket_client.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/scanning_market")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/excel_report_page")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/strategy_report_page")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/trade_errors_page")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/24h_orders_page")
     {
-        return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_random")
@@ -95,7 +95,7 @@ void add_app_route()
         response["data"] = data.get_data();
         // response["data"] = 123123;
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/test_json_parse")
@@ -107,7 +107,7 @@ void add_app_route()
         response["message"] = "OK";
         response["data"] = data;
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_json_clone")
@@ -131,7 +131,7 @@ void add_app_route()
         response["message"] = "OK";
         response["data"] = data;
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_new_data_model")
@@ -147,7 +147,7 @@ void add_app_route()
         DataModel dm("test_data_model", "user");
         dm = user;
 
-        return HttpResponse(OK_200, dm.get_data());
+        co_return HttpResponse(OK_200, dm.get_data());
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_data_model")
@@ -185,7 +185,7 @@ void add_app_route()
         response["data"] = data;
         response["company"] = (Json)dm["company"]["Tech stack"];
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_data_model_get_map")
@@ -194,7 +194,7 @@ void add_app_route()
         std::unordered_map<std::string, DataModel> users = DataModel::load_data_model_map<std::string>("test_data_model", "user", "name");
         DataModel a = users[name];
 
-        return HttpResponse(OK_200, a.get_data());
+        co_return HttpResponse(OK_200, a.get_data());
     };
 
     ADD_ROUTE(RequestMethod::GET, "/test_clone")
@@ -226,7 +226,7 @@ void add_app_route()
         response["message"] = "OK";
         response["data"] = data;
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/add_trade")
@@ -238,7 +238,7 @@ void add_app_route()
         Json response;
         response["message"] = "OK";
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/update_trade")
@@ -254,7 +254,7 @@ void add_app_route()
         Json response;
         response["message"] = "OK";
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/delete_trade")
@@ -270,7 +270,7 @@ void add_app_route()
         Json response;
         response["message"] = "OK";
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/test_place")
@@ -302,7 +302,7 @@ void add_app_route()
         std::future<Order> result = task.start_running_on(strategy_event_base);
         Order order_response = result.get();
 
-        return HttpResponse(OK_200, order_response.to_json());
+        co_return HttpResponse(OK_200, order_response.to_json());
     };
 
     ADD_ROUTE(RequestMethod::POST, "/external_request")
@@ -312,7 +312,7 @@ void add_app_route()
 
         std::string response = ExternalRequest("www.google.com", 80, "/", RequestMethod::GET).send_request();
 
-        return HttpResponse(OK_200, response);
+        co_return HttpResponse(OK_200, response);
     };
 
     ADD_ROUTE(RequestMethod::POST, "/update_checkpoint")
@@ -341,72 +341,72 @@ void add_app_route()
             }
         }
 
-        return HttpResponse(OK_200, checkpoint.get_data());
+        co_return HttpResponse(OK_200, checkpoint.get_data());
     };
 
     // Register new user
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
     {
-        return APIHandlerUserRegister(request).handle();
+        co_return APIHandlerUserRegister(request).handle();
     };
 
     // User's login
     ADD_ROUTE(RequestMethod::POST, "/login")
     {
-        return APIHandlerUserLogin(request).handle();
+        co_return APIHandlerUserLogin(request).handle();
     };
 
     // Add account
     ADD_ROUTE(RequestMethod::POST, "/add_account")
     {
-        return APIHandlerAddAccount(request).handle();
+        co_return APIHandlerAddAccount(request).handle();
     };
 
     // Add activate account
     ADD_ROUTE(RequestMethod::POST, "/add_activate_account")
     {
-        return APIHandlerAddActivateAccount(request).handle();
+        co_return APIHandlerAddActivateAccount(request).handle();
     };
 
     // Add activate account
     ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
     {
-        return APIHandlerActivateAccountBalances(request).handle();
+        co_return APIHandlerActivateAccountBalances(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::POST, "/strategy_config")
     {
-        return APIHandlerStrategyConfig(request).handle();
+        co_return APIHandlerStrategyConfig(request).handle();
     };
 
     // Get strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_config")
     {
-        return APIHandlerStrategyConfig(request).handle();
+        co_return APIHandlerStrategyConfig(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_current_info")
     {
-        return APIHandlerStrategyCurrentInfo(request).handle();
+        co_return APIHandlerStrategyCurrentInfo(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::POST, "/strategy_price_arbitrage_config")
     {
-        return APIHandlerStrategyPAConfig(request).handle();
+        co_return APIHandlerStrategyPAConfig(request).handle();
     };
 
     // Get strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_config")
     {
-        return APIHandlerStrategyPAConfig(request).handle();
+        co_return APIHandlerStrategyPAConfig(request).handle();
     };
 
     // Update strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_current_info")
     {
-        return APIHandlerStrategyPACurrentInfo(request).handle();
+        co_return APIHandlerStrategyPACurrentInfo(request).handle();
     };
 }

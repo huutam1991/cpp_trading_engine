@@ -4,15 +4,16 @@
 #include <functional>
 #include <unordered_map>
 
+#include <coroutine/task.h>
 #include <https_server/response/http_response.h>
 
 class HttpRequest;
-using RequestHandleFunction = std::function<HttpResponse(HttpRequest*)>;
+using RequestHandleFunction = std::function<Task<HttpResponse>(HttpRequest*)>;
 
 class HttpRequest
 {
 private:
-    static RequestHandleFunction s_bad_request_getter;
+    static std::function<HttpResponse(HttpRequest*)> s_bad_request_getter;
 
     void deserialize(const std::string& content);
     void deserialize_url(const std::string& content);
@@ -59,6 +60,6 @@ public:
     static HttpResponse response_unauthorized_request_401(const std::string& error);
     static HttpResponse response_internal_error_500();
     static HttpRequest* CreateNewHttpRequest(const std::string& content, const std::string& dir_path);
-    static void add_custom_bad_request_getter(RequestHandleFunction bad_request_getter);
+    static void add_custom_bad_request_getter(std::function<HttpResponse(HttpRequest*)> bad_request_getter);
 };
 

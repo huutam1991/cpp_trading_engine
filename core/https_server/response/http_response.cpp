@@ -44,6 +44,17 @@ HttpResponse::HttpResponse(HttpResponse& response)
     response.m_content = nullptr;
 }
 
+HttpResponse::HttpResponse(const HttpResponse& response)
+    : m_response_code(response.m_response_code),
+      m_content{new std::string(*response.m_content)},
+      m_is_json_format(response.m_is_json_format),
+      m_custom_header(response.m_custom_header),
+      m_file_info(response.m_file_info)
+{
+    // [response.m_content] suppose to be valid 
+    // response.m_content = nullptr;
+}
+
 HttpResponse::~HttpResponse()
 {
     SAFE_RELEASE(m_content);

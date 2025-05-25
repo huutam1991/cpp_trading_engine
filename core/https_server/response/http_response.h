@@ -34,6 +34,7 @@ protected:
 public:
     HttpResponse();
     HttpResponse(HttpResponse& response);
+    HttpResponse(const HttpResponse& response);
     HttpResponse(ResponseStatusCode response_code, const Json& json);
     HttpResponse(ResponseStatusCode response_code, const std::string& content, const std::string& file_name);
     HttpResponse(ResponseStatusCode response_code, const std::string& content, ResponseFileType file_type = ResponseFileType::NONE_TYPE);

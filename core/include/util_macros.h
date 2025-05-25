@@ -51,10 +51,10 @@ std::for_each(data.begin(), data.end(), [](char & c) \
 
 
 #define ADD_ROUTE_GROUP(request_type, path) \
-RouteController::instance().add_route_group(request_type, path) + [](HttpRequest* request) -> HttpResponse
+RouteController::instance().add_route_group(request_type, path) + [](HttpRequest* request) -> Task<HttpResponse>
 
 #define ADD_ROUTE(request_type, path) \
-RouteController::instance().add_route(request_type, path) + [](HttpRequest* request) -> HttpResponse
+RouteController::instance().add_route(request_type, path) + [](HttpRequest* request) -> Task<HttpResponse>
 
 #define ADD_CUSTOM_BAD_REQUEST \
 HttpRequest::add_custom_bad_request_getter([](HttpRequest* request) -> HttpResponse

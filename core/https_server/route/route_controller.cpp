@@ -31,7 +31,7 @@ void RouteController::add_dashboard_folder(const std::string& dashboard_folder)
     m_dashboard_folder = dashboard_folder;
 }
 
-std::string RouteController::check_handle_by_route_group(HttpRequest* request)
+Task<std::string> RouteController::check_handle_by_route_group(HttpRequest* request)
 {
     // If the route group is valid, handle the request
     for (auto it = route_group_map.begin(); it != route_group_map.end(); it++)
@@ -45,15 +45,16 @@ std::string RouteController::check_handle_by_route_group(HttpRequest* request)
             {
                 Route* route = it_route_set->second;
                 RequestHandleFunction& handle_function = route->get_handle_function();
-                return handle_function(request).get_response_in_string();
+                HttpResponse response = co_await handle_function(request);
+                co_return response.get_response_in_string();
             }
         }
     }
 
-    return std::string("");
+    co_return std::string("");
 }
 
-std::string RouteController::check_handle_by_route(HttpRequest* request)
+Task<std::string> RouteController::check_handle_by_route(HttpRequest* request)
 {
     // If the route is valid, handle the request
     auto it = route_map.find(request->get_url());
@@ -66,11 +67,12 @@ std::string RouteController::check_handle_by_route(HttpRequest* request)
         {
             Route* route = it_route_set->second;
             RequestHandleFunction& handle_function = route->get_handle_function();
-            return handle_function(request).get_response_in_string();
+            HttpResponse response = co_await handle_function(request);
+            co_return response.get_response_in_string();
         }
     }
 
-    return std::string("");
+    co_return std::string("");
 }
 
 std::string RouteController::check_send_file_from_dashboard_folder(HttpRequest* request)
@@ -86,30 +88,30 @@ std::string RouteController::check_send_file_from_dashboard_folder(HttpRequest* 
     return std::string("");
 }
 
-std::string RouteController::handle_request_base_on_route(HttpRequest* request)
+Task<std::string> RouteController::handle_request_base_on_route(HttpRequest* request)
 {
     std::string response;
 
     try
     {
         // Check route group map first
-        response = check_handle_by_route_group(request);
+        response = co_await check_handle_by_route_group(request);
 
         // If there is no matching, check the route map
         if (response == "")
         {
-            response = check_handle_by_route(request);
+            response = co_await check_handle_by_route(request);
         }
     }
     catch(ApiException const& e)
     {
         LOG(ERROR) << "Error: " << e.msg() << std::endl;
-        return HttpRequest::response_bad_request_400(e.msg()).get_response_in_string();
+        co_return HttpRequest::response_bad_request_400(e.msg()).get_response_in_string();
     }
     catch(std::exception const& e)
     {
         LOG(ERROR) << "Error: " << e.what() << std::endl;
-        return HttpRequest::response_internal_error_500().get_response_in_string();
+        co_return HttpRequest::response_internal_error_500().get_response_in_string();
     }
 
     if (response == "")
@@ -123,5 +125,5 @@ std::string RouteController::handle_request_base_on_route(HttpRequest* request)
         response = request->response_not_found_404().get_response_in_string();
     }
 
-    return response;
+    co_return response;
 }

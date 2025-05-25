@@ -22,13 +22,13 @@ std::unordered_map<RequestMethod, std::function< HttpRequest*(const std::string&
     {RequestMethod::PATCH   , [](const std::string& content, const std::string& dir_path){ return new HttpRequest(content, dir_path); } },
 };
 
-RequestHandleFunction bad_request_default = [](HttpRequest* request) -> HttpResponse
+std::function<HttpResponse(HttpRequest*)> bad_request_default = [](HttpRequest* request) -> HttpResponse
 {
     return HttpResponse(NOT_FOUND_404, NOT_FOUND_ERROR_MESSAGE);
 };
 
 // Init default bad request 404's response
-RequestHandleFunction HttpRequest::s_bad_request_getter = bad_request_default;
+std::function<HttpResponse(HttpRequest*)> HttpRequest::s_bad_request_getter = bad_request_default;
 
 HttpRequest::HttpRequest(const std::string& content, const std::string& dir_path) : m_dir_path(dir_path)
 {
@@ -306,7 +306,7 @@ HttpResponse HttpRequest::response_internal_error_500()
     return HttpResponse(ResponseStatusCode::INTERNAL_SERVER_ERROR_500, response);
 }
 
-void HttpRequest::add_custom_bad_request_getter(RequestHandleFunction bad_request_getter)
+void HttpRequest::add_custom_bad_request_getter(std::function<HttpResponse(HttpRequest*)> bad_request_getter)
 {
     HttpRequest::s_bad_request_getter = bad_request_getter;
 }

@@ -198,7 +198,7 @@ void HttpServer::handle_client_request(int client_fd)
 
 TaskVoid HttpServer::execute_request(HttpRequest* request, int client_fd)
 {
-    std::string response = RouteController::instance().handle_request_base_on_route(request);
+    std::string response = co_await RouteController::instance().handle_request_base_on_route(request);
     write_to_socket_io(client_fd, response.c_str(), response.size());
 
     delete request;
