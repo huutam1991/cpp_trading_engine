@@ -27,7 +27,7 @@ private:
     SSL_ACCEPT_STATUS do_ssl_accept(int client_fd);
 
 public:
-    HttpsServer(int port, std::string dir_path);
+    HttpsServer(int port, std::string dir_path, EventBase* event_base);
     ~HttpsServer();
 
     virtual int accept_new_connection();

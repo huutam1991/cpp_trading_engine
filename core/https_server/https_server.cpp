@@ -4,7 +4,7 @@
 #include <https_server/https_server.h>
 #include <util_macros.h>
 
-HttpsServer::HttpsServer(int port, std::string dir_path) : HttpServer(port, dir_path)
+HttpsServer::HttpsServer(int port, std::string dir_path, EventBase* event_base) : HttpServer(port, dir_path, event_base)
 {
     m_ctx = create_context();
     configure_context(m_ctx);

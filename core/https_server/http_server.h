@@ -8,6 +8,8 @@
 #include <thread_pool.h>
 #include <https_server/route/route_controller.h>
 #include <util_macros.h>
+#include <coroutine/event_base.h>
+#include <coroutine/task_void.h>
 
 class HttpServer
 {
@@ -20,13 +22,15 @@ private:
 
     EPollWrapper* m_epoll = nullptr;
     ThreadPool*   m_thread_pool = nullptr;
+    EventBase*    m_event_base = nullptr;
 
 public:
-    HttpServer(int port, std::string dir_path);
+    HttpServer(int port, std::string dir_path, EventBase* event_base);
     ~HttpServer();
 
     void init_socket();
     void start();
+    TaskVoid execute_request(HttpRequest* request, int client_fd);
 
     virtual int accept_new_connection();
     virtual int read_buffer(int client_fd, char* const buffer);

@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     // // StrategyMeanReversion::instance().init();
 
     // Server
-    HttpsServer server(port, web_data_path);
+    HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
     server.start();
 
     ADD_LOG("Main exit");

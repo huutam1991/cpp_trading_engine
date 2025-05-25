@@ -14,7 +14,7 @@
 #include <external_request/external_request.h>
 #include <util_macros.h>
 
-HttpServer::HttpServer(int port, std::string dir_path) : m_port(port), m_dir_path(dir_path)
+HttpServer::HttpServer(int port, std::string dir_path, EventBase* event_base) : m_port(port), m_dir_path(dir_path), m_event_base(event_base)
 {
     signal(SIGPIPE, SIG_IGN);
     init_socket();
@@ -185,13 +185,25 @@ void HttpServer::handle_client_request(int client_fd)
     m_save_buffer_by_socket_id[client_fd] = "";
 
     // Execute request on a single thread
-    m_thread_pool->execute_function([this, request, client_fd]()
-    {
-        std::string response = RouteController::instance().handle_request_base_on_route(request);
-        write_to_socket_io(client_fd, response.c_str(), response.size());
+    auto task = execute_request(request, client_fd);
+    task.start_running_on(m_event_base);
+    // m_thread_pool->execute_function([this, request, client_fd]()
+    // {
+    //     std::string response = RouteController::instance().handle_request_base_on_route(request);
+    //     write_to_socket_io(client_fd, response.c_str(), response.size());
 
-        delete request;
-    });
+    //     delete request;
+    // });
+}
+
+TaskVoid HttpServer::execute_request(HttpRequest* request, int client_fd)
+{
+    std::string response = RouteController::instance().handle_request_base_on_route(request);
+    write_to_socket_io(client_fd, response.c_str(), response.size());
+
+    delete request;
+
+    co_return;
 }
 
 int HttpServer::read_buffer(int client_fd, char* const buffer)
