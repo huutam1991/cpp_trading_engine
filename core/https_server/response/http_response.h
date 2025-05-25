@@ -1,5 +1,4 @@
-#ifndef HTTP_RESPONSE_H
-#define HTTP_RESPONSE_H
+#pragma once
 
 #include <string>
 #include <functional>
@@ -47,5 +46,3 @@ public:
 
     void add_custom_header(Json& custom_header);
 };
-
-#endif //HTTP_RESPONSE_H
