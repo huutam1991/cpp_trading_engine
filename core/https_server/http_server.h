@@ -5,7 +5,6 @@
 #include <queue>
 
 #include <https_server/epoll_wrapper.h>
-#include <thread_pool.h>
 #include <https_server/route/route_controller.h>
 #include <util_macros.h>
 #include <coroutine/event_base.h>
@@ -21,7 +20,6 @@ private:
     int m_server_fd = -1;
 
     EPollWrapper* m_epoll = nullptr;
-    ThreadPool*   m_thread_pool = nullptr;
     EventBase*    m_event_base = nullptr;
 
 public:

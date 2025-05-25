@@ -19,7 +19,6 @@ HttpServer::HttpServer(int port, std::string dir_path, EventBase* event_base) : 
     signal(SIGPIPE, SIG_IGN);
     init_socket();
     m_epoll       = new EPollWrapper(m_server_fd);
-    m_thread_pool = new ThreadPool(NUMBER_OF_HTTPS_SERVER_THREADS, "Server Pool");
 }
 
 HttpServer::~HttpServer()
@@ -31,7 +30,6 @@ HttpServer::~HttpServer()
     }
 
     delete m_epoll;
-    delete m_thread_pool;
 }
 
 void HttpServer::init_socket()
@@ -187,13 +185,6 @@ void HttpServer::handle_client_request(int client_fd)
     // Execute request on a single thread
     auto task = execute_request(request, client_fd);
     task.start_running_on(m_event_base);
-    // m_thread_pool->execute_function([this, request, client_fd]()
-    // {
-    //     std::string response = RouteController::instance().handle_request_base_on_route(request);
-    //     write_to_socket_io(client_fd, response.c_str(), response.size());
-
-    //     delete request;
-    // });
 }
 
 TaskVoid HttpServer::execute_request(HttpRequest* request, int client_fd)
