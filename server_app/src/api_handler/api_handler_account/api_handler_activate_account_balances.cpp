@@ -53,7 +53,7 @@ Task<HttpResponse> APIHandlerActivateAccountBalances::child_handle()
     response["data"] = data;
     response["msg"] = "activate account of exchange [" + exchange + "] balances";
     response["status_code"] = OK_200;
-    response["error"] = true;
+    response["error"] = false;
 
     co_return HttpResponse(OK_200, response);
 }

@@ -26,8 +26,8 @@ struct Task
         }
         void return_value(T v)
         {
-            value = v;
             promise_value.set_value(v);
+            value = v;
         }
         void unhandled_exception() { std::terminate(); }
 
