@@ -11,7 +11,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Includes custom `promise_type`, awaiters (`co_await`, `co_return`), and scheduling logic
   - Enables fully async flow across market data, order processing, and state transitions
 
-- **Internal REST API System** ([`https_server/`](core/include/https_server.h) + [`route/`](core/include/route) + [`request/`](core/include/request) + [`response/`](core/include/response) + [`app_route.cpp/`](server_app/src/api/app_route.cpp))
+- **Internal REST API System** ([`https_server/`](core/https_server/https_server.h) + [`route/`](core/https_server/route) + [`request/`](core/https_server/request) + [`response/`](core/https_server/response) + [`app_route.cpp/`](server_app/api/app_route.cpp))
   - Native C++ HTTPs server (using `epoll`, `openssl`)
   - Fully self-implemented parser and request routing
   - Used for engine control, monitoring, and inter-process communication
@@ -21,7 +21,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Zero external dependencies
   - Used for config loading, logging, REST I/O
 
-- **MongoDB Integration** ([`mongodb/`](core/include/mongo_db))
+- **MongoDB Integration** ([`mongo_db/`](core/mongo_db))
   - Raw BSON serialization layer with no ORM
   - Used for storing order fills, commissions, output tokens
   - All write/read flow implemented manually
