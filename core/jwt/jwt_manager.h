@@ -1,5 +1,4 @@
-#ifndef JWT_MANAGER_H
-#define JWT_MANAGER_H
+#pragma once
 
 #include <util_macros.h>
 #include <jwt/jwt_lib/jwt.h>
@@ -30,7 +29,5 @@ public:
     JWTManager& set_secret_key(const std::string& secret_key);
 
 };
-
-#endif //JWT_MANAGER_H
 
 #define VALID_TOKEN "valid_token"

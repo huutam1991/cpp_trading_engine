@@ -1,5 +1,4 @@
-#ifndef MONGO_DB_H
-#define MONGO_DB_H
+#pragma once
 
 #include <string>
 #include <mutex>
@@ -155,5 +154,3 @@ Json MongoQuery::find_one(const std::string& find_key, const T& find_value)
 
     return JsonNull();
 }
-
-#endif //MONGO_DB_H
