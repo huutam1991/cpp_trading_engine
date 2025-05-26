@@ -1,5 +1,4 @@
-#ifndef MEASURE_TIME
-#define MEASURE_TIME
+#pragma once
 
 #include <chrono>
 #include <utils/util_macros.h>
@@ -72,5 +71,3 @@ public:
         m_is_stop = true;
     }
 };
-
-#endif //MEASURE_TIME
