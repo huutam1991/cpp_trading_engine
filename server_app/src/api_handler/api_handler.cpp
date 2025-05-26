@@ -69,7 +69,7 @@ Task<HttpResponse> APIHandler::handle()
     std::string check_valid_token;
     if (m_need_check_authentication && (check_valid_token = check_authentication()) != VALID_TOKEN)
     {
-        LOG(ERROR) << "Authentication, " << check_valid_token;
+        // LOG(ERROR) << "Authentication, " << check_valid_token;
         co_return HttpRequest::response_unauthorized_request_401(check_valid_token);
     }
 

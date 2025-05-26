@@ -18,7 +18,7 @@ public:
     DataField(DataModel* parent, Json* root_field, Json* field, const std::string& field_name);
     ~DataField()
     {
-        // LOG(INFO) << "DataField, name = " << m_field_name << std::endl;
+        // // LOG(INFO) << "DataField, name = " << m_field_name << std::endl;
     }
 
     Json* m_root_field;

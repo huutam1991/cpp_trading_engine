@@ -26,7 +26,7 @@ HttpServer::~HttpServer()
     if (m_server_fd != -1)
     {
         shutdown(m_server_fd, SHUT_RDWR);
-        LOG(INFO) << "Http server is closed" << std::endl;
+        // LOG(INFO) << "Http server is closed" << std::endl;
     }
 
     delete m_epoll;
@@ -39,13 +39,13 @@ void HttpServer::init_socket()
 
     if ((m_server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        LOG(INFO) << "socket: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "socket: " << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if (setsockopt(m_server_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1)
     {
-        LOG(INFO) << "setsockopt: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "setsockopt: " << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -59,18 +59,18 @@ void HttpServer::init_socket()
 
     if (bind(m_server_fd, (sockaddr*) &addr, sizeof(sockaddr)) == -1)
     {
-        LOG(INFO) << "bind: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "bind: " << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if (listen(m_server_fd, BACKLOG_SOCKET) == -1)
     {
-        LOG(INFO) << "listen: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "listen: " << std::strerror(errno) << std::endl;
         exit(EXIT_FAILURE);
     }
     else
     {
-        LOG(INFO) << "Http server is listening on port: " << m_port << std::endl;
+        // LOG(INFO) << "Http server is listening on port: " << m_port << std::endl;
     }
 }
 
@@ -91,11 +91,11 @@ int HttpServer::accept_new_connection()
 
     if ((client_fd = accept(m_server_fd, (struct sockaddr *) &client_addr, &client_addr_len)) == -1)
     {
-        LOG(INFO) << "accept: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "accept: " << std::strerror(errno) << std::endl;
     }
     else
     {
-        LOG(INFO) << "Connection to " << inet_ntoa(client_addr.sin_addr) << " established (fd = " << client_fd << ")" << std::endl;
+        // LOG(INFO) << "Connection to " << inet_ntoa(client_addr.sin_addr) << " established (fd = " << client_fd << ")" << std::endl;
 
         int dwTimeout = 1000; // milliseconds
         setsockopt(client_fd, SOL_SOCKET,SO_RCVTIMEO, (void*)&dwTimeout, sizeof dwTimeout);

@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     // google::InitGoogleLogging(argv[0]);
 
     if (!std::filesystem::is_directory(std::filesystem::path(web_data_path))) {
-        // LOG(ERROR) << "Invalid web data directory\n";
+        // // LOG(ERROR) << "Invalid web data directory\n";
         return EXIT_FAILURE;
     }
 

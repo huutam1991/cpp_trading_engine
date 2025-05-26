@@ -68,7 +68,7 @@ void ThreadPool::shut_down()
     lock.unlock();
     m_condition_variable.notify_all();
 
-    LOG(INFO) << "Queue's size = " << m_function_queue.size() << std::endl;
+    // LOG(INFO) << "Queue's size = " << m_function_queue.size() << std::endl;
 
     for (int i = 0; i < m_thread_list.size(); i++)
     {
@@ -76,7 +76,7 @@ void ThreadPool::shut_down()
         if (thread.joinable())
         {
             thread.join();
-            LOG(INFO) << "joined, i = " << i + 1 << std::endl;
+            // LOG(INFO) << "joined, i = " << i + 1 << std::endl;
         }
     }
 }

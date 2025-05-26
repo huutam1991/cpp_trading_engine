@@ -60,7 +60,7 @@ void WebsocketClient::run()
                     ,boost::asio::error::get_ssl_category()
                 );
 
-                LOG(ERROR) << "Websocket resolve host: " << error_code << std::endl;
+                // LOG(ERROR) << "Websocket resolve host: " << error_code << std::endl;
                 on_close(websocket::close_code::protocol_error);
                 return EXIT_FAILURE;
             }
@@ -86,7 +86,7 @@ void WebsocketClient::run()
         }
         catch(std::exception const& e)
         {
-            LOG(ERROR) << "Websocket error connection: " << e.what() << std::endl;
+            // LOG(ERROR) << "Websocket error connection: " << e.what() << std::endl;
             on_close(websocket::close_code::protocol_error);
             return EXIT_FAILURE;
         }
@@ -205,12 +205,12 @@ void WebsocketClient::run()
         }
         catch(std::exception const& e)
         {
-            LOG(ERROR) << "Websocket error streaming: " << e.what() << std::endl;
+            // LOG(ERROR) << "Websocket error streaming: " << e.what() << std::endl;
 
             // Invoke on_close
             if (on_close != nullptr)
             {
-                LOG(ERROR) << "Close socket on error flow " << std::endl;
+                // LOG(ERROR) << "Close socket on error flow " << std::endl;
                 websocket::close_code code = *is_shut_down == true ? websocket::close_code::normal : websocket::close_code::internal_error;
                 on_close(code);
             }
@@ -219,7 +219,7 @@ void WebsocketClient::run()
         }
         catch (...)
         {
-            LOG(ERROR) << "Websocket Default Exception" << std::endl;
+            // LOG(ERROR) << "Websocket Default Exception" << std::endl;
             on_close(websocket::close_code::internal_error);
             return EXIT_FAILURE;
         }

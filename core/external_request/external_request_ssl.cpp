@@ -150,7 +150,7 @@ std::string ExternalRequestSsl::send_request()
         ret.hbytes = read_header(stream, buffer, p, ec);
         if(ec)
         {
-            LOG(INFO) << ec.message() << std::endl;
+            // LOG(INFO) << ec.message() << std::endl;
             // return ec.message();
         }
 
@@ -192,7 +192,7 @@ std::string ExternalRequestSsl::send_request()
     }
     catch(std::exception const& e)
     {
-        LOG(ERROR) << "Error: " << e.what() << std::endl;
+        // LOG(ERROR) << "Error: " << e.what() << std::endl;
         return "EXIT_FAILURE";
     }
 

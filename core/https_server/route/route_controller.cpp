@@ -6,7 +6,7 @@
 
 Route& RouteController::add_route_group(RequestMethod method, const std::string& route_path)
 {
-    LOG(INFO) << "Implement API (Group) " << route_path;
+    // LOG(INFO) << "Implement API (Group) " << route_path;
     Route* route = new Route(method);
 
     std::unordered_map<RequestMethod, Route*>& route_set = route_group_map[route_path];
@@ -17,7 +17,7 @@ Route& RouteController::add_route_group(RequestMethod method, const std::string&
 
 Route& RouteController::add_route(RequestMethod method, const std::string& route_path)
 {
-    LOG(INFO) << "Implement API " << route_path;
+    // LOG(INFO) << "Implement API " << route_path;
     Route* route = new Route(method);
 
     std::unordered_map<RequestMethod, Route*>& route_set = route_map[route_path];
@@ -105,12 +105,12 @@ Task<std::string> RouteController::handle_request_base_on_route(HttpRequest* req
     }
     catch(ApiException const& e)
     {
-        LOG(ERROR) << "Error: " << e.msg() << std::endl;
+        // LOG(ERROR) << "Error: " << e.msg() << std::endl;
         co_return HttpRequest::response_bad_request_400(e.msg()).get_response_in_string();
     }
     catch(std::exception const& e)
     {
-        LOG(ERROR) << "Error: " << e.what() << std::endl;
+        // LOG(ERROR) << "Error: " << e.what() << std::endl;
         co_return HttpRequest::response_internal_error_500().get_response_in_string();
     }
 

@@ -110,7 +110,7 @@ public:
         }
         catch (std::exception const& e)
         {
-            LOG(ERROR) << "Websocket Server SSL write error: " << e.what() << std::endl;
+            // LOG(ERROR) << "Websocket Server SSL write error: " << e.what() << std::endl;
 
             // Invoke callback
             check_invoke_close_callback();
@@ -232,7 +232,7 @@ private:
         // This indicates that the session_ssl was closed
         if(ec == websocket::error::closed)
         {
-            LOG(ERROR) << "Websocker session_ssl (" << this << ") close: " << ec.message() << "\n";
+            // LOG(ERROR) << "Websocker session_ssl (" << this << ") close: " << ec.message() << "\n";
 
             // Invoke callback
             check_invoke_close_callback();
@@ -242,7 +242,7 @@ private:
 
         if(ec)
         {
-            LOG(ERROR) << "Websocker session_ssl (" << this << ") close: " << ec.message() << "\n";
+            // LOG(ERROR) << "Websocker session_ssl (" << this << ") close: " << ec.message() << "\n";
 
             // Invoke callback
             check_invoke_close_callback();
@@ -272,7 +272,7 @@ private:
 
         if(ec)
         {
-            LOG(ERROR) << "Websocker session_ssl (" << this << ") close: " << ec.message() << "\n";
+            // LOG(ERROR) << "Websocker session_ssl (" << this << ") close: " << ec.message() << "\n";
 
             // Invoke callback
             check_invoke_close_callback();
@@ -295,7 +295,7 @@ private:
     // Report a failure
     void fail(beast::error_code ec, char const* what)
     {
-        LOG(ERROR) << what << ": " << ec.message() << "\n";
+        // LOG(ERROR) << what << ": " << ec.message() << "\n";
         ADD_LOG("After Report a failure");
     }
 
@@ -313,7 +313,7 @@ private:
         }
         catch(const std::exception& e)
         {
-            LOG(ERROR) << "Websocket Server SSL check_invoke_close_callback error: " << e.what() << '\n';
+            // LOG(ERROR) << "Websocket Server SSL check_invoke_close_callback error: " << e.what() << '\n';
         }
     }
 };
@@ -379,7 +379,7 @@ public:
     // Report a failure
     void fail(beast::error_code ec, char const* what)
     {
-        LOG(ERROR) << what << ": " << ec.message() << "\n";
+        // LOG(ERROR) << what << ": " << ec.message() << "\n";
     }
 
     // Start accepting incoming connections

@@ -1344,7 +1344,7 @@ namespace jwt {
 				ERR_clear_error();
 				if (EVP_DigestSignUpdate(ctx.get(), reinterpret_cast<const unsigned char*>(data.data()), data.size()) !=
 					1) {
-					LOG(INFO) << ERR_error_string(ERR_get_error(), NULL) << std::endl;
+					// LOG(INFO) << ERR_error_string(ERR_get_error(), NULL) << std::endl;
 					ec = error::signature_generation_error::signupdate_failed;
 					return {};
 				}

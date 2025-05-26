@@ -100,7 +100,7 @@ public:
         }
         catch (std::exception const& e)
         {
-            LOG(ERROR) << "Websocket Server write error: " << e.what() << std::endl;
+            // LOG(ERROR) << "Websocket Server write error: " << e.what() << std::endl;
 
             // Invoke callback
             check_invoke_close_callback();
@@ -192,7 +192,7 @@ private:
         // This indicates that the session was closed
         if(ec == websocket::error::closed)
         {
-            LOG(ERROR) << "Websocker session (" << this << ") close: " << ec.message() << "\n";
+            // LOG(ERROR) << "Websocker session (" << this << ") close: " << ec.message() << "\n";
 
             // Invoke callback
             check_invoke_close_callback();
@@ -202,7 +202,7 @@ private:
 
         if(ec)
         {
-            LOG(ERROR) << "Websocker session (" << this << ") close: " << ec.message() << "\n";
+            // LOG(ERROR) << "Websocker session (" << this << ") close: " << ec.message() << "\n";
 
             // Invoke callback
             check_invoke_close_callback();
@@ -230,7 +230,7 @@ private:
 
         if(ec)
         {
-            LOG(ERROR) << "Websocker session (" << this << ") close: " << ec.message() << "\n";
+            // LOG(ERROR) << "Websocker session (" << this << ") close: " << ec.message() << "\n";
 
             // Invoke callback
             check_invoke_close_callback();
@@ -253,7 +253,7 @@ private:
     // Report a failure
     void fail(beast::error_code ec, char const* what)
     {
-        LOG(ERROR) << what << ": " << ec.message() << "\n";
+        // LOG(ERROR) << what << ": " << ec.message() << "\n";
     }
 
     void check_invoke_close_callback()
@@ -270,7 +270,7 @@ private:
         }
         catch(const std::exception& e)
         {
-            LOG(ERROR) << "Websocket Server check_invoke_close_callback error: " << e.what() << '\n';
+            // LOG(ERROR) << "Websocket Server check_invoke_close_callback error: " << e.what() << '\n';
         }
     }
 };
@@ -383,7 +383,7 @@ public:
     // Report a failure
     void fail(beast::error_code ec, char const* what)
     {
-        LOG(ERROR) << what << ": " << ec.message() << "\n";
+        // LOG(ERROR) << what << ": " << ec.message() << "\n";
     }
 
     // Start accepting incoming connections
@@ -806,7 +806,7 @@ void WebsocketServer<SessionType,ListenerType>::send_data_through_channel(std::s
         }
         catch(const std::exception& e)
         {
-            LOG(ERROR) << "Websocket Server - session write error: " << e.what() << std::endl;
+            // LOG(ERROR) << "Websocket Server - session write error: " << e.what() << std::endl;
             continue;
         }
 

@@ -97,19 +97,19 @@ SSL_ACCEPT_STATUS HttpsServer::do_ssl_accept(int client_fd)
     }
     catch(const std::exception& e)
     {
-        LOG(ERROR) << "HttpsServer - SSL_accept error = " << e.what() << '\n';
+        // LOG(ERROR) << "HttpsServer - SSL_accept error = " << e.what() << '\n';
 
         // Close socket fd
-        LOG(INFO) << "error https - accept_new_connection: " << std::strerror(errno) << std::endl;
-        LOG(INFO) << "close socket id: " << client_fd << std::endl;
+        // LOG(INFO) << "error https - accept_new_connection: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "close socket id: " << client_fd << std::endl;
         close_connection(client_fd);
         return SSL_ACCEPT_STATUS::ERROR;
     }
 
     if (accept_status == SSL_ACCEPT_STATUS::ERROR)
     {
-        LOG(INFO) << "error https - accept_new_connection: " << std::strerror(errno) << std::endl;
-        LOG(INFO) << "close socket id: " << client_fd << std::endl;
+        // LOG(INFO) << "error https - accept_new_connection: " << std::strerror(errno) << std::endl;
+        // LOG(INFO) << "close socket id: " << client_fd << std::endl;
         close_connection(client_fd);
         return SSL_ACCEPT_STATUS::ERROR;
     }
