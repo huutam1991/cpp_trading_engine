@@ -1,5 +1,4 @@
-#ifndef DATA_FIELD_H
-#define DATA_FIELD_H
+#pragma once
 
 #include <memory>
 #include <iostream>
@@ -42,6 +41,3 @@ public:
     DataField& operator[](const std::string& key);
     DataField& operator[](const char* key);
 };
-
-
-#endif //DATA_FIELD_H

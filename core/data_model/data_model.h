@@ -1,5 +1,4 @@
-#ifndef DATA_MODEL_H
-#define DATA_MODEL_H
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -152,5 +151,3 @@ bool DataField::operator==(const T& data)
     T val = (*m_field);
     return val == data;
 }
-
-#endif //DATA_MODEL_H
