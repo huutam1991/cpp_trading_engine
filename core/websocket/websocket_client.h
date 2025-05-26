@@ -14,8 +14,8 @@
 #include <thread>
 #include <memory>
 
-#include <constants.h>
-#include <util_macros.h>
+#include <utils/constants.h>
+#include <utils/util_macros.h>
 #include <thread_pool/thread_pool.h>
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>

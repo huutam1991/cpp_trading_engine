@@ -7,7 +7,7 @@
 #include <iostream>
 
 #include <external_request/external_request.h>
-#include <util_macros.h>
+#include <utils/util_macros.h>
 
 ExternalRequest::ExternalRequest(const std::string& url, int port, const std::string& path, RequestMethod request_method):
     m_url(url), m_port(port), m_path(path), m_request_method(request_method)

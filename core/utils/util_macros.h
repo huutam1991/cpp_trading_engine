@@ -1,10 +1,9 @@
-#ifndef UTIL_MACRO_H
-#define UTIL_MACRO_H
+#pragma once
 
 #include <iostream>
 #include <chrono>
 #include <glog/logging.h>
-#include <time_log.h>
+#include <utils/time_log.h>
 
 #define Singleton(className) \
 public: \
@@ -151,5 +150,3 @@ bsoncxx::stdx::optional<mongocxx::result::delete_result> result = collection.del
 
 #define TO_STRING Utils::instance().to_string_with_precision
 #define IS_EQUAL Utils::instance().is_equal
-
-#endif // UTIL_MACRO_H

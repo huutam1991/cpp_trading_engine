@@ -1,10 +1,9 @@
-#ifndef UTILS__H
-#define UTILS__H
+#pragma once
 
 #include <time.h>       /* time_t, struct tm, time, gmtime */
 
-#include <constants.h>
-#include <util_macros.h>
+#include <utils/constants.h>
+#include <utils/util_macros.h>
 #include <mongo_db/mongo_db.h>
 #include <json/json.h>
 #include <thread_pool/thread_pool.h>
@@ -55,6 +54,3 @@ public:
         return std::fabs(value1 - value2) <= std::numeric_limits<T>::epsilon();
     }
 };
-
-
-#endif // UTILS__H

@@ -1,6 +1,6 @@
 #include <https_server/request/http_request_post.h>
-#include <util_macros.h>
-#include <utils.h>
+#include <utils/util_macros.h>
+#include <utils/utils.h>
 
 HttpRequestPost::HttpRequestPost(const std::string& content, const std::string& dir_path) : HttpRequest(content, dir_path)
 {

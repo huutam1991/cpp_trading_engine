@@ -1,6 +1,6 @@
 #include <api_handler/api_handler.h>
 #include <jwt/jwt_manager.h>
-#include <utils.h>
+#include <utils/utils.h>
 
 APIHandler::APIHandler(HttpRequest* request) : m_request(request)
 {

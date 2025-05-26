@@ -6,8 +6,8 @@
 #include <unordered_map>
 #include <tuple>
 
-#include <util_macros.h>
-#include <constants.h>
+#include <utils/util_macros.h>
+#include <utils/constants.h>
 #include <json/json.h>
 #include "mongo_db_header.h"
 

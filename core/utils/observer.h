@@ -1,5 +1,4 @@
-#ifndef OBSERVER_H
-#define OBSERVER_H
+#pragma once
 
 #include <vector>
 
@@ -47,5 +46,3 @@ namespace observer
 
     };
 }
-
-#endif

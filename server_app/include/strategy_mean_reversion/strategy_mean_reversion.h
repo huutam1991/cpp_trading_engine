@@ -4,7 +4,7 @@
 #include <mutex>
 #include <queue>
 
-#include <util_macros.h>
+#include <utils/util_macros.h>
 #include <app_constants.h>
 #include <json/json.h>
 #include <data_model/data_model.h>

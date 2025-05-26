@@ -3,9 +3,9 @@
 #include <string>
 #include <cstring>
 
-#include <constants.h>
+#include <utils/constants.h>
 #include <https_server/epoll_wrapper.h>
-#include <util_macros.h>
+#include <utils/util_macros.h>
 
 typedef struct sockaddr_in sockaddr_in;
 

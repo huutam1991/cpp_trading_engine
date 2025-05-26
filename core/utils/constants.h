@@ -1,5 +1,4 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#pragma once
 
 #include <unordered_map>
 #include <sys/epoll.h>
@@ -102,4 +101,3 @@ const std::unordered_map<int, std::string> response_status_code_map =
     {INTERNAL_SERVER_ERROR_500, "Internal Server Error"},
 };
 
-#endif //CONSTANTS_H

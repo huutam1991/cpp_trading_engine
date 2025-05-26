@@ -2,7 +2,7 @@
 
 #include <external_request/external_request_ssl.h>
 
-#include <util_macros.h>
+#include <utils/util_macros.h>
 
 ExternalRequestSsl::ExternalRequestSsl(const std::string& url, const std::string& port, const std::string& path, RequestMethod request_method):
     m_url(url), m_port(port), m_path(path), m_request_method(request_method)

@@ -1,7 +1,7 @@
 #ifndef APP_UTILS_H
 #define APP_UTILS_H
 
-#include <util_macros.h>
+#include <utils/util_macros.h>
 #include <app_constants.h>
 #include <json/json.h>
 #include <thread_pool/thread_pool.h>
