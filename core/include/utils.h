@@ -7,7 +7,7 @@
 #include <util_macros.h>
 #include <mongo_db/mongo_db.h>
 #include <json/json.h>
-#include <thread_pool.h>
+#include <thread_pool/thread_pool.h>
 #include <cmath>
 
 #define UTC_PLUS_7_IN_MS 25200000

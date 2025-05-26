@@ -1,5 +1,4 @@
-#ifndef THREAD_POOL_H
-#define THREAD_POOL_H
+#pragma once
 
 #include <thread>
 #include <mutex>
@@ -39,4 +38,3 @@ public:
     void shut_down();
 };
 
-#endif // THREAD_POOL_H

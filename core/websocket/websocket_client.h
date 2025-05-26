@@ -16,7 +16,7 @@
 
 #include <constants.h>
 #include <util_macros.h>
-#include <thread_pool.h>
+#include <thread_pool/thread_pool.h>
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>

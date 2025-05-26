@@ -1,7 +1,7 @@
 #include <utility>
 #include <iostream>
 
-#include <thread_pool.h>
+#include <thread_pool/thread_pool.h>
 
 ThreadPool::ThreadPool(int n_threads, const std::string& name) : m_thread_list(n_threads), m_thread_pool_name(name)
 {

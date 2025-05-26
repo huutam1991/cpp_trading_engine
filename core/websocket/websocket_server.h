@@ -18,7 +18,7 @@
 
 #include <constants.h>
 #include <util_macros.h>
-#include <thread_pool.h>
+#include <thread_pool/thread_pool.h>
 #include <json/json.h>
 #include <jwt/jwt_manager.h>
 

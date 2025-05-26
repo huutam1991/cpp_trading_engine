@@ -2,7 +2,7 @@
 #include <functional>
 #include <iostream>
 
-#include <thread_worker.h>
+#include <thread_pool/thread_worker.h>
 
 ThreadWorker::ThreadWorker(ThreadPool* thread_pool) : m_thread_pool(thread_pool)
 {

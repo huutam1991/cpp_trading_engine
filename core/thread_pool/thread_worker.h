@@ -1,5 +1,4 @@
-#ifndef THREAD_WORKER_H
-#define THREAD_WORKER_H
+#pragma once
 
 #include "thread_pool.h"
 
@@ -15,5 +14,3 @@ public:
 
     void operator()();
 };
-
-#endif // THREAD_WORKER_H
