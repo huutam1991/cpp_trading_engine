@@ -5,7 +5,7 @@
 
 #include <https_server/route/route.h>
 #include <util_macros.h>
-#include <exception.h>
+#include <https_server/exception.h>
 
 class RouteController
 {
