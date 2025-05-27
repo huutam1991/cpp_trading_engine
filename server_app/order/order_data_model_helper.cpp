@@ -1,6 +1,6 @@
 #include <order/order_data_model_helper.h>
 
-#include <measure_time.h>
+#include <time/measure_time.h>
 
 std::unordered_map<OrderId, Order> OrderDataModelHelper::load_order()
 {
@@ -40,8 +40,7 @@ DataModel OrderDataModelHelper::get_order_by_id(OrderId order_id)
 void OrderDataModelHelper::update_order(Order& order)
 {
     TaskVoid task = task_update_order(order);
-    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_DATA_MODEL_HELPER)
-    );
+    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_DATA_MODEL_HELPER));
 }
 
 TaskVoid OrderDataModelHelper::task_update_order(Order order)
