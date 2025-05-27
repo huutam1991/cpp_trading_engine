@@ -2,7 +2,7 @@
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 #include <gateways/gateway_manager.h>
 
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 #include <set>
 

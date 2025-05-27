@@ -6,7 +6,7 @@
 #include <json/json.h>
 #include <timer.h>
 #include <app_constants.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 // StrategyState
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state_run.h>

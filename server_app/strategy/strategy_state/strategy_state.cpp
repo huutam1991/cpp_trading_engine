@@ -1,5 +1,5 @@
 #include <strategy/strategy_state/strategy_state.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 StrategyState::StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : m_gateway(gateway), m_checkpoints(checkpoints)

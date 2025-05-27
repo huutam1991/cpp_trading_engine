@@ -1,5 +1,5 @@
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 StrategyMeanReversionState::StrategyMeanReversionState(std::shared_ptr<Gateway>& gateway, StrategyMeanReversionConfig& config)
     : m_gateway(gateway), m_config(config)

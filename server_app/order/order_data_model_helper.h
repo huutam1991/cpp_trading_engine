@@ -6,7 +6,7 @@
 #include <data_model/data_model.h>
 #include <coroutine/task_void.h>
 
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 #include <order/order.h>
 
 class OrderDataModelHelper

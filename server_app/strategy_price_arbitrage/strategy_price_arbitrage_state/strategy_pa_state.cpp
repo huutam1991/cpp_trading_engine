@@ -1,5 +1,5 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 StrategyPriceArbitrageState::StrategyPriceArbitrageState(std::shared_ptr<Gateway>& gateway, StrategyPriceArbitrageConfig& config)
     : m_gateway(gateway), m_config(config)

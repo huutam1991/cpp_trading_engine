@@ -1,7 +1,7 @@
 #include <external_request/external_request_ssl.h>
 
 #include <gateways/coinbase/coinbase_gateway.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 #include <account/account.h>
 
 CoinbaseGateway::CoinbaseGateway(const std::string& key) :

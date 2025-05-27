@@ -4,7 +4,7 @@
 #include <json/json.h>
 #include <timer.h>
 #include <app_constants.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 // StrategyState
 #include <strategy/strategy_state/strategy_state_start.h>

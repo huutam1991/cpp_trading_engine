@@ -1,5 +1,5 @@
 #include <data_model/data_model.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 DataModel::DataModel()
 {

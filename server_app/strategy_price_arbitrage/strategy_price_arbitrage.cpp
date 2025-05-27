@@ -6,7 +6,7 @@
 #include <json/json.h>
 #include <timer.h>
 #include <app_constants.h>
-#include <app_utils.h>
+#include <app_utils/app_utils.h>
 
 // StrategyState
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
