@@ -1,5 +1,4 @@
-#ifndef BINANCE_QUOTER_SPOT_H
-#define BINANCE_QUOTER_SPOT_H
+#pragma once
 
 #include <websocket/websocket_client_async.h>
 #include <coroutine/event_base_manager.h>
@@ -37,5 +36,3 @@ public:
     virtual Task<Json> place(Order order) override;
 
 };
-
-#endif //BINANCE_QUOTER_SPOT_H

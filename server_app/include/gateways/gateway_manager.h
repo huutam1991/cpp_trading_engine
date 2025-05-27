@@ -1,5 +1,4 @@
-#ifndef GATEWAY_MANAGER_H
-#define GATEWAY_MANAGER_H
+#pragma once
 
 #include <unordered_map>
 #include <memory>
@@ -28,5 +27,3 @@ public:
     std::shared_ptr<Gateway> get_gateway(GatewayEnum gateway);
     std::shared_ptr<Gateway> get_gateway(const std::string& gateway);
 };
-
-#endif //GATEWAY_MANAGER_H

@@ -1,5 +1,4 @@
-#ifndef BINANCE_QUOTER_PERPETUAL_H
-#define BINANCE_QUOTER_PERPETUAL_H
+#pragma once
 
 #include <websocket/websocket_client_async.h>
 #include <gateways/binance/binance_quoter/binance_quoter.h>
@@ -38,5 +37,3 @@ public:
     virtual Task<Json> cancel(Order order) override;
     virtual Task<Json> place(Order order) override;
 };
-
-#endif //BINANCE_QUOTER_PERPETUAL_H

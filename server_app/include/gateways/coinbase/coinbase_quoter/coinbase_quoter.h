@@ -1,5 +1,4 @@
-#ifndef COINBASE_QUOTER_H
-#define COINBASE_QUOTER_H
+#pragma once
 
 #include <gateways/gateway.h>
 
@@ -33,5 +32,3 @@ public:
     virtual Task<Json> place(Order order) = 0;
 
 };
-
-#endif //COINBASE_QUOTER_H

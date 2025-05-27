@@ -1,5 +1,4 @@
-#ifndef GATEWAY_H
-#define GATEWAY_H
+#pragma once
 
 #include <unordered_set>
 
@@ -35,5 +34,3 @@ public:
     virtual Task<Json> get_balances() = 0;
     virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) = 0;
 };
-
-#endif //GATEWAY_H

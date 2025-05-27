@@ -1,5 +1,4 @@
-#ifndef BINANCE_GATEWAY_H
-#define BINANCE_GATEWAY_H
+#pragma once
 
 #include <gateways/gateway.h>
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
@@ -41,5 +40,3 @@ private:
     std::string round_string_number(const std::string& str_number, size_t precision);
 
 };
-
-#endif //BINANCE_GATEWAY_H

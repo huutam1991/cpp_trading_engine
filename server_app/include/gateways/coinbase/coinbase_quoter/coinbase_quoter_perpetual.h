@@ -1,5 +1,4 @@
-#ifndef COINBASE_QUOTER_PERPETUAL_H
-#define COINBASE_QUOTER_PERPETUAL_H
+#pragma once
 
 #include <websocket/websocket_client_async.h>
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter.h>
@@ -38,5 +37,3 @@ public:
     virtual Task<Json> cancel(Order order) override;
     virtual Task<Json> place(Order order) override;
 };
-
-#endif //COINBASE_QUOTER_PERPETUAL_H

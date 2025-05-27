@@ -1,5 +1,4 @@
-#ifndef COINBASE_MARKET_DATA_H
-#define COINBASE_MARKET_DATA_H
+#pragma once
 
 #include <functional>
 #include <unordered_map>
@@ -33,5 +32,3 @@ private:
 
     size_t get_stream_id_count();
 };
-
-#endif //COINBASE_MARKET_DATA_H
