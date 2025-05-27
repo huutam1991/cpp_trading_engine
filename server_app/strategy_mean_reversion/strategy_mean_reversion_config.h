@@ -1,5 +1,4 @@
-#ifndef STRATEGY_MEAN_REVERSION_CONFIG_H
-#define STRATEGY_MEAN_REVERSION_CONFIG_H
+#pragma once
 
 #include <string>
 
@@ -13,6 +12,3 @@ struct StrategyMeanReversionConfig
     double too_high_price_delta;
     bool is_running;
 };
-
-
-#endif //STRATEGY_MEAN_REVERSION_CONFIG_H

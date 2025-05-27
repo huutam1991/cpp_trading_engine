@@ -1,5 +1,4 @@
-#ifndef STRATEGY_STATE_H
-#define STRATEGY_STATE_H
+#pragma once
 
 #include <variant>
 #include <coroutine/task.h>
@@ -48,5 +47,3 @@ protected:
     static double* placing_price_ptr();
     static double get_placing_price();
 };
-
-#endif //STRATEGY_STATE_H

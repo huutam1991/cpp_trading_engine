@@ -1,5 +1,4 @@
-#ifndef CHECK_POINTS_H
-#define CHECK_POINTS_H
+#pragma once
 
 #include <utils/util_macros.h>
 #include <app_constants.h>
@@ -48,5 +47,3 @@ public:
     DataModel   get_checkpoint_can_take_profit(double price, double take_profit);
     Json        get_current_info();
 };
-
-#endif //CHECK_POINTS_H

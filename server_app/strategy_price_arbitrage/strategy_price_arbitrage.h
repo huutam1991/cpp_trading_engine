@@ -1,5 +1,4 @@
-#ifndef STRATEGY_PRICE_ARBITRAGE_H
-#define STRATEGY_PRICE_ARBITRAGE_H
+#pragma once
 
 #include <mutex>
 #include <queue>
@@ -59,5 +58,3 @@ public:
     PriceArbitrageSimpleGuard(bool& value) { m_value = &value; *m_value = true; }
     ~PriceArbitrageSimpleGuard() { *m_value = false; }
 };
-
-#endif //STRATEGY_PRICE_ARBITRAGE_H

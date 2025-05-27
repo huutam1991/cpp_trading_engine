@@ -1,5 +1,4 @@
-#ifndef STRATEGY_PA_STATE_STOP_H
-#define STRATEGY_PA_STATE_STOP_H
+#pragma once
 
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state.h>
 
@@ -14,5 +13,3 @@ public:
 
     virtual Json get_open_orders() override;
 };
-
-#endif //STRATEGY_PA_STATE_STOP_H

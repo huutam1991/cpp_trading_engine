@@ -1,5 +1,4 @@
-#ifndef STRATEGY_STATE_STOP_H
-#define STRATEGY_STATE_STOP_H
+#pragma once
 
 #include <strategy/strategy_state/strategy_state.h>
 
@@ -12,5 +11,3 @@ public:
     virtual void end();
     virtual TaskVoid run(StrategyData data);
 };
-
-#endif //STRATEGY_STATE_STOP_H

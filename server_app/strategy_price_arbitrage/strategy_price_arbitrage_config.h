@@ -1,5 +1,4 @@
-#ifndef STRATEGY_PRICE_ARBITRAGE_CONFIG_H
-#define STRATEGY_PRICE_ARBITRAGE_CONFIG_H
+#pragma once
 
 #include <string>
 
@@ -15,6 +14,3 @@ struct StrategyPriceArbitrageConfig
     double too_high_price_delta;
     bool is_running;
 };
-
-
-#endif //STRATEGY_PRICE_ARBITRAGE_CONFIG_H

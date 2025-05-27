@@ -1,5 +1,4 @@
-#ifndef STRATEGY_MEAN_REVERSION_H
-#define STRATEGY_MEAN_REVERSION_H
+#pragma once
 
 #include <mutex>
 #include <queue>
@@ -59,5 +58,3 @@ public:
     MeanReversionSimpleGuard(bool& value) { m_value = &value; *m_value = true; }
     ~MeanReversionSimpleGuard() { *m_value = false; }
 };
-
-#endif //STRATEGY_MEAN_REVERSION_H

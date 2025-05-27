@@ -1,5 +1,3 @@
-
-
 #include <strategy/strategy.h>
 #include <gateways/gateway_manager.h>
 #include <mongo_db/mongo_db.h>

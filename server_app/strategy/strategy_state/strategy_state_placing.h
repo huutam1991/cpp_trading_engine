@@ -1,5 +1,4 @@
-#ifndef STRATEGY_STATE_PLACING_H
-#define STRATEGY_STATE_PLACING_H
+#pragma once
 
 #include <strategy/strategy_state/strategy_state.h>
 
@@ -15,5 +14,3 @@ public:
     Order get_buy_spot_order_by_checkpoint(DataModel& checkpoint);
     Order get_sell_perpetual_order_by_checkpoint(DataModel& checkpoint);
 };
-
-#endif //STRATEGY_STATE_PLACING_H

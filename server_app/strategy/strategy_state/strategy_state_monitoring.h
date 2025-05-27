@@ -1,5 +1,4 @@
-#ifndef STRATEGY_STATE_MONITORING_H
-#define STRATEGY_STATE_MONITORING_H
+#pragma once
 
 #include <strategy/strategy_state/strategy_state.h>
 
@@ -28,5 +27,3 @@ private:
     TaskVoid check_place_buy_order(double price);
     TaskVoid check_place_sell_order(double price);
 };
-
-#endif //STRATEGY_STATE_MONITORING_H

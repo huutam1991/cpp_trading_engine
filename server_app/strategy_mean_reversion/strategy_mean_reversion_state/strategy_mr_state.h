@@ -1,5 +1,4 @@
-#ifndef STRATEGY_MR_STATE_H
-#define STRATEGY_MR_STATE_H
+#pragma once
 
 #include <variant>
 #include <coroutine/task.h>
@@ -38,5 +37,3 @@ public:
 
 protected:
 };
-
-#endif //STRATEGY_MR_STATE_H

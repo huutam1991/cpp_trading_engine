@@ -1,5 +1,4 @@
-#ifndef STRATEGY_H
-#define STRATEGY_H
+#pragma once
 
 #include <mutex>
 #include <queue>
@@ -70,5 +69,3 @@ public:
     SimpleGuard(bool& value) { m_value = &value; *m_value = true; }
     ~SimpleGuard() { *m_value = false; }
 };
-
-#endif //STRATEGY_H

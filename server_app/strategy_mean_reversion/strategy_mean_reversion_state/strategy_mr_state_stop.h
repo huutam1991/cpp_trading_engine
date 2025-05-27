@@ -1,5 +1,4 @@
-#ifndef STRATEGY_MR_STATE_STOP_H
-#define STRATEGY_MR_STATE_STOP_H
+#pragma once
 
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
 
@@ -14,5 +13,3 @@ public:
 
     virtual Json get_open_orders() override;
 };
-
-#endif //STRATEGY_MR_STATE_STOP_H

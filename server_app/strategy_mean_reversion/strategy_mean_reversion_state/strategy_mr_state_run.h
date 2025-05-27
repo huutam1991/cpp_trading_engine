@@ -1,5 +1,4 @@
-#ifndef STRATEGY_MR_STATE_RUN_H
-#define STRATEGY_MR_STATE_RUN_H
+#pragma once
 
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
 #include <unordered_map>
@@ -41,5 +40,3 @@ private:
     TaskVoid handle_price_update(MRPriceUpdate price);
     TaskVoid handle_order_update(Order& order);
 };
-
-#endif //STRATEGY_MR_STATE_RUN_H

@@ -1,5 +1,4 @@
-#ifndef STRATEGY_PA_STATE_RUN_H
-#define STRATEGY_PA_STATE_RUN_H
+#pragma once
 
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state.h>
 #include <unordered_map>
@@ -44,5 +43,3 @@ private:
     TaskVoid handle_price_update(PriceUpdate price);
     TaskVoid handle_order_update(Order& order);
 };
-
-#endif //STRATEGY_PA_STATE_RUN_H
