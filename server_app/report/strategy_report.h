@@ -6,6 +6,8 @@
 #include <utils/util_macros.h>
 #include <json/json.h>
 
+#include <user/user.h>
+
 class StrategyReport
 {
     Singleton(StrategyReport);

@@ -1,5 +1,4 @@
-#ifndef API_HANDLER_H
-#define API_HANDLER_H
+#pragma once
 
 #include <https_server/request/http_request.h>
 #include <https_server/response/http_response.h>
@@ -37,5 +36,3 @@ public:
     void add_mandatory_body_params(const std::vector<std::string>& mandatory_body_params);
     Task<HttpResponse> handle();
 };
-
-#endif //API_HANDLER_H

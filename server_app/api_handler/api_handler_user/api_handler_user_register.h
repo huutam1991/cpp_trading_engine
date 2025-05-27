@@ -1,5 +1,4 @@
-#ifndef API_HANDLER_USER_REGISTER_H
-#define API_HANDLER_USER_REGISTER_H
+#pragma once
 
 #include <api_handler/api_handler.h>
 
@@ -11,5 +10,3 @@ public:
 private:
     virtual Task<HttpResponse> child_handle();
 };
-
-#endif //API_HANDLER_USER_REGISTER_H
