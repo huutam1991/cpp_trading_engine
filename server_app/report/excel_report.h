@@ -1,5 +1,4 @@
-#ifndef EXCEL_REPORT_H
-#define EXCEL_REPORT_H
+#pragma once
 
 #include <memory>
 #include <unordered_map>
@@ -19,5 +18,3 @@ public:
     void generate_excel_file(Json& price_ticker_list, Json& execution_report_list);
 
 };
-
-#endif //EXCEL_REPORT_H

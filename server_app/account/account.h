@@ -1,5 +1,4 @@
-#ifndef ACCOUNT_H
-#define ACCOUNT_H
+#pragma once
 
 #include <json/json.h>
 #include <string>
@@ -11,5 +10,3 @@ public:
     static Json load_account_by_key(const std::string& key);
 
 };
-
-#endif //ACCOUNT_H
