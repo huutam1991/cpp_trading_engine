@@ -1,5 +1,4 @@
-#ifndef APP_UTILS_H
-#define APP_UTILS_H
+#pragma once
 
 #include <utils/util_macros.h>
 #include <app_constants.h>
@@ -28,5 +27,3 @@ public:
     ThreadPool* get_app_pool();
     EventBase* get_app_event_base();
 };
-
-#endif //APP_UTILS_H

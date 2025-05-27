@@ -1,5 +1,4 @@
-#ifndef APP_CONSTANTS_H
-#define APP_CONSTANTS_H
+#pragma once
 
 #include <string>
 
@@ -210,5 +209,3 @@ enum EventBaseID
     GATEWAY,                 // Gateway
     STRATEGY                 // Strategy
 };
-
-#endif //APP_CONSTANTS_H
