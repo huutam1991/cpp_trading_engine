@@ -12,7 +12,7 @@ class SavableObject
     std::string m_db;
     std::string m_collection;
     
-    SavableObject();
+    SavableObject() {}
 
 public:
     // SavableObject(const std::string& db, const std::string& collection)
@@ -24,7 +24,7 @@ public:
         return m_object.to_json();
     }
 
-    from_json(Json& data)
+    T from_json(Json& data)
     {
         return T::from_json(data);
     }
@@ -43,7 +43,7 @@ public:
     template<class Key>
     static std::unordered_map<Key, SavableObject> load_objects_map(const std::string& db, const std::string& collection, const std::string& key_field_name)
     {
-        std::unordered_map<Key, DataModel> data_list = DataModel::load_data_model_map(db, collection, key_field_name);
+        std::unordered_map<Key, DataModel> data_list = DataModel::load_data_model_map<Key>(db, collection, key_field_name);
 
         std::unordered_map<Key, SavableObject> res;
         for (auto& [key, dm] : data_list)

@@ -1,6 +1,6 @@
-#include <order/order_data_model_helper.h>
-
 #include <time/measure_time.h>
+#include <order/order_data_model_helper.h>
+#include <data_model/savable_object.h>
 
 std::unordered_map<OrderId, Order> OrderDataModelHelper::load_order()
 {
@@ -12,6 +12,12 @@ std::unordered_map<OrderId, Order> OrderDataModelHelper::load_order()
         ADD_LOG("order_id: " << order_id << ", Order: " << order);
         res.insert(std::make_pair(order_id, Order::from_json(order.get_data())));
     }
+
+    
+    SavableObject<Order> savable_order = SavableObject<Order>::load_single_object(ORDER_DB_NAME, "order_list");
+    auto list_of_order = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
+
+    ADD_LOG("savable_order: " << savable_order.to_json());
 
     return res;
 }
