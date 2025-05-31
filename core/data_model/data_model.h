@@ -50,7 +50,6 @@ public:
     // Remove from DB
     void remove();
 
-    void set_callback(std::function<void(Json&)> callback);
     static DataModel load_single_data_model(const std::string& db, const std::string& collection);
     static std::vector<DataModel> load_data_model_list(const std::string& db, const std::string& collection);
 
@@ -87,11 +86,9 @@ private:
 
     void save_to_DB();
     void get_from_DB();
-    void check_invoke_callback();
 
     bool m_has_checked_available = false;
     DataField m_data_field = DataField(this);
-    std::function<void(Json&)> m_callback = nullptr;
 };
 
 template<class T>
@@ -99,7 +96,6 @@ void DataModel::update_field(const std::string& key, const T& value)
 {
     (*m_data)[key] = value;
     update_field_to_DB(key, value);
-    check_invoke_callback();
 }
 
 template<class T>

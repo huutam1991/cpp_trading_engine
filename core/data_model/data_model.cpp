@@ -70,9 +70,6 @@ DataModel& DataModel::operator=(const Json& json)
     // Update data in DB
     save_to_DB();
 
-    // Check invoke callback
-    check_invoke_callback();
-
     return *this;
 }
 
@@ -156,19 +153,6 @@ void DataModel::remove()
 Json& DataModel::get_data()
 {
     return *m_data;
-}
-
-void DataModel::check_invoke_callback()
-{
-    if (m_callback != nullptr)
-    {
-        m_callback(*m_data);
-    }
-}
-
-void DataModel::set_callback(std::function<void(Json&)> callback)
-{
-    m_callback = callback;
 }
 
 DataModel DataModel::load_single_data_model(const std::string& db, const std::string& collection)
