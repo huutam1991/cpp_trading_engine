@@ -5,6 +5,8 @@ void OrderManager::init()
 {
     m_order_list = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
+
+    SavableObject<Order>::init(EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_DATA_MODEL_HELPER));
 }
 
 OrderId OrderManager::generate_order_id()
@@ -152,7 +154,7 @@ TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue 
 
 TaskVoid OrderManager::handle_update_order(Order order)
 {
-    MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
+    MeasureTime a("Handle order update OrderManager 4", MeasureUnit::MICROSECOND);
     SavableObject<Order>& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
