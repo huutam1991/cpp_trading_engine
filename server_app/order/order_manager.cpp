@@ -3,7 +3,7 @@
 
 void OrderManager::init()
 {
-    m_order_list = m_order_data_model_helper.load_order();
+    m_order_list = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
 }
 
@@ -22,7 +22,7 @@ std::vector<OrderId> OrderManager::get_open_orders()
 
     for (auto& [order_id, order] : m_order_list)
     {
-        if (order.status == Order::Status::NEW)
+        if (order.object.status == Order::Status::NEW)
         {
             res.push_back(order_id);
         }
@@ -40,7 +40,8 @@ void OrderManager::set_cancel_order(OrderId order_id)
 {
     if (is_valid_order(order_id) == true)
     {
-        Order order = m_order_list[order_id];
+        auto it = m_order_list.find(order_id);
+        Order order = it->second;
 
         // Set order's status to CANCELED
         // Then invoke method update_order(), this order will be removed and notify to the whole engine
@@ -96,7 +97,8 @@ Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Statu
     // If order's status is the expected one, return it
     if (is_valid_order(order_id) == true)
     {
-        Order& order = m_order_list[order_id];
+        auto it = m_order_list.find(order_id);
+        Order& order = it->second;
         if (order.status == status)
         {
             return Future<Order>(order);
@@ -115,10 +117,11 @@ Order& OrderManager::get_order_by_id(OrderId order_id)
     // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
-        m_order_list.insert(std::make_pair(order_id, Order()));
+        m_order_list.insert(std::make_pair(order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list")));
     }
 
-    return m_order_list[order_id];
+    auto it = m_order_list.find(order_id);
+    return it->second;
 }
 
 TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
@@ -205,7 +208,7 @@ TaskVoid OrderManager::handle_update_order(Order order)
     }
 
     // Save order to DB, using DataModel implemented in OrderDataModelHelper
-    m_order_data_model_helper.update_order(order);
+    // m_order_data_model_helper.update_order(order);
 
     co_return;
 }

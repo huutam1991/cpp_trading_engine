@@ -11,6 +11,7 @@
 
 #include <order/order.h>
 #include <order/order_data_model_helper.h>
+#include <data_model/savable_object.h>
 
 namespace std {
     template<>
@@ -26,12 +27,12 @@ class OrderManager
     Singleton(OrderManager);
 
 private:
-    std::unordered_map<OrderId, Order> m_order_list;
+    std::unordered_map<OrderId, SavableObject<Order>> m_order_list;
     std::function<void(Order&)> m_order_update_callback = nullptr;
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
-    OrderDataModelHelper m_order_data_model_helper;
+    // OrderDataModelHelper m_order_data_model_helper;
     TaskVoid handle_update_order(Order order);
 
     // For getting order with a specific status
@@ -50,9 +51,8 @@ public:
     }
     Order::Status get_order_status(OrderId order_id)
     {
-        return m_order_list.find(order_id) != m_order_list.end() ?
-            m_order_list[order_id].status :
-            Order::Status::NOT_AVAILABLE;
+        auto it = m_order_list.find(order_id);
+        return it != m_order_list.end() ? it->second.object.status : Order::Status::NOT_AVAILABLE;
     }
     std::vector<OrderId> get_open_orders();
 
