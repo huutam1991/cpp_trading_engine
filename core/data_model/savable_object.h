@@ -33,11 +33,6 @@ public:
         return *this;
     }
 
-    // operator T()
-    // {
-    //     return object;
-    // }
-
     operator T&()
     {
         return object;
@@ -51,6 +46,11 @@ public:
     T from_json(Json& data)
     {
         return T::from_json(data);
+    }
+
+    void remove()
+    {
+        m_data_model.remove();
     }
 
     static SavableObject load_single_object(const std::string& db, const std::string& collection)
@@ -83,5 +83,4 @@ public:
 
         return res;
     }
-
 };

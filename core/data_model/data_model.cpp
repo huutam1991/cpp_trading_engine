@@ -146,8 +146,9 @@ void DataModel::remove()
         .set_db_and_collection(m_db, m_collection)
         .delete_one("_id", bsoncxx::oid(m_id));
 
-    // Reset [m_id]
+    // Reset [m_id] + [m_data]
     m_id = "-1";
+    *m_data = Json();
 }
 
 Json& DataModel::get_data()

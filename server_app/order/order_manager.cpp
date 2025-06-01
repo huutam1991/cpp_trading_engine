@@ -112,7 +112,7 @@ Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Statu
     });
 }
 
-Order& OrderManager::get_order_by_id(OrderId order_id)
+SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
 {
     // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
@@ -153,7 +153,7 @@ TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue 
 TaskVoid OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
-    Order& current_order_data = get_order_by_id(order.order_id);
+    SavableObject<Order>& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
     {
@@ -173,10 +173,10 @@ TaskVoid OrderManager::handle_update_order(Order order)
         }
 
         // Update order's output data
-        order.filled_quantity += current_order_data.filled_quantity;
-        order.commission_amount += current_order_data.commission_amount;
-        order.output_quantity += current_order_data.output_quantity;
-        order.volumn_in_quote_currency += current_order_data.volumn_in_quote_currency;
+        order.filled_quantity += current_order_data.object.filled_quantity;
+        order.commission_amount += current_order_data.object.commission_amount;
+        order.output_quantity += current_order_data.object.output_quantity;
+        order.volumn_in_quote_currency += current_order_data.object.volumn_in_quote_currency;
 
         // If [filled_quantity] == [quantity], order's status is FILLED
         if (order.filled_quantity == order.quantity)
@@ -204,11 +204,9 @@ TaskVoid OrderManager::handle_update_order(Order order)
     // If order is canceled remove it from [m_order_list]
     if (order.status == Order::Status::CANCELED)
     {
+        current_order_data.remove();
         m_order_list.erase(order.order_id);
     }
-
-    // Save order to DB, using DataModel implemented in OrderDataModelHelper
-    // m_order_data_model_helper.update_order(order);
 
     co_return;
 }
