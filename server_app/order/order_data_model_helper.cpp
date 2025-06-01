@@ -15,7 +15,7 @@ std::unordered_map<OrderId, Order> OrderDataModelHelper::load_order()
 
     
     SavableObject<Order> savable_order = SavableObject<Order>::load_single_object(ORDER_DB_NAME, "order_list");
-    auto list_of_order = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
+    // auto list_of_order = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
 
     ADD_LOG("savable_order: " << savable_order.to_json());
 

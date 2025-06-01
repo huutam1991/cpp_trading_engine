@@ -15,9 +15,23 @@ class SavableObject
     SavableObject() {}
 
 public:
-    // SavableObject(const std::string& db, const std::string& collection)
-    //     : m_db{db}, m_collection{collection}
-    // {}
+    SavableObject(const std::string& db, const std::string& collection)
+        : m_data_model{m_db, m_collection}, m_db{db}, m_collection{collection}
+    {}
+
+    SavableObject& operator=(const T& value)
+    {
+        m_object = value;
+        m_data_model = m_object.to_json();
+        return *this;
+    }
+
+    SavableObject& operator=(T&& value)
+    {
+        m_object = std::move(value);
+        m_data_model = m_object.to_json();
+        return *this;
+    }
 
     Json to_json()
     {
