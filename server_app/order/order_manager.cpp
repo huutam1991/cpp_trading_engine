@@ -202,11 +202,11 @@ TaskVoid OrderManager::handle_update_order(Order order)
     }
 
     // If order is canceled remove it from [m_order_list]
-    if (order.status == Order::Status::CANCELED)
-    {
-        current_order_data.remove();
-        m_order_list.erase(order.order_id);
-    }
+    // if (order.status == Order::Status::CANCELED)
+    // {
+    //     current_order_data.remove();
+    //     m_order_list.erase(order.order_id);
+    // }
 
     co_return;
 }

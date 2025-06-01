@@ -15,6 +15,7 @@ public:
     DataModel();
     DataModel(JsonNull);
     DataModel(const DataModel& copy);
+    DataModel(DataModel&& copy);
     DataModel(const std::string& db, const std::string& collection);
     DataModel(const std::string& db, const std::string& collection, const std::string& id);
 

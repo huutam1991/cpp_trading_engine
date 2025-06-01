@@ -15,6 +15,11 @@ DataModel::DataModel(const DataModel& copy) : m_db(copy.m_db), m_collection(copy
 {
 }
 
+DataModel::DataModel(DataModel&& copy) : m_db(std::move(copy.m_db)), m_collection(std::move(copy.m_collection)), m_id(std::move(copy.m_id)), m_data(std::move(copy.m_data))
+{
+}
+
+
 DataModel::DataModel(const std::string& db, const std::string& collection) : m_db(db), m_collection(collection)
 {
     m_data = std::make_shared<Json>();

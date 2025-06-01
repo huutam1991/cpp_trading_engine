@@ -16,7 +16,7 @@ public:
     T object;
 
     SavableObject(const std::string& db, const std::string& collection)
-        : m_data_model{m_db, m_collection}, m_db{db}, m_collection{collection}
+        : m_data_model{db, collection}, m_db{db}, m_collection{collection}
     {}
 
     SavableObject& operator=(const T& value)
