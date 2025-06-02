@@ -3,6 +3,29 @@
 #include <data_model/data_model.h>
 #include <coroutine/event_base.h>
 
+class DBHelper
+{
+public:
+    static void init(EventBase* event_base)
+    {
+        get_even_base() = event_base;
+    }
+
+    static EventBase*& get_even_base()
+    {
+        static EventBase* even_base = nullptr;
+        return even_base;
+    }
+    
+    static void check_valid_event_base()
+    {
+        if (get_even_base() == nullptr)
+        {
+            throw std::runtime_error("DBHelper is not init with valid EventBase yet");
+        }
+    }
+};
+
 template<class T>
 class SavableObject
 {
@@ -19,21 +42,57 @@ public:
     SavableObject(const std::string& db, const std::string& collection)
         : m_data_model{std::make_shared<DataModel>()}, m_db{db}, m_collection{collection}
     {
-        init_data_model(m_data_model.get(), db, collection).start_running_on(get_even_base());
+        // Check valid EventBase for DBHelper
+        DBHelper::check_valid_event_base();
+
+        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_even_base());
     }
 
     SavableObject& operator=(const T& value)
     {
+        // Check valid EventBase for DBHelper
+        DBHelper::check_valid_event_base();
+
         object = value;
-        update_data_model(m_data_model.get(), object).start_running_on(get_even_base());
+        update_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
         return *this;
     }
 
     SavableObject& operator=(T&& value)
     {
+        // Check valid EventBase for DBHelper
+        DBHelper::check_valid_event_base();
+
         object = std::move(value);
-        update_data_model(m_data_model.get(), object).start_running_on(get_even_base());
+        update_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
         return *this;
+    }
+
+    void remove()
+    {
+        // Check valid EventBase for DBHelper
+        DBHelper::check_valid_event_base();
+        
+        remove_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
+    }
+    
+    TaskVoid init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
+    {
+        DataModel dm(db, collection);
+        *data_model = dm;
+        co_return;
+    }
+
+    TaskVoid update_data_model(std::shared_ptr<DataModel> data_model, T object)
+    {
+        *data_model = object.to_json();
+        co_return;
+    }
+
+    TaskVoid remove_data_model(std::shared_ptr<DataModel> data_model)
+    {
+        data_model->remove();
+        co_return;
     }
 
     operator T&()
@@ -49,35 +108,6 @@ public:
     T from_json(Json& data)
     {
         return T::from_json(data);
-    }
-
-    void remove()
-    {
-        m_data_model->remove();
-    }
-    
-    TaskVoid init_data_model(DataModel* data_model, std::string db, std::string collection)
-    {
-        DataModel dm(db, collection);
-        *data_model = dm;
-        co_return;
-    }
-
-    TaskVoid update_data_model(DataModel* data_model, T object)
-    {
-        *data_model = object.to_json();
-        co_return;
-    }
-
-    static void init(EventBase* event_base)
-    {
-        get_even_base() = event_base;
-    }
-
-    static EventBase*& get_even_base()
-    {
-        static EventBase* even_base = nullptr;
-        return even_base;
     }
 
     static SavableObject load_single_object(const std::string& db, const std::string& collection)

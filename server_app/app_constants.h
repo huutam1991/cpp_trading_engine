@@ -205,7 +205,7 @@ enum EventBaseID
 {
     APP,
     ORDER,                   // OrderManager
-    ORDER_DATA_MODEL_HELPER, // Help to save Order
+    DB_HELPER,               // Help to data to MongoDB
     GATEWAY,                 // Gateway
     STRATEGY                 // Strategy
 };
