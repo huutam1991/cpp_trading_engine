@@ -3,6 +3,7 @@
 #include <ioc_pool.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_spot.h>
+#include <app_utils/app_utils.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 

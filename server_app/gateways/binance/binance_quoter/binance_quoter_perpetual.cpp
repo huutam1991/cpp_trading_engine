@@ -1,5 +1,6 @@
 #include <external_request/external_request_ssl.h>
 #include <ioc_pool.h>
+#include <coroutine/event_base_manager.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 

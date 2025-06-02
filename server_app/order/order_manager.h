@@ -10,7 +10,6 @@
 #include <coroutine/future.h>
 
 #include <order/order.h>
-#include <order/order_data_model_helper.h>
 #include <data_model/savable_object.h>
 
 namespace std {

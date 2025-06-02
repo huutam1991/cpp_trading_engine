@@ -1,4 +1,5 @@
 #include <gateways/gateway.h>
+#include <coroutine/event_base_manager.h>
 
 Gateway::Gateway() : m_event_base {
     EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY

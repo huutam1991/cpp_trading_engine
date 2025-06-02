@@ -11,15 +11,15 @@
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
 #include <time/timer.h>
+#include <external_request/https_client_async.h>
+#include <ioc_pool.h>
+#include <coroutine/event_base_manager.h>
 
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
 #include <strategy/strategy.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
 #include <strategy_mean_reversion/strategy_mean_reversion.h>
-
-#include <external_request/https_client_async.h>
-#include <ioc_pool.h>
 
 extern void add_app_route();
 extern void add_bad_request();
