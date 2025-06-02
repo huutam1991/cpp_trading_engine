@@ -8,6 +8,12 @@ void OrderManager::init()
 {
     m_order_list = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
+
+    // Print out order list
+    for (auto& [order_id, order] : m_order_list)
+    {
+        ADD_LOG("Order: " << order.to_json());
+    }
 }
 
 OrderId OrderManager::generate_order_id()
@@ -205,11 +211,11 @@ TaskVoid OrderManager::handle_update_order(Order order)
     }
 
     // If order is canceled remove it from [m_order_list]
-    // if (order.status == Order::Status::CANCELED)
-    // {
-    //     current_order_data.remove();
-    //     m_order_list.erase(order.order_id);
-    // }
+    if (order.status == Order::Status::CANCELED)
+    {
+        current_order_data.remove();
+        m_order_list.erase(order.order_id);
+    }
 
     co_return;
 }

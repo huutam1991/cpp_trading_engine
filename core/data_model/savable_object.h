@@ -73,7 +73,7 @@ public:
         // Check valid EventBase for DBHelper
         DBHelper::check_valid_event_base();
         
-        remove_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
+        remove_data_model(m_data_model).start_running_on(DBHelper::get_even_base());
     }
     
     TaskVoid init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
