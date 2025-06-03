@@ -32,7 +32,8 @@ void StrategyPriceArbitrage::init()
 {
     PriceArbitrageSimpleGuard g(m_is_init);
 
-    // State
+    // Get [m_previous_state]
+    m_previous_state = m_current_state.object.state;
 
     // Load current strategy info
     DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "price_arbitrage_config");
@@ -79,42 +80,18 @@ void StrategyPriceArbitrage::init()
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
     m_gateway->register_price_update([this](std::string symbol, double price)
     {
-        std::unique_lock lock(m_strategy_mutex);
-
-        // ADD_LOG("symbol: " << symbol << ", price: " << price);
-
-        // Can miss some price update
-        if (m_has_data_update.is_value_set() == false)
-        {
-            m_state_data_queue.push(PriceUpdate{std::move(symbol), price});
-
-            // Inform has data update
-            m_has_data_update.set_value(true);
-        }
+        update(PriceUpdate{std::move(symbol), price}).start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::STRATEGY));
     });
     m_gateway->subscribe_symbol({m_config.symbol_1, m_config.symbol_2});
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)
     {
-        std::unique_lock lock(m_strategy_mutex);
-
-        m_state_data_queue.push(order);
-
-        // Inform has data update
-        m_has_data_update.set_value(true);
+        update(order).start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::STRATEGY));
     });
 
     //
     m_gateway->check_remove_canceled_orders(m_config.symbol_1);
-
-    if (m_is_run_update == false)
-    {
-        m_update_task = update();
-        m_update_task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::STRATEGY));
-
-        m_is_run_update = true;
-    }
 }
 
 void StrategyPriceArbitrage::on_config_change()
@@ -143,65 +120,39 @@ void StrategyPriceArbitrage::stop()
     m_current_state = PAStateData{PAState::PA_STOP};
 }
 
-TaskVoid StrategyPriceArbitrage::update()
+TaskVoid StrategyPriceArbitrage::update(StrategyPriceArbitrageData data)
 {
-    std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
-    PAState current_state = PAState::PA_STOP;
-
-    while (true)
+    // Dont do update when strategy is init
+    if (m_is_init == true)
     {
-        // Dont do update when strategy is init
-        if (m_is_init == true)
-        {
-            co_await Timer::sleep_for(2000);
-            continue;
-        }
-
-        co_await wait_new_data_update();
-
-        while (m_state_data_queue.size() > 0)
-        {
-            StrategyPriceArbitrageData data;
-            {
-                std::unique_lock lock(m_strategy_mutex);
-
-                data = m_state_data_queue.front();
-                m_state_data_queue.pop();
-            }
-
-            PAState state = m_current_state.object.state;
-
-            // Check change state
-            if (current_state != state)
-            {
-                // Run end() method of current state
-                if ((*strategy_states).find(current_state) != (*strategy_states).end())
-                {
-                    (*strategy_states)[current_state]->end();
-                }
-
-                // Run begin() method of new state
-                if ((*strategy_states).find(state) != (*strategy_states).end())
-                {
-                    (*strategy_states)[state]->begin();
-                }
-            }
-
-            // Update [current_status]
-            current_state = state;
-
-            co_await (*strategy_states)[current_state]->run(std::move(data));
-        }
-
+        co_return;
     }
-}
 
-Future<bool> StrategyPriceArbitrage::wait_new_data_update()
-{
-    return Future<bool>([this](Future<bool>::FutureValue value)
+    std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
+    PAState current_state = m_current_state.object.state;
+
+    // Check change state
+    if (m_previous_state != current_state)
     {
-        m_has_data_update = value;
-    });
+        // Run end() method of m_previous_state
+        if ((*strategy_states).find(m_previous_state) != (*strategy_states).end())
+        {
+            (*strategy_states)[m_previous_state]->end();
+        }
+
+        // Run begin() method of new state
+        if ((*strategy_states).find(current_state) != (*strategy_states).end())
+        {
+            (*strategy_states)[current_state]->begin();
+        }
+    }
+
+    // Update [current_status]
+    m_previous_state = current_state;
+
+    co_await (*strategy_states)[current_state]->run(std::move(data));
+
+    co_return;
 }
 
 Json StrategyPriceArbitrage::get_orders_chain()

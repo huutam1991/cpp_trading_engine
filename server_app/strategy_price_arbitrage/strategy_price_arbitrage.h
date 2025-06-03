@@ -18,9 +18,6 @@ class StrategyPriceArbitrage
     Singleton(StrategyPriceArbitrage)
 
 private:
-    // Mutex
-    std::mutex m_strategy_mutex;
-
     // Info
     StrategyPriceArbitrageConfig m_config;
     bool m_is_init = false;
@@ -30,14 +27,8 @@ private:
 
     // StrategyState
     SavableObject<PAStateData> m_current_state = SavableObject<PAStateData>::load_single_object(STRATEGY_DB_NAME, "price_arbitrage_status");
+    PAState m_previous_state;
     static std::unordered_map<PAState, StrategyPriceArbitrageState*>* get_strategy_states();
-
-    // Data update
-    TaskVoid m_update_task;
-    bool m_is_run_update = false;
-    std::queue<StrategyPriceArbitrageData> m_state_data_queue;
-    Future<bool>::FutureValue m_has_data_update;
-    Future<bool> wait_new_data_update();
 
     void run();
     void stop();
@@ -45,7 +36,7 @@ private:
 public:
     void init();
     void on_config_change();
-    TaskVoid update();
+    TaskVoid update(StrategyPriceArbitrageData data);
 
     Json get_orders_chain();
     Json get_open_orders();
