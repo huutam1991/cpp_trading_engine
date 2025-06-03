@@ -76,20 +76,20 @@ public:
         remove_data_model(m_data_model).start_running_on(DBHelper::get_even_base());
     }
     
-    TaskVoid init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
+    static TaskVoid init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
     {
         DataModel dm(db, collection);
         *data_model = dm;
         co_return;
     }
 
-    TaskVoid update_data_model(std::shared_ptr<DataModel> data_model, T object)
+    static TaskVoid update_data_model(std::shared_ptr<DataModel> data_model, T object)
     {
         *data_model = object.to_json();
         co_return;
     }
 
-    TaskVoid remove_data_model(std::shared_ptr<DataModel> data_model)
+    static TaskVoid remove_data_model(std::shared_ptr<DataModel> data_model)
     {
         data_model->remove();
         co_return;
@@ -113,10 +113,14 @@ public:
     static SavableObject load_single_object(const std::string& db, const std::string& collection)
     {
         SavableObject res;
+        DataModel dm = DataModel::load_single_data_model(db, collection);
         res.m_db = db;
         res.m_collection = collection;
-        res.m_data_model = DataModel::load_single_data_model(db, collection);
-        res.object = T::from_json(res.m_data_model->get_data());
+        res.object = T::from_json(dm.get_data());
+        *res.m_data_model = dm;
+
+        // Single object can be empty one (in the first load) so need to update it with data from [object]
+        update_data_model(res.m_data_model, res.object).start_running_on(DBHelper::get_even_base());
 
         return res;
     }
@@ -132,8 +136,8 @@ public:
             SavableObject object;
             object.m_db = db;
             object.m_collection = collection;
-            object.m_data_model = dm;
             object.object = T::from_json(dm.get_data());
+            *object.m_data_model = dm;
 
             res.insert(std::make_pair(key, object));
         }
