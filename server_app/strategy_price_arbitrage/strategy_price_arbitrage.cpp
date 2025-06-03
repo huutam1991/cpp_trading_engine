@@ -12,17 +12,17 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_stop.h>
 
-std::unordered_map<std::string, StrategyPriceArbitrageState*>* StrategyPriceArbitrage::get_strategy_states()
+std::unordered_map<PAState, StrategyPriceArbitrageState*>* StrategyPriceArbitrage::get_strategy_states()
 {
-    static std::unordered_map<std::string, StrategyPriceArbitrageState*> m_strategy_states;
+    static std::unordered_map<PAState, StrategyPriceArbitrageState*> m_strategy_states;
 
     // Init StrategyState by name
     if (m_strategy_states.size() == 0)
     {
         std::shared_ptr<Gateway>& gateway = StrategyPriceArbitrage::instance().m_gateway;
 
-        m_strategy_states["RUN"] = new StrategyPriceArbitrageStateRun(gateway, StrategyPriceArbitrage::instance().m_config);
-        m_strategy_states["STOP"] = new StrategyPriceArbitrageStateStop(gateway, StrategyPriceArbitrage::instance().m_config);
+        m_strategy_states[PAState::PA_RUN] = new StrategyPriceArbitrageStateRun(gateway, StrategyPriceArbitrage::instance().m_config);
+        m_strategy_states[PAState::PA_STOP] = new StrategyPriceArbitrageStateStop(gateway, StrategyPriceArbitrage::instance().m_config);
     }
 
     return &m_strategy_states;
@@ -31,6 +31,8 @@ std::unordered_map<std::string, StrategyPriceArbitrageState*>* StrategyPriceArbi
 void StrategyPriceArbitrage::init()
 {
     PriceArbitrageSimpleGuard g(m_is_init);
+
+    // State
 
     // Load current strategy info
     DataModel config = DataModel::load_single_data_model(STRATEGY_DB_NAME, "price_arbitrage_config");
@@ -133,18 +135,18 @@ void StrategyPriceArbitrage::on_config_change()
 
 void StrategyPriceArbitrage::run()
 {
-    StrategyPriceArbitrageState::set_state_status("RUN");
+    m_current_state = PAStateData{PAState::PA_RUN};
 }
 
 void StrategyPriceArbitrage::stop()
 {
-    StrategyPriceArbitrageState::set_state_status("STOP");
+    m_current_state = PAStateData{PAState::PA_STOP};
 }
 
 TaskVoid StrategyPriceArbitrage::update()
 {
-    std::unordered_map<std::string, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
-    std::string current_status = "";
+    std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
+    PAState current_state = PAState::PA_STOP;
 
     while (true)
     {
@@ -167,28 +169,28 @@ TaskVoid StrategyPriceArbitrage::update()
                 m_state_data_queue.pop();
             }
 
-            std::string status = StrategyPriceArbitrageState::get_state_status()["status"];
+            PAState state = m_current_state.object.state;
 
             // Check change state
-            if (current_status != status)
+            if (current_state != state)
             {
                 // Run end() method of current state
-                if ((*strategy_states).find(current_status) != (*strategy_states).end())
+                if ((*strategy_states).find(current_state) != (*strategy_states).end())
                 {
-                    (*strategy_states)[current_status]->end();
+                    (*strategy_states)[current_state]->end();
                 }
 
                 // Run begin() method of new state
-                if ((*strategy_states).find(status) != (*strategy_states).end())
+                if ((*strategy_states).find(state) != (*strategy_states).end())
                 {
-                    (*strategy_states)[status]->begin();
+                    (*strategy_states)[state]->begin();
                 }
             }
 
             // Update [current_status]
-            current_status = status;
+            current_state = state;
 
-            co_await (*strategy_states)[current_status]->run(std::move(data));
+            co_await (*strategy_states)[current_state]->run(std::move(data));
         }
 
     }
@@ -229,13 +231,13 @@ Json StrategyPriceArbitrage::get_orders_chain()
 
 Json StrategyPriceArbitrage::get_open_orders()
 {
-    std::unordered_map<std::string, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
-    std::string status = StrategyPriceArbitrageState::get_state_status()["status"];
+    std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
+    PAState state = m_current_state.object.state;
 
     // Run get_open_orders() method of new state
-    if ((*strategy_states).find(status) != (*strategy_states).end())
+    if ((*strategy_states).find(state) != (*strategy_states).end())
     {
-        return (*strategy_states)[status]->get_open_orders();
+        return (*strategy_states)[state]->get_open_orders();
     }
 
     return Json::create_array();

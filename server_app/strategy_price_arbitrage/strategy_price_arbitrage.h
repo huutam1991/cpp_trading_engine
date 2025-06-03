@@ -29,7 +29,8 @@ private:
     std::shared_ptr<Gateway> m_gateway;
 
     // StrategyState
-    static std::unordered_map<std::string, StrategyPriceArbitrageState*>* get_strategy_states();
+    SavableObject<PAStateData> m_current_state = SavableObject<PAStateData>::load_single_object(STRATEGY_DB_NAME, "price_arbitrage_status");
+    static std::unordered_map<PAState, StrategyPriceArbitrageState*>* get_strategy_states();
 
     // Data update
     TaskVoid m_update_task;
