@@ -2,6 +2,7 @@
 
 #include <data_model/data_model.h>
 #include <coroutine/event_base.h>
+#include <coroutine/task_void.h>
 
 class DBHelper
 {
