@@ -294,15 +294,11 @@ void add_app_route()
             quantity
         );
 
-        auto task = GatewayManager::instance()
+        GatewayManager::instance()
             .get_gateway(GatewayEnum::BINANCE)
-            ->place(order, Order::Status::FILLED);
+            ->place_none_wait(order);
 
-        EventBase* strategy_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::STRATEGY);
-        std::future<Order> result = task.start_running_on(strategy_event_base);
-        Order order_response = result.get();
-
-        co_return HttpResponse(OK_200, order_response.to_json());
+        co_return HttpResponse(OK_200, Json());
     };
 
     ADD_ROUTE(RequestMethod::POST, "/external_request")

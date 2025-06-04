@@ -31,14 +31,7 @@ private:
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
-    // OrderDataModelHelper m_order_data_model_helper;
     TaskVoid handle_update_order(Order order);
-
-    // For getting order with a specific status
-    std::unordered_map<std::pair<OrderId, Order::Status>, std::vector<Future<Order>::FutureValue>> m_order_future_value;
-    TaskVoid handle_add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status);
-    void check_set_future_value_for_order(OrderId order_id, Order::Status status);
-    void add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status);
 
 public:
     // Helper method
@@ -59,8 +52,5 @@ public:
     void register_order_update(std::function<void(Order&)>);
     void set_cancel_order(OrderId order_id);
     void update_order(Order order);
-
-    // Wait order until it get a specific status
-    Future<Order> wait_for_order_status(OrderId order_id, Order::Status status);
 
 };

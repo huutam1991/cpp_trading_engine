@@ -45,10 +45,3 @@ void Gateway::cancel(Order order)
 {
     cancel_on_exchange(std::move(order)).start_running_on(m_event_base);
 }
-
-Task<Order> Gateway::place(Order order, Order::Status wait_status)
-{
-    place_on_exchange(std::move(order)).start_running_on(m_event_base);
-
-    co_return co_await OrderManager::instance().wait_for_order_status(order.order_id, wait_status);
-}

@@ -65,62 +65,6 @@ void OrderManager::update_order(Order order)
     task.start_running_on(m_order_event_base);
 }
 
-void OrderManager::add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
-{
-    TaskVoid task = handle_add_order_future_value(value, order_id, status);
-    task.start_running_on(m_order_event_base);
-}
-
-void OrderManager::check_set_future_value_for_order(OrderId order_id, Order::Status status)
-{
-    // MeasureTime t("check_set_future_value_for_order");
-    Order& order = get_order_by_id(order_id);
-
-    // If order's status is not the expected one, do nothing
-    if (order.status != status)
-    {
-        return;
-    }
-
-    auto key = std::make_pair(order_id, status);
-
-    // If there's no order future value in [m_order_future_value], do nothing
-    if (m_order_future_value.find(key) == m_order_future_value.end())
-    {
-        return;
-    }
-
-    // Otherwise, update value for order's future value
-    std::vector<Future<Order>::FutureValue>& order_future_value_list = m_order_future_value[key];
-    for (Future<Order>::FutureValue& order_future_value : order_future_value_list)
-    {
-        order_future_value.set_value(order);
-    }
-
-    // Remove all of current order's future value, as they are all set
-    order_future_value_list.resize(0);
-}
-
-Future<Order> OrderManager::wait_for_order_status(OrderId order_id, Order::Status status)
-{
-    // If order's status is the expected one, return it
-    if (is_valid_order(order_id) == true)
-    {
-        auto it = m_order_list.find(order_id);
-        Order& order = it->second;
-        if (order.status == status)
-        {
-            return Future<Order>(order);
-        }
-    }
-
-    // Otherwise return in future
-    return Future<Order>([this, order_id, status](Future<Order>::FutureValue value)
-    {
-        add_order_future_value(value, order_id, status);
-    });
-}
-
 SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
 {
     // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
@@ -131,32 +75,6 @@ SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
 
     auto it = m_order_list.find(order_id);
     return it->second;
-}
-
-TaskVoid OrderManager::handle_add_order_future_value(Future<Order>::FutureValue value, OrderId order_id, Order::Status status)
-{
-    // MeasureTime a("handle_add_order_future_value", MeasureUnit::NANOSECOND);
-    auto key = std::make_pair(order_id, status);
-    if (m_order_future_value.find(key) == m_order_future_value.end())
-    {
-        m_order_future_value.insert(std::make_pair(key, std::vector<Future<Order>::FutureValue>{}));
-    }
-
-    m_order_future_value[key].push_back(value);
-
-    // Always return order status REJECTED
-    key = std::make_pair(order_id, Order::Status::REJECTED);
-    if (m_order_future_value.find(key) == m_order_future_value.end())
-    {
-        m_order_future_value.insert(std::make_pair(key, std::vector<Future<Order>::FutureValue>{}));
-    }
-
-    m_order_future_value[key].push_back(value);
-
-    // Check to set future value for order
-    check_set_future_value_for_order(order_id, status);
-
-    co_return;
 }
 
 TaskVoid OrderManager::handle_update_order(Order order)
@@ -205,13 +123,10 @@ TaskVoid OrderManager::handle_update_order(Order order)
     {
         // Invoke callback
         m_order_update_callback(order);
-
-        // Check to set future value for order
-        check_set_future_value_for_order(order.order_id, order.status);
     }
 
-    // If order is canceled remove it from [m_order_list]
-    if (order.status == Order::Status::CANCELED)
+    // If order is canceled or rejected, remove it from [m_order_list]
+    if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
         current_order_data.remove();
         m_order_list.erase(order.order_id);

@@ -75,11 +75,12 @@ TaskVoid StrategyState::send_close_spot_order(DataModel& checkpoint)
     Order close_buy_spot = get_close_buy_spot_order_by_checkpoint(checkpoint);
 
     // Place close buy spot order
-    Order response = co_await m_gateway->place(close_buy_spot);
+    // Order response = co_await m_gateway->place(close_buy_spot);
 
     // Calculate profit
     double place_volumn_in_usdt = checkpoint["positions"]["buy_spot"]["volumn_in_usdt"];
-    double close_volumn_in_usdt = response.output_quantity;
+    // double close_volumn_in_usdt = response.output_quantity;
+    double close_volumn_in_usdt = 0; // Need fix
     double profit = close_volumn_in_usdt - place_volumn_in_usdt;
 
     // Save profit to checkpoint

@@ -108,7 +108,7 @@ TaskVoid StrategyStateMonitoring::check_place_buy_order(double price)
             {
                 // Place new limit order
                 Order order = get_limit_buy_spot_order_by_checkpoint(checkpoint);
-                co_await m_gateway->place(order, Order::Status::NEW);
+                // co_await m_gateway->place(order, Order::Status::NEW);
 
                 // Update [buy_order_id]
                 order_id = order.order_id;
@@ -173,7 +173,7 @@ TaskVoid StrategyStateMonitoring::check_place_sell_order(double price)
                 {
                     // Place new limit order
                     Order order = get_limit_sell_spot_order_by_checkpoint(checkpoint);
-                    co_await m_gateway->place(order, Order::Status::NEW);
+                    // co_await m_gateway->place(order, Order::Status::NEW);
 
                     // Update [buy_order_id]
                     sell_order_id = order.order_id;

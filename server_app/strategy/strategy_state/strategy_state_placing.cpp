@@ -65,12 +65,12 @@ TaskVoid StrategyStatePlacing::run(StrategyData data)
     double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
     if (quantity == 0)
     {
-        Order order = co_await m_gateway->place(buy_spot);
+        // Order order = co_await m_gateway->place(buy_spot);
 
-        checkpoint["positions"]["buy_spot"]["quantity"] = order.output_quantity;
-        checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] = order.output_quantity * order.filled_price;
+        // checkpoint["positions"]["buy_spot"]["quantity"] = order.output_quantity;
+        // checkpoint["positions"]["buy_spot"]["volumn_in_usdt"] = order.output_quantity * order.filled_price;
 
-        checkpoint["buy_order_id"] = (OrderId)order.order_id;
+        // checkpoint["buy_order_id"] = (OrderId)order.order_id;
     }
 
     // // Sell Perpetual order

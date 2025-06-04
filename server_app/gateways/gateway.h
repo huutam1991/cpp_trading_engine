@@ -26,7 +26,6 @@ public:
     void cancel_all(std::string symbol);
     void place_none_wait(Order order);
     void cancel(Order order);
-    Task<Order> place(Order order, Order::Status wait_status = Order::Status::FILLED);
 
     virtual void subscribe_symbol(std::vector<std::string> symbols) = 0;
 
