@@ -1,0 +1,1 @@
+#include <strategy/strategy_base.h>
