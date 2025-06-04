@@ -1,28 +1,26 @@
 #pragma once
 
 #include <data_model/savable_object.h>
-#include <coroutine/event_base_manager.h>
 
 #include <app_constants.h>
 #include <strategy/strategy_abstract.h>
 #include <strategy/strategy_state_base.h>
 
 template<class Strategy, class StrategyConfig, const char* StrategyDBName, EventBaseID eventBaseID>
-class StrategyBase : public StategyAbstract
+class StrategyBase : public StrategyAbstract
 {
     SavableObject<StrategyConfig> m_config;
     SavableObject<StrategyStateData> m_current_state;
     std::unordered_map<StrategyState, StrategyStateBase*> m_states;
-    EventBase* m_event_base;
     StrategyState m_previous_state;
     bool m_is_config_updating = false;
 
 public:
     StrategyBase() : 
+        StrategyAbstract(EventBaseManager::get_event_base_by_id(eventBaseID)),
         m_config{SavableObject<StrategyConfig>::load_single_object(StrategyDBName, "config")},
         m_current_state{SavableObject<StrategyStateData>::load_single_object(StrategyDBName, "state")},
-        m_states{StrategyBase::init_states()},
-        m_event_base{EventBaseManager::get_event_base_by_id(eventBaseID)}
+        m_states{StrategyBase::init_states()}
     {
         m_previous_state = m_current_state.object.state;
     }
@@ -30,7 +28,7 @@ public:
     void on_config_change(StrategyConfig new_config)
     {
         m_config = new_config;
-        update_config().start_running_on(m_event_base);
+        update_config().start_running_on(event_base);
     }
     
     TaskVoid update(StrategyUpdateData data) override

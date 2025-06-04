@@ -1,6 +1,7 @@
 #pragma once
 
 #include <coroutine/task_void.h>
+#include <coroutine/event_base_manager.h>
 #include <order/order.h>
 
 struct PriceUpdate
@@ -10,8 +11,12 @@ struct PriceUpdate
 };
 using StrategyUpdateData = std::variant<PriceUpdate, Order>;
 
-class StategyAbstract
+class StrategyAbstract
 {
 public:
+    EventBase* event_base;
+
+public:
+    StrategyAbstract(EventBase* v_event_base) : event_base{v_event_base} {}
     virtual TaskVoid update(StrategyUpdateData data) = 0;
 };
