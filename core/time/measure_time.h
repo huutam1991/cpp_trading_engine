@@ -62,8 +62,8 @@ public:
             unit = "milliseconds";
             break;
         }
-        
-        spdlog::debug("Execute time - {}: {} {}", m_logs, execute_time, unit);
+
+        spdlog::info("Execute time - {}: {} {}", m_logs, execute_time, unit);
     }
 
     void stop_counting()

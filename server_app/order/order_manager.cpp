@@ -67,7 +67,7 @@ void OrderManager::update_order(Order order)
 
 SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
 {
-    MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
+    // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
         m_order_list.insert(std::make_pair(order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list")));
@@ -79,7 +79,7 @@ SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
 
 TaskVoid OrderManager::handle_update_order(Order order)
 {
-    MeasureTime a("Handle order update OrderManager 1", MeasureUnit::MICROSECOND);
+    MeasureTime a("Handle order update OrderManager 2", MeasureUnit::MICROSECOND);
     SavableObject<Order>& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)

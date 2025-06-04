@@ -1,6 +1,7 @@
 #include <iostream>
 #include <filesystem>
 #include <glog/logging.h>
+#include <spdlog/async.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -70,10 +71,14 @@ int main(int argc, char **argv) {
     // WebSocketServerType::instance().start();
 
     // Init SpdLog format
-    auto console = spdlog::stdout_color_mt("console");
-    console->set_pattern("%d-%m-%Y %H:%M:%S %^%l%$ %v");
-    console->set_level(spdlog::level::trace);
-    spdlog::set_default_logger(console); 
+    // auto console = spdlog::stdout_color_mt("console");
+    // console->set_level(spdlog::level::trace);
+    // spdlog::set_default_logger(console); 
+
+    auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("async_logger");
+    async_logger->set_pattern("%d-%m-%Y %H:%M:%S %^%l%$ %v");
+    async_logger->set_level(spdlog::level::trace);
+    spdlog::set_default_logger(async_logger);
 
     // Init Timer with ioc TIMER
     Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));

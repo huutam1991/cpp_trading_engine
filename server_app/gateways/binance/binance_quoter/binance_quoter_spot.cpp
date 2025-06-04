@@ -68,7 +68,7 @@ void BinanceQuoterSpot::init_websocket()
         // on_message
         [this](std::string buffer) -> TaskVoid
         {
-            MeasureTime a("Handle order data", MeasureUnit::MICROSECOND);
+            // MeasureTime a("Handle order data", MeasureUnit::MICROSECOND);
             Json json = Json::parse(buffer);
 
             if (json["e"] == "executionReport")
@@ -192,7 +192,7 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
     std::string str = co_await client->put("/api/v3/userDataStream?listenKey=" + m_listen_key, "");
     Json data = Json::parse(str);
 
-    spdlog::debug("BinanceQuoterSpot, re-active m_listen_key =  {}", m_listen_key);
+    spdlog::debug("BinanceQuoterSpot, re-active m_listen_key = {}", m_listen_key);
 
     // Send ping
     m_websocket->send_ping();
