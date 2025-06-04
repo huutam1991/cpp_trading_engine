@@ -1,5 +1,6 @@
 #include <time/measure_time.h>
 #include <coroutine/event_base_manager.h>
+#include <spdlog/spdlog.h>
 
 #include <order/order_manager.h>
 #include <app_constants.h>
@@ -80,6 +81,9 @@ SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
 TaskVoid OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager 1", MeasureUnit::MICROSECOND);
+    spdlog::info("Welcome to spdlog!");
+
+
     SavableObject<Order>& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)

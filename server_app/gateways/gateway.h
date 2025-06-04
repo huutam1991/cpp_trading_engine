@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <spdlog/spdlog.h>
 
 #include <utils/util_macros.h>
 #include <app_constants.h>

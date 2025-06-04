@@ -49,6 +49,10 @@ cmake --build . --target install
 # ./bootstrap.sh
 # ./b2 install --prefix=/usr/
 
+# Install SpdLog 
+apt update -y
+apt install -y libspdlog-dev
+
 # Install Boost
 apt update -y
 apt install -y libboost-all-dev

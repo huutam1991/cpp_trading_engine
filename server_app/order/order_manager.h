@@ -4,6 +4,7 @@
 #include <functional>
 #include <unordered_map>
 #include <queue>
+#include <spdlog/spdlog.h>
 
 #include <utils/util_macros.h>
 #include <coroutine/task_void.h>
