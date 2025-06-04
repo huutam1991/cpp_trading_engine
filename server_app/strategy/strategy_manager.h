@@ -17,4 +17,6 @@ private:
 
 public:
     void init();
+    void add_strategy_list();
+    void subscribe_data_update();
 };

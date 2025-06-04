@@ -2,6 +2,16 @@
 
 void StrategyManager::init()
 {
+    add_strategy_list();
+    subscribe_data_update();
+}
+
+void StrategyManager::add_strategy_list()
+{
+}
+
+void StrategyManager::subscribe_data_update()
+{
     // Add price callback + subscribe to symbol
     auto gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
     gateway->register_price_update([this](std::string symbol, double price)
@@ -11,7 +21,6 @@ void StrategyManager::init()
             strategy->update(PriceUpdate{std::move(symbol), price}).start_running_on(strategy->event_base);
         }
     });
-    gateway->subscribe_symbol({"BTCUSDT"});
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)
