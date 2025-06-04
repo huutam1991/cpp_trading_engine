@@ -179,7 +179,14 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     std::string str = co_await client->post("/api/v3/userDataStream", "");
     Json data = Json::parse(str);
 
-    spdlog::debug("listenKey: {}", data);
+    if (data.has_field("code") && (double)data["code"] < 0)
+    {
+        spdlog::error("Error fetching listen key: {}", data);
+    }
+    else 
+    {
+        spdlog::debug("listenKey: {}", data);
+    }
 
     co_return data["listenKey"];
 }
