@@ -11,7 +11,7 @@ mongocxx::pool& MongoDB::get_pool()
         {
             uri = uri_env;
         }
-        ADD_LOG("MONGO_URI = " << uri);
+        spdlog::debug("MONGO_URI = {}", uri);
 
         // Lock mutext and re-check if m_pool is still null
         std::unique_lock lock(m_mutex);

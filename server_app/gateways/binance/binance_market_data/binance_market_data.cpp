@@ -43,7 +43,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         // on_connect
         [this, symbol, websocket]() -> TaskVoid
         {
-            ADD_LOG("Binance websocket depth connected");
+            spdlog::info("Binance websocket depth connected");
 
             // Subcribe for depth
             size_t stream_id = get_stream_id_count();
@@ -58,7 +58,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
             subcribe["params"] = params;
             subcribe["id"] = stream_id;
 
-            ADD_LOG("subcribe = " << subcribe);
+            spdlog::info("subcribe = {}", subcribe);
 
             websocket->send(subcribe.get_string_value());
 
@@ -92,7 +92,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         [this, symbol]() -> TaskVoid
         {
             // Re-start
-            ADD_LOG("Disconnect, re-start BinanceMarketData");
+            spdlog::info("Disconnect, re-start BinanceMarketData");
             this->start_websocket(symbol);
 
             co_return;
@@ -100,7 +100,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         // on_close
         []() -> TaskVoid
         {
-            ADD_LOG("BinanceMarketData close");
+            spdlog::info("BinanceMarketData close");
             co_return;
         }
     );

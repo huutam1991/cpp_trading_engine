@@ -14,9 +14,9 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
     m_api_secret = std::string(account["api_secret"]);
     m_is_testnet = (bool)account["is_testnet"];
 
-    ADD_LOG("Binance account - m_api_key: " << m_api_key);
-    ADD_LOG("Binance account - m_api_secret: " << m_api_secret);
-    ADD_LOG("Binance account - m_is_testnet: " << m_is_testnet);
+    spdlog::debug("Binance account - m_api_key: {}", m_api_key);
+    spdlog::debug("Binance account - m_api_secret: {}", m_api_secret);
+    spdlog::debug("Binance account - m_is_testnet: {}", m_is_testnet);
 }
 
 Task<Json> BinanceQuoter::get_balances()

@@ -7,8 +7,6 @@
 
 void GatewayManager::init()
 {
-    ADD_LOG("Loading activate accounts:");
-
     Json activate_accounts = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts")
         .find_many();
@@ -23,6 +21,8 @@ void GatewayManager::init()
         {
             return;
         }
+        
+        spdlog::debug("Load activated account: {}", activate_account);
 
         GatewayEnum gateway_enum = gateway_name_to_enum(exchange);
 

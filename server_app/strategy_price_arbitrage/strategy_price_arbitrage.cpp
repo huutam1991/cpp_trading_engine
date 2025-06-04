@@ -65,16 +65,16 @@ void StrategyPriceArbitrage::init()
     m_config.is_running = (bool)config["is_running"];
 
     // Log config
-    ADD_LOG("StrategyPriceArbitrage config:");
-    ADD_LOG("- symbol_1: " << m_config.symbol_1);
-    ADD_LOG("- symbol_2: " << m_config.symbol_2);
-    ADD_LOG("- symbol_3: " << m_config.symbol_3);
-    ADD_LOG("- buy_volumn: " << m_config.buy_volumn);
-    ADD_LOG("- buy_at_lower_price: " << m_config.buy_at_lower_price);
-    ADD_LOG("- price_delta: " << m_config.price_delta);
-    ADD_LOG("- too_low_price_delta: " << m_config.too_low_price_delta);
-    ADD_LOG("- too_high_price_delta: " << m_config.too_high_price_delta);
-    ADD_LOG("- is_running: " << m_config.is_running);
+    spdlog::debug("StrategyPriceArbitrage config:");
+    spdlog::debug("- symbol_1: {}", m_config.symbol_1);
+    spdlog::debug("- symbol_2: {}", m_config.symbol_2);
+    spdlog::debug("- symbol_3: {}", m_config.symbol_3);
+    spdlog::debug("- buy_volumn: {}", m_config.buy_volumn);
+    spdlog::debug("- buy_at_lower_price: {}", m_config.buy_at_lower_price);
+    spdlog::debug("- price_delta: {}", m_config.price_delta);
+    spdlog::debug("- too_low_price_delta: {}", m_config.too_low_price_delta);
+    spdlog::debug("- too_high_price_delta: {}", m_config.too_high_price_delta);
+    spdlog::debug("- is_running: {}", m_config.is_running);
 
     // Add price callback + subscribe to symbol
     m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
