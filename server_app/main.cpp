@@ -72,7 +72,8 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     auto console = spdlog::stdout_color_mt("console");
     console->set_pattern("%d-%m-%Y %H:%M:%S %^%l%$ %v");
-    console->set_level(spdlog::level::info);
+    console->set_level(spdlog::level::trace);
+    spdlog::set_default_logger(console); 
 
     // Init Timer with ioc TIMER
     Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));

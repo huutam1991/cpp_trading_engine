@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <spdlog/spdlog.h>
 #include <utils/util_macros.h>
 
 enum MeasureUnit
@@ -61,8 +62,8 @@ public:
             unit = "milliseconds";
             break;
         }
-
-        ADD_LOG("Execute time - " << m_logs << ": " << execute_time << " " << unit);
+        
+        spdlog::debug("Execute time - {}: {} {}", m_logs, execute_time, unit);
     }
 
     void stop_counting()

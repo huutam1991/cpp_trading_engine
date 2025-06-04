@@ -55,7 +55,7 @@ void BinanceQuoterSpot::init_websocket()
         // on_connect
         [this]() -> TaskVoid
         {
-            ADD_LOG("BinanceQuoterSpot websocket connected");
+            spdlog::info("BinanceQuoterSpot websocket connected");
 
             // Set period time to re-active m_listen_key at every 30 seconds
             m_websocket->add_keep_websocket_alive_task([this]() -> TaskVoid
@@ -115,7 +115,7 @@ void BinanceQuoterSpot::init_websocket()
                     order.status = Order::Status::CANCELED;
                 }
 
-                // ADD_LOG("BinanceQuoterSpot Order: " << order.to_json());
+                // spdlog::info("BinanceQuoterSpot Order: {}", order.to_json());
 
                 // Only update order if [order.order_id] != 0
                 if (order.order_id != 0)
@@ -142,7 +142,7 @@ void BinanceQuoterSpot::init_websocket()
                 });
 
             // Re-start
-            ADD_LOG("BinanceQuoterSpot - disconnect, re-starting");
+            spdlog::info("BinanceQuoterSpot - disconnect, re-starting");
             this->init_websocket();
 
             co_return;
@@ -150,7 +150,7 @@ void BinanceQuoterSpot::init_websocket()
         // on_close
         [this]() -> TaskVoid
         {
-            ADD_LOG("BinanceQuoterSpot close");
+            spdlog::info("BinanceQuoterSpot close");
 
             // Save when websocket spot close
             auto now = std::chrono::system_clock::now();
@@ -179,7 +179,7 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     std::string str = co_await client->post("/api/v3/userDataStream", "");
     Json data = Json::parse(str);
 
-    ADD_LOG("listenKey: " << data);
+    spdlog::debug("listenKey: {}", data);
 
     co_return data["listenKey"];
 }
@@ -192,7 +192,7 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
     std::string str = co_await client->put("/api/v3/userDataStream?listenKey=" + m_listen_key, "");
     Json data = Json::parse(str);
 
-    ADD_LOG("BinanceQuoterSpot, re-active m_listen_key = " << m_listen_key);
+    spdlog::debug("BinanceQuoterSpot, re-active m_listen_key =  {}", m_listen_key);
 
     // Send ping
     m_websocket->send_ping();
@@ -203,7 +203,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
     // Return empty data if has error
     if ((long)response["code"] < 0)
     {
-        ADD_LOG("Spot order error: " << response);
+        spdlog::error("Spot order error: {}", response);
         return {
             {"type", "spot"},
             {"symbol", response["symbol"]},
@@ -224,7 +224,8 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
 
         fills.for_each([&](Json& fill)
         {
-            ADD_LOG("fill: " << fill);
+            spdlog::debug("fill: {}", fill);
+
             double f_quantity = std::stod(std::string(fill["qty"]));
             double f_commission = std::stod(std::string(fill["commission"]));
             double f_price = std::stod(std::string(fill["price"]));
@@ -243,7 +244,7 @@ Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
             }
         });
 
-        ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
+        spdlog::debug("Spot order place - symbol: {}, quantity: {}, volumn_in_usdt: {}", symbol, quantity, volumn_in_usdt);
     }
 
     return {
@@ -294,7 +295,7 @@ Task<Json> BinanceQuoterSpot::place(Order order)
         query_str += "&price=" + std::to_string(order.price);
     }
 
-    ADD_LOG("query: " << query_str);
+    spdlog::debug("query: {}", query_str);
 
     co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str));
 }

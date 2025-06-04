@@ -3,6 +3,7 @@
 #include <memory>
 #include <functional>
 #include <type_traits>
+#include <fmt/core.h>
 
 #include "json_type_base.h"
 #include "json_value.h"
@@ -188,4 +189,12 @@ struct JsonNull
 {
 public:
     friend std::stringstream& operator<<(std::stringstream& ss, const JsonNull& json_null);
+};
+
+template <>
+struct fmt::formatter<Json> : fmt::formatter<std::string> {
+    template <typename FormatContext>
+    auto format(const Json& json, FormatContext& ctx) {
+        return fmt::formatter<std::string>::format(json.get_string_value(), ctx);
+    }
 };
