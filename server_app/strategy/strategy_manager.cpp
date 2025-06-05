@@ -1,4 +1,5 @@
 #include <strategy/strategy_manager.h>
+#include <strategy_price_arbitrage/strategy_price_arbitrage.h>
 
 void StrategyManager::init()
 {
@@ -8,6 +9,12 @@ void StrategyManager::init()
 
 void StrategyManager::add_strategy_list()
 {
+    m_strategy_list.push_back(std::make_unique<StrategyPriceArbitrage>());
+
+    for (auto& strategy : m_strategy_list)
+    {
+        strategy->init().start_running_on(strategy->event_base);
+    }
 }
 
 void StrategyManager::subscribe_data_update()

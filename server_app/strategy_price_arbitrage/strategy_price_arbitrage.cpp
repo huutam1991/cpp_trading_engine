@@ -10,13 +10,14 @@
 template<>
 std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::init_states()
 {
-    static std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
+    std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
-    if (strategy_states.size() == 0)
-    {
-        strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(GatewayManager::instance().get_gateway(GatewayEnum::BINANCE), get_config());
-        strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
-    }
+    // For now, only use Binance
+    std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
+    gateway->subscribe_symbol({"BTCUSDT"});
+
+    strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(gateway, get_config());
+    strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
 
     return strategy_states;
 }

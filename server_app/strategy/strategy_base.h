@@ -25,20 +25,12 @@ public:
     
     std::unordered_map<StrategyState, StrategyStateBase*> init_states();
 
-    void init()
+    TaskVoid init() override
     {
         m_states = init_states();
         m_previous_state = m_current_state.object.state;
-    }
 
-    StrategyConfig& get_config()
-    {
-        return m_config;
-    }
-
-    void on_config_change(StrategyConfig new_config)
-    {
-        update_config(std::move(new_config)).start_running_on(event_base);
+        co_return;
     }
     
     TaskVoid update(StrategyUpdateData data) override
@@ -67,6 +59,16 @@ public:
         co_await m_states[current_state]->update(std::move(data));
 
         co_return;
+    }
+
+    void on_config_change(StrategyConfig new_config)
+    {
+        update_config(std::move(new_config)).start_running_on(event_base);
+    }
+
+    StrategyConfig& get_config()
+    {
+        return m_config;
     }
 
 protected:

@@ -18,5 +18,6 @@ public:
 
 public:
     StrategyAbstract(EventBase* v_event_base) : event_base{v_event_base} {}
+    virtual TaskVoid init() = 0;
     virtual TaskVoid update(StrategyUpdateData data) = 0;
 };

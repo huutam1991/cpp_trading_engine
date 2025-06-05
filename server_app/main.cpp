@@ -20,9 +20,7 @@
 
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
-#include <strategy/strategy.h>
-#include <strategy_price_arbitrage/strategy_price_arbitrage.h>
-#include <strategy_mean_reversion/strategy_mean_reversion.h>
+#include <strategy/strategy_manager.h>
 
 extern void add_app_route();
 extern void add_bad_request();
@@ -90,9 +88,7 @@ int main(int argc, char **argv) {
     OrderManager::instance().init();
 
     // // Strategy
-    // // Strategy::instance().init();
-    // StrategyPriceArbitrage::instance().init();
-    // // StrategyMeanReversion::instance().init();
+    StrategyManager::instance().init();
 
     // Server
     HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
