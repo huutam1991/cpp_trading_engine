@@ -6,39 +6,43 @@
 #include <strategy/strategy_abstract.h>
 #include <strategy/strategy_state_base.h>
 
-template<class Strategy, class StrategyConfig, const char* StrategyDBName, EventBaseID eventBaseID>
+template<class StrategyConfig, const char* StrategyName, size_t eventBaseID>
 class StrategyBase : public StrategyAbstract
 {
+    std::string m_strategy_name;
     SavableObject<StrategyConfig> m_config;
     SavableObject<StrategyStateData> m_current_state;
     std::unordered_map<StrategyState, StrategyStateBase*> m_states;
     StrategyState m_previous_state;
-    bool m_is_config_updating = false;
 
 public:
     StrategyBase() : 
         StrategyAbstract(EventBaseManager::get_event_base_by_id(eventBaseID)),
-        m_config{SavableObject<StrategyConfig>::load_single_object(StrategyDBName, "config")},
-        m_current_state{SavableObject<StrategyStateData>::load_single_object(StrategyDBName, "state")},
-        m_states{StrategyBase::init_states()}
+        m_strategy_name(StrategyName),
+        m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name + "_strategy", "config")},
+        m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name + "_strategy", "state")}
+    {}
+    
+    std::unordered_map<StrategyState, StrategyStateBase*> init_states();
+
+    void init()
     {
+        m_states = init_states();
         m_previous_state = m_current_state.object.state;
+    }
+
+    StrategyConfig& get_config()
+    {
+        return m_config;
     }
 
     void on_config_change(StrategyConfig new_config)
     {
-        m_config = new_config;
-        update_config().start_running_on(event_base);
+        update_config(std::move(new_config)).start_running_on(event_base);
     }
     
     TaskVoid update(StrategyUpdateData data) override
     {
-        // Dont do update when strategy's config is updating
-        if (m_is_config_updating == true)
-        {
-            co_return;
-        }
-
         StrategyState current_state = m_current_state.object.state;
 
         // Check change state
@@ -66,5 +70,10 @@ public:
     }
 
 protected:
-    virtual TaskVoid update_config(StrategyConfig config); 
+    virtual TaskVoid update_config(StrategyConfig new_config)
+    {
+        m_config = std::move(new_config);
+
+        co_return;
+    }
 };

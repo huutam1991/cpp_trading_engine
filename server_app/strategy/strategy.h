@@ -38,7 +38,7 @@ private:
     std::shared_ptr<Gateway> m_gateway;
 
     // StrategyState
-    static std::unordered_map<std::string, StrategyState*>* get_strategy_states();
+    static std::unordered_map<std::string, StrategyStateFirst*>* get_strategy_states();
 
     // Data update
     TaskVoid m_update_task;

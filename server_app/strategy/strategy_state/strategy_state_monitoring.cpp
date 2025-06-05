@@ -6,7 +6,7 @@
 #define MAX_SELL_ORDER 3
 
 StrategyStateMonitoring::StrategyStateMonitoring(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
-    : StrategyState(gateway, checkpoints)
+    : StrategyStateFirst(gateway, checkpoints)
 {
 }
 

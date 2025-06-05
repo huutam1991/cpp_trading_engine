@@ -2,7 +2,7 @@
 
 #include <strategy/strategy_state/strategy_state.h>
 
-class StrategyStateCloseAllPositions : public StrategyState
+class StrategyStateCloseAllPositions : public StrategyStateFirst
 {
 public:
     StrategyStateCloseAllPositions(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);

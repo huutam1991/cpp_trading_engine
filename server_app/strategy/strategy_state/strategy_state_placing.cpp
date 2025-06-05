@@ -2,7 +2,7 @@
 #include <app_utils/app_utils.h>
 
 StrategyStatePlacing::StrategyStatePlacing(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
-    : StrategyState(gateway, checkpoints)
+    : StrategyStateFirst(gateway, checkpoints)
 {
 }
 
@@ -21,7 +21,7 @@ TaskVoid StrategyStatePlacing::run(StrategyData data)
     ADD_LOG("StrategyStatePlacing - run");
 
     // Get [price] to place
-    double placing_price = StrategyState::get_placing_price();
+    double placing_price = StrategyStateFirst::get_placing_price();
     double price;
     if (std::holds_alternative<double>(data))
     {
@@ -48,7 +48,7 @@ TaskVoid StrategyStatePlacing::run(StrategyData data)
 
         if (price >= max_price_to_place)
         {
-            StrategyState::set_state_status("MONITORING");
+            StrategyStateFirst::set_state_status("MONITORING");
 
             co_return;
         }
@@ -86,7 +86,7 @@ TaskVoid StrategyStatePlacing::run(StrategyData data)
     //     ADD_LOG("sell perpetual response: " << response);
     // });
 
-    StrategyState::set_state_status("MONITORING");
+    StrategyStateFirst::set_state_status("MONITORING");
 
     co_return;
 }

@@ -1,15 +1,17 @@
 #pragma once
 
-#include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state.h>
+#include <strategy/strategy_state_base.h>
+#include <gateways/gateway.h>
+#include <strategy_price_arbitrage/strategy_price_arbitrage_config.h>
 
-class StrategyPriceArbitrageStateStop : public StrategyPriceArbitrageState
+class StrategyPriceArbitrageStateStop : public StrategyStateBase
 {
 public:
-    StrategyPriceArbitrageStateStop(std::shared_ptr<Gateway>& gateway, StrategyPriceArbitrageConfig& config);
+    StrategyPriceArbitrageStateStop();
 
-    virtual void begin();
-    virtual void end();
-    virtual TaskVoid run(StrategyPriceArbitrageData data);
+    virtual void begin() override;
+    virtual void end() override;
+    virtual TaskVoid update(StrategyUpdateData data) override;
 
-    virtual Json get_open_orders() override;
+    // virtual Json get_open_orders() override;
 };

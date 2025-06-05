@@ -16,12 +16,12 @@ Task<HttpResponse> APIHandlerStrategyPACurrentInfo::child_handle()
     std::string type = m_request->get_query_param("type");
     if (type == "orders_chain")
     {
-        data = StrategyPriceArbitrage::instance().get_orders_chain();
+        // data = StrategyPriceArbitrage::instance().get_orders_chain();
         // data = StrategyMeanReversion::instance().get_orders_chain();
     }
     else if (type == "open_orders")
     {
-        data = StrategyPriceArbitrage::instance().get_open_orders();
+        // data = StrategyPriceArbitrage::instance().get_open_orders();
         // data = StrategyMeanReversion::instance().get_open_orders();
     }
 

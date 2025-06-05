@@ -45,7 +45,7 @@ struct StrategyStateData
 class StrategyStateBase
 {
 public:
-    virtual void begin();
-    virtual void end();
-    virtual TaskVoid update(StrategyUpdateData data);
+    virtual void begin() = 0;
+    virtual void end() = 0;
+    virtual TaskVoid update(StrategyUpdateData data) = 0;
 };

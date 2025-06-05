@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 
     // // Strategy
     // // Strategy::instance().init();
-    StrategyPriceArbitrage::instance().init();
+    // StrategyPriceArbitrage::instance().init();
     // // StrategyMeanReversion::instance().init();
 
     // Server

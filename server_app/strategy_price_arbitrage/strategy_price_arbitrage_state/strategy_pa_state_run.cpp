@@ -1,8 +1,8 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <time/measure_time.h>
 
-StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway>& gateway, StrategyPriceArbitrageConfig& config)
-    : StrategyPriceArbitrageState(gateway, config)
+StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway> gateway, StrategyPriceArbitrageConfig& config)
+    : m_gateway{gateway}, m_config{config}
 {
 }
 
@@ -212,7 +212,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     co_return;
 }
 
-TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
+TaskVoid StrategyPriceArbitrageStateRun::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))
@@ -229,19 +229,19 @@ TaskVoid StrategyPriceArbitrageStateRun::run(StrategyPriceArbitrageData data)
     co_return;
 }
 
-Json StrategyPriceArbitrageStateRun::get_open_orders()
-{
-    Json open_orders = Json::create_array();
+// Json StrategyPriceArbitrageStateRun::get_open_orders()
+// {
+//     Json open_orders = Json::create_array();
 
-    for (auto& [_, order_info] : m_current_open_orders)
-    {
-        open_orders.push_back(order_info.order.to_json());
-    }
+//     for (auto& [_, order_info] : m_current_open_orders)
+//     {
+//         open_orders.push_back(order_info.order.to_json());
+//     }
 
-    return {
-        {"current_price", m_current_price},
-        {"too_low_price", m_current_price - m_config.too_low_price_delta},
-        {"too_high_price", m_current_price - m_config.too_high_price_delta},
-        {"order", open_orders}
-    };
-}
+//     return {
+//         {"current_price", m_current_price},
+//         {"too_low_price", m_current_price - m_config.too_low_price_delta},
+//         {"too_high_price", m_current_price - m_config.too_high_price_delta},
+//         {"order", open_orders}
+//     };
+// }

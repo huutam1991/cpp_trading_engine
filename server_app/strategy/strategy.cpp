@@ -6,18 +6,18 @@
 #include <app_constants.h>
 #include <app_utils/app_utils.h>
 
-// StrategyState
+// StrategyStateFirst
 #include <strategy/strategy_state/strategy_state_start.h>
 #include <strategy/strategy_state/strategy_state_placing.h>
 #include <strategy/strategy_state/strategy_state_monitoring.h>
 #include <strategy/strategy_state/strategy_state_stop.h>
 #include <strategy/strategy_state/strategy_state_close_all_positions.h>
 
-std::unordered_map<std::string, StrategyState*>* Strategy::get_strategy_states()
+std::unordered_map<std::string, StrategyStateFirst*>* Strategy::get_strategy_states()
 {
-    static std::unordered_map<std::string, StrategyState*> m_strategy_states;
+    static std::unordered_map<std::string, StrategyStateFirst*> m_strategy_states;
 
-    // Init StrategyState by name
+    // Init StrategyStateFirst by name
     if (m_strategy_states.size() == 0)
     {
         std::shared_ptr<Gateway>& gateway = Strategy::instance().m_gateway;
@@ -61,7 +61,7 @@ void Strategy::init()
 
     // Get [placing_price]
     double placing_price = config["placing_price"];
-    StrategyState::set_placing_price(placing_price);
+    StrategyStateFirst::set_placing_price(placing_price);
 
     // Log config
     ADD_LOG("Strategy config:");
@@ -146,21 +146,21 @@ void Strategy::on_config_change()
 
 void Strategy::start()
 {
-    StrategyState::set_state_status("START");
+    StrategyStateFirst::set_state_status("START");
 }
 
 void Strategy::stop()
 {
-    StrategyState::set_state_status("STOP");
+    StrategyStateFirst::set_state_status("STOP");
 }
 
 void Strategy::close_all_positions() {
-    StrategyState::set_state_status("CLOSE_ALL_POSITIONS");
+    StrategyStateFirst::set_state_status("CLOSE_ALL_POSITIONS");
 }
 
 TaskVoid Strategy::update()
 {
-    std::unordered_map<std::string, StrategyState*>* strategy_states = get_strategy_states();
+    std::unordered_map<std::string, StrategyStateFirst*>* strategy_states = get_strategy_states();
     std::string current_status = "";
 
     while (true)
@@ -184,7 +184,7 @@ TaskVoid Strategy::update()
                 m_state_data_queue.pop();
             }
 
-            std::string status = StrategyState::get_state_status()["status"];
+            std::string status = StrategyStateFirst::get_state_status()["status"];
 
             // Check change state
             if (current_status != status)

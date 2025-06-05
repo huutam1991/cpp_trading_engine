@@ -2,7 +2,7 @@
 
 #include <strategy/strategy_state/strategy_state.h>
 
-class StrategyStateStart : public StrategyState
+class StrategyStateStart : public StrategyStateFirst
 {
 public:
     StrategyStateStart(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);

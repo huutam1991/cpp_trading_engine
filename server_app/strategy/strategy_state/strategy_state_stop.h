@@ -2,7 +2,7 @@
 
 #include <strategy/strategy_state/strategy_state.h>
 
-class StrategyStateStop : public StrategyState
+class StrategyStateStop : public StrategyStateFirst
 {
 public:
     StrategyStateStop(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);

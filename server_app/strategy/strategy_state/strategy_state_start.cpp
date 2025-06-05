@@ -1,7 +1,7 @@
 #include <strategy/strategy_state/strategy_state_start.h>
 
 StrategyStateStart::StrategyStateStart(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
-    : StrategyState(gateway, checkpoints)
+    : StrategyStateFirst(gateway, checkpoints)
 {
 }
 
@@ -22,11 +22,11 @@ TaskVoid StrategyStateStart::run(StrategyData data)
     DataModel current_checkpoint = m_checkpoints->get_current_checkpoint();
     if (current_checkpoint.is_null() == true)
     {
-        StrategyState::set_state_status("PLACING");
+        StrategyStateFirst::set_state_status("PLACING");
     }
     else
     {
-        StrategyState::set_state_status("MONITORING");
+        StrategyStateFirst::set_state_status("MONITORING");
     }
 
     co_return;

@@ -1,7 +1,7 @@
 #include <strategy/strategy_state/strategy_state_close_all_positions.h>
 
 StrategyStateCloseAllPositions::StrategyStateCloseAllPositions(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
-    : StrategyState(gateway, checkpoints)
+    : StrategyStateFirst(gateway, checkpoints)
 {
 }
 

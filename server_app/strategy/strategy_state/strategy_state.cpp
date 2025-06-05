@@ -1,16 +1,16 @@
 #include <strategy/strategy_state/strategy_state.h>
 #include <app_utils/app_utils.h>
 
-StrategyState::StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
+StrategyStateFirst::StrategyStateFirst(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
     : m_gateway(gateway), m_checkpoints(checkpoints)
 {
 }
 
-StrategyState::~StrategyState()
+StrategyStateFirst::~StrategyStateFirst()
 {
 }
 
-DataModel& StrategyState::get_state_status()
+DataModel& StrategyStateFirst::get_state_status()
 {
     static DataModel state_status = JsonNull();
 
@@ -29,48 +29,48 @@ DataModel& StrategyState::get_state_status()
     return state_status;
 }
 
-void StrategyState::set_state_status(const std::string& status)
+void StrategyStateFirst::set_state_status(const std::string& status)
 {
-    DataModel& state_status = StrategyState::get_state_status();
+    DataModel& state_status = StrategyStateFirst::get_state_status();
     state_status["status"] = status;
 }
 
-void StrategyState::begin()
+void StrategyStateFirst::begin()
 {
-    ADD_LOG("StrategyState - begin");
+    ADD_LOG("StrategyStateFirst - begin");
 }
 
-void StrategyState::end()
+void StrategyStateFirst::end()
 {
-    ADD_LOG("StrategyState - end");
+    ADD_LOG("StrategyStateFirst - end");
 }
 
-TaskVoid StrategyState::run(StrategyData data)
+TaskVoid StrategyStateFirst::run(StrategyData data)
 {
-    ADD_LOG("StrategyState - run");
+    ADD_LOG("StrategyStateFirst - run");
 
     co_return;
 }
 
-double* StrategyState::placing_price_ptr()
+double* StrategyStateFirst::placing_price_ptr()
 {
     static double placing_price = -1;
     return &placing_price;
 }
 
-void StrategyState::set_placing_price(double price)
+void StrategyStateFirst::set_placing_price(double price)
 {
     double* price_ptr = placing_price_ptr();
     *price_ptr = price;
 }
 
-double StrategyState::get_placing_price()
+double StrategyStateFirst::get_placing_price()
 {
     double* price_ptr = placing_price_ptr();
     return *price_ptr;
 }
 
-TaskVoid StrategyState::send_close_spot_order(DataModel& checkpoint)
+TaskVoid StrategyStateFirst::send_close_spot_order(DataModel& checkpoint)
 {
     Order close_buy_spot = get_close_buy_spot_order_by_checkpoint(checkpoint);
 
@@ -100,7 +100,7 @@ TaskVoid StrategyState::send_close_spot_order(DataModel& checkpoint)
     co_return;
 }
 
-void StrategyState::send_close_perpetual_order(DataModel& checkpoint)
+void StrategyStateFirst::send_close_perpetual_order(DataModel& checkpoint)
 {
     Order close_sell_perpetual = get_close_sell_perpetual_order_by_checkpoint(checkpoint);
     AppUtils::instance().get_app_pool()->execute_function([gateway = m_gateway, close_sell_perpetual, checkpoint]()
@@ -130,7 +130,7 @@ void StrategyState::send_close_perpetual_order(DataModel& checkpoint)
     });
 }
 
-Order StrategyState::get_close_buy_spot_order_by_checkpoint(DataModel& checkpoint)
+Order StrategyStateFirst::get_close_buy_spot_order_by_checkpoint(DataModel& checkpoint)
 {
     std::string symbol = checkpoint["info"]["symbol"];
     double quantity = checkpoint["positions"]["buy_spot"]["quantity"];
@@ -148,7 +148,7 @@ Order StrategyState::get_close_buy_spot_order_by_checkpoint(DataModel& checkpoin
     );
 }
 
-Order StrategyState::get_close_sell_perpetual_order_by_checkpoint(DataModel& checkpoint)
+Order StrategyStateFirst::get_close_sell_perpetual_order_by_checkpoint(DataModel& checkpoint)
 {
     std::string symbol = checkpoint["info"]["symbol"];
     double quantity = checkpoint["positions"]["sell_perpetual"]["quantity"];

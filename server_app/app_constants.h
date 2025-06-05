@@ -72,6 +72,7 @@ enum class SourceType
 
 // Strategy DB name
 #define STRATEGY_DB_NAME "strategy"
+#define STRATEGY_PRICE_ARBITRAGE_DB_NAME "strategy_price_arbitrage"
 
 // None Source
 #define NONE_DB_SOURCE_NAME "none_source"
@@ -207,5 +208,6 @@ enum EventBaseID
     ORDER,                   // OrderManager
     DB_HELPER,               // Help to data to MongoDB
     GATEWAY,                 // Gateway
-    STRATEGY                 // Strategy
+    STRATEGY,
+    PRICE_ARBITRAGE_STRATEGY // Strategy - Price Arbitrage
 };

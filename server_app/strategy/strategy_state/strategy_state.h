@@ -13,20 +13,20 @@ enum StateStatus
     PLACING,
     MONITORING,
     CLOSING,
-    STOP,
+    STOP_FIRST,
 };
 
 using StrategyData = std::variant<double, Order>;
 
-class StrategyState
+class StrategyStateFirst
 {
 protected:
     std::shared_ptr<Gateway>& m_gateway;
     std::shared_ptr<CheckPointList>& m_checkpoints;
 
 public:
-    StrategyState(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);
-    ~StrategyState();
+    StrategyStateFirst(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints);
+    ~StrategyStateFirst();
 
     static DataModel& get_state_status();
     static void set_state_status(const std::string& status);

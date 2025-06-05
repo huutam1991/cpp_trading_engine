@@ -1,7 +1,7 @@
 #include <strategy/strategy_state/strategy_state_stop.h>
 
 StrategyStateStop::StrategyStateStop(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)
-    : StrategyState(gateway, checkpoints)
+    : StrategyStateFirst(gateway, checkpoints)
 {
 }
 

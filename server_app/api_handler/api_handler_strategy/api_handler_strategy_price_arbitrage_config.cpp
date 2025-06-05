@@ -67,7 +67,7 @@ Task<HttpResponse> APIHandlerStrategyPAConfig::child_handle()
         }
 
         // Re-init Strategy with new config
-        StrategyPriceArbitrage::instance().on_config_change();
+        // StrategyPriceArbitrage::instance().on_config_change();
         // StrategyMeanReversion::instance().on_config_change();
 
         // Response

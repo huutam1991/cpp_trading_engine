@@ -1,7 +1,6 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_stop.h>
 
-StrategyPriceArbitrageStateStop::StrategyPriceArbitrageStateStop(std::shared_ptr<Gateway>& gateway, StrategyPriceArbitrageConfig& config)
-    : StrategyPriceArbitrageState(gateway, config)
+StrategyPriceArbitrageStateStop::StrategyPriceArbitrageStateStop()
 {
 }
 
@@ -15,7 +14,7 @@ void StrategyPriceArbitrageStateStop::end()
     ADD_LOG("StrategyPriceArbitrageStateStop - end");
 }
 
-TaskVoid StrategyPriceArbitrageStateStop::run(StrategyPriceArbitrageData data)
+TaskVoid StrategyPriceArbitrageStateStop::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))
@@ -28,7 +27,7 @@ TaskVoid StrategyPriceArbitrageStateStop::run(StrategyPriceArbitrageData data)
     co_return;
 }
 
-Json StrategyPriceArbitrageStateStop::get_open_orders()
-{
-    return Json::create_array();
-}
+// Json StrategyPriceArbitrageStateStop::get_open_orders()
+// {
+//     return Json::create_array();
+// }
