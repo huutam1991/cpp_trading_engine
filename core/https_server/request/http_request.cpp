@@ -210,7 +210,7 @@ const std::string HttpRequest::check_missing_params(const std::vector<std::strin
     {
         if (get_query_param(params[i]) == PARAM_NOT_FOUND)
         {
-            return "missing " + params[i];
+            return "Missing query param: [" + params[i] + "]";
         }
     }
 
