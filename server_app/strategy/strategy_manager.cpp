@@ -39,8 +39,8 @@ void StrategyManager::subscribe_data_update()
     });
 }
 
- Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
- {
+Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
+{
     for (auto& strategy : m_strategy_list)
     {
         if (strategy->get_name() == strategy_name)
@@ -54,4 +54,25 @@ void StrategyManager::subscribe_data_update()
         {"code", -1},
         {"message", "no strategy with name: [" + strategy_name + "]"}
     };
- }
+}
+
+Json StrategyManager::update_config_by_strategy(const std::string& strategy_name, Json& data)
+{
+    for (auto& strategy : m_strategy_list)
+    {
+        if (strategy->get_name() == strategy_name)
+        {
+            strategy->update_config(data);
+            
+            return {
+                {"code", 0},
+            };
+        }
+    }
+
+    // If cannot find [strategy_name], return error
+    return {
+        {"code", -1},
+        {"message", "no strategy with name: [" + strategy_name + "]"}
+    };
+}

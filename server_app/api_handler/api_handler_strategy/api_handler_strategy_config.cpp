@@ -10,11 +10,11 @@ APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHa
 Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
 {
     Json response;
+    std::string strategy_name = m_request->get_query_param("strategy_name");
 
     // GET
     if (m_request->get_request_method() == RequestMethod::GET)
     {
-        std::string strategy_name = m_request->get_query_param("strategy_name");
         Json config = StrategyManager::instance().get_config_by_strategy(strategy_name);
 
         if (config.has_field("code") == false)
@@ -36,29 +36,23 @@ Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
     // POST
     else
     {
-        // Json config = m_request->get_body_json();
-        // std::string symbol = config["symbol"];
-        // double buy_volumn = config["buy_volumn"];
-        // double move_value = config["move_price"];
+        Json config = m_request->get_body_json();
+        Json update_result = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
 
-        // if (current_config.is_null() == true)
-        // {
-        //     query.insert_one(config);
-        // }
-        // else
-        // {
-        //     std::string _id = current_config["_id"]["$oid"];
-        //     query.replace_one("_id", bsoncxx::oid(_id), config);
-        // }
-
-        // // Re-init Strategy with new config
-        // Strategy::instance().on_config_change();
-
-        // // Response
-        // response["data"] = config;
-        // response["msg"] = "update config for strategy [" + symbol + "_" + std::to_string((size_t)buy_volumn) + "_" + std::to_string((size_t)move_value) + "] successfully";
-        // response["status_code"] = OK_200;
-        // response["error"] = false;
+        if (update_result.has_field("code") && (int)update_result["code"] < 0)
+        {
+            response["data"] = config;
+            response["msg"] = update_result;
+            response["status_code"] = OK_200;
+            response["error"] = true;
+        }
+        else
+        {
+            response["data"] = config;
+            response["msg"] = "update config for strategy [" + strategy_name + "] successfully";
+            response["status_code"] = OK_200;
+            response["error"] = false;
+        }
     }
 
     co_return HttpResponse(OK_200, response);;

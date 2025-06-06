@@ -61,11 +61,6 @@ public:
         co_return;
     }
 
-    void on_config_change(StrategyConfig new_config)
-    {
-        update_config(std::move(new_config)).start_running_on(event_base);
-    }
-
     StrategyConfig& get_config_reference()
     {
         return m_config;
@@ -82,8 +77,14 @@ public:
         return m_config.to_json();
     }
 
+    void update_config(Json& data)
+    {
+        StrategyConfig new_config = StrategyConfig::from_json(data);
+        on_config_change(std::move(new_config)).start_running_on(event_base);
+    }
+
 protected:
-    virtual TaskVoid update_config(StrategyConfig new_config)
+    virtual TaskVoid on_config_change(StrategyConfig new_config)
     {
         m_config = std::move(new_config);
 
