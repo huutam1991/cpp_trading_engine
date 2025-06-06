@@ -13,7 +13,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
 
     // For now, only use Binance
     std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
-    gateway->subscribe_symbol({"BTCUSDT"});
+    gateway->subscribe_symbol({"BTCUSDT", "ETHBTC"});
 
     strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(gateway, get_config_reference());
     strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
