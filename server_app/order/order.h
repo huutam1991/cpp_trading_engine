@@ -43,8 +43,8 @@ public:
     std::string symbol;
     Side side;
     OrderType type;
-    double price;
-    double quantity;
+    double price = 0.0;
+    double quantity = 0.0;
 
     // Output data
     double filled_quantity = 0.0; // Always for base currency
