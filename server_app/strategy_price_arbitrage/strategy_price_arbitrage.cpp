@@ -27,6 +27,15 @@ void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_c
 {
     // TBD
     spdlog::debug("Update config for StrategyPriceArbitrage");
+
+    if (new_config.is_running == true)
+    {
+        m_current_state = StrategyStateData{StrategyState::RUN};
+    }
+    else
+    {
+        m_current_state = StrategyStateData{StrategyState::STOP};
+    }
 }
 
 // Json StrategyPriceArbitrage::get_orders_chain()
