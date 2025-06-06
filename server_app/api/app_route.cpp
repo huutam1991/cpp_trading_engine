@@ -383,7 +383,7 @@ void add_app_route()
     };
 
     // Update strategy's config
-    ADD_ROUTE(RequestMethod::GET, "/strategy_current_info")
+    ADD_ROUTE(RequestMethod::POST, "/strategy_current_info")
     {
         co_return co_await APIHandlerStrategyCurrentInfo(request).handle();
     };
