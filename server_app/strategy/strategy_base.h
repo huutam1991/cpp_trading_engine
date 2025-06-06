@@ -66,9 +66,20 @@ public:
         update_config(std::move(new_config)).start_running_on(event_base);
     }
 
-    StrategyConfig& get_config()
+    StrategyConfig& get_config_reference()
     {
         return m_config;
+    }
+
+    // For API requests
+    std::string get_name()
+    {
+        return m_strategy_name;
+    }
+
+    Json get_config()
+    {
+        return m_config.to_json();
     }
 
 protected:

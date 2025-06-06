@@ -38,3 +38,20 @@ void StrategyManager::subscribe_data_update()
         }
     });
 }
+
+ Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
+ {
+    for (auto& strategy : m_strategy_list)
+    {
+        if (strategy->get_name() == strategy_name)
+        {
+            return strategy->get_config();
+        }
+    }
+
+    // If cannot find [strategy_name], return error
+    return {
+        {"code", -1},
+        {"message", "no strategy with name: [" + strategy_name + "]"}
+    };
+ }

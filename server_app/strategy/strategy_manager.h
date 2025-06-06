@@ -19,4 +19,7 @@ public:
     void init();
     void add_strategy_list();
     void subscribe_data_update();
+
+    // For API requests
+    Json get_config_by_strategy(const std::string& strategy_name);
 };
