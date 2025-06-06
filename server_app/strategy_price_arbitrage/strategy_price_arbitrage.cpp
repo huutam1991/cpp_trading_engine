@@ -23,12 +23,10 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
 }
 
 template<>
-TaskVoid StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_config)
+void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_config)
 {
     // TBD
     spdlog::debug("Update config for StrategyPriceArbitrage");
-
-    co_return;
 }
 
 // Json StrategyPriceArbitrage::get_orders_chain()
