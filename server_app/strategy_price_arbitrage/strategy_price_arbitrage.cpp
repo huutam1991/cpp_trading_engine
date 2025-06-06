@@ -25,7 +25,6 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
 template<>
 void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_config)
 {
-    // TBD
     spdlog::debug("Update config for StrategyPriceArbitrage");
 
     if (new_config.is_running == true)
