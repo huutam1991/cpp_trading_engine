@@ -35,6 +35,16 @@ void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_c
     }
 }
 
+Json StrategyPriceArbitrage::get_info(Json& params)
+{
+    if ((std::string)params["type"] == "orders_chain")
+    {
+        return get_orders_chain();
+    }
+
+    return {};
+}
+
 Json StrategyPriceArbitrage::get_orders_chain()
 {
     Json orders = Json::create_array();

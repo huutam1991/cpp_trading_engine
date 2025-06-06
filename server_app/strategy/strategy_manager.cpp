@@ -76,3 +76,20 @@ Json StrategyManager::update_config_by_strategy(const std::string& strategy_name
         {"message", "no strategy with name: [" + strategy_name + "]"}
     };
 }
+
+Json StrategyManager::get_info(const std::string& strategy_name, Json& params)
+{
+    for (auto& strategy : m_strategy_list)
+    {
+        if (strategy->get_name() == strategy_name)
+        {
+            return strategy->get_info(params);
+        }
+    }
+
+    // If cannot find [strategy_name], return error
+    return {
+        {"code", -1},
+        {"message", "no strategy with name: [" + strategy_name + "]"}
+    };
+}

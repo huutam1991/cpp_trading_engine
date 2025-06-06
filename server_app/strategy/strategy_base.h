@@ -90,6 +90,11 @@ public:
         apply_config(std::move(new_config)).start_running_on(event_base);
     }
 
+    virtual Json get_info(Json& params) 
+    { 
+        return Json(); 
+    } 
+
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() { return {}; }
     virtual void on_config_change(StrategyConfig new_config) {}
