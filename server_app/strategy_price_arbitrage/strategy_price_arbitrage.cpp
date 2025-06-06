@@ -35,30 +35,53 @@ void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_c
     }
 }
 
-// Json StrategyPriceArbitrage::get_orders_chain()
-// {
-//     Json info = Json::create_array();
+Json StrategyPriceArbitrage::get_orders_chain()
+{
+    Json orders = Json::create_array();
 
-//     Json orders = MongoDB::instance()
-//         .set_db_and_collection("order", "order_list")
-//         .find_many();
+    Json filled_orders = MongoDB::instance()
+        .set_db_and_collection("order", "order_list")
+        .find_many();
 
-//     orders.for_each([&info](Json& order)
-//     {
-//         if (order["status"] == "FILLED")
-//         {
-//             order.remove_field("_id");
-//             info.push_back(order);
-//         }
-//     });
+    filled_orders.for_each([&orders](Json& order)
+    {
+        if (order["status"] == "FILLED")
+        {
+            order.remove_field("_id");
+            orders.push_back(order);
+        }
+    });
 
-//     info.sort([](Json& a, Json& b)
-//     {
-//         return (size_t)a["order_id"] < (size_t)b["order_id"];
-//     });
+    orders.sort([](Json& a, Json& b)
+    {
+        return (OrderId)a["order_id"] < (OrderId)b["order_id"];
+    });
 
-//     return info;
-// }
+    Json res = Json::create_array();
+    size_t i = 0;
+    while (i < orders.size())
+    {   
+        // Find triangle orders
+        if ((std::string)orders[i]["symbol"] == "BTCUSDT" && 
+            (std::string)orders[i + 1]["symbol"] == "ETHBTC" && 
+            (std::string)orders[i + 2]["symbol"] == "ETHUSDT")
+        {
+            Json triangle;
+            triangle["input"] = (double)orders[i]["volumn_in_quote_currency"];
+            triangle["output"] = (double)orders[i+2]["output_quantity"];
+            triangle["profit"] = (double)triangle["input"] - (double)triangle["output"];
+            triangle["orders"] = {
+                {"BTCUSDT", orders[i]["order_id"]},
+                {"ETHBTC", orders[i + 1]["order_id"]},
+                {"ETHUSDT", orders[i + 2]["order_id"]}
+            };
+
+            res.push_back(triangle);
+        }
+    }
+
+    return res;
+}
 
 // Json StrategyPriceArbitrage::get_open_orders()
 // {
