@@ -6,4 +6,9 @@
 
 inline constexpr char PriceArbitrageName[] = STRATEGY_PRICE_ARBITRAGE_NAME;
 
-using StrategyPriceArbitrage = StrategyBase<StrategyPriceArbitrageConfig, PriceArbitrageName, EventBaseID::PRICE_ARBITRAGE_STRATEGY>;
+class StrategyPriceArbitrage : public StrategyBase<StrategyPriceArbitrageConfig, PriceArbitrageName, EventBaseID::PRICE_ARBITRAGE_STRATEGY>
+{
+protected:
+    virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
+    virtual void on_config_change(StrategyPriceArbitrageConfig new_config) override;
+};

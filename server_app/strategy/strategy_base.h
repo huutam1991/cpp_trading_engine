@@ -9,6 +9,7 @@
 template<class StrategyConfig, const char* StrategyName, size_t eventBaseID>
 class StrategyBase : public StrategyAbstract
 {
+protected:
     std::string m_strategy_name;
     SavableObject<StrategyConfig> m_config;
     SavableObject<StrategyStateData> m_current_state;
@@ -22,8 +23,6 @@ public:
         m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name + "_strategy", "config")},
         m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name + "_strategy", "state")}
     {}
-    
-    std::unordered_map<StrategyState, StrategyStateBase*> init_states();
 
     TaskVoid init() override
     {
@@ -92,8 +91,6 @@ public:
     }
 
 protected:
-    virtual void on_config_change(StrategyConfig new_config)
-    {
-        return;
-    }
+    virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() { return {}; }
+    virtual void on_config_change(StrategyConfig new_config) {}
 };

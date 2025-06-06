@@ -7,7 +7,6 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_stop.h>
 
-template<>
 std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::init_states()
 {
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
@@ -22,7 +21,6 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
     return strategy_states;
 }
 
-template<>
 void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_config)
 {
     spdlog::debug("Update config for StrategyPriceArbitrage");
