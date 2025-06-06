@@ -72,7 +72,7 @@ enum class SourceType
 
 // Strategy DB name
 #define STRATEGY_DB_NAME "strategy"
-#define STRATEGY_PRICE_ARBITRAGE_DB_NAME "strategy_price_arbitrage"
+#define STRATEGY_PRICE_ARBITRAGE_NAME "price_arbitrage"
 
 // None Source
 #define NONE_DB_SOURCE_NAME "none_source"
