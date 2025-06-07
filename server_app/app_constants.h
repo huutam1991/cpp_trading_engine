@@ -74,6 +74,7 @@ enum class SourceType
 #define STRATEGY_DB_NAME "strategy"
 #define STRATEGY_BUY_SPOT_NAME "buy_spot"
 #define STRATEGY_PRICE_ARBITRAGE_NAME "price_arbitrage"
+#define STRATEGY_MARKET_MAKER_NAME "market_maker"
 
 // None Source
 #define NONE_DB_SOURCE_NAME "none_source"
@@ -206,10 +207,11 @@ enum IOCId
 enum EventBaseID
 {
     APP,
-    ORDER,                   // OrderManager
-    DB_HELPER,               // Help to data to MongoDB
-    GATEWAY,                 // Gateway
+    ORDER,                    // OrderManager
+    DB_HELPER,                // Help to data to MongoDB
+    GATEWAY,                  // Gateway
     STRATEGY,
-    PRICE_BUY_SPOT,          // Strategy - Buy Spot
-    PRICE_ARBITRAGE_STRATEGY // Strategy - Price Arbitrage
+    BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
+    PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
+    MARKET_MAKER_STRATEGY     // Strategy - Market Maker
 };

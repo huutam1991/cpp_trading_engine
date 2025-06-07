@@ -6,7 +6,7 @@
 
 inline constexpr char BuySpotName[] = STRATEGY_BUY_SPOT_NAME;
 
-class StrategyBuySpot : public StrategyBase<StrategyBuySpotConfig, BuySpotName, EventBaseID::PRICE_BUY_SPOT>
+class StrategyBuySpot : public StrategyBase<StrategyBuySpotConfig, BuySpotName, EventBaseID::BUY_SPOT_STRATEGY>
 {
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
