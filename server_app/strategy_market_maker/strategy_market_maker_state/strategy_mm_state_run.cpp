@@ -9,8 +9,7 @@ StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway
 
 void StrategyMarketMakerStateRun::begin()
 {
-    m_current_price = 0.0;
-    update_lot_size();
+    on_config_change();
     ADD_LOG("StrategyMarketMakerStateRun - begin");
 }
 
@@ -20,6 +19,13 @@ void StrategyMarketMakerStateRun::end()
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol);
+}
+
+void StrategyMarketMakerStateRun::on_config_change()
+{
+    m_current_price = 0.0;
+    update_lot_size();
+    m_gateway->subscribe_symbol({m_config.symbol});
 }
 
 void StrategyMarketMakerStateRun::update_lot_size()
