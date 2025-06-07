@@ -17,6 +17,8 @@ void StrategyMarketMakerStateRun::end()
 {
     ADD_LOG("StrategyMarketMakerStateRun - end");
 
+    m_is_placing = false;
+
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol);
 }
