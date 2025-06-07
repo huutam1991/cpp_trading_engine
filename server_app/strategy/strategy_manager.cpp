@@ -10,8 +10,8 @@ void StrategyManager::init()
 
 void StrategyManager::add_strategy_list()
 {
-    // m_strategy_list.push_back(std::make_unique<StrategyPriceArbitrage>());
-    m_strategy_list.push_back(std::make_unique<StrategyMarketMaker>());
+    m_strategy_list.push_back(std::make_unique<StrategyPriceArbitrage>());
+    // m_strategy_list.push_back(std::make_unique<StrategyMarketMaker>());
 
     for (auto& strategy : m_strategy_list)
     {
