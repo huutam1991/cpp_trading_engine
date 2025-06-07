@@ -72,6 +72,7 @@ enum class SourceType
 
 // Strategy DB name
 #define STRATEGY_DB_NAME "strategy"
+#define STRATEGY_BUY_SPOT_NAME "buy_spot"
 #define STRATEGY_PRICE_ARBITRAGE_NAME "price_arbitrage"
 
 // None Source
@@ -209,5 +210,6 @@ enum EventBaseID
     DB_HELPER,               // Help to data to MongoDB
     GATEWAY,                 // Gateway
     STRATEGY,
+    PRICE_BUY_SPOT,          // Strategy - Buy Spot
     PRICE_ARBITRAGE_STRATEGY // Strategy - Price Arbitrage
 };

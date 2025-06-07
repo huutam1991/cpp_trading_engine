@@ -32,7 +32,7 @@ public:
         co_return;
     }
     
-    TaskVoid update(StrategyUpdateData data) override
+    TaskVoid update(StrategyUpdateData data) override final
     {
         StrategyState current_state = m_current_state.object.state;
 
