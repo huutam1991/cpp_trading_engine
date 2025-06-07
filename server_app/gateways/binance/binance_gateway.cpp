@@ -203,3 +203,8 @@ double BinanceGateway::round_up_quantity(const std::string& type, const std::str
 
     return std::stod(round_str_number);
 }
+
+size_t BinanceGateway::get_lot_size(const std::string& type, const std::string& symbol)
+{
+    return m_symbols_info[type][symbol]["lotSize"];
+}

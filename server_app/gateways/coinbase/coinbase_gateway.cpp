@@ -200,3 +200,8 @@ double CoinbaseGateway::round_up_quantity(const std::string& type, const std::st
 
     return std::stod(round_str_number);
 }
+
+size_t CoinbaseGateway::get_lot_size(const std::string& type, const std::string& symbol)
+{
+    return 1;
+}
