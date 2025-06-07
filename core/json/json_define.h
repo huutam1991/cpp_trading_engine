@@ -4,6 +4,7 @@
 #include <functional>
 #include <type_traits>
 #include <fmt/core.h>
+#include <fmt/format.h>
 
 #include "json_type_base.h"
 #include "json_value.h"

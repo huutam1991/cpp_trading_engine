@@ -39,6 +39,7 @@ debug/
 # MongoDB data folder
 z_docker/mongo_docker_data
 z_docker/dump
+z_docker/build.log
 
 # Report file
 web_data/excel/report.xls

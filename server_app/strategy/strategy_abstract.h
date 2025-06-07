@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include <coroutine/task_void.h>
 #include <coroutine/event_base_manager.h>
 #include <order/order.h>
