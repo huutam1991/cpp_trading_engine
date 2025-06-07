@@ -1,6 +1,6 @@
 #include <iostream>
 #include <filesystem>
-#include <glog/logging.h>
+// #include <glog/logging.h>
 #include <spdlog/async.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>

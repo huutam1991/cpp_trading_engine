@@ -57,13 +57,13 @@ apt install -y libspdlog-dev
 apt update -y
 apt install -y libboost-all-dev
 
-# Install GLog
-cd /
-git clone https://github.com/google/glog.git
-cd glog
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
-make -j$(nproc) && make install
+# # Install GLog
+# cd /
+# git clone https://github.com/google/glog.git
+# cd glog
+# mkdir build && cd build
+# cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+# make -j$(nproc) && make install
 
 # Clean up if you want to keep the image size smaller
 rm -rf /glog
