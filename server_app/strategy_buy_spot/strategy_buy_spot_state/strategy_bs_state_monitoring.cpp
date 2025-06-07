@@ -1,4 +1,4 @@
-#include <strategy/strategy_state/strategy_state_monitoring.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_monitoring.h>
 #include <mongo_db/mongo_db.h>
 
 #define MAX_NEIGHBOR_CHECKPOINT 10

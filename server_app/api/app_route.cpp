@@ -19,7 +19,7 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_current_info.h>
 
 #include <gateways/gateway_manager.h>
-#include <strategy/strategy.h>
+#include <strategy_buy_spot/strategy.h>
 
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 

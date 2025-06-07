@@ -1,4 +1,4 @@
-#include <strategy/strategy_state/strategy_state.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_state.h>
 #include <app_utils/app_utils.h>
 
 StrategyStateFirst::StrategyStateFirst(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)

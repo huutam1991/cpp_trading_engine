@@ -1,4 +1,4 @@
-#include <strategy/strategy_state/strategy_state_placing.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_placing.h>
 #include <app_utils/app_utils.h>
 
 StrategyStatePlacing::StrategyStatePlacing(std::shared_ptr<Gateway>& gateway, std::shared_ptr<CheckPointList>& checkpoints)

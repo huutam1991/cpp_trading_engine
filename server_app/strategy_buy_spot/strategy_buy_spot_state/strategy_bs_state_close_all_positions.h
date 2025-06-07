@@ -1,6 +1,6 @@
 #pragma once
 
-#include <strategy/strategy_state/strategy_state.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_state.h>
 
 class StrategyStateCloseAllPositions : public StrategyStateFirst
 {

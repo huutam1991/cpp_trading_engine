@@ -1,4 +1,4 @@
-#include <strategy/check_points.h>
+#include <strategy_buy_spot/check_points.h>
 
 CheckPointList::CheckPointList(const std::string symbol, double volumn, double move_price, double sell_buy_ratio) :
     m_symbol(symbol), m_buy_volumn(volumn), m_move_price(move_price), m_sell_buy_ratio(sell_buy_ratio)

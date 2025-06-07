@@ -1,4 +1,4 @@
-#include <strategy/strategy.h>
+#include <strategy_buy_spot/strategy.h>
 #include <gateways/gateway_manager.h>
 #include <mongo_db/mongo_db.h>
 #include <json/json.h>
@@ -7,11 +7,11 @@
 #include <app_utils/app_utils.h>
 
 // StrategyStateFirst
-#include <strategy/strategy_state/strategy_state_start.h>
-#include <strategy/strategy_state/strategy_state_placing.h>
-#include <strategy/strategy_state/strategy_state_monitoring.h>
-#include <strategy/strategy_state/strategy_state_stop.h>
-#include <strategy/strategy_state/strategy_state_close_all_positions.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_start.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_placing.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_monitoring.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_stop.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_close_all_positions.h>
 
 std::unordered_map<std::string, StrategyStateFirst*>* Strategy::get_strategy_states()
 {
@@ -23,10 +23,10 @@ std::unordered_map<std::string, StrategyStateFirst*>* Strategy::get_strategy_sta
         std::shared_ptr<Gateway>& gateway = Strategy::instance().m_gateway;
         std::shared_ptr<CheckPointList>& check_point = Strategy::instance().m_checkpoints;
 
-        m_strategy_states["START"] = new StrategyStateStart(gateway, check_point);
+        m_strategy_states["START"] = new StrategyBuySpotStateStart(gateway, check_point);
         m_strategy_states["PLACING"] = new StrategyStatePlacing(gateway, check_point);
         m_strategy_states["MONITORING"] = new StrategyStateMonitoring(gateway, check_point);
-        m_strategy_states["STOP"] = new StrategyStateStop(gateway, check_point);
+        m_strategy_states["STOP"] = new StrategyBuySpotStateStop(gateway, check_point);
         m_strategy_states["CLOSE_ALL_POSITIONS"] = new StrategyStateCloseAllPositions(gateway, check_point);
     }
 

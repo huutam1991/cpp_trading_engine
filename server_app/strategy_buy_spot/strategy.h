@@ -10,8 +10,8 @@
 #include <coroutine/task.h>
 #include <coroutine/future.h>
 
-#include <strategy/check_points.h>
-#include <strategy/strategy_state/strategy_state.h>
+#include <strategy_buy_spot/check_points.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_state.h>
 
 class Strategy
 {
