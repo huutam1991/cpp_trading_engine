@@ -14,7 +14,7 @@ WebsocketClientAsync::WebsocketClientAsync(net::io_context& io_context, EventBas
 
 WebsocketClientAsync::~WebsocketClientAsync()
 {
-    ADD_LOG("Close WebsocketClientAsync");
+    spdlog::debug("Close WebsocketClientAsync");
 }
 
 void WebsocketClientAsync::set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close)
@@ -84,7 +84,7 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
 
     if (ec)
     {
-        ADD_LOG("WebsocketClientAsync - on_read error: " << ec.message());
+        spdlog::debug("WebsocketClientAsync - on_read error: {}", ec.message());
 
         if (
             ec == websocket::error::closed ||                     // WebSocket close
@@ -190,7 +190,7 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
 {
     if (ec)
     {
-        ADD_LOG("WebsocketClientAsync - Close error: " << ec.message());
+        spdlog::debug("WebsocketClientAsync - Close error: {}", ec.message());
     }
 
     // Invoke [m_on_close]
@@ -199,7 +199,7 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
 
 void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
 {
-    ADD_LOG("WebsocketClientAsync - Error in " << where << ": " << ec.message());
+    spdlog::debug("WebsocketClientAsync - Error in {}: ", where, ec.message());
 }
 
 void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds)
@@ -212,7 +212,7 @@ void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<TaskVoid(
         }
         else
         {
-            ADD_LOG("WebsocketClientAsync has been destroyed, cannot run keep alive logic");
+            spdlog::debug("WebsocketClientAsync has been destroyed, cannot run keep alive logic");
         }
     }, m_ioc, tick_in_milliseconds);
 }

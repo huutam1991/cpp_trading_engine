@@ -1,7 +1,6 @@
 
 
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
-#include <gateways/gateway_manager.h>
 
 // StrategyState
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
@@ -12,10 +11,10 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
     // For now, only use Binance
-    std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
-    gateway->subscribe_symbol({"BTCUSDT", "ETHBTC"});
+    m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
+    m_gateway->subscribe_symbol({m_config.object.symbol_1, m_config.object.symbol_2});
 
-    strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(gateway, get_config_reference());
+    strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(m_gateway, get_config_reference());
     strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
 
     return strategy_states;
@@ -33,6 +32,9 @@ void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_c
     {
         m_current_state = StrategyStateData{StrategyState::STOP};
     }
+    
+    // Re-subscribe symbols
+    m_gateway->subscribe_symbol({m_config.object.symbol_1, m_config.object.symbol_2});
 }
 
 Json StrategyPriceArbitrage::get_info(Json& params)

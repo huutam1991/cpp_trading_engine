@@ -22,6 +22,13 @@ BinanceMarketData::~BinanceMarketData()
 
 void BinanceMarketData::start()
 {
+    // Close all remaining websockets
+    for (auto& [_, websocket] : m_websockets)
+    {
+        websocket->close();
+    }
+    m_websockets.clear();
+    
     for (size_t i = 0; i < m_symbols.size(); i++)
     {
         start_websocket(m_symbols[i]);

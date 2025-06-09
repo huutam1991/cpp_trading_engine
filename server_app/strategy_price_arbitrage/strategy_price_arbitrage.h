@@ -1,6 +1,7 @@
 #pragma once
 
 #include <app_constants.h>
+#include <gateways/gateway_manager.h>
 #include <strategy/strategy_base.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage_config.h>
 
@@ -16,5 +17,6 @@ public:
     virtual Json get_info(Json& params) override;
 
 private:
+    std::shared_ptr<Gateway> m_gateway;
     Json get_orders_chain();
 };
