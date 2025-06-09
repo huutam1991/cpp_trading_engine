@@ -74,9 +74,9 @@ Json StrategyPriceArbitrage::get_orders_chain()
     while (i < orders.size())
     {   
         // Find triangle orders
-        if ((std::string)orders[i]["symbol"] == "BTCUSDT" && 
-            (std::string)orders[i + 1]["symbol"] == "ETHBTC" && 
-            (std::string)orders[i + 2]["symbol"] == "ETHUSDT")
+        if ((std::string)orders[i]["symbol"] == m_config.object.symbol_1 && 
+            (std::string)orders[i + 1]["symbol"] == m_config.object.symbol_2 && 
+            (std::string)orders[i + 2]["symbol"] == m_config.object.symbol_3)
         {
             double input = (double)orders[i]["volumn_in_quote_currency"];
             double output = (double)orders[i+2]["output_quantity"];
@@ -86,9 +86,9 @@ Json StrategyPriceArbitrage::get_orders_chain()
             triangle["output"] = output;
             triangle["profit"] = output - input;
             triangle["orders"] = {
-                {"BTCUSDT", orders[i]["order_id"]},
-                {"ETHBTC", orders[i + 1]["order_id"]},
-                {"ETHUSDT", orders[i + 2]["order_id"]}
+                {m_config.object.symbol_1, orders[i]["order_id"]},
+                {m_config.object.symbol_2, orders[i + 1]["order_id"]},
+                {m_config.object.symbol_3, orders[i + 2]["order_id"]}
             };
 
             res.push_back(triangle);
