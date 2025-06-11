@@ -60,22 +60,19 @@ Json BinanceGateway::get_spot_symbols_info()
             return;
         }
 
-        std::string symbol_name = data["symbol"];
+        std::string exchange_id = data["symbol"];
         std::string base_asset = data["baseAsset"];
         std::string quote_asset = data["quoteAsset"];
+        std::string symbol_name = base_asset + "-" + quote_asset;
 
         if (m_instruments.find(symbol_name) == m_instruments.end())
         {
             m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
 
-            spdlog::debug("symbol_name: {}", symbol_name);
-            spdlog::debug("lot size: {}", get_rounded_number(data["filters"][1]["stepSize"]));
-            spdlog::debug("tick size: {}", std::stod((std::string&&)data["filters"][0]["tickSize"]));
-
             auto instrument = m_instruments.find(symbol_name)->second;
             instrument = Instrument {
-                base_asset + "-" + quote_asset,
                 symbol_name,
+                exchange_id,
                 get_rounded_number(data["filters"][1]["stepSize"]),
                 std::stod((std::string&&)data["filters"][0]["tickSize"])
             };
