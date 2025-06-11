@@ -30,6 +30,11 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     spdlog::debug("perpetual: {}", m_symbols_info["perpetual"]);
 }
 
+std::string BinanceGateway::get_name()
+{
+    return "binance";
+}
+
 Json BinanceGateway::get_spot_symbols_info()
 {
     ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\",\"BTCUSDC\",\"ETHUSDC\",\"ETHBTC\",\"BNBBTC\",\"BNBUSDT\"]", RequestMethod::GET);

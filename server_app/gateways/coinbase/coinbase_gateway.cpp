@@ -111,6 +111,11 @@ void CoinbaseGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(symbol, best_ask);
 }
 
+std::string CoinbaseGateway::get_name()
+{
+    return "coinbase";
+}
+
 Task<std::unordered_set<OrderId>> CoinbaseGateway::get_open_orders_on_exchange(std::string symbol)
 {
     std::unordered_set<OrderId> res;

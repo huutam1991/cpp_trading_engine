@@ -70,6 +70,9 @@ enum class SourceType
 // Order DB name
 #define ORDER_DB_NAME "order"
 
+// Instrument DB name
+#define INSTRUMENT_DB_NAME "instrument"
+
 // Strategy DB name
 #define STRATEGY_DB_NAME "strategy"
 #define STRATEGY_BUY_SPOT_NAME "buy_spot"
