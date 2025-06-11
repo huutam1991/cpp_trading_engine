@@ -1,5 +1,3 @@
-#include <external_request/external_request_ssl.h>
-
 #include <gateways/binance/binance_gateway.h>
 #include <app_utils/app_utils.h>
 #include <account/account.h>
@@ -22,12 +20,6 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     // std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
     // std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     // m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
-
-    m_symbols_info["spot"] = get_spot_symbols_info();
-    m_symbols_info["perpetual"] = get_perpetual_symbols_info();
-
-    spdlog::debug("spot: {}", m_symbols_info["spot"]);
-    spdlog::debug("perpetual: {}", m_symbols_info["perpetual"]);
 }
 
 std::string BinanceGateway::get_name()
@@ -35,16 +27,59 @@ std::string BinanceGateway::get_name()
     return "binance";
 }
 
+void BinanceGateway::init()
+{
+    Gateway::init();
+
+    m_symbols_info["spot"] = get_spot_symbols_info();
+    m_symbols_info["perpetual"] = get_perpetual_symbols_info();
+
+    // spdlog::debug("spot: {}", m_symbols_info["spot"]);
+    // spdlog::debug("perpetual: {}", m_symbols_info["perpetual"]);
+}
+
+Task<Json> BinanceGateway::get_exchange_info()
+{
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_SPOT_URL, BINANCE_SPOT_PORT);
+    std::string response = co_await client->get("/api/v3/exchangeInfo");
+
+    co_return Json::parse(response);
+}
+
 Json BinanceGateway::get_spot_symbols_info()
 {
-    ExternalRequestSsl binance_request(BINANCE_SPOT_URL, BINANCE_SPOT_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\",\"BTCUSDC\",\"ETHUSDC\",\"ETHBTC\",\"BNBBTC\",\"BNBUSDT\"]", RequestMethod::GET);
+    Json exchange_info = get_exchange_info()
+        .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::ORDER))
+        .get();
 
-    Json exchange_info = Json::parse(binance_request.send_request());
     Json symbols_info;
-
     exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
     {
+        if ((std::string)data["status"] != "TRADING")
+        {
+            return;
+        }
+
         std::string symbol_name = data["symbol"];
+        std::string base_asset = data["baseAsset"];
+        std::string quote_asset = data["quoteAsset"];
+
+        if (m_instruments.find(symbol_name) == m_instruments.end())
+        {
+            m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
+
+            spdlog::debug("symbol_name: {}", symbol_name);
+            spdlog::debug("lot size: {}", get_rounded_number(data["filters"][1]["stepSize"]));
+            spdlog::debug("tick size: {}", std::stod((std::string&&)data["filters"][0]["tickSize"]));
+
+            auto instrument = m_instruments.find(symbol_name)->second;
+            instrument = Instrument {
+                base_asset + "-" + quote_asset,
+                symbol_name,
+                get_rounded_number(data["filters"][1]["stepSize"]),
+                std::stod((std::string&&)data["filters"][0]["tickSize"])
+            };
+        }
 
         symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
         symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
@@ -56,30 +91,32 @@ Json BinanceGateway::get_spot_symbols_info()
 
 Json BinanceGateway::get_perpetual_symbols_info()
 {
-    ExternalRequestSsl binance_request(BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT, "/fapi/v1/exchangeInfo", RequestMethod::GET);
+    // ExternalRequestSsl binance_request(BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT, "/fapi/v1/exchangeInfo", RequestMethod::GET);
 
-    Json exchange_info = Json::parse(binance_request.send_request());
-    Json symbols_info;
+    // Json exchange_info = Json::parse(binance_request.send_request());
+    // Json symbols_info;
 
-    exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
-    {
-        std::string symbol_name = data["symbol"];
+    // exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
+    // {
+    //     std::string symbol_name = data["symbol"];
 
-        if (symbol_name == "ETHUSDT" || symbol_name == "BTCUSDT")
-        {
-            symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
-            symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
-            symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
-        }
-    });
+    //     if (symbol_name == "ETHUSDT" || symbol_name == "BTCUSDT")
+    //     {
+    //         symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
+    //         symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
+    //         symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
+    //     }
+    // });
 
-    return symbols_info;
+    // return symbols_info;
+
+    return {};
 }
 
 size_t BinanceGateway::get_rounded_number(const std::string& lot_size)
 {
     int pos_1 = lot_size.find_first_of("1"); // find the position of charater '1'
-    return pos_1 - 1;
+    return pos_1 == 0 ? 0 : pos_1 - 1;
 }
 
 std::string BinanceGateway::round_string_number(const std::string& str_number, size_t precision)

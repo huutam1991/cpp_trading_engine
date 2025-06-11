@@ -28,12 +28,14 @@ protected:
 public:
     BinanceGateway(const std::string& key);
 
+    virtual void init() override;
     virtual void subscribe_symbol(std::vector<std::string> symbols) override;
     virtual Task<Json> get_balances() override;
     virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) override;
     virtual size_t get_lot_size(const std::string& type, const std::string& symbol) override;
 
 private:
+    Task<Json> get_exchange_info();
     void on_depth_update(const std::string& symbol, Json& payload);
 
     Json get_spot_symbols_info();

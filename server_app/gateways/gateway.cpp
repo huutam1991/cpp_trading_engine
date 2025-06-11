@@ -10,6 +10,11 @@ void Gateway::init()
 {
     m_gateway_name = get_name();
     m_instruments = SavableObject<Instrument>::load_objects_map<std::string>(INSTRUMENT_DB_NAME, m_gateway_name, "symbol");
+
+    for (auto& [symbol, ins] : m_instruments)
+    {
+        spdlog::debug("INSTRUMENT load - symbol: {}, instrument: {}", symbol, ins.to_json());
+    }
 }
 
 void Gateway::register_price_update(std::function<void(std::string,double)> price_update_callback)

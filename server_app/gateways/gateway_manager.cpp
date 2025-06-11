@@ -38,6 +38,12 @@ void GatewayManager::init()
         {
             // TBD
         }
+
+        // Check to init gateway
+        if (m_gateways.find(gateway_enum) != m_gateways.end())
+        {
+            m_gateways[gateway_enum]->init();
+        }
     });
 }
 
