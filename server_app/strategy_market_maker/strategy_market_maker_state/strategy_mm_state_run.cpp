@@ -38,7 +38,7 @@ void StrategyMarketMakerStateRun::update_lot_size()
 
 double StrategyMarketMakerStateRun::local_round_up_quantity(double quantity)
 {
-    std::string round_str_number = Utils::instance().round_string_number(std::to_string(quantity), m_lot_size);
+    std::string round_str_number = Utils::round_string_number(std::to_string(quantity), m_lot_size);
 
     return std::stod(round_str_number);
 }

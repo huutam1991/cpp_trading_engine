@@ -30,7 +30,7 @@ public:
     std::string get_string_time_YMD_with_millisecond(time_t time, time_t offset = UTC_PLUS_7_IN_MS);
 
     std::vector<std::string> split_string(const std::string& str, const std::string& del);
-    std::string round_string_number(const std::string& str_number, size_t precision);
+    static std::string round_string_number(const std::string& str_number, size_t precision);
     size_t get_decimal_digits(const std::string& str);
 
     std::string get_request_method_string_by_id(RequestMethod method);

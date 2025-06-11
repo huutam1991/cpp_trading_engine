@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utils/util_macros.h>
+#include <utils/utils.h>
 #include <app_constants.h>
 #include <json/json.h>
 #include <thread_pool/thread_pool.h>
@@ -8,6 +9,7 @@
 #include <coroutine/event_base_manager.h>
 
 #include <order/order.h>
+#include <instrument/instrument.h>
 
 class AppUtils
 {
@@ -23,6 +25,7 @@ public:
     bool is_long_number(const std::string& number_str);
     bool is_all_digit(const std::string& str);
     OrderId parse_order_id(const std::string& str);
+    double round_up_quantity_by_instrument(Instrument* instrument, double quantity);
 
     ThreadPool* get_app_pool();
     EventBase* get_app_event_base();

@@ -75,3 +75,11 @@ OrderId AppUtils::parse_order_id(const std::string& str)
 
     return std::stoull(str);
 }
+
+double AppUtils::round_up_quantity_by_instrument(Instrument* instrument, double quantity)
+{
+    std::string round_str_number = Utils::round_string_number(std::to_string(quantity), instrument->lot_size);
+
+    return std::stod(round_str_number);
+}
+
