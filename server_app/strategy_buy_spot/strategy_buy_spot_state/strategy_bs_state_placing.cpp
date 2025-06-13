@@ -101,7 +101,7 @@ Order StrategyStatePlacing::get_buy_spot_order_by_checkpoint(DataModel& checkpoi
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::SPOT,
+        InstrumentType::SPOT,
         Order::Status::NEW,
         symbol,
         Order::Side::BUY,
@@ -123,7 +123,7 @@ Order StrategyStatePlacing::get_sell_perpetual_order_by_checkpoint(DataModel& ch
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::PERPETUAL,
+        InstrumentType::PERPETUAL,
         Order::Status::NEW,
         symbol,
         Order::Side::SELL,

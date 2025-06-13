@@ -285,7 +285,7 @@ void add_app_route()
 
         Order order(
             OrderManager::generate_order_id(),
-            Order::ExchangeType::SPOT,
+            InstrumentType::SPOT,
             Order::Status::NOT_AVAILABLE,
             symbol,
             Order::side_from_string(side),

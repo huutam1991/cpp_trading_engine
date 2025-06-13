@@ -49,7 +49,7 @@ Order StrategyMarketMakerStateRun::get_limit_buy_spot_order(double price, double
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::SPOT,
+        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         m_config.symbol,
         Order::Side::BUY,
@@ -65,7 +65,7 @@ Order StrategyMarketMakerStateRun::get_limit_sell_spot_order(double price, doubl
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::SPOT,
+        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         m_config.symbol,
         Order::Side::SELL,
@@ -81,7 +81,7 @@ Order StrategyMarketMakerStateRun::get_market_buy_spot_order_by_symbol_and_quant
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::SPOT,
+        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         symbol,
         Order::Side::BUY,
@@ -97,7 +97,7 @@ Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quan
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        Order::ExchangeType::SPOT,
+        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         symbol,
         Order::Side::SELL,

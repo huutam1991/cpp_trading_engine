@@ -76,7 +76,7 @@ void BinanceQuoterSpot::init_websocket()
                 Order order
                 {
                     0,                                   // Order Id
-                    Order::ExchangeType::SPOT,           // Exchange Type
+                    InstrumentType::SPOT,           // Exchange Type
                     Order::Status::NEW,                  // Status
                     json["s"],                           // Symbol
                     Order::side_from_string(json["S"]),  // Side

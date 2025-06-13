@@ -2,17 +2,13 @@
 
 #include <string>
 #include <json/json.h>
+#include <instrument/instrument.h>
 
 using OrderId = size_t;
 
 class Order
 {
 public:
-    enum ExchangeType
-    {
-        SPOT,
-        PERPETUAL
-    };
 
     enum Status
     {
@@ -38,7 +34,7 @@ public:
 
     // Input data
     OrderId order_id;
-    ExchangeType exchange_type;
+    InstrumentType exchange_type;
     Status status = Status::NOT_AVAILABLE;
     std::string symbol;
     Side side;
@@ -56,11 +52,11 @@ public:
     std::string output_asset = ""; // The same with commission_asset
 
     Order();
-    Order(OrderId order_id_i, ExchangeType exchange_type_i, Status status_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
+    Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
-    inline static std::string to_string(ExchangeType data)
+    inline static std::string to_string(InstrumentType data)
     {
-        return data == ExchangeType::SPOT ? "SPOT" : "PERPETUAL";
+        return data == InstrumentType::SPOT ? "SPOT" : "PERPETUAL";
     }
 
     inline static std::string to_string(Status data)
@@ -93,9 +89,9 @@ public:
         return data == OrderType::LIMIT ? "LIMIT" : "MARKET";
     }
 
-    inline static ExchangeType exchange_type_from_string(std::string data)
+    inline static InstrumentType exchange_type_from_string(std::string data)
     {
-        return data == "SPOT" ? ExchangeType::SPOT : ExchangeType::PERPETUAL;
+        return data == "SPOT" ? InstrumentType::SPOT : InstrumentType::PERPETUAL;
     }
 
     inline static Status status_from_string(std::string data)

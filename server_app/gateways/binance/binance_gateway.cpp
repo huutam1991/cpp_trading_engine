@@ -200,7 +200,7 @@ Task<Json> BinanceGateway::cancel_on_exchange(Order order)
 Task<Json> BinanceGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    BinanceQuoter* quoter = order.exchange_type == Order::ExchangeType::SPOT ?
+    BinanceQuoter* quoter = order.exchange_type == InstrumentType::SPOT ?
         (BinanceQuoter*)&m_quoter_spot :
         (BinanceQuoter*)&m_quoter_perpetual;
 
