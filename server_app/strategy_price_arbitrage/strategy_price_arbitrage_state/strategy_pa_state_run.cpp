@@ -8,7 +8,7 @@ StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<G
 
 void StrategyPriceArbitrageStateRun::begin()
 {
-    m_current_price = 0.0;
+    on_config_change();
     ADD_LOG("StrategyPriceArbitrageStateRun - begin");
 }
 
@@ -20,6 +20,21 @@ void StrategyPriceArbitrageStateRun::end()
     m_gateway->cancel_all(m_config.symbol_1);
     m_current_open_orders.clear();
 }
+
+void StrategyPriceArbitrageStateRun::on_config_change()
+{
+    m_current_price = 0.0;
+
+    // Get new instruments
+    m_instrument_1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
+    m_instrument_2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
+    m_instrument_3 = m_gateway->get_instrument_by_symbol(m_config.symbol_3);
+
+    spdlog::debug("StrategyPriceArbitrageStateRun, instrument 1: {}", m_instrument_1->to_json());
+    spdlog::debug("StrategyPriceArbitrageStateRun, instrument 2: {}", m_instrument_2->to_json());
+    spdlog::debug("StrategyPriceArbitrageStateRun, instrument 3: {}", m_instrument_3->to_json());
+}
+
 
 Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double price)
 {

@@ -23,6 +23,9 @@ public:
     // virtual Json get_open_orders() override;
 
 private:
+    Instrument* m_instrument_1 = nullptr;
+    Instrument* m_instrument_2 = nullptr;
+    Instrument* m_instrument_3 = nullptr;
     double m_symbol_2_price;
     double m_current_price = 0.0;
     bool is_placing_chain_orders = false;
@@ -35,6 +38,8 @@ private:
 
     // Current open orders by price
     std::unordered_map<double, OrderInfo> m_current_open_orders;
+
+    void on_config_change();
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);

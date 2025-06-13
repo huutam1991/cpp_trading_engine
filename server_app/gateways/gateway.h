@@ -36,6 +36,8 @@ public:
     void place_none_wait(Order order);
     void cancel(Order order);
 
+    Instrument* get_instrument_by_symbol(const std::string& symbol);
+
     virtual void init();
     virtual void subscribe_symbol(std::vector<std::string> symbols) = 0;
 

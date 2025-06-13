@@ -25,7 +25,7 @@ public:
     bool is_long_number(const std::string& number_str);
     bool is_all_digit(const std::string& str);
     OrderId parse_order_id(const std::string& str);
-    double round_up_quantity_by_instrument(Instrument* instrument, double quantity);
+    static double round_up_quantity_by_instrument(Instrument* instrument, double quantity);
 
     ThreadPool* get_app_pool();
     EventBase* get_app_event_base();

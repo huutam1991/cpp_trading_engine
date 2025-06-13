@@ -12,7 +12,10 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
 
     // For now, only use Binance
     m_gateway = GatewayManager::instance().get_gateway(ExchangeEnum::BINANCE);
-    m_gateway->subscribe_symbol({m_config.object.symbol_1, m_config.object.symbol_2});
+    // Re-subscribe symbols
+    auto ins1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1);
+    auto ins2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2);
+    m_gateway->subscribe_symbol({ins1->exchange_id, ins2->exchange_id});
 
     strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(m_gateway, get_config_reference());
     strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
@@ -34,7 +37,9 @@ void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_c
     }
     
     // Re-subscribe symbols
-    m_gateway->subscribe_symbol({m_config.object.symbol_1, m_config.object.symbol_2});
+    auto ins1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1);
+    auto ins2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2);
+    m_gateway->subscribe_symbol({ins1->exchange_id, ins2->exchange_id});
 }
 
 Json StrategyPriceArbitrage::get_info(Json& params)
