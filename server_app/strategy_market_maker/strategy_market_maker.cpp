@@ -12,7 +12,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMarketMaker::init_
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
     // For now, only use Binance
-    std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
+    std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(ExchangeEnum::BINANCE);
     gateway->subscribe_symbol({m_config.object.symbol});
 
     strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(gateway, get_config_reference());

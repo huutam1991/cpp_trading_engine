@@ -77,7 +77,7 @@ void Strategy::init()
     m_checkpoints = std::make_shared<CheckPointList>(m_symbol, m_buy_volumn, m_move_price, m_sell_buy_ratio);
 
     // Add price callback + subscribe to symbol
-    m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
+    m_gateway = GatewayManager::instance().get_gateway(ExchangeEnum::BINANCE);
     m_gateway->register_price_update([this](std::string symbol, double price)
     {
         std::unique_lock lock(m_strategy_mutex);

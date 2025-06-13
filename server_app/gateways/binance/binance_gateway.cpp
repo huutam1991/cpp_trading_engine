@@ -71,6 +71,8 @@ Json BinanceGateway::get_spot_symbols_info()
 
             auto instrument = m_instruments.find(symbol_name)->second;
             instrument = Instrument {
+                ExchangeEnum::BINANCE,
+                InstrumentType::SPOT,
                 symbol_name,
                 exchange_id,
                 get_rounded_number(data["filters"][1]["stepSize"]),

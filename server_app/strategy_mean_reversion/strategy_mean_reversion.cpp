@@ -68,7 +68,7 @@ void StrategyMeanReversion::init()
     ADD_LOG("- is_running: " << m_config.is_running);
 
     // Add price callback + subscribe to symbol
-    m_gateway = GatewayManager::instance().get_gateway(GatewayEnum::BINANCE);
+    m_gateway = GatewayManager::instance().get_gateway(ExchangeEnum::BINANCE);
     m_gateway->register_price_update([this](std::string symbol, double price)
     {
         std::unique_lock lock(m_strategy_mutex);
