@@ -1,8 +1,6 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <time/measure_time.h>
 
-#include <app_utils/app_utils.h>
-
 StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway> gateway, StrategyPriceArbitrageConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
@@ -47,7 +45,7 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
     // // MeasureTime t("get_limit_buy_spot_order_by_price");
 
     double quantity = m_config.buy_volumn / price;
-    double round_up_quantity = AppUtils::round_up_quantity_by_instrument(m_instrument_1, quantity);
+    double round_up_quantity = m_instrument_1->get_round_up_quantity(quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
@@ -63,7 +61,7 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
 
 Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
 {
-    double round_up_quantity = AppUtils::round_up_quantity_by_instrument(instrument, quantity);
+    double round_up_quantity = instrument->get_round_up_quantity(quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
@@ -79,7 +77,7 @@ Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_qu
 
 Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
 {
-    double round_up_quantity = AppUtils::round_up_quantity_by_instrument(instrument, quantity);
+    double round_up_quantity = instrument->get_round_up_quantity(quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
