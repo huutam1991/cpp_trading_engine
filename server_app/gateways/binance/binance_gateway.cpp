@@ -69,7 +69,7 @@ Json BinanceGateway::get_spot_symbols_info()
         {
             m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
 
-            auto instrument = m_instruments.find(symbol_name)->second;
+            SavableObject<Instrument>& instrument = m_instruments.find(symbol_name)->second;
             instrument = Instrument {
                 ExchangeId::BINANCE,
                 InstrumentType::SPOT,
