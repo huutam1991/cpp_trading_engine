@@ -28,11 +28,14 @@ public:
     {
         m_states = init_states();
         auto current_state = m_current_state.object.state;
+        m_previous_state = current_state;
+
+        // Start strategy
+        start();
 
         // Start the current state
         m_states[current_state]->begin();
 
-        m_previous_state = current_state;
 
         co_return;
     }
@@ -102,5 +105,6 @@ public:
 
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() { return {}; }
+    virtual void start() {}
     virtual void on_config_change(StrategyConfig new_config) {}
 };

@@ -11,11 +11,13 @@ class StrategyPriceArbitrage : public StrategyBase<StrategyPriceArbitrageConfig,
 {
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
+    virtual void start() override;
     virtual void on_config_change(StrategyPriceArbitrageConfig new_config) override;
     
 public:
     virtual Json get_info(Json& params) override;
 
 private:
+    std::shared_ptr<Gateway> m_gateway;
     Json get_orders_chain();
 };
