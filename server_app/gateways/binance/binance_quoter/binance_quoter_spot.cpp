@@ -73,13 +73,14 @@ void BinanceQuoterSpot::init_websocket()
 
             if (json["e"] == "executionReport")
             {
+                spdlog::debug("executionReport: {}", json);
                 Order order
                 {
                     0,                                   // Order Id
-                    InstrumentType::SPOT,           // Exchange Type
+                    InstrumentType::SPOT,                // Instrument Type
                     Order::Status::NEW,                  // Status
-                    json["s"],                           // Symbol
-                    json["s"],                           // Exchange symbol
+                    (std::string)json["s"],              // Symbol
+                    (std::string)json["s"],              // Exchange symbol
                     Order::side_from_string(json["S"]),  // Side
                     Order::type_from_string(json["o"]),  // Type
                     std::stod((std::string)json["p"]),   // Price
@@ -279,6 +280,8 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
 {
     // DELETE /api/v3/order?symbol=BTCUSDT&origClientOrderId=my_custom_id_123&timestamp=1743540000000&signature=abcdef
     std::string query_str;
+
+    spdlog::debug("cancel order: {}", order.to_json());
 
     query_str += "symbol=" + order.exchange_symbol.to_string();
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);

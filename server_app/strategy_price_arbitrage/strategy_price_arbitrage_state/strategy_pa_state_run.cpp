@@ -215,7 +215,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             is_placing_chain_orders = true;
         }
         // 2nd order (MARKET)
-        else if (order.type == Order::OrderType::MARKET && order.symbol == m_instrument_2->exchange_symbol)
+        else if (order.type == Order::OrderType::MARKET && order.exchange_symbol == m_instrument_2->exchange_symbol)
         {
             // Sell symbol 3 from symbol 2
             double quantity = order.output_quantity;
@@ -223,7 +223,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             m_gateway->place_none_wait(order_3);
         }
         // 3rd order (MARKET)
-        else if (order.type == Order::OrderType::MARKET && order.symbol == m_instrument_3->exchange_symbol)
+        else if (order.type == Order::OrderType::MARKET && order.exchange_symbol == m_instrument_3->exchange_symbol)
         {
             is_placing_chain_orders = false;
         }
