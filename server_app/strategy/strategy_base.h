@@ -27,15 +27,10 @@ public:
     TaskVoid init() override
     {
         m_states = init_states();
-        auto current_state = m_current_state.object.state;
-        m_previous_state = current_state;
+        m_previous_state = m_current_state.object.state;
 
         // Start strategy
         start();
-
-        // Start the current state
-        m_states[current_state]->begin();
-
 
         co_return;
     }
