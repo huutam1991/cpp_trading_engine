@@ -27,7 +27,12 @@ public:
     TaskVoid init() override
     {
         m_states = init_states();
-        m_previous_state = m_current_state.object.state;
+        auto current_state = m_current_state.object.state;
+
+        // Start the current state
+        m_states[current_state]->begin();
+
+        m_previous_state = current_state;
 
         co_return;
     }

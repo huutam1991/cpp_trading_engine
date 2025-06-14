@@ -6,8 +6,11 @@
 
 class StrategyPriceArbitrageStateStop : public StrategyStateBase
 {
+    std::shared_ptr<Gateway> m_gateway;
+    StrategyPriceArbitrageConfig& m_config;
+
 public:
-    StrategyPriceArbitrageStateStop();
+    StrategyPriceArbitrageStateStop(std::shared_ptr<Gateway> gateway, StrategyPriceArbitrageConfig& config);
 
     virtual void begin() override;
     virtual void end() override;

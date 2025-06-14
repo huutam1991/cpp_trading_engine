@@ -17,6 +17,5 @@ public:
     virtual Json get_info(Json& params) override;
 
 private:
-    std::shared_ptr<Gateway> m_gateway;
     Json get_orders_chain();
 };

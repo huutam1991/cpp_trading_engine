@@ -24,6 +24,11 @@ void StrategyPriceArbitrageStateRun::end()
 void StrategyPriceArbitrageStateRun::on_config_change()
 {
     m_current_price = 0.0;
+    
+    // Re-subscribe symbols
+    auto ins1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
+    auto ins2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
+    m_gateway->subscribe_symbol({ins1->exchange_id, ins2->exchange_id});
 
     // Get new instruments
     m_instrument_1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
@@ -34,7 +39,6 @@ void StrategyPriceArbitrageStateRun::on_config_change()
     spdlog::debug("StrategyPriceArbitrageStateRun, instrument 2: {}", m_instrument_2->to_json());
     spdlog::debug("StrategyPriceArbitrageStateRun, instrument 3: {}", m_instrument_3->to_json());
 }
-
 
 Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double price)
 {
