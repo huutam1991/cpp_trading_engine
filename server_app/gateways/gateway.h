@@ -18,11 +18,12 @@ class Gateway
 {
 protected:
     std::string m_gateway_name;
-    std::unordered_map<std::string, SavableObject<Instrument>> m_instruments;
+    std::unordered_map<std::string, SavableObject<Instrument>>* m_instruments;
     std::function<void(std::string,double)> m_price_update_callback;
     EventBase* m_event_base = nullptr;
 
     Gateway();
+    virtual ExchangeId get_exchange() = 0;
     virtual std::string get_name() = 0;
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) = 0;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) = 0;

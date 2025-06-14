@@ -22,6 +22,11 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     // m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
 }
 
+ExchangeId BinanceGateway::get_exchange()
+{
+    return ExchangeId::BINANCE;
+}
+
 std::string BinanceGateway::get_name()
 {
     return "binance";
@@ -65,11 +70,11 @@ Json BinanceGateway::get_spot_symbols_info()
         std::string quote_asset = data["quoteAsset"];
         std::string symbol_name = base_asset + "-" + quote_asset;
 
-        if (m_instruments.find(symbol_name) == m_instruments.end())
+        if (m_instruments->find(symbol_name) == m_instruments->end())
         {
-            m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
+            m_instruments->insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
 
-            SavableObject<Instrument>& instrument = m_instruments.find(symbol_name)->second;
+            SavableObject<Instrument>& instrument = m_instruments->find(symbol_name)->second;
             instrument = Instrument {
                 ExchangeId::BINANCE,
                 InstrumentType::SPOT,

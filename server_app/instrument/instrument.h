@@ -4,6 +4,7 @@
 
 #include <json/json.h>
 #include <symbol/symbol.h>
+#include <data_model/savable_object.h>
 
 enum ExchangeId
 {
@@ -68,4 +69,22 @@ struct Instrument
     // Helper method
     std::string round_string_number(const std::string& str_number, size_t precision);
     double get_round_up_quantity(double quantity);
+
+    static std::unordered_map<ExchangeId, std::unordered_map<std::string, SavableObject<Instrument>>>& get_instrument_list()
+    {
+        static std::unordered_map<ExchangeId, std::unordered_map<std::string, SavableObject<Instrument>>> instrument_list;
+        return instrument_list;
+    }
+    
+    static std::unordered_map<std::string, SavableObject<Instrument>>& get_instrument_list_by_exchange(ExchangeId exchange_id)
+    {
+        auto& instrument_list = get_instrument_list();
+
+        if (instrument_list.find(exchange_id) == instrument_list.end())
+        {
+            instrument_list.insert(std::make_pair(exchange_id, std::unordered_map<std::string, SavableObject<Instrument>>()));
+        }
+
+        return instrument_list.find(exchange_id)->second;
+    }
 };

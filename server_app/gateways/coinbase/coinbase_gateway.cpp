@@ -111,6 +111,11 @@ void CoinbaseGateway::on_depth_update(const std::string& symbol, Json& payload)
     m_price_update_callback(symbol, best_ask);
 }
 
+ExchangeId CoinbaseGateway::get_exchange()
+{
+    return ExchangeId::COINBASE;
+}
+
 std::string CoinbaseGateway::get_name()
 {
     return "coinbase";
