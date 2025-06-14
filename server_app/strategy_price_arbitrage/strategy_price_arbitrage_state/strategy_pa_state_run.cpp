@@ -1,6 +1,8 @@
 #include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
 #include <time/measure_time.h>
 
+#include <app_utils/app_utils.h>
+
 StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway> gateway, StrategyPriceArbitrageConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
@@ -45,13 +47,13 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
     // // MeasureTime t("get_limit_buy_spot_order_by_price");
 
     double quantity = m_config.buy_volumn / price;
-    double round_up_quantity = m_gateway->round_up_quantity("spot", m_config.symbol_1, quantity);
+    double round_up_quantity = AppUtils::round_up_quantity_by_instrument(m_instrument_1, quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        m_config.symbol_1,
+        m_instrument_1->exchange_id,
         Order::Side::BUY,
         Order::OrderType::LIMIT,
         price,
@@ -59,15 +61,15 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
     );
 }
 
-Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
+Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
 {
-    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
+    double round_up_quantity = AppUtils::round_up_quantity_by_instrument(instrument, quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        symbol,
+        instrument->exchange_id,
         Order::Side::BUY,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
@@ -75,15 +77,15 @@ Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_qu
     );
 }
 
-Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
+Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
 {
-    double round_up_quantity = m_gateway->round_up_quantity("spot", symbol, quantity);
+    double round_up_quantity = AppUtils::round_up_quantity_by_instrument(instrument, quantity);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        symbol,
+        instrument->exchange_id,
         Order::Side::SELL,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
@@ -200,7 +202,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
         {
             // Buy symbol 2 from symbol 1
             double quantity = order.output_quantity / m_symbol_2_price;
-            Order order_2 = get_market_buy_spot_order_by_symbol_and_quantity(m_config.symbol_2, quantity);
+            Order order_2 = get_market_buy_spot_order_by_symbol_and_quantity(m_instrument_2, quantity);
             m_gateway->place_none_wait(order_2);
 
             remove_open_order_by_price(order.price);
@@ -209,15 +211,15 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             is_placing_chain_orders = true;
         }
         // 2nd order (MARKET)
-        else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_2)
+        else if (order.type == Order::OrderType::MARKET && order.symbol == m_instrument_2->exchange_id)
         {
             // Sell symbol 3 from symbol 2
             double quantity = order.output_quantity;
-            Order order_3 = get_market_sell_spot_order_by_symbol_and_quantity(m_config.symbol_3, quantity);
+            Order order_3 = get_market_sell_spot_order_by_symbol_and_quantity(m_instrument_3, quantity);
             m_gateway->place_none_wait(order_3);
         }
         // 3rd order (MARKET)
-        else if (order.type == Order::OrderType::MARKET && order.symbol == m_config.symbol_3)
+        else if (order.type == Order::OrderType::MARKET && order.symbol == m_instrument_3->exchange_id)
         {
             is_placing_chain_orders = false;
         }

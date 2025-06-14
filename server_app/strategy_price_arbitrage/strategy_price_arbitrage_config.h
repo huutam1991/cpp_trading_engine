@@ -5,9 +5,9 @@
 
 struct StrategyPriceArbitrageConfig
 {
-    std::string symbol_1 = "BTCUSDT"; 
-    std::string symbol_2 = "ETHBTC"; 
-    std::string symbol_3 = "ETHUSDT"; 
+    std::string symbol_1 = "BTC-USDT"; 
+    std::string symbol_2 = "ETH-BTC"; 
+    std::string symbol_3 = "ETH-USDT"; 
     double buy_volumn = 50.0;
     double buy_at_lower_price = 10.0;
     double price_delta = 5.0;

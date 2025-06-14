@@ -43,8 +43,8 @@ private:
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
-    Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
-    Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
+    Order get_market_buy_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity);
+    Order get_market_sell_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity);
 
     void remove_open_order_by_price(double price);
     void check_place_order_at_price(double price);
