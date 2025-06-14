@@ -24,7 +24,7 @@ void StrategyPriceArbitrage::start()
     // Subscribe symbols
     auto ins1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1);
     auto ins2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2);
-    m_gateway->subscribe_symbol({ins1->exchange_id, ins2->exchange_id});
+    m_gateway->subscribe_symbol({ins1->exchange_symbol, ins2->exchange_symbol});
 }
 
 void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_config)

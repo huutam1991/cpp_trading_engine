@@ -21,7 +21,7 @@ struct Instrument
     ExchangeEnum exchange_enum;
     InstrumentType instrument_type;
     std::string symbol;
-    std::string exchange_id;
+    std::string exchange_symbol;
     size_t lot_size;
     double tick_size;
 

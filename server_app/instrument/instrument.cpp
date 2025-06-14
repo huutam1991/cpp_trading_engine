@@ -6,7 +6,7 @@ Json Instrument::to_json()
         {"exchange_enum", to_string(exchange_enum)},
         {"instrument_type", to_string(instrument_type)},
         {"symbol", symbol},
-        {"exchange_id", exchange_id},
+        {"exchange_symbol", exchange_symbol},
         {"lot_size", lot_size},
         {"tick_size", tick_size}
     };
@@ -18,7 +18,7 @@ Instrument Instrument::from_json(Json& data)
         exchange_enum_from_string((std::string)data["exchange_enum"]), 
         instrument_type_from_string((std::string)data["instrument_type"]),
         (std::string)data["symbol"], 
-        (std::string)data["exchange_id"],
+        (std::string)data["exchange_symbol"],
         (size_t)data["lot_size"],
         (double)data["tick_size"]
     };

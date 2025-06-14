@@ -60,7 +60,7 @@ Json BinanceGateway::get_spot_symbols_info()
             return;
         }
 
-        std::string exchange_id = data["symbol"];
+        std::string exchange_symbol = data["symbol"];
         std::string base_asset = data["baseAsset"];
         std::string quote_asset = data["quoteAsset"];
         std::string symbol_name = base_asset + "-" + quote_asset;
@@ -74,7 +74,7 @@ Json BinanceGateway::get_spot_symbols_info()
                 ExchangeEnum::BINANCE,
                 InstrumentType::SPOT,
                 symbol_name,
-                exchange_id,
+                exchange_symbol,
                 get_rounded_number(data["filters"][1]["stepSize"]),
                 std::stod((std::string&&)data["filters"][0]["tickSize"])
             };
