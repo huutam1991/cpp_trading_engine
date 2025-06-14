@@ -288,6 +288,7 @@ void add_app_route()
             InstrumentType::SPOT,
             Order::Status::NOT_AVAILABLE,
             symbol,
+            symbol,
             Order::side_from_string(side),
             Order::type_from_string(type),
             price,

@@ -35,9 +35,10 @@ public:
 
     // Input data
     OrderId order_id;
-    InstrumentType exchange_type;
+    InstrumentType instrument_type;
     Status status = Status::NOT_AVAILABLE;
     Symbol symbol;
+    Symbol exchange_symbol;
     Side side;
     OrderType type;
     double price = 0.0;
@@ -53,7 +54,7 @@ public:
     Symbol output_asset; 
 
     Order();
-    Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
+    Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const std::string& symbol_i, const std::string& exchange_symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
     inline static std::string to_string(InstrumentType data)
     {

@@ -2,11 +2,12 @@
 
 Order::Order() {}
 
-Order::Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const std::string& symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
+Order::Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const std::string& symbol_i, const std::string& exchange_symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
     order_id{order_id_i},
-    exchange_type{exchange_type_i},
+    instrument_type{exchange_type_i},
     status{status_i},
     symbol{symbol_i},
+    exchange_symbol{exchange_symbol_i},
     side{side_i},
     type{type_i},
     price{price_i},
@@ -17,9 +18,10 @@ Json Order::to_json()
 {
     return {
         {"order_id", order_id},
-        {"exchange_type", Order::to_string(exchange_type)},
+        {"instrument_type", Order::to_string(instrument_type)},
         {"status", Order::to_string(status)},
         {"symbol", symbol.to_string()},
+        {"exchange_symbol", exchange_symbol.to_string()},
         {"side", Order::to_string(side)},
         {"type", Order::to_string(type)},
         {"price", price},
@@ -39,9 +41,10 @@ Order Order::from_json(Json& data)
     Order res;
 
     res.order_id = (OrderId)data["order_id"];
-    res.exchange_type = Order::exchange_type_from_string(std::string(data["exchange_type"]));
+    res.instrument_type = Order::exchange_type_from_string(std::string(data["instrument_type"]));
     res.status = Order::status_from_string(std::string(data["status"]));
     res.symbol = (std::string)data["symbol"];
+    res.exchange_symbol = (std::string)data["exchange_symbol"];
     res.side = Order::side_from_string(std::string(data["side"]));
     res.type = Order::type_from_string(std::string(data["type"]));
     res.price = (double)data["price"];

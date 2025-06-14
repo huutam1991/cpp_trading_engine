@@ -161,7 +161,7 @@ Task<Json> CoinbaseGateway::cancel_on_exchange(Order order)
 Task<Json> CoinbaseGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    CoinbaseQuoter* quoter = order.exchange_type == InstrumentType::SPOT ?
+    CoinbaseQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
         (CoinbaseQuoter*)&m_quoter_spot :
         (CoinbaseQuoter*)&m_quoter_perpetual;
 

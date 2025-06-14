@@ -46,12 +46,14 @@ double StrategyMarketMakerStateRun::local_round_up_quantity(double quantity)
 Order StrategyMarketMakerStateRun::get_limit_buy_spot_order(double price, double quantity)
 {
     // MeasureTime t("get_limit_buy_spot_order");
+    Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        m_config.symbol,
+        instrument->symbol,
+        instrument->exchange_symbol,
         Order::Side::BUY,
         Order::OrderType::LIMIT,
         price,
@@ -62,12 +64,14 @@ Order StrategyMarketMakerStateRun::get_limit_buy_spot_order(double price, double
 Order StrategyMarketMakerStateRun::get_limit_sell_spot_order(double price, double quantity)
 {
     // MeasureTime t("get_limit_sell_spot_order");
+    Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        m_config.symbol,
+        instrument->symbol,
+        instrument->exchange_symbol,
         Order::Side::SELL,
         Order::OrderType::LIMIT,
         price,
@@ -78,12 +82,14 @@ Order StrategyMarketMakerStateRun::get_limit_sell_spot_order(double price, doubl
 Order StrategyMarketMakerStateRun::get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
 {
     double round_up_quantity = local_round_up_quantity(quantity);
+    Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        symbol,
+        instrument->symbol,
+        instrument->exchange_symbol,
         Order::Side::BUY,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
@@ -94,12 +100,14 @@ Order StrategyMarketMakerStateRun::get_market_buy_spot_order_by_symbol_and_quant
 Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity)
 {
     double round_up_quantity = local_round_up_quantity(quantity);
+    Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
 
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        symbol,
+        instrument->symbol,
+        instrument->exchange_symbol,
         Order::Side::SELL,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
