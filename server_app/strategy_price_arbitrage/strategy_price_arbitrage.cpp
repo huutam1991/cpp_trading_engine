@@ -53,6 +53,10 @@ Json StrategyPriceArbitrage::get_info(Json& params)
 
 Json StrategyPriceArbitrage::get_orders_chain()
 {
+    std::string symbol_1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1)->exchange_symbol;
+    std::string symbol_2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2)->exchange_symbol;
+    std::string symbol_3 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_3)->exchange_symbol;
+
     Json orders = Json::create_array();
 
     Json filled_orders = MongoDB::instance()
@@ -78,9 +82,9 @@ Json StrategyPriceArbitrage::get_orders_chain()
     while (i < orders.size())
     {   
         // Find triangle orders
-        if ((std::string)orders[i]["symbol"] == m_config.object.symbol_1 && 
-            (std::string)orders[i + 1]["symbol"] == m_config.object.symbol_2 && 
-            (std::string)orders[i + 2]["symbol"] == m_config.object.symbol_3)
+        if ((std::string)orders[i]["symbol"] == symbol_1 && 
+            (std::string)orders[i + 1]["symbol"] == symbol_2 && 
+            (std::string)orders[i + 2]["symbol"] == symbol_3)
         {
             double input = (double)orders[i]["volumn_in_quote_currency"];
             double output = (double)orders[i+2]["output_quantity"];
@@ -90,9 +94,9 @@ Json StrategyPriceArbitrage::get_orders_chain()
             triangle["output"] = output;
             triangle["profit"] = output - input;
             triangle["orders"] = {
-                {m_config.object.symbol_1, orders[i]["order_id"]},
-                {m_config.object.symbol_2, orders[i + 1]["order_id"]},
-                {m_config.object.symbol_3, orders[i + 2]["order_id"]}
+                {symbol_1, orders[i]["order_id"]},
+                {symbol_2, orders[i + 1]["order_id"]},
+                {symbol_3, orders[i + 2]["order_id"]}
             };
 
             res.push_back(triangle);
