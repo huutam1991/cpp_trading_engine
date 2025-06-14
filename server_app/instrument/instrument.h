@@ -51,7 +51,7 @@ struct Instrument
         return "spot";
     }
 
-    inline static ExchangeId exchange_enum_from_string(std::string data)
+    inline static ExchangeId exchange_id_from_string(std::string data)
     {
         return data == "binance" ? ExchangeId::BINANCE : ExchangeId::COINBASE;
     }
