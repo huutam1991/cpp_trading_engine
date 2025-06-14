@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <mutex>
+#include <shared_mutex>
 
 struct Symbol
 {
@@ -26,18 +27,24 @@ struct Symbol
         return *this;
     }
 
-    static std::string* get_value(const std::string& data)
+    static const std::string* get_value(const std::string& data)
     {
         static std::unordered_map<std::string, std::string> value_list;
-        static std::mutex mutex_symbol;
+        static std::shared_mutex mutex_symbol;
 
-        if (value_list.find(data) == value_list.end())
         {
-            std::unique_lock lock(mutex_symbol);
-            value_list.insert(std::make_pair(data, data));
+            std::shared_lock lock(mutex_symbol);
+
+            auto it = value_list.find(data);
+            if (it != value_list.end()) 
+            {
+                return &it->second;
+            }
         }
 
-        return &value_list[data];
+        std::unique_lock lock(mutex_symbol);
+        auto [it, _] = value_list.emplace(data, data);
+        return &it->second;
     }
 
     operator std::string() const
