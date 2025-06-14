@@ -18,7 +18,7 @@ enum InstrumentType
 
 struct Instrument
 {
-    ExchangeEnum exchange_enum;
+    ExchangeEnum exchange_id;
     InstrumentType instrument_type;
     std::string symbol;
     std::string exchange_symbol;
