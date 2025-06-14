@@ -71,7 +71,7 @@ Json BinanceGateway::get_spot_symbols_info()
 
             auto instrument = m_instruments.find(symbol_name)->second;
             instrument = Instrument {
-                ExchangeEnum::BINANCE,
+                ExchangeId::BINANCE,
                 InstrumentType::SPOT,
                 symbol_name,
                 exchange_symbol,

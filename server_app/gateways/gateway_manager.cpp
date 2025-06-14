@@ -24,15 +24,15 @@ void GatewayManager::init()
         
         spdlog::debug("Load activated account: {}", activate_account);
 
-        ExchangeEnum gateway_enum = gateway_name_to_enum(exchange);
+        ExchangeId gateway_enum = gateway_name_to_enum(exchange);
 
-        if (gateway_enum == ExchangeEnum::BINANCE)
+        if (gateway_enum == ExchangeId::BINANCE)
         {
-            m_gateways.insert(std::make_pair(ExchangeEnum::BINANCE, std::make_shared<BinanceGateway>(key)));
+            m_gateways.insert(std::make_pair(ExchangeId::BINANCE, std::make_shared<BinanceGateway>(key)));
         }
-        else if (gateway_enum == ExchangeEnum::COINBASE)
+        else if (gateway_enum == ExchangeId::COINBASE)
         {
-            m_gateways.insert(std::make_pair(ExchangeEnum::COINBASE, std::make_shared<CoinbaseGateway>(key)));
+            m_gateways.insert(std::make_pair(ExchangeId::COINBASE, std::make_shared<CoinbaseGateway>(key)));
         }
         else
         {
@@ -47,24 +47,24 @@ void GatewayManager::init()
     });
 }
 
-ExchangeEnum GatewayManager::gateway_name_to_enum(const std::string& gateway)
+ExchangeId GatewayManager::gateway_name_to_enum(const std::string& gateway)
 {
     if (gateway == "binance")
     {
-        return ExchangeEnum::BINANCE;
+        return ExchangeId::BINANCE;
     }
     else if (gateway == "coinbase")
     {
-        return ExchangeEnum::COINBASE;
+        return ExchangeId::COINBASE;
     }
     // Default is BINANCE
     else
     {
-       return ExchangeEnum::BINANCE;
+       return ExchangeId::BINANCE;
     }
 }
 
-std::shared_ptr<Gateway> GatewayManager::get_gateway(ExchangeEnum gateway_enum)
+std::shared_ptr<Gateway> GatewayManager::get_gateway(ExchangeId gateway_enum)
 {
     if (m_gateways.find(gateway_enum) != m_gateways.end())
     {
@@ -76,6 +76,6 @@ std::shared_ptr<Gateway> GatewayManager::get_gateway(ExchangeEnum gateway_enum)
 
 std::shared_ptr<Gateway> GatewayManager::get_gateway(const std::string& gateway)
 {
-    ExchangeEnum gateway_enum = gateway_name_to_enum(gateway);
+    ExchangeId gateway_enum = gateway_name_to_enum(gateway);
     return get_gateway(gateway_enum);
 }

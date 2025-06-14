@@ -4,7 +4,7 @@
 
 #include <json/json.h>
 
-enum ExchangeEnum
+enum ExchangeId
 {
     BINANCE,
     COINBASE
@@ -18,20 +18,20 @@ enum InstrumentType
 
 struct Instrument
 {
-    ExchangeEnum exchange_id;
+    ExchangeId exchange_id;
     InstrumentType instrument_type;
     std::string symbol;
     std::string exchange_symbol;
     size_t lot_size;
     double tick_size;
 
-    inline static std::string to_string(ExchangeEnum data)
+    inline static std::string to_string(ExchangeId data)
     {
         switch (data)
         {
-            case ExchangeEnum::BINANCE:
+            case ExchangeId::BINANCE:
                 return "binance";
-            case ExchangeEnum::COINBASE:
+            case ExchangeId::COINBASE:
                 return "coinbase";
         }
 
@@ -51,9 +51,9 @@ struct Instrument
         return "spot";
     }
 
-    inline static ExchangeEnum exchange_enum_from_string(std::string data)
+    inline static ExchangeId exchange_enum_from_string(std::string data)
     {
-        return data == "binance" ? ExchangeEnum::BINANCE : ExchangeEnum::COINBASE;
+        return data == "binance" ? ExchangeId::BINANCE : ExchangeId::COINBASE;
     }
 
     inline static InstrumentType instrument_type_from_string(std::string data)

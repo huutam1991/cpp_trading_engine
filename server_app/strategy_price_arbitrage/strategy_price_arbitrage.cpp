@@ -11,7 +11,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
     // For now, only use Binance
-    m_gateway = GatewayManager::instance().get_gateway(ExchangeEnum::BINANCE);
+    m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
 
     strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
     strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(m_gateway, get_config_reference());

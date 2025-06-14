@@ -295,7 +295,7 @@ void add_app_route()
         );
 
         GatewayManager::instance()
-            .get_gateway(ExchangeEnum::BINANCE)
+            .get_gateway(ExchangeId::BINANCE)
             ->place_none_wait(order);
 
         co_return HttpResponse(OK_200, Json());
