@@ -2,10 +2,11 @@
 
 #include <string>
 #include <unordered_map>
+#include <mutex>
 
 struct Symbol
 {
-    std::string* value;
+    const std::string* value;
 
     Symbol(const std::string& data) : value{get_value(data)}
     {}
@@ -28,21 +29,23 @@ struct Symbol
     static std::string* get_value(const std::string& data)
     {
         static std::unordered_map<std::string, std::string> value_list;
+        static std::mutex mutex_symbol;
 
         if (value_list.find(data) == value_list.end())
         {
+            std::unique_lock lock(mutex_symbol);
             value_list.insert(std::make_pair(data, data));
         }
 
         return &value_list[data];
     }
 
-    operator std::string()
+    operator std::string() const
     {
         return *value;
     }
 
-    std::string& to_string()
+    const std::string& to_string() const
     {
         return *value;
     }
@@ -53,12 +56,7 @@ struct Symbol
         return *this;
     }
 
-    bool operator==(const std::string& data)
-    {
-        return *value == data;
-    }
-
-    bool operator==(const Symbol& symbol)
+    bool operator==(const Symbol& symbol) const
     {
         if (value == symbol.value) 
         {

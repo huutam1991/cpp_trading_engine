@@ -19,7 +19,7 @@ Json Order::to_json()
         {"order_id", order_id},
         {"exchange_type", Order::to_string(exchange_type)},
         {"status", Order::to_string(status)},
-        {"symbol", symbol},
+        {"symbol", symbol.to_string()},
         {"side", Order::to_string(side)},
         {"type", Order::to_string(type)},
         {"price", price},
@@ -27,9 +27,9 @@ Json Order::to_json()
         {"filled_quantity", filled_quantity},
         {"output_quantity", output_quantity},
         {"volumn_in_quote_currency", volumn_in_quote_currency},
-        {"output_asset", commission_asset},
+        {"output_asset", commission_asset.to_string()},
         {"commission_amount", commission_amount},
-        {"commission_asset", commission_asset},
+        {"commission_asset", commission_asset.to_string()},
     };
 }
 
