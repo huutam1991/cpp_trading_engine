@@ -17,7 +17,7 @@ void StrategyPriceArbitrageStateRun::end()
     ADD_LOG("StrategyPriceArbitrageStateRun - end");
 
     // Send cancel all of placed order
-    m_gateway->cancel_all(m_config.symbol_1);
+    m_gateway->cancel_all(m_instrument_1->exchange_symbol);
     m_current_open_orders.clear();
 }
 
@@ -144,7 +144,7 @@ void StrategyPriceArbitrageStateRun::update_orders_at_price(double price)
 
 TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
 {
-    if (price_update.symbol == m_config.symbol_2)
+    if (price_update.symbol == m_instrument_2->exchange_symbol)
     {
         m_symbol_2_price = price_update.price;
         co_return;
