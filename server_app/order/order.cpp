@@ -2,7 +2,7 @@
 
 Order::Order() {}
 
-Order::Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const std::string& symbol_i, const std::string& exchange_symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
+Order::Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Symbol& symbol_i, const Symbol& exchange_symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
     order_id{order_id_i},
     instrument_type{exchange_type_i},
     status{status_i},

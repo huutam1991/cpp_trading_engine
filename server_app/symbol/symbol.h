@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
 #include <unordered_map>
 #include <mutex>
@@ -71,5 +73,15 @@ struct Symbol
         }
 
         return *value == *symbol.value;
+    }
+};
+
+template <>
+struct fmt::formatter<Symbol> : fmt::formatter<std::string> 
+{
+    template <typename FormatContext>
+    auto format(const Symbol& data, FormatContext& ctx) 
+    {
+        return fmt::formatter<std::string>::format(data.to_string(), ctx);
     }
 };

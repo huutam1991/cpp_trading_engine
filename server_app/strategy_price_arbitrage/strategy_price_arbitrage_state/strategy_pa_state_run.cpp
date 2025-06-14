@@ -9,12 +9,13 @@ StrategyPriceArbitrageStateRun::StrategyPriceArbitrageStateRun(std::shared_ptr<G
 void StrategyPriceArbitrageStateRun::begin()
 {
     on_config_change();
-    ADD_LOG("StrategyPriceArbitrageStateRun - begin");
+    spdlog::debug("StrategyPriceArbitrageStateRun - begin");
 }
 
 void StrategyPriceArbitrageStateRun::end()
 {
-    ADD_LOG("StrategyPriceArbitrageStateRun - end");
+    spdlog::debug("StrategyPriceArbitrageStateRun - end");
+    spdlog::debug("cancel all symbol: {}", m_instrument_1->exchange_symbol);
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_instrument_1->exchange_symbol);
