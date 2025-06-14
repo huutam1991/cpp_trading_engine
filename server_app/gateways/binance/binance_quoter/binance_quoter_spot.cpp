@@ -279,7 +279,7 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
     // DELETE /api/v3/order?symbol=BTCUSDT&origClientOrderId=my_custom_id_123&timestamp=1743540000000&signature=abcdef
     std::string query_str;
 
-    query_str += "symbol=" + order.symbol;
+    query_str += "symbol=" + order.symbol.to_string();
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);
 
     co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str));
@@ -290,7 +290,7 @@ Task<Json> BinanceQuoterSpot::place(Order order)
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
 
-    query_str += "symbol=" + order.symbol;
+    query_str += "symbol=" + order.symbol.to_string();
     query_str += "&side=" + Order::to_string(order.side);
     query_str += "&type=" + Order::to_string(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);

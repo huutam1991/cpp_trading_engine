@@ -42,6 +42,11 @@ struct Symbol
         return *value;
     }
 
+    std::string& to_string()
+    {
+        return *value;
+    }
+
     Symbol& operator=(const std::string& data)
     {
         value = get_value(data);
