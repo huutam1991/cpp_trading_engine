@@ -3,6 +3,7 @@
 #include <string>
 
 #include <json/json.h>
+#include <symbol/symbol.h>
 
 enum ExchangeId
 {
@@ -20,8 +21,8 @@ struct Instrument
 {
     ExchangeId exchange_id;
     InstrumentType instrument_type;
-    std::string symbol;
-    std::string exchange_symbol;
+    Symbol symbol;
+    Symbol exchange_symbol;
     size_t lot_size;
     double tick_size;
 
