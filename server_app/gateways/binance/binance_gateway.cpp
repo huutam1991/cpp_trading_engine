@@ -83,8 +83,8 @@ Json BinanceGateway::get_spot_symbols_info()
             instrument = Instrument {
                 ExchangeId::BINANCE,
                 InstrumentType::SPOT,
-                symbol_name,
-                exchange_symbol,
+                Symbol(symbol_name),
+                Symbol(exchange_symbol),
                 get_rounded_number(data["filters"][1]["stepSize"]),
                 std::stod((std::string&&)data["filters"][0]["tickSize"])
             };

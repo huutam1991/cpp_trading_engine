@@ -11,7 +11,7 @@ struct Symbol
 {
     const std::string* value;
 
-    Symbol(const std::string& data) : value{get_value(data)}
+    explicit Symbol(const std::string& data) : value{get_value(data)} 
     {}
     Symbol() : value{get_value("BTC")} // Just a default symbol
     {}
@@ -73,6 +73,11 @@ struct Symbol
         }
 
         return *value == *symbol.value;
+    }
+
+    bool operator==(const std::string& str) const
+    {
+        return *value == str;
     }
 };
 

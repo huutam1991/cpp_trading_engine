@@ -140,8 +140,8 @@ Order StrategyStateFirst::get_close_buy_spot_order_by_checkpoint(DataModel& chec
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NEW,
-        symbol,
-        symbol,
+        Symbol(symbol),
+        Symbol(symbol),
         Order::Side::SELL,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
@@ -159,8 +159,8 @@ Order StrategyStateFirst::get_close_sell_perpetual_order_by_checkpoint(DataModel
         OrderManager::instance().generate_order_id(),
         InstrumentType::PERPETUAL,
         Order::Status::NEW,
-        symbol,
-        symbol,
+        Symbol(symbol),
+        Symbol(symbol),
         Order::Side::BUY,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price

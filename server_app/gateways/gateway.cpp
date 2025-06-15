@@ -19,14 +19,14 @@ void Gateway::init()
     // Print instruments by symbol
     for (auto& [symbol, ins] : instruments_by_symbol)
     {
-        spdlog::debug("INSTRUMENT load - by symbol: {}, instrument: {}", symbol, ins.to_json());
+        // spdlog::debug("INSTRUMENT load - by symbol: {}, instrument: {}", symbol, ins.to_json());
     }
 
     // Print instruments by exchange symbol
     auto& instruments_by_exchange_symbol = Instrument::get_instrument_list_by_exchange(m_exchange_id, Instrument::StoreType::BY_EXCHANGE_SYMBOL);
     for (auto& [symbol, ins] : instruments_by_exchange_symbol)
     {
-        spdlog::debug("INSTRUMENT load - by exchange symbol: {}, instrument: {}", symbol, ins.to_json());
+        // spdlog::debug("INSTRUMENT load - by exchange symbol: {}, instrument: {}", symbol, ins.to_json());
     }
 }
 

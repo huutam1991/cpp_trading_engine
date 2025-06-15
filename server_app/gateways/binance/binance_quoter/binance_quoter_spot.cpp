@@ -73,7 +73,7 @@ void BinanceQuoterSpot::init_websocket()
 
             if (json["e"] == "executionReport")
             {
-                Symbol exchange_symbol = (std::string)json["s"];
+                Symbol exchange_symbol((std::string)json["s"]);
                 Symbol symbol = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, exchange_symbol.to_string())->symbol;
 
                 Order order
