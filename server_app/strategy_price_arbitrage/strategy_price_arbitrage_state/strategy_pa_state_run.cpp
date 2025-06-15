@@ -48,8 +48,6 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
     double quantity = m_config.buy_volumn / price;
     double round_up_quantity = m_instrument_1->get_round_up_quantity(quantity);
 
-    spdlog::debug("create limit order, quantity: {}, round_up_quantity: {}", quantity, round_up_quantity);
-
     return Order(
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
