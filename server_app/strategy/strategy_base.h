@@ -27,7 +27,7 @@ public:
     TaskVoid init() override
     {
         m_states = init_states();
-        m_previous_state = m_current_state.object.state;
+        m_previous_state = StrategyState::UNKNOWN;
 
         // Start strategy
         start();

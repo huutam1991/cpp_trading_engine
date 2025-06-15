@@ -7,6 +7,7 @@ enum StrategyState
 {
     STOP,
     RUN,
+    UNKNOWN,
 };
 
 struct StrategyStateData
