@@ -59,7 +59,7 @@ Task<Json> BinanceGateway::get_exchange_info()
 Json BinanceGateway::get_spot_symbols_info()
 {
     Json exchange_info = get_exchange_info()
-        .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::ORDER))
+        .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY))
         .get();
 
     Json symbols_info;
