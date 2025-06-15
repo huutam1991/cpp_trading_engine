@@ -9,10 +9,10 @@ Gateway::Gateway() : m_event_base {
 void Gateway::init()
 {
     m_gateway_name = get_name();
-    m_instruments = &Instrument::get_instrument_list_by_exchange(get_exchange());
-    *m_instruments = SavableObject<Instrument>::load_objects_map<std::string>(INSTRUMENT_DB_NAME, m_gateway_name, "symbol");
+    // m_instruments = &Instrument::get_instrument_list_by_exchange(get_exchange());
+    m_instruments = SavableObject<Instrument>::load_objects_map<std::string>(INSTRUMENT_DB_NAME, m_gateway_name, "symbol");
 
-    for (auto& [symbol, ins] : *m_instruments)
+    for (auto& [symbol, ins] : m_instruments)
     {
         spdlog::debug("INSTRUMENT load - symbol: {}, instrument: {}", symbol, ins.to_json());
     }
@@ -60,8 +60,8 @@ void Gateway::cancel(Order order)
 
 Instrument* Gateway::get_instrument_by_symbol(const std::string& symbol)
 {
-    auto it = m_instruments->find(symbol);
-    if (it != m_instruments->end())
+    auto it = m_instruments.find(symbol);
+    if (it != m_instruments.end())
     {
         return &it->second.object;
     }
