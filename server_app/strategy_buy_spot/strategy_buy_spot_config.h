@@ -5,8 +5,8 @@
 
 struct StrategyBuySpotConfig
 {
-    std::string symbol; // BTCUSDT
-    double buy_volumn;
+    std::string symbol = "BTCUSDT";
+    double buy_volumn = 50;
     double buy_at_lower_price;
     double price_delta;
     double too_low_price_delta;

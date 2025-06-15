@@ -1,6 +1,7 @@
 #include <strategy/strategy_manager.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage.h>
 #include <strategy_market_maker/strategy_market_maker.h>
+#include <strategy_buy_spot/strategy_buy_spot.h>
 
 void StrategyManager::init()
 {
@@ -10,8 +11,9 @@ void StrategyManager::init()
 
 void StrategyManager::add_strategy_list()
 {
-    m_strategy_list.push_back(std::make_unique<StrategyPriceArbitrage>());
+    // m_strategy_list.push_back(std::make_unique<StrategyPriceArbitrage>());
     // m_strategy_list.push_back(std::make_unique<StrategyMarketMaker>());
+    m_strategy_list.push_back(std::make_unique<StrategyBuySpot>());
 
     for (auto& strategy : m_strategy_list)
     {
