@@ -22,7 +22,7 @@ TaskVoid StrategyPriceArbitrageStateStop::update(StrategyUpdateData data)
         price_update = std::get<PriceUpdate>(data);
     }
 
-    spdlog::info("StrategyPriceArbitrageStateStop - run: Do nothing, symbol: {}, price: {} ", price_update.symbol, price_update.price);
+    spdlog::info("StrategyPriceArbitrageStateStop: do nothing, symbol: {}, price: {} ", price_update.symbol, price_update.price);
 
     co_return;
 }

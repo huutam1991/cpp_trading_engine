@@ -22,7 +22,7 @@ TaskVoid StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         price_update = std::get<PriceUpdate>(data);
     }
 
-    spdlog::info("StrategyMarketMakerStateStop - run: Do nothing, symbol: {}, price: {} ", price_update.symbol, price_update.price);
+    spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, price: {} ", price_update.symbol, price_update.price);
 
     co_return;
 }

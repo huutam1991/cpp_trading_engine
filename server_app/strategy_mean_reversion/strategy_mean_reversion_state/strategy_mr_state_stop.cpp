@@ -23,7 +23,7 @@ TaskVoid StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
         price_update = std::get<MRPriceUpdate>(data);
     }
 
-    ADD_LOG("StrategyMeanReversionStateStop - run: Do nothing, symbol: " << price_update.symbol << ", price: " << price_update.price);
+    ADD_LOG("StrategyMeanReversionStateStop: do nothing, symbol: " << price_update.symbol << ", price: " << price_update.price);
 
     co_return;
 }
