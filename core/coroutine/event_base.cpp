@@ -22,7 +22,7 @@ void EventBase::remove_from_event_base(uint64_t id)
         m_task_list.erase(id);
     }
 
-    spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_task_list.size());
+    // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_task_list.size());
 }
 
 

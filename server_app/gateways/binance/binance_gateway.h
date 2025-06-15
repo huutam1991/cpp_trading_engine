@@ -21,6 +21,7 @@ class BinanceGateway : public Gateway
 protected:
     virtual ExchangeId get_exchange() override;
     virtual std::string get_name() override;
+    virtual void load_instruments(std::unordered_map<std::string, Instrument>& instruments) override;
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) override;
     virtual Task<Json> cancel_on_exchange(Order order) override;
@@ -29,7 +30,6 @@ protected:
 public:
     BinanceGateway(const std::string& key);
 
-    virtual void init() override;
     virtual void subscribe_symbol(std::vector<std::string> symbols) override;
     virtual Task<Json> get_balances() override;
     virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) override;

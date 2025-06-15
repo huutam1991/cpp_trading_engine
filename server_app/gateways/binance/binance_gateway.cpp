@@ -32,15 +32,20 @@ std::string BinanceGateway::get_name()
     return "binance";
 }
 
-void BinanceGateway::init()
+void BinanceGateway::load_instruments(std::unordered_map<std::string, Instrument>& instruments)
 {
-    Gateway::init();
+    m_instruments = SavableObject<Instrument>::load_objects_map<std::string>(INSTRUMENT_DB_NAME, m_gateway_name, "symbol");
 
     m_symbols_info["spot"] = get_spot_symbols_info();
     m_symbols_info["perpetual"] = get_perpetual_symbols_info();
 
     // spdlog::debug("spot: {}", m_symbols_info["spot"]);
     // spdlog::debug("perpetual: {}", m_symbols_info["perpetual"]);
+
+    for (auto& [symbol, savable_instrument] : m_instruments)
+    {
+        instruments.insert(std::make_pair(symbol, savable_instrument.object));
+    }
 }
 
 Task<Json> BinanceGateway::get_exchange_info()
