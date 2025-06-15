@@ -3,8 +3,8 @@
 #include <strategy_buy_spot/strategy_buy_spot.h>
 
 // StrategyState
-#include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_run.h>
-#include <strategy_price_arbitrage/strategy_price_arbitrage_state/strategy_pa_state_stop.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_stop.h>
+#include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_run.h>
 
 std::unordered_map<StrategyState, StrategyStateBase*> StrategyBuySpot::init_states()
 {
@@ -13,8 +13,8 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyBuySpot::init_stat
     // For now, only use Binance
     m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
 
-    // strategy_states[StrategyState::STOP] = new StrategyPriceArbitrageStateStop();
-    // strategy_states[StrategyState::RUN] = new StrategyPriceArbitrageStateRun(m_gateway, get_config_reference());
+    strategy_states[StrategyState::STOP] = new StrategyBuySpotStateStop();
+    strategy_states[StrategyState::RUN] = new StrategyBuySpotStateRun(m_gateway, get_config_reference());
 
     return strategy_states;
 }
@@ -22,14 +22,13 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyBuySpot::init_stat
 void StrategyBuySpot::start()
 {
     // Subscribe symbols
-    // auto ins1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1);
-    // auto ins2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2);
-    // m_gateway->subscribe_symbol({ins1->exchange_symbol, ins2->exchange_symbol});
+    auto instrument = m_gateway->get_instrument_by_symbol(m_config.object.symbol);
+    m_gateway->subscribe_symbol({instrument->exchange_symbol});
 }
 
 void StrategyBuySpot::on_config_change(StrategyBuySpotConfig new_config)
 {
-    spdlog::debug("Update config for StrategyPriceArbitrage");
+    spdlog::debug("Update config for StrategyBuySpot");
 
     if (new_config.is_running == true)
     {
@@ -108,9 +107,9 @@ Json StrategyBuySpot::get_info(Json& params)
 //     return res;
 // }
 
-// Json StrategyPriceArbitrage::get_open_orders()
+// Json StrategyBuySpot::get_open_orders()
 // {
-//     std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
+//     std::unordered_map<PAState, StrategyBuySpotState*>* strategy_states = get_strategy_states();
 //     PAState state = m_current_state.object.state;
 
 //     // Run get_open_orders() method of new state
