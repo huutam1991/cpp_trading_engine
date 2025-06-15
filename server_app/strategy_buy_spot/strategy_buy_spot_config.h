@@ -5,7 +5,7 @@
 
 struct StrategyBuySpotConfig
 {
-    std::string symbol = "BTCUSDT";
+    std::string symbol = "BTC-USDT";
     double buy_volumn = 50;
     double buy_at_lower_price;
     double price_delta;
@@ -30,13 +30,17 @@ struct StrategyBuySpotConfig
     {
         StrategyBuySpotConfig res;
 
-        res.symbol = (std::string)data["symbol"];
-        res.buy_volumn = (double)data["buy_volumn"];
-        res.buy_at_lower_price = (double)data["buy_at_lower_price"];
-        res.price_delta = (double)data["price_delta"];
-        res.too_low_price_delta = (double)data["too_low_price_delta"];
-        res.too_high_price_delta = (double)data["too_high_price_delta"];
-        res.is_running = (bool)data["is_running"];
+        // Only load from [data], if it is valid
+        if (data.has_field("symbol"))
+        {
+            res.symbol = (std::string)data["symbol"];
+            res.buy_volumn = (double)data["buy_volumn"];
+            res.buy_at_lower_price = (double)data["buy_at_lower_price"];
+            res.price_delta = (double)data["price_delta"];
+            res.too_low_price_delta = (double)data["too_low_price_delta"];
+            res.too_high_price_delta = (double)data["too_high_price_delta"];
+            res.is_running = (bool)data["is_running"];
+        }
 
         return res;
     }
