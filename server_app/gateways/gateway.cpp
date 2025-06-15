@@ -82,15 +82,5 @@ void Gateway::cancel(Order order)
 
 Instrument* Gateway::get_instrument_by_symbol(const std::string& symbol)
 {
-    auto it = m_instruments.find(symbol);
-    if (it != m_instruments.end())
-    {
-        return &it->second.object;
-    }
-    else
-    {
-        throw std::runtime_error("Cannot find instrument symbol: " + symbol);
-    }
-
-    return nullptr;
+    return Instrument::get_instrument_by_symbol(m_exchange_id, symbol);
 }

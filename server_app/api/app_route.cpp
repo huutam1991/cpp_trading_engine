@@ -19,7 +19,6 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_current_info.h>
 
 #include <gateways/gateway_manager.h>
-#include <strategy_buy_spot/strategy.h>
 
 std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/alpha-h-trading";
 
@@ -311,36 +310,7 @@ void add_app_route()
 
         co_return HttpResponse(OK_200, response);
     };
-
-    ADD_ROUTE(RequestMethod::POST, "/update_checkpoint")
-    {
-        std::string body = request->get_body();
-        Json data = Json::parse(body);
-        DataModel checkpoint;
-
-        if (data.has_field("price"))
-        {
-            // Get checkpoint by [price]
-            double price = data["price"];
-            checkpoint = Strategy::instance().get_checkpoint_by_price(price);
-
-            // Update change to [checkpoint]
-            if (data.has_field("change"))
-            {
-                Json& checkpoint_data = checkpoint.get_data();
-                data["change"].for_each_with_key([&checkpoint, &checkpoint_data](const std::string& field, Json& field_data)
-                {
-                    if (checkpoint_data.has_field(field))
-                    {
-                        checkpoint[field] = field_data;
-                    }
-                });
-            }
-        }
-
-        co_return HttpResponse(OK_200, checkpoint.get_data());
-    };
-
+    
     // Register new user
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
     {
