@@ -25,8 +25,6 @@ public:
 private:
     Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
-    bool is_placing_chain_orders = false;
-
 
     // Current open orders by order id
     std::unordered_map<OrderId, Order> m_current_open_orders;
@@ -35,8 +33,6 @@ private:
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
-    Order get_market_buy_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity);
-    Order get_market_sell_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity);
 
     void remove_open_order_by_price(double price);
     void check_place_order_at_price(double price);

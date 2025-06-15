@@ -26,14 +26,11 @@ void StrategyBuySpotStateRun::on_config_change()
 {
     m_current_price = 0.0;
     
-    // Re-subscribe symbols
+    // Get new instruments + re-subscribe symbols
     m_instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
     m_gateway->subscribe_symbol({m_instrument->exchange_symbol});
 
-    // Get new instruments
-    m_instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
-
-    spdlog::debug("StrategyBuySpotStateRun, instrument 1: {}", m_instrument->to_json());
+    spdlog::debug("StrategyBuySpotStateRun, instrument: {}", m_instrument->to_json());
 }
 
 Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
@@ -56,40 +53,6 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
     );
 }
 
-Order StrategyBuySpotStateRun::get_market_buy_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
-{
-    double round_up_quantity = instrument->get_round_up_quantity(quantity);
-
-    return Order(
-        OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
-        Order::Status::NOT_AVAILABLE,
-        instrument->symbol,
-        instrument->exchange_symbol,
-        Order::Side::BUY,
-        Order::OrderType::MARKET,
-        0.0, // since type is MARKET, no need to specify price
-        round_up_quantity
-    );
-}
-
-Order StrategyBuySpotStateRun::get_market_sell_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
-{
-    double round_up_quantity = instrument->get_round_up_quantity(quantity);
-
-    return Order(
-        OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
-        Order::Status::NOT_AVAILABLE,
-        instrument->symbol,
-        instrument->exchange_symbol,
-        Order::Side::SELL,
-        Order::OrderType::MARKET,
-        0.0, // since type is MARKET, no need to specify price
-        round_up_quantity
-    );
-}
-
 void StrategyBuySpotStateRun::remove_open_order_by_price(double price)
 {
     if (m_current_open_orders.find(price) != m_current_open_orders.end())
@@ -100,12 +63,6 @@ void StrategyBuySpotStateRun::remove_open_order_by_price(double price)
 
 void StrategyBuySpotStateRun::check_place_order_at_price(double price)
 {
-    // Only place 1 order at a time, and dont place new LIMIT order when chain orders is placing
-    if (is_placing_chain_orders == true || m_current_open_orders.size() > 0)
-    {
-        return;
-    }
-
     if (m_current_open_orders.find(price) == m_current_open_orders.end())
     {
         Order order = get_limit_buy_spot_order_by_price(price);
