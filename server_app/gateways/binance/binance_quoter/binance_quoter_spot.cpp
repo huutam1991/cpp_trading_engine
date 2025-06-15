@@ -71,11 +71,11 @@ void BinanceQuoterSpot::init_websocket()
             // MeasureTime a("Handle order data", MeasureUnit::MICROSECOND);
             Json json = Json::parse(buffer);
 
-            Symbol exchange_symbol = (std::string)json["s"];
-            Symbol symbol = Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, exchange_symbol.to_string())->symbol;
-
             if (json["e"] == "executionReport")
             {
+                Symbol exchange_symbol = (std::string)json["s"];
+                Symbol symbol = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, exchange_symbol.to_string())->symbol;
+
                 Order order
                 {
                     0,                                   // Order Id
