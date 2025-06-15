@@ -63,7 +63,7 @@ public:
         co_return;
     }
 
-    StrategyConfig& get_config_reference()
+    const StrategyConfig& get_config_reference()
     {
         return m_config;
     }

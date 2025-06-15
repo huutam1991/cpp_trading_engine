@@ -2,7 +2,7 @@
 #include <time/measure_time.h>
 #include <utils/utils.h>
 
-StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, StrategyMarketMakerConfig& config)
+StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
 }

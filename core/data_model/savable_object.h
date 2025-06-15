@@ -96,7 +96,7 @@ public:
         co_return;
     }
 
-    operator T&()
+    operator const T&()
     {
         return object;
     }

@@ -11,10 +11,10 @@
 class StrategyBuySpotStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
-    StrategyBuySpotConfig& m_config;
+    const StrategyBuySpotConfig& m_config;
 
 public:
-    StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, StrategyBuySpotConfig& config);
+    StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, const StrategyBuySpotConfig& config);
 
     virtual void begin() override;
     virtual void end() override;

@@ -1,7 +1,7 @@
 #include <strategy_buy_spot/strategy_buy_spot_state/strategy_bs_state_run.h>
 #include <time/measure_time.h>
 
-StrategyBuySpotStateRun::StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, StrategyBuySpotConfig& config)
+StrategyBuySpotStateRun::StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, const StrategyBuySpotConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
 }

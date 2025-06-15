@@ -11,10 +11,10 @@
 class StrategyMarketMakerStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
-    StrategyMarketMakerConfig& m_config;
+    const StrategyMarketMakerConfig& m_config;
 
 public:
-    StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, StrategyMarketMakerConfig& config);
+    StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config);
 
     virtual void begin() override;
     virtual void end() override;

@@ -11,10 +11,10 @@
 class StrategyPriceArbitrageStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
-    StrategyPriceArbitrageConfig& m_config;
+    const StrategyPriceArbitrageConfig& m_config;
 
 public:
-    StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway> gateway, StrategyPriceArbitrageConfig& config);
+    StrategyPriceArbitrageStateRun(std::shared_ptr<Gateway> gateway, const StrategyPriceArbitrageConfig& config);
 
     virtual void begin() override;
     virtual void end() override;
