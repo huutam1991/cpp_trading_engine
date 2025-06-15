@@ -6,12 +6,12 @@ StrategyPriceArbitrageStateStop::StrategyPriceArbitrageStateStop()
 
 void StrategyPriceArbitrageStateStop::begin()
 {
-    ADD_LOG("StrategyPriceArbitrageStateStop - begin");
+    spdlog::info("StrategyPriceArbitrageStateStop - begin");
 }
 
 void StrategyPriceArbitrageStateStop::end()
 {
-    ADD_LOG("StrategyPriceArbitrageStateStop - end");
+    spdlog::info("StrategyPriceArbitrageStateStop - end");
 }
 
 TaskVoid StrategyPriceArbitrageStateStop::update(StrategyUpdateData data)
