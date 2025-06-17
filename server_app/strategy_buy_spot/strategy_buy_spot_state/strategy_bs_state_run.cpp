@@ -54,6 +54,9 @@ void StrategyBuySpotStateRun::add_buy_point_at_price(double price)
             price,
             0.0,
             0.0,
+            0.0,
+            0.0,
+            0,
             BuyPoint::Status::AVAILABLE
         }
     ));
