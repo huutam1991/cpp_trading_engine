@@ -2,6 +2,7 @@
 
 #include <string>
 #include <json/json.h>
+#include <order/order.h>
 
 struct BuyPoint
 {
@@ -10,12 +11,14 @@ struct BuyPoint
         AVAILABLE,
         PLACING,
         PLACED,
+        CANCELING,
         HOLD,
     };
 
     double price = 0.0;
     double quantity = 0.0;
     double profit = 0.0;
+    OrderId current_order_id = 0;
     Status status = Status::AVAILABLE;
 
     static std::string to_string(Status data)
@@ -28,6 +31,8 @@ struct BuyPoint
             return "placing";
         case Status::PLACED:
             return "placed";
+        case Status::CANCELING:
+            return "canceling";
         case Status::HOLD:
             return "hold";
         }
@@ -49,6 +54,10 @@ struct BuyPoint
         {
             return Status::PLACED;
         }
+        else if (data == "canceling")
+        {
+            return Status::CANCELING;
+        }
         else if (data == "hold")
         {
             return Status::HOLD;
@@ -63,6 +72,7 @@ struct BuyPoint
             {"price", price},
             {"quantity", quantity},
             {"profit", profit},
+            {"current_order_id", current_order_id},
             {"status", to_string(status)},
         };
     }
@@ -77,6 +87,7 @@ struct BuyPoint
             res.price = (double)data["price"];
             res.quantity = (double)data["quantity"];
             res.profit = (double)data["profit"];
+            res.current_order_id = (OrderId)data["current_order_id"];
             res.status = from_string((std::string)data["status"]);
         }
 

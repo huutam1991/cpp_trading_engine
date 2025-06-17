@@ -27,6 +27,7 @@ public:
 private:
     Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
+    double m_lower_nearest_price = 0.0;
     std::string m_strategy_buy_spot_db_name = STRATEGY_BUY_SPOT_NAME + std::string("_strategy");
 
     // List of buy points
@@ -34,14 +35,19 @@ private:
 
     void on_config_change();
 
+    // Generate buy point
+    void add_buy_point_at_price(double price);
+    SavableObject<BuyPoint>& get_buy_point_by_price(double price);
+
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
+    Order get_cancel_order(OrderId order_id);
 
-    void update_buy_points(double price);
-    void remove_open_order_by_price(double price);
-    void check_place_order_at_price(double price);
-    void check_cancel_order_at_price(double price);
-    void update_orders_at_price(double price);
+    double get_a_price_point();
+    double get_lower_nearest_price();
+    void add_new_buy_points();
+    void update_buy_orders();
+
     TaskVoid handle_price_update(PriceUpdate price);
     TaskVoid handle_order_update(Order& order);
 };

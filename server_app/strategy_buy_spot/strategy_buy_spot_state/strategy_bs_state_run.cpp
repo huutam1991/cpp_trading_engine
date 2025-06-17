@@ -33,6 +33,26 @@ void StrategyBuySpotStateRun::on_config_change()
     spdlog::debug("StrategyBuySpotStateRun, instrument: {}", m_instrument->to_json());
 }
 
+void StrategyBuySpotStateRun::add_buy_point_at_price(double price)
+{
+    m_buy_points.emplace(price, SavableObject<BuyPoint>(
+        m_strategy_buy_spot_db_name, 
+        "buy_points", 
+        BuyPoint {
+            price,
+            0.0,
+            0.0,
+            BuyPoint::Status::AVAILABLE
+        }
+    ));
+}
+
+SavableObject<BuyPoint>& StrategyBuySpotStateRun::get_buy_point_by_price(double price)
+{
+    auto it = m_buy_points.find(price);
+    return it->second;
+}
+
 Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
 {
     // // MeasureTime t("get_limit_buy_spot_order_by_price");
@@ -53,65 +73,120 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
     );
 }
 
-void StrategyBuySpotStateRun::update_buy_points(double price)
+Order StrategyBuySpotStateRun::get_cancel_order(OrderId order_id)
 {
-    // Check to init [m_buy_points]
+    return Order(
+        order_id,
+        InstrumentType::SPOT,
+        Order::Status::NOT_AVAILABLE,
+        m_instrument->symbol,
+        m_instrument->exchange_symbol,
+        Order::Side::BUY,
+        Order::OrderType::LIMIT,
+        0.0,
+        0.0
+    );
+}
+
+double StrategyBuySpotStateRun::get_a_price_point()
+{
+    // If there's no buy point yet, add 1 at [m_current_price]
     if (m_buy_points.size() == 0)
     {
-        for (size_t i = 0; i < m_config.max_open_orders; i++)
+        add_buy_point_at_price(m_current_price);
+    }
+
+    // Return any price
+    double res;
+    for (auto& [price, _] : m_buy_points)
+    {
+        res = price;
+        break;
+    }
+
+    return res;
+}
+
+double StrategyBuySpotStateRun::get_lower_nearest_price()
+{
+    double price = get_a_price_point();
+
+    while (price > m_current_price)
+    {
+        price -= m_config.move_price;
+    }
+
+    while (price + m_config.move_price <= m_current_price)
+    {
+        price += m_config.move_price;
+    }
+
+    return price;
+}
+
+void StrategyBuySpotStateRun::add_new_buy_points()
+{
+    for (size_t i = 0; i < m_config.max_open_orders; i++)
+    {
+        double price = m_lower_nearest_price - m_config.move_price * i;
+        if (m_buy_points.find(price) == m_buy_points.end())
         {
-            double buy_price = price - m_config.move_price * i;
-
-            spdlog::debug("price: {}", price);
-
-            m_buy_points.emplace(buy_price, SavableObject<BuyPoint>(
-                m_strategy_buy_spot_db_name, 
-                "buy_points", 
-                BuyPoint {
-                    buy_price,
-                    0.0,
-                    0.0,
-                    BuyPoint::Status::AVAILABLE
-                }
-            ));
+            add_buy_point_at_price(price);
         }
     }
 }
 
-void StrategyBuySpotStateRun::remove_open_order_by_price(double price)
+void StrategyBuySpotStateRun::update_buy_orders()
 {
-    
-}
+    // Check to place buy orders, base on [m_config.max_open_orders]
+    for (size_t i = 0; i < m_config.max_open_orders; i++)
+    {
+        double price = m_lower_nearest_price - m_config.move_price * i;
+        auto& buy_point = get_buy_point_by_price(price);
+        BuyPoint buy_point_data = buy_point.object;
 
-void StrategyBuySpotStateRun::check_place_order_at_price(double price)
-{
-    
-}
+        if (buy_point_data.status == BuyPoint::Status::AVAILABLE)
+        {
+            Order order = get_limit_buy_spot_order_by_price(price);
+            m_gateway->place_none_wait(order);
 
-void StrategyBuySpotStateRun::check_cancel_order_at_price(double price)
-{
-    
-}
+            // Update [buy_point]
+            buy_point_data.status = BuyPoint::Status::PLACING;
+            buy_point = buy_point_data;
+        }
+    }
 
-void StrategyBuySpotStateRun::update_orders_at_price(double price)
-{
-    check_place_order_at_price(price);
+    // Check to cancel buy orders, base on [m_config.max_open_orders]
+    double min_price_to_place = m_lower_nearest_price - m_config.max_open_orders * m_config.move_price;
+    for (auto& [price, buy_point] : m_buy_points)
+    {
+        BuyPoint buy_point_data = buy_point.object;
+
+        if (price < min_price_to_place && buy_point_data.status == BuyPoint::Status::PLACED)
+        {
+            Order order = get_cancel_order(buy_point_data.current_order_id);
+            m_gateway->cancel(order);
+
+            // Update [buy_point]
+            buy_point_data.status = BuyPoint::Status::CANCELING;
+            buy_point = buy_point_data;
+        }
+    }
 }
 
 TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 {
     m_current_price = price_update.price;
-
     if (m_current_price >= m_config.max_price || m_current_price <= m_config.min_price)
     {
         spdlog::debug("StrategyBuySpotStateRun - dont handle price: {}, min_price: {}, max_price: {}", m_current_price, m_config.min_price, m_config.max_price);
         co_return;
     }
 
-    update_buy_points(m_current_price);
+    m_lower_nearest_price = get_lower_nearest_price();
 
-    update_orders_at_price(m_current_price);
-    check_cancel_order_at_price(m_current_price);
+    add_new_buy_points();
+    update_buy_orders();
 
     co_return;
 }
@@ -131,7 +206,6 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
     // CANCELED - remove from [m_current_open_orders]
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
-        remove_open_order_by_price(order.price);
     }
 
     co_return;
