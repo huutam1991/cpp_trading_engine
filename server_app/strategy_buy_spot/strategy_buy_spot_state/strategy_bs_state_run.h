@@ -27,6 +27,7 @@ public:
 private:
     Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
+    std::string m_strategy_buy_spot_db_name = STRATEGY_BUY_SPOT_NAME + std::string("_strategy");
 
     // List of buy points
     std::unordered_map<double, SavableObject<BuyPoint>> m_buy_points;
@@ -36,7 +37,7 @@ private:
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
 
-    void update_buy_prices();
+    void update_buy_points(double price);
     void remove_open_order_by_price(double price);
     void check_place_order_at_price(double price);
     void check_cancel_order_at_price(double price);

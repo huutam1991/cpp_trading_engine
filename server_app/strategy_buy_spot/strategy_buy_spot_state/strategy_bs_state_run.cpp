@@ -4,8 +4,7 @@
 StrategyBuySpotStateRun::StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, const StrategyBuySpotConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
-    std::string db_name = STRATEGY_BUY_SPOT_NAME + std::string("_strategy");
-    m_buy_points = SavableObject<BuyPoint>::load_objects_map<double>(db_name, "buy_points", "price");
+    m_buy_points = SavableObject<BuyPoint>::load_objects_map<double>(m_strategy_buy_spot_db_name, "buy_points", "price");
 }
 
 void StrategyBuySpotStateRun::begin()
@@ -54,9 +53,27 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
     );
 }
 
-void StrategyBuySpotStateRun::update_buy_prices()
+void StrategyBuySpotStateRun::update_buy_points(double price)
 {
-    
+    // Check to init [m_buy_points]
+    if (m_buy_points.size() == 0)
+    {
+        for (size_t i = 0; i < m_config.max_open_orders; i++)
+        {
+            price -= m_config.move_price * i;
+
+            m_buy_points.emplace(price, SavableObject<BuyPoint>(
+                m_strategy_buy_spot_db_name, 
+                "buy_points", 
+                BuyPoint {
+                    price,
+                    0.0,
+                    0.0,
+                    BuyPoint::Status::AVAILABLE
+                }
+            ));
+        }
+    }
 }
 
 void StrategyBuySpotStateRun::remove_open_order_by_price(double price)
@@ -83,7 +100,13 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 {
     m_current_price = price_update.price;
 
-    
+    if (m_current_price >= m_config.max_price || m_current_price <= m_config.min_price)
+    {
+        spdlog::debug("StrategyBuySpotStateRun - dont handle price: {}, min_price: {}, max_price: {}", m_current_price, m_config.min_price, m_config.max_price);
+        co_return;
+    }
+
+    update_buy_points(m_current_price);
 
     update_orders_at_price(m_current_price);
     check_cancel_order_at_price(m_current_price);

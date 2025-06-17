@@ -49,6 +49,16 @@ public:
         init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_even_base());
     }
 
+    SavableObject(const std::string& db, const std::string& collection, T data)
+        : m_data_model{std::make_shared<DataModel>()}, m_db{db}, m_collection{collection}, object{std::move(data)}
+    {
+        // Check valid EventBase for DBHelper
+        DBHelper::check_valid_event_base();
+
+        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_even_base());
+        update_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
+    }
+
     SavableObject& operator=(const T& value)
     {
         // Check valid EventBase for DBHelper

@@ -15,7 +15,7 @@ struct BuyPoint
 
     double price = 0.0;
     double quantity = 0.0;
-    size_t profit = 0.0;
+    double profit = 0.0;
     Status status = Status::AVAILABLE;
 
     static std::string to_string(Status data)
