@@ -222,6 +222,12 @@ void StrategyBuySpotStateRun::update_sell_orders()
         hold_buy_points_prices.resize(m_config.max_open_orders);    
     }
 
+    // If there's no HOLD buy points, return
+    if (hold_buy_points_prices.size() == 0)
+    {           
+        return;
+    }
+
     double min_hold_price = hold_buy_points_prices[0];
     double max_hold_price = hold_buy_points_prices[hold_buy_points_prices.size() - 1];
 
