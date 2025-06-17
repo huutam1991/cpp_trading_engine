@@ -20,6 +20,18 @@ void StrategyBuySpotStateRun::end()
     // Send cancel all of placed order
     spdlog::debug("StrategyBuySpotStateRun - cancel all symbol: {}", m_instrument->exchange_symbol);
     m_gateway->cancel_all(m_instrument->exchange_symbol);
+
+    // Update all not HOLD buy points to AVAILABLE
+    spdlog::debug("StrategyBuySpotStateRun - update all not HOLD buy points to AVAILABLE");
+    for (auto& [price, buy_point] : m_buy_points)
+    {
+        if (buy_point.object.status != BuyPoint::Status::HOLD)
+        {
+            BuyPoint buy_point_data = buy_point.object;
+            buy_point_data.status = BuyPoint::Status::AVAILABLE;
+            buy_point = buy_point_data;   
+        }  
+    }
 }
 
 void StrategyBuySpotStateRun::on_config_change()
