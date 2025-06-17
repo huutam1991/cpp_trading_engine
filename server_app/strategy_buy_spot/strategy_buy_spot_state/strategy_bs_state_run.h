@@ -41,12 +41,14 @@ private:
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
+    Order get_limit_sell_spot_order(double price, double quantity);
     Order get_cancel_order(OrderId order_id);
 
     double get_a_price_point();
     double get_lower_nearest_price();
     void add_new_buy_points();
     void update_buy_orders();
+    void update_sell_orders();
 
     TaskVoid handle_price_update(PriceUpdate price);
     TaskVoid handle_order_update(Order& order);

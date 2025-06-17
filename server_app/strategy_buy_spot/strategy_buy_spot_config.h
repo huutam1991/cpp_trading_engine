@@ -10,6 +10,7 @@ struct StrategyBuySpotConfig
     double move_price = 100;
     double max_price = 10000;
     double min_price = 1000;
+    double take_profit = 500;
     size_t max_open_orders = 3;
     bool is_running;
 
@@ -21,6 +22,7 @@ struct StrategyBuySpotConfig
             {"move_price", move_price},
             {"max_price", max_price},
             {"min_price", min_price},
+            {"take_profit", take_profit},
             {"max_open_orders", max_open_orders},
             {"is_running", is_running},
         };
@@ -38,6 +40,7 @@ struct StrategyBuySpotConfig
             res.move_price = (double)data["move_price"];
             res.max_price = (double)data["max_price"];
             res.min_price = (double)data["min_price"];
+            res.take_profit = (double)data["take_profit"];
             res.max_open_orders = (size_t)data["max_open_orders"];
             res.is_running = (bool)data["is_running"];
         }

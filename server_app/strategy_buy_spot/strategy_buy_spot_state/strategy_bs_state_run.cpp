@@ -85,6 +85,21 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
     );
 }
 
+Order StrategyBuySpotStateRun::get_limit_sell_spot_order(double price, double quantity)
+{
+    return Order(
+        OrderManager::instance().generate_order_id(),
+        InstrumentType::SPOT,
+        Order::Status::NOT_AVAILABLE,
+        m_instrument->symbol,
+        m_instrument->exchange_symbol,
+        Order::Side::SELL,
+        Order::OrderType::LIMIT,
+        price,
+        quantity
+    );
+}
+
 Order StrategyBuySpotStateRun::get_cancel_order(OrderId order_id)
 {
     return Order(
@@ -186,6 +201,54 @@ void StrategyBuySpotStateRun::update_buy_orders()
     }
 }
 
+void StrategyBuySpotStateRun::update_sell_orders()
+{
+    // Check to get all of HOLD buy points's price
+    std::vector<double> hold_buy_points_prices;
+    for (auto& [price, buy_point] : m_buy_points)
+    {
+        if (buy_point.object.status == BuyPoint::Status::HOLD)
+        {
+            hold_buy_points_prices.push_back(price);        
+        }
+    }
+
+    // Sort [hold_buy_points_prices] in ascending order
+    std::sort(hold_buy_points_prices.begin(), hold_buy_points_prices.end());    
+
+    // Resize [hold_buy_points_prices] to [m_config.max_open_orders]
+    if (hold_buy_points_prices.size() > m_config.max_open_orders)
+    {
+        hold_buy_points_prices.resize(m_config.max_open_orders);    
+    }
+
+    double min_hold_price = hold_buy_points_prices[0];
+    double max_hold_price = hold_buy_points_prices[hold_buy_points_prices.size() - 1];
+
+    // Check to place sell orders, base on [m_config.max_open_orders]
+    for (auto& [price, buy_point] : m_buy_points)
+    {
+        BuyPoint buy_point_data = buy_point.object;
+
+        // If buy point is HOLD and its price is in range of [min_hold_price, max_hold_price]
+        if (buy_point_data.status == BuyPoint::Status::HOLD && price >= min_hold_price && price <= max_hold_price)
+        {
+            // Calculate profit
+            double profit = price - buy_point_data.price;
+            if (profit >= m_config.take_profit)
+            {
+                Order order = get_limit_sell_spot_order(price, buy_point_data.quantity);
+                order.side = Order::Side::SELL;
+                m_gateway->place_none_wait(order);
+
+                // Update [buy_point]
+                buy_point_data.status = BuyPoint::Status::PLACING;
+                buy_point = buy_point_data;
+            }
+        }
+    }   
+}
+
 TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 {
     m_current_price = price_update.price;
@@ -200,6 +263,7 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 
     add_new_buy_points();
     update_buy_orders();
+    update_sell_orders();
 
     co_return;
 }
