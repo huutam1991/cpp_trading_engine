@@ -37,7 +37,7 @@ private:
 
     // Generate buy point
     void add_buy_point_at_price(double price);
-    SavableObject<BuyPoint>& get_buy_point_by_price(double price);
+    SavableObject<BuyPoint>* get_buy_point_by_price(double price);
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);

@@ -47,10 +47,10 @@ void StrategyBuySpotStateRun::add_buy_point_at_price(double price)
     ));
 }
 
-SavableObject<BuyPoint>& StrategyBuySpotStateRun::get_buy_point_by_price(double price)
+SavableObject<BuyPoint>* StrategyBuySpotStateRun::get_buy_point_by_price(double price)
 {
     auto it = m_buy_points.find(price);
-    return it->second;
+    return it == m_buy_points.end() ? nullptr : &it->second;
 }
 
 Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
@@ -142,8 +142,8 @@ void StrategyBuySpotStateRun::update_buy_orders()
     for (size_t i = 0; i < m_config.max_open_orders; i++)
     {
         double price = m_lower_nearest_price - m_config.move_price * i;
-        auto& buy_point = get_buy_point_by_price(price);
-        BuyPoint buy_point_data = buy_point.object;
+        auto* buy_point = get_buy_point_by_price(price);
+        BuyPoint buy_point_data = buy_point->object;
 
         if (buy_point_data.status == BuyPoint::Status::AVAILABLE)
         {
@@ -152,7 +152,7 @@ void StrategyBuySpotStateRun::update_buy_orders()
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::PLACING;
-            buy_point = buy_point_data;
+            *buy_point = buy_point_data;
         }
     }
 
@@ -194,26 +194,50 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 
 TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
+    // Dont handle invalid order
+    SavableObject<BuyPoint>* buy_point = get_buy_point_by_price(order.price);
+    if (buy_point == nullptr)
+    {
+        spdlog::warn("StrategyBuySpotStateRun - handle_order_update - buy point not found for price: {}", order.price);
+        co_return;
+    }
+
+    // Get [buy_point_data]
+    spdlog::debug("StrategyBuySpotStateRun - handle_order_update - order: {}, buy_point: {}", order.to_json(), buy_point->to_json());
+    BuyPoint buy_point_data = buy_point->object;
+
     // NEW - update buy point's status to PLACED
     if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)
     {
-        SavableObject<BuyPoint>& buy_point = get_buy_point_by_price(order.price);
-        BuyPoint buy_point_data = buy_point.object;
-
-        // Update [buy_point]
+        // Update [buy_point] - set status to PLACED
         buy_point_data.status = BuyPoint::Status::PLACED;
         buy_point_data.current_order_id = order.order_id;
-        buy_point = buy_point_data;
     }
-    // FILLED - check to continue place chain of orders
+    // FILLED 
     else if (order.status == Order::Status::FILLED)
     {
-        
+        if (order.side == Order::Side::BUY)
+        {
+            // Update [buy_point] - set status to HOLD
+            buy_point_data.status = BuyPoint::Status::HOLD;
+            buy_point_data.quantity = order.quantity;
+        }
+        // else if (order.side == Order::Side::SELL)
+        // {
+        //     // Update [buy_point] - set status to AVAILABLE
+        //     buy_point_data.status = BuyPoint::Status::AVAILABLE;
+        //     buy_point_data.current_order_id = 0;
+        // }
     }
-    // CANCELED - remove from [m_current_open_orders]
+    // CANCELED | REJECTED - update buy point's status to AVAILABLE
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
+        // Update [buy_point] - set status to AVAILABLE
+        buy_point_data.status = BuyPoint::Status::AVAILABLE;
+        buy_point_data.current_order_id = 0;
     }
+    
+    *buy_point = buy_point_data;
 
     co_return;
 }
