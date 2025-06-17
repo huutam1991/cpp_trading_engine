@@ -325,7 +325,7 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
             buy_point_data.quantity = 0.0;
             buy_point_data.current_order_id = 0;
             buy_point_data.output_in_usdt = order.output_quantity;
-            buy_point_data.profit = order.output_quantity - buy_point_data.input_in_usdt;
+            buy_point_data.profit += order.output_quantity - buy_point_data.input_in_usdt;
         }
     }
     // CANCELED | REJECTED - update buy point's status to AVAILABLE
