@@ -12,6 +12,8 @@ class StrategyBuySpot : public StrategyBase<StrategyBuySpotConfig, BuySpotName, 
 private:
     std::shared_ptr<Gateway> m_gateway;
 
+    Json get_profit();
+
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
     virtual void start() override;
