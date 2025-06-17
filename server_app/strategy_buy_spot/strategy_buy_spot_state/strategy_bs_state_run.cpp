@@ -189,7 +189,7 @@ void StrategyBuySpotStateRun::update_buy_orders()
     {
         BuyPoint buy_point_data = buy_point.object;
 
-        if (price < min_price_to_place && buy_point_data.status == BuyPoint::Status::PLACED)
+        if (price < min_price_to_place && buy_point_data.status == BuyPoint::Status::PLACED && buy_point_data.quantity == 0.0)
         {
             Order order = get_cancel_order(buy_point_data.current_order_id);
             m_gateway->cancel(order);
@@ -322,8 +322,8 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
     // CANCELED | REJECTED - update buy point's status to AVAILABLE
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
-        // Update [buy_point] - set status to AVAILABLE or  HOLD
-        buy_point_data.status = order.side == Order::Side::BUY ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
+        // Update [buy_point] - set status to AVAILABLE or HOLD
+        buy_point_data.status = buy_point_data.quantity == 0 ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
         buy_point_data.current_order_id = 0;
     }
     
