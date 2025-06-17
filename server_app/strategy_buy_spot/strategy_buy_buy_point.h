@@ -17,8 +17,8 @@ struct BuyPoint
 
     double price = 0.0;
     double quantity = 0.0;
-    double input = 0.0;
-    double output = 0.0;
+    double input_in_usdt = 0.0;
+    double output_in_usdt = 0.0;
     double profit = 0.0;
     OrderId current_order_id = 0;
     Status status = Status::AVAILABLE;
@@ -73,8 +73,8 @@ struct BuyPoint
         return {
             {"price", price},
             {"quantity", quantity},
-            {"input", input},
-            {"output", output},
+            {"input_in_usdt", input_in_usdt},
+            {"output_in_usdt", output_in_usdt},
             {"profit", profit},
             {"current_order_id", current_order_id},
             {"status", to_string(status)},
@@ -90,8 +90,8 @@ struct BuyPoint
         {
             res.price = (double)data["price"];
             res.quantity = (double)data["quantity"];
-            res.input = (double)data["input"];
-            res.output = (double)data["output"];
+            res.input_in_usdt = (double)data["input_in_usdt"];
+            res.output_in_usdt = (double)data["output_in_usdt"];
             res.profit = (double)data["profit"];
             res.current_order_id = (OrderId)data["current_order_id"];
             res.status = from_string((std::string)data["status"]);

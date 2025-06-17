@@ -242,18 +242,13 @@ void StrategyBuySpotStateRun::update_sell_orders()
         // If buy point is HOLD and its price is in range of [min_hold_price, max_hold_price]
         if (buy_point_data.status == BuyPoint::Status::HOLD && price >= min_hold_price && price <= max_hold_price)
         {
-            // Calculate profit
-            double profit = price - buy_point_data.price;
-            if (profit >= m_config.take_profit)
-            {
-                Order order = get_limit_sell_spot_order(price, buy_point_data.quantity);
-                order.side = Order::Side::SELL;
-                m_gateway->place_none_wait(order);
+            Order order = get_limit_sell_spot_order(buy_point_data.price + m_config.take_profit, buy_point_data.quantity);
+            order.side = Order::Side::SELL;
+            m_gateway->place_none_wait(order);
 
-                // Update [buy_point]
-                buy_point_data.status = BuyPoint::Status::PLACING;
-                buy_point = buy_point_data;
-            }
+            // Update [buy_point]
+            buy_point_data.status = BuyPoint::Status::PLACING;
+            buy_point = buy_point_data;
         }
     }   
 }
@@ -310,7 +305,7 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
             buy_point_data.status = BuyPoint::Status::HOLD;
             buy_point_data.quantity = order.quantity;
             buy_point_data.current_order_id = 0;
-            buy_point_data.input = order.volumn_in_quote_currency;
+            buy_point_data.input_in_usdt = order.volumn_in_quote_currency;
         }
         else if (order.side == Order::Side::SELL)
         {
@@ -318,8 +313,8 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
             buy_point_data.status = BuyPoint::Status::AVAILABLE;
             buy_point_data.quantity = 0.0;
             buy_point_data.current_order_id = 0;
-            buy_point_data.output = order.output_quantity;
-            buy_point_data.profit = order.output_quantity - buy_point_data.input;
+            buy_point_data.output_in_usdt = order.output_quantity;
+            buy_point_data.profit = order.output_quantity - buy_point_data.input_in_usdt;
         }
     }
     // CANCELED | REJECTED - update buy point's status to AVAILABLE
