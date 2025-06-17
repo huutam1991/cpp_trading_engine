@@ -251,6 +251,16 @@ void StrategyBuySpotStateRun::update_sell_orders()
             buy_point_data.status = BuyPoint::Status::PLACING;
             buy_point = buy_point_data;
         }
+        // If buy point is PLACED and its price is not in range of [min_hold_price, max_hold_price]
+        else if (buy_point_data.status == BuyPoint::Status::PLACED && buy_point_data.quantity > 0.0 && price < min_hold_price || price > max_hold_price)
+        {
+            Order order = get_cancel_order(buy_point_data.current_order_id);
+            m_gateway->cancel(order);
+
+            // Update [buy_point]
+            buy_point_data.status = BuyPoint::Status::CANCELING;
+            buy_point = buy_point_data;
+        }
     }   
 }
 
