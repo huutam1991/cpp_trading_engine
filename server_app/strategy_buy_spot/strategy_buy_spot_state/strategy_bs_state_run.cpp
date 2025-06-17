@@ -93,7 +93,7 @@ double StrategyBuySpotStateRun::get_a_price_point()
     // If there's no buy point yet, add 1 at [m_current_price]
     if (m_buy_points.size() == 0)
     {
-        add_buy_point_at_price(m_current_price);
+        add_buy_point_at_price(m_current_price - m_config.move_price);
     }
 
     // Return any price
