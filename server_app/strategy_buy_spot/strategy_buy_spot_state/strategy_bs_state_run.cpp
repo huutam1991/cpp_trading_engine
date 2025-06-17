@@ -206,6 +206,7 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 
 TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
+    MeasureTime a("StrategyBuySpotStateRun - handle_order_update", MeasureUnit::MICROSECOND);
     // Dont handle invalid order
     SavableObject<BuyPoint>* buy_point = get_buy_point_by_price(order.price);
     if (buy_point == nullptr)
@@ -215,7 +216,6 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
     }
 
     // Get [buy_point_data]
-    spdlog::debug("StrategyBuySpotStateRun - handle_order_update - order: {}, buy_point: {}", order.to_json(), buy_point->to_json());
     BuyPoint buy_point_data = buy_point->object;
 
     // NEW - update buy point's status to PLACED
