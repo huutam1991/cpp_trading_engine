@@ -29,6 +29,7 @@ void StrategyBuySpotStateRun::end()
         {
             BuyPoint buy_point_data = buy_point.object;
             buy_point_data.status = buy_point_data.quantity == 0 ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
+            buy_point_data.current_order_id = 0; 
             buy_point = buy_point_data;   
         }  
     }
