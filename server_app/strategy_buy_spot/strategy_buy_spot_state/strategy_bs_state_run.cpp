@@ -60,13 +60,15 @@ void StrategyBuySpotStateRun::update_buy_points(double price)
     {
         for (size_t i = 0; i < m_config.max_open_orders; i++)
         {
-            price -= m_config.move_price * i;
+            double buy_price = price - m_config.move_price * i;
 
-            m_buy_points.emplace(price, SavableObject<BuyPoint>(
+            spdlog::debug("price: {}", price);
+
+            m_buy_points.emplace(buy_price, SavableObject<BuyPoint>(
                 m_strategy_buy_spot_db_name, 
                 "buy_points", 
                 BuyPoint {
-                    price,
+                    buy_price,
                     0.0,
                     0.0,
                     BuyPoint::Status::AVAILABLE
