@@ -4,6 +4,8 @@
 StrategyBuySpotStateRun::StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, const StrategyBuySpotConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
+    std::string db_name = STRATEGY_BUY_SPOT_NAME + std::string("_strategy");
+    m_buy_points = SavableObject<BuyPoint>::load_objects_map<double>(db_name, "buy_points", "price");
 }
 
 void StrategyBuySpotStateRun::begin()
@@ -19,7 +21,6 @@ void StrategyBuySpotStateRun::end()
     // Send cancel all of placed order
     spdlog::debug("StrategyBuySpotStateRun - cancel all symbol: {}", m_instrument->exchange_symbol);
     m_gateway->cancel_all(m_instrument->exchange_symbol);
-    m_current_open_orders.clear();
 }
 
 void StrategyBuySpotStateRun::on_config_change()
@@ -55,49 +56,17 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
 
 void StrategyBuySpotStateRun::update_buy_prices()
 {
-    double first_price;
-    if (m_current_open_orders.size() == 0)
-    {
-        first_price = m_current_price;
-    }
-    else 
-    {
-        auto max_price_in_current_open_order = [this]()
-        {
-            double max_price = 0;
-            for (auto& [_, order] : m_current_open_orders)
-            {
-                if (order.side == Order::Side::BUY)
-                {
-                    max_price = std::max(order.price, max_price);
-                }
-            }
-
-            return max_price;
-        };
-
-        first_price = max_price_in_current_open_order();
-    }
+    
 }
 
 void StrategyBuySpotStateRun::remove_open_order_by_price(double price)
 {
-    if (m_current_open_orders.find(price) != m_current_open_orders.end())
-    {
-        m_current_open_orders.erase(price);
-    }
+    
 }
 
 void StrategyBuySpotStateRun::check_place_order_at_price(double price)
 {
-    if (m_current_open_orders.find(price) == m_current_open_orders.end())
-    {
-        Order order = get_limit_buy_spot_order_by_price(price);
-        m_gateway->place_none_wait(order);
-
-        // Insert to [m_current_open_orders]
-        m_current_open_orders.insert(std::make_pair(order.order_id, std::move(order)));
-    }
+    
 }
 
 void StrategyBuySpotStateRun::check_cancel_order_at_price(double price)

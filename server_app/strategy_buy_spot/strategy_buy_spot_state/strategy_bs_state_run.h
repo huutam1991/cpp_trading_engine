@@ -1,12 +1,14 @@
 #pragma once
 
 #include <unordered_map>
-#include <array>
+
+#include <data_model/savable_object.h>
 
 #include <order/order_manager.h>
 #include <gateways/gateway.h>
 #include <strategy/strategy_state_base.h>
 #include <strategy_buy_spot/strategy_buy_spot_config.h>
+#include <strategy_buy_spot/strategy_buy_buy_point.h>
 
 class StrategyBuySpotStateRun : public StrategyStateBase
 {
@@ -26,11 +28,8 @@ private:
     Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
 
-    // Current open orders by order id
-    std::unordered_map<OrderId, Order> m_current_open_orders;
-
-    // Current buy prices should be placed
-    std::vector<double> m_buy_prices;
+    // List of buy points
+    std::unordered_map<double, SavableObject<BuyPoint>> m_buy_points;
 
     void on_config_change();
 
