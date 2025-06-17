@@ -22,13 +22,13 @@ void StrategyBuySpotStateRun::end()
     m_gateway->cancel_all(m_instrument->exchange_symbol);
 
     // Update all not HOLD buy points to AVAILABLE
-    spdlog::debug("StrategyBuySpotStateRun - update all not HOLD buy points to AVAILABLE");
+    spdlog::debug("StrategyBuySpotStateRun - update all not HOLD buy points to AVAILABLE or HOLD");
     for (auto& [price, buy_point] : m_buy_points)
     {
         if (buy_point.object.status != BuyPoint::Status::HOLD)
         {
             BuyPoint buy_point_data = buy_point.object;
-            buy_point_data.status = BuyPoint::Status::AVAILABLE;
+            buy_point_data.status = buy_point_data.quantity == 0 ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
             buy_point = buy_point_data;   
         }  
     }
@@ -277,11 +277,14 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
     MeasureTime a("StrategyBuySpotStateRun - handle_order_update", MeasureUnit::MICROSECOND);
+
+    double buy_point_price = order.side == Order::Side::BUY ? order.price : order.price - m_config.take_profit;
+    SavableObject<BuyPoint>* buy_point = get_buy_point_by_price(buy_point_price);
+
     // Dont handle invalid order
-    SavableObject<BuyPoint>* buy_point = get_buy_point_by_price(order.price);
     if (buy_point == nullptr)
     {
-        spdlog::warn("StrategyBuySpotStateRun - handle_order_update - buy point not found for price: {}", order.price);
+        spdlog::warn("StrategyBuySpotStateRun - handle_order_update - buy point not found for price: {}", buy_point_price);
         co_return;
     }
 
@@ -303,19 +306,24 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
             // Update [buy_point] - set status to HOLD
             buy_point_data.status = BuyPoint::Status::HOLD;
             buy_point_data.quantity = order.quantity;
+            buy_point_data.current_order_id = 0;
+            buy_point_data.input = order.volumn_in_quote_currency;
         }
-        // else if (order.side == Order::Side::SELL)
-        // {
-        //     // Update [buy_point] - set status to AVAILABLE
-        //     buy_point_data.status = BuyPoint::Status::AVAILABLE;
-        //     buy_point_data.current_order_id = 0;
-        // }
+        else if (order.side == Order::Side::SELL)
+        {
+            // Update [buy_point] - set status to AVAILABLE
+            buy_point_data.status = BuyPoint::Status::AVAILABLE;
+            buy_point_data.quantity = 0.0;
+            buy_point_data.current_order_id = 0;
+            buy_point_data.output = order.output_quantity;
+            buy_point_data.profit = order.output_quantity - buy_point_data.input;
+        }
     }
     // CANCELED | REJECTED - update buy point's status to AVAILABLE
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
-        // Update [buy_point] - set status to AVAILABLE
-        buy_point_data.status = BuyPoint::Status::AVAILABLE;
+        // Update [buy_point] - set status to AVAILABLE or  HOLD
+        buy_point_data.status = order.side == Order::Side::BUY ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
         buy_point_data.current_order_id = 0;
     }
     
