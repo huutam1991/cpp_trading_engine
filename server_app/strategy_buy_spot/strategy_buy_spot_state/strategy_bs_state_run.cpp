@@ -169,7 +169,7 @@ void StrategyBuySpotStateRun::update_buy_orders()
     }
 
     // Check to cancel buy orders, base on [m_config.max_open_orders]
-    double min_price_to_place = m_lower_nearest_price - m_config.max_open_orders * m_config.move_price;
+    double min_price_to_place = m_lower_nearest_price - (m_config.max_open_orders - 1) * m_config.move_price;
     for (auto& [price, buy_point] : m_buy_points)
     {
         BuyPoint buy_point_data = buy_point.object;
