@@ -6,7 +6,7 @@
 struct StrategyBuySpotConfig
 {
     std::string symbol = "BTC-USDT";
-    double buy_volumn = 50;
+    double buy_volumn = 20;
     double move_price = 100;
     double max_price = 10000;
     double min_price = 1000;

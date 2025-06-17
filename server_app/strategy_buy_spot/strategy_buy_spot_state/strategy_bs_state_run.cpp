@@ -111,12 +111,12 @@ double StrategyBuySpotStateRun::get_lower_nearest_price()
 {
     double price = get_a_price_point();
 
-    while (price > m_current_price)
+    while (price >= m_current_price)
     {
         price -= m_config.move_price;
     }
 
-    while (price + m_config.move_price <= m_current_price)
+    while (price + m_config.move_price < m_current_price)
     {
         price += m_config.move_price;
     }
