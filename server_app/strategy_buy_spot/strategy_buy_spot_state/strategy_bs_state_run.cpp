@@ -177,9 +177,10 @@ void StrategyBuySpotStateRun::update_buy_orders()
 TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 {
     m_current_price = price_update.price;
+    spdlog::debug("StrategyBuySpotStateRun - m_current_price: {}", m_current_price);
     if (m_current_price >= m_config.max_price || m_current_price <= m_config.min_price)
     {
-        spdlog::debug("StrategyBuySpotStateRun - dont handle price: {}, min_price: {}, max_price: {}", m_current_price, m_config.min_price, m_config.max_price);
+        spdlog::debug("StrategyBuySpotStateRun - dont handle, min_price: {}, max_price: {}", m_config.min_price, m_config.max_price);
         co_return;
     }
 
@@ -193,10 +194,16 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 
 TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
-    // NEW - do nothing
+    // NEW - update buy point's status to PLACED
     if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)
     {
-        
+        SavableObject<BuyPoint>& buy_point = get_buy_point_by_price(order.price);
+        BuyPoint buy_point_data = buy_point.object;
+
+        // Update [buy_point]
+        buy_point_data.status = BuyPoint::Status::PLACED;
+        buy_point_data.current_order_id = order.order_id;
+        buy_point = buy_point_data;
     }
     // FILLED - check to continue place chain of orders
     else if (order.status == Order::Status::FILLED)
