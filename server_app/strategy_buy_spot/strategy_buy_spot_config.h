@@ -7,10 +7,7 @@ struct StrategyBuySpotConfig
 {
     std::string symbol = "BTC-USDT";
     double buy_volumn = 50;
-    double buy_at_lower_price;
-    double price_delta;
-    double too_low_price_delta;
-    double too_high_price_delta;
+    size_t max_open_orders = 3;
     bool is_running;
 
     Json to_json()
@@ -18,10 +15,7 @@ struct StrategyBuySpotConfig
         return {
             {"symbol", symbol},
             {"buy_volumn", buy_volumn},
-            {"buy_at_lower_price", buy_at_lower_price},
-            {"price_delta", price_delta},
-            {"too_low_price_delta", too_low_price_delta},
-            {"too_high_price_delta", too_high_price_delta},
+            {"max_open_orders", max_open_orders},
             {"is_running", is_running},
         };
     }
@@ -35,10 +29,7 @@ struct StrategyBuySpotConfig
         {
             res.symbol = (std::string)data["symbol"];
             res.buy_volumn = (double)data["buy_volumn"];
-            res.buy_at_lower_price = (double)data["buy_at_lower_price"];
-            res.price_delta = (double)data["price_delta"];
-            res.too_low_price_delta = (double)data["too_low_price_delta"];
-            res.too_high_price_delta = (double)data["too_high_price_delta"];
+            res.max_open_orders = (size_t)data["max_open_orders"];
             res.is_running = (bool)data["is_running"];
         }
 

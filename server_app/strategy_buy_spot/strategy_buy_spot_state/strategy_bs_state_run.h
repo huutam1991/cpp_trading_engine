@@ -29,11 +29,15 @@ private:
     // Current open orders by order id
     std::unordered_map<OrderId, Order> m_current_open_orders;
 
+    // Current buy prices should be placed
+    std::vector<double> m_buy_prices;
+
     void on_config_change();
 
     // Generate order
     Order get_limit_buy_spot_order_by_price(double price);
 
+    void update_buy_prices();
     void remove_open_order_by_price(double price);
     void check_place_order_at_price(double price);
     void check_cancel_order_at_price(double price);
