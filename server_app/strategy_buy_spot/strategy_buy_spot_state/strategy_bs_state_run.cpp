@@ -39,10 +39,8 @@ void StrategyBuySpotStateRun::on_config_change()
 {
     m_current_price = 0.0;
     
-    // Get new instruments + re-subscribe symbols
+    // Get new instruments
     m_instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
-    m_gateway->subscribe_symbol({m_instrument->exchange_symbol});
-
     spdlog::debug("StrategyBuySpotStateRun, instrument: {}", m_instrument->to_json());
 }
 

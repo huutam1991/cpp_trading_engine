@@ -39,6 +39,10 @@ void StrategyBuySpot::on_config_change(StrategyBuySpotConfig new_config)
     {
         m_current_state = StrategyStateData{StrategyState::STOP};
     }
+
+    // Re-subscribe symbols
+    auto instrument = m_gateway->get_instrument_by_symbol(m_config.object.symbol);
+    m_gateway->subscribe_symbol({instrument->exchange_symbol});
 }
 
 Json StrategyBuySpot::get_info(Json& params)
