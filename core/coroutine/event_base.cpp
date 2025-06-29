@@ -4,7 +4,7 @@
 
 uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-    std::unique_lock lock(m_mutex);
+    SpinLockGuard spin_lock_guard(m_spin_lock);
 
     uint64_t id = get_event_id();
     m_task_list.emplace(id, TaskInfo {handle, base_promise_type_address});

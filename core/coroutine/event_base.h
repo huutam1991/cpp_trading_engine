@@ -5,7 +5,6 @@
 #include <coroutine>
 #include <thread>
 #include <iostream>
-#include <mutex>
 #include <utils/util_macros.h>
 #include <utils/spin_lock.h>
 
@@ -26,8 +25,6 @@ public:
     std::unordered_map<uint64_t, TaskInfo> m_task_list;
     std::queue<uint64_t> m_ready_tasks;
 
-    // Mutex for locking
-    std::mutex m_mutex;
     // Spin lock for fast locking
     SpinLock m_spin_lock;
 
