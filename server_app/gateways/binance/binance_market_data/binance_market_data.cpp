@@ -26,6 +26,7 @@ void BinanceMarketData::start()
     for (auto& [_, websocket] : m_websockets)
     {
         websocket->close();
+        spdlog::debug("BinanceMarketData: reference count: {}", websocket.use_count());
     }
     m_websockets.clear();
     
@@ -39,8 +40,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
 {
     if (m_websockets.find(symbol) != m_websockets.end())
     {
-        m_websockets[symbol]->close();
-        m_websockets.erase(symbol);
+        return; // Already started
     }
 
     auto websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
@@ -99,7 +99,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         [this, symbol]() -> TaskVoid
         {
             // Re-start
-            spdlog::info("Disconnect, re-start BinanceMarketData");
+            spdlog::debug("Disconnect, re-start BinanceMarketData");
             this->start_websocket(symbol);
 
             co_return;
@@ -107,7 +107,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         // on_close
         []() -> TaskVoid
         {
-            spdlog::info("BinanceMarketData close");
+            spdlog::debug("BinanceMarketData close");
             co_return;
         }
     );
