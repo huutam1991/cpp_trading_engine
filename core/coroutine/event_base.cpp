@@ -17,6 +17,7 @@ uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base
 void EventBase::remove_from_event_base(uint64_t id)
 {
     SpinLockGuard spin_lock_guard(m_spin_lock);
+    
     if (m_task_list.find(id) != m_task_list.end())
     {
         m_task_list.erase(id);
