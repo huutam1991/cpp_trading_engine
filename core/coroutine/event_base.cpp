@@ -4,21 +4,21 @@
 
 uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-    std::unique_lock lock(m_mutex);
+    SpinLockGuard spin_lock_guard(m_spin_lock);
 
     uint64_t id = get_event_id();
     m_task_list.insert(std::make_pair(id, TaskInfo {handle, base_promise_type_address}));
 
-    // ADD_LOG("EventBase: " << m_event_base_id << ", Total task list remaining - add: " << m_task_list.size());
+    // spdlog::info("EventBase: {}, Total task list remaining - add: {} ", m_event_base_id, m_task_list.size());
 
     return id;
 }
 
 void EventBase::remove_from_event_base(uint64_t id)
 {
+    SpinLockGuard spin_lock_guard(m_spin_lock);
     if (m_task_list.find(id) != m_task_list.end())
     {
-        std::unique_lock lock(m_mutex);
         m_task_list.erase(id);
     }
 
@@ -28,15 +28,16 @@ void EventBase::remove_from_event_base(uint64_t id)
 
 void EventBase::set_ready_task(uint64_t task_id)
 {
-    std::unique_lock lock(m_mutex);
+    SpinLockGuard spin_lock_guard(m_spin_lock);
     m_ready_tasks.push(task_id);
 }
 
 EventBase::TaskInfo EventBase::get_ready_task()
 {
+    SpinLockGuard spin_lock_guard(m_spin_lock);
+
     if (m_ready_tasks.empty()) return TaskInfo{};
 
-    std::unique_lock lock(m_mutex);
     uint64_t task_id = m_ready_tasks.front();
     m_ready_tasks.pop();
 

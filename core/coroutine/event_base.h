@@ -5,8 +5,8 @@
 #include <coroutine>
 #include <thread>
 #include <iostream>
-#include <mutex>
 #include <utils/util_macros.h>
+#include <utils/spin_lock.h>
 
 class EventBase
 {
@@ -26,7 +26,7 @@ public:
     std::queue<uint64_t> m_ready_tasks;
 
     // Mutex for locking
-    std::mutex m_mutex;
+    SpinLock m_spin_lock;
 
     uint64_t get_event_id()
     {

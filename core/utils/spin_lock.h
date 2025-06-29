@@ -11,6 +11,7 @@ public:
     {
         while (flag.test_and_set(std::memory_order_acquire));
     }
+    
     void unlock() 
     {
         flag.clear(std::memory_order_release);
@@ -20,7 +21,7 @@ public:
 class SpinLockGuard 
 {
     SpinLock& lock_;
-    
+
 public:
     explicit SpinLockGuard(SpinLock& l) : lock_(l) { lock_.lock(); }
     ~SpinLockGuard() { lock_.unlock(); }
