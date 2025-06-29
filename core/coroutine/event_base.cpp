@@ -1,13 +1,15 @@
 #include <coroutine/event_base.h>
 #include <coroutine/base_promise_type.h>
 #include <spdlog/spdlog.h>
+#include <time/measure_time.h>
 
 uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-    SpinLockGuard spin_lock_guard(m_spin_lock);
+    MeasureTime measure_time("EventBase::add_to_event_base");
+    std::unique_lock lock(m_mutex);
 
     uint64_t id = get_event_id();
-    m_task_list.insert(std::make_pair(id, TaskInfo {handle, base_promise_type_address}));
+    m_task_list.emplace(id, TaskInfo {handle, base_promise_type_address});
 
     // spdlog::info("EventBase: {}, Total task list remaining - add: {} ", m_event_base_id, m_task_list.size());
 
@@ -16,8 +18,9 @@ uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base
 
 void EventBase::remove_from_event_base(uint64_t id)
 {
+    MeasureTime measure_time("EventBase::remove_from_event_base");
     SpinLockGuard spin_lock_guard(m_spin_lock);
-    
+
     if (m_task_list.find(id) != m_task_list.end())
     {
         m_task_list.erase(id);
