@@ -4,8 +4,7 @@
 #include <fmt/format.h>
 #include <string>
 #include <unordered_map>
-#include <mutex>
-#include <shared_mutex>
+#include <utils/spin_lock.h>
 
 struct Symbol
 {
@@ -32,21 +31,18 @@ struct Symbol
     static const std::string* get_value(const std::string& data)
     {
         static std::unordered_map<std::string, std::string> value_list;
-        static std::shared_mutex mutex_symbol;
+        static SpinLock spin_lock_symbol;
 
+        SpinLockGuard lock(spin_lock_symbol);
+
+        auto it = value_list.find(data);
+        if (it != value_list.end()) 
         {
-            std::shared_lock lock(mutex_symbol);
-
-            auto it = value_list.find(data);
-            if (it != value_list.end()) 
-            {
-                return &it->second;
-            }
+            return &it->second;
         }
 
-        std::unique_lock lock(mutex_symbol);
-        auto [it, _] = value_list.emplace(data, data);
-        return &it->second;
+        auto [insert, _] = value_list.emplace(data, data);
+        return &insert->second;
     }
 
     operator std::string() const
