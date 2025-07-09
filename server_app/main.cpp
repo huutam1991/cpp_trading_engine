@@ -18,6 +18,7 @@
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 
+#include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
 #include <strategy/strategy_manager.h>
@@ -83,6 +84,9 @@ int main(int argc, char **argv) {
 
     // Init DBHelper with 
     DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
+
+    // Init Instrument enum
+    Instrument::init_enum();
 
     GatewayManager::instance().init();
     OrderManager::instance().init();

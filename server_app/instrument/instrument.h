@@ -4,6 +4,7 @@
 
 #include <json/json.h>
 #include <symbol/symbol.h>
+#include <enum_data/enum_data.h>
 #include <data_model/savable_object.h>
 
 enum ExchangeId
@@ -11,6 +12,9 @@ enum ExchangeId
     BINANCE,
     COINBASE
 };
+
+// EnumData<ExchangeId>::add_enum_value(ExchangeId::BINANCE, "binance");
+// EnumData<ExchangeId>::add_enum_value(ExchangeId::COINBASE, "coinbase");
 
 enum InstrumentType
 {
@@ -27,40 +31,13 @@ struct Instrument
     size_t lot_size;
     double tick_size;
 
-    inline static std::string to_string(ExchangeId data)
+    static void init_enum()
     {
-        switch (data)
-        {
-            case ExchangeId::BINANCE:
-                return "binance";
-            case ExchangeId::COINBASE:
-                return "coinbase";
-        }
+        EnumData<ExchangeId>::add_enum_value(ExchangeId::BINANCE, "binance");
+        EnumData<ExchangeId>::add_enum_value(ExchangeId::COINBASE, "coinbase");
 
-        return "binance";
-    }
-
-    inline static std::string to_string(InstrumentType data)
-    {
-        switch (data)
-        {
-            case InstrumentType::SPOT:
-                return "spot";
-            case InstrumentType::PERPETUAL:
-                return "perpetual";
-        }
-
-        return "spot";
-    }
-
-    inline static ExchangeId exchange_id_from_string(std::string data)
-    {
-        return data == "binance" ? ExchangeId::BINANCE : ExchangeId::COINBASE;
-    }
-
-    inline static InstrumentType instrument_type_from_string(std::string data)
-    {
-        return data == "spot" ? InstrumentType::SPOT : InstrumentType::PERPETUAL;
+        EnumData<InstrumentType>::add_enum_value(InstrumentType::SPOT, "spot");
+        EnumData<InstrumentType>::add_enum_value(InstrumentType::PERPETUAL, "perpetual");
     }
 
     Json to_json();
