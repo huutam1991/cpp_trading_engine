@@ -75,7 +75,8 @@ constexpr E enum_value(std::string_view name)
             return static_cast<E>(i);
         }
     }
-    throw std::invalid_argument("Invalid enum name");
+    // If not found, return the first enum value as default
+    return static_cast<E>(0);
 }
 
 } // namespace enum_reflect

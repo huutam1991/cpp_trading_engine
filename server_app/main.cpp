@@ -85,9 +85,6 @@ int main(int argc, char **argv) {
     // Init DBHelper with 
     DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
 
-    // Init Instrument enum
-    Instrument::init_enum();
-
     GatewayManager::instance().init();
     OrderManager::instance().init();
 

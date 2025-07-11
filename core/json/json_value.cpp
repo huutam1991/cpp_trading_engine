@@ -27,6 +27,17 @@ const std::string JsonValue<std::string>::get_string_value() const
     return m_value;
 }
 
+// std::string_view
+template<>
+const std::string JsonValue<std::string_view>::get_string_value() const
+{
+    if (m_is_string_format == true)
+    {
+        return std::string("\"" + std::string(m_value) + "\"");
+    }
+    return std::string(m_value);
+}
+
 // bool
 template<>
 const std::string JsonValue<bool>::get_string_value() const

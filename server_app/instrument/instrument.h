@@ -13,9 +13,6 @@ enum ExchangeId
     COINBASE
 };
 
-// EnumData<ExchangeId>::add_enum_value(ExchangeId::BINANCE, "binance");
-// EnumData<ExchangeId>::add_enum_value(ExchangeId::COINBASE, "coinbase");
-
 enum InstrumentType
 {
     SPOT,
