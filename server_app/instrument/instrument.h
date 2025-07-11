@@ -4,7 +4,7 @@
 
 #include <json/json.h>
 #include <symbol/symbol.h>
-#include <enum_data/enum_data.h>
+#include <enum_reflect/enum_reflect.h>
 #include <data_model/savable_object.h>
 
 enum ExchangeId
@@ -30,15 +30,6 @@ struct Instrument
     Symbol exchange_symbol;
     size_t lot_size;
     double tick_size;
-
-    static void init_enum()
-    {
-        EnumData<ExchangeId>::add_enum_value(ExchangeId::BINANCE, "binance");
-        EnumData<ExchangeId>::add_enum_value(ExchangeId::COINBASE, "coinbase");
-
-        EnumData<InstrumentType>::add_enum_value(InstrumentType::SPOT, "spot");
-        EnumData<InstrumentType>::add_enum_value(InstrumentType::PERPETUAL, "perpetual");
-    }
 
     Json to_json();
     static Instrument from_json(Json& data);
