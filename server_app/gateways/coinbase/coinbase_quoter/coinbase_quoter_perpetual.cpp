@@ -175,8 +175,8 @@ Task<Json> CoinbaseQuoterPerpetual::place(Order order)
     std::string query_str;
 
     query_str += "symbol=" + order.exchange_symbol.to_string();
-    query_str += "&side=" + Order::to_string(order.side);
-    query_str += "&type=" + Order::to_string(order.type);
+    query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
+    query_str += "&type=" + (std::string)enum_reflect::enum_name(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);
 
     if (order.type == Order::OrderType::LIMIT)

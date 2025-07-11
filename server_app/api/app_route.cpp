@@ -288,8 +288,8 @@ void add_app_route()
             Order::Status::NOT_AVAILABLE,
             Symbol(symbol),
             Symbol(symbol),
-            Order::side_from_string(side),
-            Order::type_from_string(type),
+            enum_reflect::enum_value<Order::Side>(side),
+            enum_reflect::enum_value<Order::OrderType>(type),
             price,
             quantity
         );

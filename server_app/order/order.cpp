@@ -18,12 +18,12 @@ Json Order::to_json()
 {
     return {
         {"order_id", order_id},
-        {"instrument_type", Order::to_string(instrument_type)},
-        {"status", Order::to_string(status)},
+        {"instrument_type", enum_reflect::enum_name(instrument_type)},
+        {"status", enum_reflect::enum_name(status)},
         {"symbol", symbol.to_string()},
         {"exchange_symbol", exchange_symbol.to_string()},
-        {"side", Order::to_string(side)},
-        {"type", Order::to_string(type)},
+        {"side", enum_reflect::enum_name(side)},
+        {"type", enum_reflect::enum_name(type)},
         {"price", price},
         {"quantity", quantity},
         {"filled_quantity", filled_quantity},
@@ -41,12 +41,12 @@ Order Order::from_json(Json& data)
     Order res;
 
     res.order_id = (OrderId)data["order_id"];
-    res.instrument_type = Order::exchange_type_from_string(std::string(data["instrument_type"]));
-    res.status = Order::status_from_string(std::string(data["status"]));
+    res.instrument_type = enum_reflect::enum_value<InstrumentType>(std::string(data["instrument_type"]));
+    res.status = enum_reflect::enum_value<Status>(std::string(data["status"]));
     res.symbol = (std::string)data["symbol"];
     res.exchange_symbol = (std::string)data["exchange_symbol"];
-    res.side = Order::side_from_string(std::string(data["side"]));
-    res.type = Order::type_from_string(std::string(data["type"]));
+    res.side = enum_reflect::enum_value<Side>(std::string(data["side"]));
+    res.type = enum_reflect::enum_value<OrderType>(std::string(data["type"]));
     res.price = (double)data["price"];
     res.quantity = (double)data["quantity"];
     res.filled_quantity = (double)data["filled_quantity"];

@@ -83,8 +83,8 @@ void BinanceQuoterSpot::init_websocket()
                     Order::Status::NEW,                  // Status
                     symbol,                              // Symbol
                     exchange_symbol,                     // Exchange symbol
-                    Order::side_from_string(json["S"]),  // Side
-                    Order::type_from_string(json["o"]),  // Type
+                    enum_reflect::enum_value<Order::Side>(json["S"]), // Side
+                    enum_reflect::enum_value<Order::OrderType>(json["o"]), // Type
                     std::stod((std::string)json["p"]),   // Price
                     std::stod((std::string)json["q"]),   // Quantity
                 };
@@ -297,8 +297,8 @@ Task<Json> BinanceQuoterSpot::place(Order order)
     std::string query_str;
 
     query_str += "symbol=" + order.exchange_symbol.to_string();
-    query_str += "&side=" + Order::to_string(order.side);
-    query_str += "&type=" + Order::to_string(order.type);
+    query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
+    query_str += "&type=" + (std::string)enum_reflect::enum_name(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);
     query_str += "&newClientOrderId=" + std::to_string(order.order_id);
 

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <json/json.h>
+#include <enum_reflect/enum_reflect.h>
 #include <symbol/symbol.h>
 #include <instrument/instrument.h>
 
@@ -55,87 +56,6 @@ public:
 
     Order();
     Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Symbol& symbol_i, const Symbol& exchange_symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
-
-    inline static std::string to_string(InstrumentType data)
-    {
-        return data == InstrumentType::SPOT ? "SPOT" : "PERPETUAL";
-    }
-
-    inline static std::string to_string(Status data)
-    {
-        switch (data)
-        {
-        case Status::NOT_AVAILABLE:
-            return "NOT_AVAILABLE";
-        case Status::NEW:
-            return "NEW";
-        case Status::CANCELED:
-            return "CANCELED";
-        case Status::REJECTED:
-            return "REJECTED";
-        case Status::FILLED:
-            return "FILLED";
-
-        default:
-            return "NEW";
-        }
-    }
-
-    inline static std::string to_string(Side data)
-    {
-        return data == Side::SELL ? "SELL" : "BUY";
-    }
-
-    inline static std::string to_string(OrderType data)
-    {
-        return data == OrderType::LIMIT ? "LIMIT" : "MARKET";
-    }
-
-    inline static InstrumentType exchange_type_from_string(std::string data)
-    {
-        return data == "SPOT" ? InstrumentType::SPOT : InstrumentType::PERPETUAL;
-    }
-
-    inline static Status status_from_string(std::string data)
-    {
-        Status res;
-        if (data == "NOT_AVAILABLE")
-        {
-            res = Status::NOT_AVAILABLE;
-        }
-        else if (data == "NEW")
-        {
-            res = Status::NEW;
-        }
-        else if (data == "CANCELED")
-        {
-            res = Status::CANCELED;
-        }
-        else if (data == "REJECTED")
-        {
-            res = Status::REJECTED;
-        }
-        else if (data == "PARTIALLY_FILLED")
-        {
-            res = Status::PARTIALLY_FILLED;
-        }
-        else if (data == "FILLED")
-        {
-            res = Status::FILLED;
-        }
-
-        return res;
-    }
-
-    inline static Side side_from_string(std::string data)
-    {
-        return data == "BUY" ? Side::BUY : Side::SELL;
-    }
-
-    inline static OrderType type_from_string(std::string data)
-    {
-        return data == "LIMIT" ? OrderType::LIMIT : OrderType::MARKET;
-    }
 
     Json to_json();
     static Order from_json(Json& data);
