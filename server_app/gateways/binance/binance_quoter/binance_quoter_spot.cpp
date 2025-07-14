@@ -73,16 +73,15 @@ void BinanceQuoterSpot::init_websocket()
 
             if (json["e"] == "executionReport")
             {
-                Symbol exchange_symbol((std::string)json["s"]);
-                Symbol symbol = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, exchange_symbol.to_string())->symbol;
+                std::string exchange_symbol = json["s"];
+                Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, exchange_symbol);
 
                 Order order
                 {
                     0,                                   // Order Id
                     InstrumentType::SPOT,                // Instrument Type
                     Order::Status::NEW,                  // Status
-                    symbol,                              // Symbol
-                    exchange_symbol,                     // Exchange symbol
+                    instrument,                          // Instrument
                     enum_reflect::enum_value<Order::Side>(json["S"]), // Side
                     enum_reflect::enum_value<Order::OrderType>(json["o"]), // Type
                     std::stod((std::string)json["p"]),   // Price
@@ -285,7 +284,7 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
 
     spdlog::debug("cancel order: {}", order.to_json());
 
-    query_str += "symbol=" + order.exchange_symbol.to_string();
+    query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);
 
     co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str));
@@ -296,7 +295,7 @@ Task<Json> BinanceQuoterSpot::place(Order order)
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
 
-    query_str += "symbol=" + order.exchange_symbol.to_string();
+    query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
     query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
     query_str += "&type=" + (std::string)enum_reflect::enum_name(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);

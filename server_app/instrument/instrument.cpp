@@ -1,6 +1,6 @@
 #include <instrument/instrument.h>
 
-Json Instrument::to_json()
+Json Instrument::to_json() const
 {
     return {
         {"exchange_id", enum_reflect::enum_name(exchange_id)},

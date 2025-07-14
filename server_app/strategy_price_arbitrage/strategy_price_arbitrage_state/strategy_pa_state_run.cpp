@@ -52,8 +52,7 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        m_instrument_1->symbol,
-        m_instrument_1->exchange_symbol,
+        m_instrument_1,
         Order::Side::BUY,
         Order::OrderType::LIMIT,
         price,
@@ -69,8 +68,7 @@ Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_qu
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        instrument->symbol,
-        instrument->exchange_symbol,
+        instrument,
         Order::Side::BUY,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
@@ -86,8 +84,7 @@ Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_q
         OrderManager::instance().generate_order_id(),
         InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
-        instrument->symbol,
-        instrument->exchange_symbol,
+        instrument,
         Order::Side::SELL,
         Order::OrderType::MARKET,
         0.0, // since type is MARKET, no need to specify price
@@ -213,7 +210,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             is_placing_chain_orders = true;
         }
         // 2nd order (MARKET)
-        else if (order.type == Order::OrderType::MARKET && order.exchange_symbol == m_instrument_2->exchange_symbol)
+        else if (order.type == Order::OrderType::MARKET && order.instrument->exchange_symbol == m_instrument_2->exchange_symbol)
         {
             // Sell symbol 3 from symbol 2
             double quantity = order.output_quantity;
@@ -221,7 +218,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             m_gateway->place_none_wait(order_3);
         }
         // 3rd order (MARKET)
-        else if (order.type == Order::OrderType::MARKET && order.exchange_symbol == m_instrument_3->exchange_symbol)
+        else if (order.type == Order::OrderType::MARKET && order.instrument->exchange_symbol == m_instrument_3->exchange_symbol)
         {
             is_placing_chain_orders = false;
         }

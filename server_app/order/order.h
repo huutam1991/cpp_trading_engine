@@ -38,8 +38,7 @@ public:
     OrderId order_id;
     InstrumentType instrument_type;
     Status status = Status::NOT_AVAILABLE;
-    Symbol symbol;
-    Symbol exchange_symbol;
+    const Instrument *instrument;
     Side side;
     OrderType type;
     double price = 0.0;
@@ -55,7 +54,7 @@ public:
     Symbol output_asset; 
 
     Order();
-    Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Symbol& symbol_i, const Symbol& exchange_symbol_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
+    Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
     Json to_json();
     static Order from_json(Json& data);

@@ -28,7 +28,7 @@ struct Instrument
     size_t lot_size;
     double tick_size;
 
-    Json to_json();
+    Json to_json() const;
     static Instrument from_json(Json& data);
 
     // Helper method
