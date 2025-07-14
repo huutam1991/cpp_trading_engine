@@ -2,6 +2,7 @@
 
 #include <string>
 #include <json/json.h>
+#include <enum_reflect/enum_reflect.h>
 #include <order/order.h>
 
 struct BuyPoint
@@ -23,51 +24,6 @@ struct BuyPoint
     OrderId current_order_id = 0;
     Status status = Status::AVAILABLE;
 
-    static std::string to_string(Status data)
-    {
-        switch (data)
-        {
-        case Status::AVAILABLE:
-            return "available";
-        case Status::PLACING:
-            return "placing";
-        case Status::PLACED:
-            return "placed";
-        case Status::CANCELING:
-            return "canceling";
-        case Status::HOLD:
-            return "hold";
-        }
-
-        return "available";
-    }
-
-    static Status from_string(const std::string& data)
-    {
-        if (data == "available")
-        {
-            return Status::AVAILABLE;
-        }
-        else if (data == "placing")
-        {
-            return Status::PLACING;
-        }
-        else if (data == "placed")
-        {
-            return Status::PLACED;
-        }
-        else if (data == "canceling")
-        {
-            return Status::CANCELING;
-        }
-        else if (data == "hold")
-        {
-            return Status::HOLD;
-        }
-
-        return Status::AVAILABLE;
-    }
-
     Json to_json()
     {
         return {
@@ -77,7 +33,7 @@ struct BuyPoint
             {"output_in_usdt", output_in_usdt},
             {"profit", profit},
             {"current_order_id", current_order_id},
-            {"status", to_string(status)},
+            {"status", enum_reflect::enum_name(status)},
         };
     }
 
@@ -94,7 +50,7 @@ struct BuyPoint
             res.output_in_usdt = (double)data["output_in_usdt"];
             res.profit = (double)data["profit"];
             res.current_order_id = (OrderId)data["current_order_id"];
-            res.status = from_string((std::string)data["status"]);
+            res.status = enum_reflect::enum_value<Status>((std::string)data["status"]);
         }
 
         return res;
