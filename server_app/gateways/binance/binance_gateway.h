@@ -37,6 +37,7 @@ public:
 
 private:
     Task<Json> get_exchange_info();
+    Task<Json> get_exchange_info_perpetual();
     void on_depth_update(const std::string& symbol, Json& payload);
 
     Json get_spot_symbols_info();

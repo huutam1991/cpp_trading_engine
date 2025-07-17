@@ -56,6 +56,14 @@ Task<Json> BinanceGateway::get_exchange_info()
     co_return Json::parse(response);
 }
 
+Task<Json> BinanceGateway::get_exchange_info_perpetual()
+{
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT);
+    std::string response = co_await client->get("/fapi/v1/exchangeInfo");
+
+    co_return Json::parse(response);
+}
+
 Json BinanceGateway::get_spot_symbols_info()
 {
     Json exchange_info = get_exchange_info()
@@ -100,26 +108,44 @@ Json BinanceGateway::get_spot_symbols_info()
 
 Json BinanceGateway::get_perpetual_symbols_info()
 {
-    // ExternalRequestSsl binance_request(BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT, "/fapi/v1/exchangeInfo", RequestMethod::GET);
+    Json exchange_info = get_exchange_info_perpetual()
+        .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY))
+        .get();
+    
+    Json symbols_info;
+    exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
+    {
+        if ((std::string)data["status"] != "TRADING")
+        {
+            return;
+        }
 
-    // Json exchange_info = Json::parse(binance_request.send_request());
-    // Json symbols_info;
+        std::string exchange_symbol = data["symbol"];
+        std::string base_asset = data["baseAsset"];
+        std::string quote_asset = data["quoteAsset"];
+        std::string symbol_name = base_asset + "-" + quote_asset + "-PERPETUAL";
 
-    // exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
-    // {
-    //     std::string symbol_name = data["symbol"];
+        if (m_instruments.find(symbol_name) == m_instruments.end())
+        {
+            m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
 
-    //     if (symbol_name == "ETHUSDT" || symbol_name == "BTCUSDT")
-    //     {
-    //         symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
-    //         symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
-    //         symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
-    //     }
-    // });
+            SavableObject<Instrument>& instrument = m_instruments.find(symbol_name)->second;
+            instrument = Instrument {
+                ExchangeId::BINANCE,
+                InstrumentType::PERPETUAL,
+                Symbol(symbol_name),
+                Symbol(exchange_symbol),
+                get_rounded_number(data["filters"][1]["stepSize"]),
+                std::stod((std::string&&)data["filters"][0]["tickSize"])
+            };
+        }
 
-    // return symbols_info;
+        symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
+        symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
+        symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
+    });
 
-    return {};
+    return symbols_info;
 }
 
 size_t BinanceGateway::get_rounded_number(const std::string& lot_size)
