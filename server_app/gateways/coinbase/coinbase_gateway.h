@@ -28,7 +28,7 @@ protected:
 public:
     CoinbaseGateway(const std::string& key);
 
-    virtual void subscribe_symbol(std::vector<std::string> symbols) override;
+    virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
     virtual Task<Json> get_balances() override;
 
 private:

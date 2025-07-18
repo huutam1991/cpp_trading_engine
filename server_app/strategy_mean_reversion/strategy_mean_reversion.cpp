@@ -84,7 +84,8 @@ void StrategyMeanReversion::init()
             m_has_data_update.set_value(true);
         }
     });
-    m_gateway->subscribe_symbol({m_config.symbol});
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.symbol);
+    m_gateway->subscribe_instruments({instrument});
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)

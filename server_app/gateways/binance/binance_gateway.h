@@ -4,6 +4,7 @@
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 #include <gateways/binance/binance_market_data/binance_market_data_spot.h>
+#include <gateways/binance/binance_market_data/binance_market_data_perpetual.h>
 
 class BinanceGateway : public Gateway
 {
@@ -13,7 +14,7 @@ class BinanceGateway : public Gateway
 
     // Market data
     BinanceMarketDataSpot m_market_data_spot;
-    // BinanceMarketDataSpot m_market_data_perpetual;
+    BinanceMarketDataPerpetual m_market_data_perpetual;
 
     std::vector<Instrument> m_instruments;
 
@@ -28,7 +29,7 @@ protected:
 public:
     BinanceGateway(const std::string& key);
 
-    virtual void subscribe_symbol(std::vector<std::string> symbols) override;
+    virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
     virtual Task<Json> get_balances() override;
 
 private:

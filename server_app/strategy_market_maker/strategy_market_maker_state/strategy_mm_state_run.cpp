@@ -27,7 +27,8 @@ void StrategyMarketMakerStateRun::on_config_change()
 {
     m_current_price = 0.0;
     update_lot_size();
-    m_gateway->subscribe_symbol({m_config.symbol});
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.symbol);
+    m_gateway->subscribe_instruments({instrument});
 }
 
 void StrategyMarketMakerStateRun::update_lot_size()

@@ -85,14 +85,14 @@ std::string CoinbaseGateway::round_string_number(const std::string& str_number, 
     return str_number;
 }
 
-void CoinbaseGateway::subscribe_symbol(std::vector<std::string> symbols)
+void CoinbaseGateway::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
     // Spot
-    m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
-    {
-        this->on_depth_update(symbol, payload);
-    });
-    m_market_data_spot.start();
+    // m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
+    // {
+    //     this->on_depth_update(symbol, payload);
+    // });
+    // m_market_data_spot.start();
 
     // Perpetual
     // m_market_data_perpetual.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)

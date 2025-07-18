@@ -24,7 +24,7 @@ void StrategyBuySpot::start()
 {
     // Subscribe symbols
     auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.object.symbol);
-    m_gateway->subscribe_symbol({instrument->exchange_symbol});
+    m_gateway->subscribe_instruments({instrument});
 }
 
 void StrategyBuySpot::on_config_change(StrategyBuySpotConfig new_config)
@@ -42,7 +42,7 @@ void StrategyBuySpot::on_config_change(StrategyBuySpotConfig new_config)
 
     // Re-subscribe symbols
     auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.object.symbol);
-    m_gateway->subscribe_symbol({instrument->exchange_symbol});
+    m_gateway->subscribe_instruments({instrument});
 }
 
 Json StrategyBuySpot::get_info(Json& params)

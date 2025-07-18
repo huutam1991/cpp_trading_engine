@@ -5,8 +5,8 @@
 BinanceGateway::BinanceGateway(const std::string& key) :
     m_quoter_spot(key),
     m_quoter_perpetual(key),
-    m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT)
-    // m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
+    m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
+    m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
     Json account = Account::load_account_by_key(key);
     bool is_testnet = account["is_testnet"];
@@ -16,10 +16,10 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     std::string md_spot_port = is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
     m_market_data_spot.update_url_and_port(md_spot_url, md_spot_port);
 
-    // // Update url + port for market data PERPETUAL
-    // std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
-    // std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
-    // m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
+    // Update url + port for market data PERPETUAL
+    std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
+    std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
+    m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
 }
 
 ExchangeId BinanceGateway::get_exchange()
@@ -142,21 +142,33 @@ std::string BinanceGateway::round_string_number(const std::string& str_number, s
     return str_number;
 }
 
-void BinanceGateway::subscribe_symbol(std::vector<std::string> symbols)
+void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
-    // Spot
-    m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
+    std::vector<std::string> symbols;
+    for (const Instrument* instrument : instruments)
     {
-        this->on_depth_update(symbol, payload);
-    });
-    m_market_data_spot.start();
+        symbols.push_back(instrument->exchange_symbol);
+    }
+
+    // Spot
+    if (instruments[0]->instrument_type == InstrumentType::SPOT)
+    {
+        m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
+        {
+            this->on_depth_update(symbol, payload);
+        });
+        m_market_data_spot.start();
+    }
 
     // Perpetual
-    // m_market_data_perpetual.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)
-    // {
-    //     this->on_depth_update(symbol, payload);
-    // });
-    // m_market_data_perpetual.start();
+    if (instruments[0]->instrument_type == InstrumentType::PERPETUAL)
+    {
+        m_market_data_perpetual.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
+        {
+            this->on_depth_update(symbol, payload);
+        });
+        m_market_data_perpetual.start();
+    }
 }
 
 void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)

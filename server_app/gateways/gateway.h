@@ -39,7 +39,7 @@ public:
 
     void init();
 
-    virtual void subscribe_symbol(std::vector<std::string> symbols) = 0;
+    virtual void subscribe_instruments(std::vector<const Instrument*> instruments) = 0;
 
     // Util methods
     virtual Task<Json> get_balances() = 0;
