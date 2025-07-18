@@ -40,7 +40,8 @@ void BinanceQuoterPerpetual::init_websocket()
     // Event base: GATEWAY
     EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
 
-    m_listen_key = this->get_listen_key();
+    auto task = this->get_listen_key();
+    m_listen_key = task.start_running_on(event_base).get();
 
     m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), event_base);
     m_websocket->set_callbacks(
@@ -98,14 +99,24 @@ void BinanceQuoterPerpetual::init_websocket()
     m_websocket->connect(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
 }
 
-std::string BinanceQuoterPerpetual::get_listen_key()
+Task<std::string> BinanceQuoterPerpetual::get_listen_key()
 {
-    ExternalRequestSsl binance_request(m_url, m_port, "/fapi/v1/listenKey", RequestMethod::POST);
-    binance_request.add_header("X-MBX-APIKEY", m_api_key);
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
+    client->add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string res = binance_request.send_request();
-    Json data = Json::parse(res);
-    return data["listenKey"];
+    std::string str = co_await client->post("/fapi/v1/listenKey", "");
+    Json data = Json::parse(str);
+
+    if (data.has_field("code") && (double)data["code"] < 0)
+    {
+        spdlog::error("BinanceQuoterPerpetual - Error fetching listen key: {}", data);
+    }
+    else 
+    {
+        spdlog::debug("BinanceQuoterPerpetual - listenKey: {}", data);
+    }
+
+    co_return data["listenKey"];
 }
 
 void BinanceQuoterPerpetual::add_timer_keep_alive_listen_key(size_t period)

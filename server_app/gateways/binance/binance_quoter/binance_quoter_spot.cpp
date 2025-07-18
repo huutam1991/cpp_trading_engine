@@ -184,11 +184,11 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
 
     if (data.has_field("code") && (double)data["code"] < 0)
     {
-        spdlog::error("Error fetching listen key: {}", data);
+        spdlog::error("BinanceQuoterSpot - Error fetching listen key: {}", data);
     }
     else 
     {
-        spdlog::debug("listenKey: {}", data);
+        spdlog::debug("BinanceQuoterSpot - listenKey: {}", data);
     }
 
     co_return data["listenKey"];

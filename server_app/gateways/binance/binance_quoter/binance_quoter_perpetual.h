@@ -15,7 +15,7 @@ private:
     std::shared_ptr<WebsocketClientAsync> m_websocket;
     std::string m_listen_key;
     void init_websocket();
-    std::string get_listen_key();
+    Task<std::string> get_listen_key();
     void add_timer_keep_alive_listen_key(size_t period);
 
 protected:
