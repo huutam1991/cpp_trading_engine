@@ -208,63 +208,6 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
     m_websocket->send_ping();
 }
 
-Json BinanceQuoterSpot::get_trade_result_from_response(Json& response)
-{
-    // Return empty data if has error
-    if ((long)response["code"] < 0)
-    {
-        spdlog::error("Spot order error: {}", response);
-        return {
-            {"type", "spot"},
-            {"symbol", response["symbol"]},
-            {"quantity", 0.0},
-            {"volumn_in_usdt", 0.0}
-        };
-    }
-
-    // Get [symbol] + [quantity]
-    std::string symbol;
-    double quantity = 0;
-    double volumn_in_usdt = 0;
-
-    // Get fill symbol + quantity
-    if (response.has_field("fills"))
-    {
-        Json fills = response["fills"];
-
-        fills.for_each([&](Json& fill)
-        {
-            spdlog::debug("fill: {}", fill);
-
-            double f_quantity = std::stod(std::string(fill["qty"]));
-            double f_commission = std::stod(std::string(fill["commission"]));
-            double f_price = std::stod(std::string(fill["price"]));
-            symbol = std::string(fill["commissionAsset"]);
-
-            // This is BUY order
-            if (symbol == "BTC" || symbol == "ETH" || symbol == "SOL")
-            {
-                quantity += f_quantity - f_commission;
-                volumn_in_usdt += f_quantity * f_price;
-            }
-            // This is SELL order
-            else
-            {
-                volumn_in_usdt += (f_quantity * f_price) - f_commission;
-            }
-        });
-
-        spdlog::debug("Spot order place - symbol: {}, quantity: {}, volumn_in_usdt: {}", symbol, quantity, volumn_in_usdt);
-    }
-
-    return {
-        {"type", "spot"},
-        {"symbol", symbol},
-        {"quantity", quantity},
-        {"volumn_in_usdt", volumn_in_usdt}
-    };
-}
-
 Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)
 {
     co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);

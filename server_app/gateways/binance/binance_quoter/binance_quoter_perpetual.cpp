@@ -73,7 +73,6 @@ void BinanceQuoterPerpetual::init_websocket()
 
                     ADD_LOG("BinanceQuoterPerpetual Filled: " << data);
 
-                    update_order_result(data);
                 }
             }
 
@@ -123,47 +122,6 @@ void BinanceQuoterPerpetual::add_timer_keep_alive_listen_key(size_t period)
     //     ADD_LOG("re-active data: " << data.get_string_value());
     // },
     // period);
-}
-
-void BinanceQuoterPerpetual::update_order_result(const Json& order_result)
-{
-    std::unique_lock lock(m_mutex);
-    m_order_result = order_result;
-}
-
-Json BinanceQuoterPerpetual::get_trade_result_from_response(Json& response)
-{
-    // Return empty data if has error
-    if ((long)response["code"] < 0)
-    {
-        ADD_LOG("Perpetual order error: " << response);
-        return {
-            {"type", "perpetual"},
-            {"symbol", response["symbol"]},
-            {"quantity", 0.0},
-            {"volumn_in_usdt", 0.0}
-        };
-    }
-
-    // Tricky here
-    while (m_order_result["status"] == "PLACING")
-    {
-    }
-
-    // Get [symbol] + [quantity]
-    std::string symbol = m_order_result["symbol"];
-    double quantity = m_order_result["quantity"];
-    double price = m_order_result["price"];
-    double volumn_in_usdt = quantity * price;
-
-    ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
-
-    return {
-        {"type", "perpetual"},
-        {"symbol", symbol},
-        {"quantity", quantity},
-        {"volumn_in_usdt", volumn_in_usdt}
-    };
 }
 
 Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)

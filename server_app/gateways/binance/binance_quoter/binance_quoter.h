@@ -25,7 +25,6 @@ public:
 
     Task<Json> get_balances();
 
-    virtual Json get_trade_result_from_response(Json& response) = 0;
     virtual Task<Json> get_open_orders(std::string symbol) = 0;
     virtual TaskVoid cancel_all(std::string symbol) = 0;
     virtual Task<Json> cancel(Order order) = 0;
