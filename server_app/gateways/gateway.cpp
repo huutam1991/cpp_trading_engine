@@ -1,34 +1,38 @@
 #include <gateways/gateway.h>
 #include <coroutine/event_base_manager.h>
+#include <enum_reflect/enum_reflect.h>
 
 Gateway::Gateway() : m_event_base {
     EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
 }
 {}
 
+std::string Gateway::get_name()
+{
+    return std::string(enum_reflect::enum_name(m_exchange_id));
+}
+
 void Gateway::init()
 {
     m_exchange_id = get_exchange();
-    m_gateway_name = get_name();
 
     // Load cache instruments
     Instrument::CacheInstruments& cache_instruments = Instrument::load_cache_instruments(m_exchange_id);
 
-    for (auto& [symbol, savable_object] : cache_instruments)
-    {
-        spdlog::info("Gateway::init - Loaded cache instrument: {}", savable_object.object.to_json());
-    }
-
     // Fetch new instruments if cache is empty
     if (cache_instruments.empty())
     {
-        spdlog::info("Gateway::init - Fetching instruments for exchange: {}", m_gateway_name);
+        spdlog::info("Gateway::init - Fetching instruments for exchange: {}", get_name());
         std::vector<Instrument> instruments = fetch_instruments();
 
         for (const Instrument& instrument : instruments)
         {
             Instrument::add_instrument_to_cache(m_exchange_id, instrument);
         }
+    }
+    else
+    {
+        spdlog::info("Gateway::init - Using cached instruments for exchange: {}", get_name());
     }
 }
 

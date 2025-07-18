@@ -116,11 +116,6 @@ ExchangeId CoinbaseGateway::get_exchange()
     return ExchangeId::COINBASE;
 }
 
-std::string CoinbaseGateway::get_name()
-{
-    return "coinbase";
-}
-
 Task<std::unordered_set<OrderId>> CoinbaseGateway::get_open_orders_on_exchange(std::string symbol)
 {
     std::unordered_set<OrderId> res;

@@ -19,7 +19,6 @@ class BinanceGateway : public Gateway
 
 protected:
     virtual ExchangeId get_exchange() override;
-    virtual std::string get_name() override;
     virtual std::vector<Instrument> fetch_instruments() override;
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) override;

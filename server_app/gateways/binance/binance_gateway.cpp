@@ -27,11 +27,6 @@ ExchangeId BinanceGateway::get_exchange()
     return ExchangeId::BINANCE;
 }
 
-std::string BinanceGateway::get_name()
-{
-    return "binance";
-}
-
 std::vector<Instrument> BinanceGateway::fetch_instruments()
 {
     get_spot_symbols_info();
