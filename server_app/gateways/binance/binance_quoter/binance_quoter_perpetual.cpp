@@ -193,8 +193,15 @@ TaskVoid BinanceQuoterPerpetual::cancel_all(std::string symbol)
 
 Task<Json> BinanceQuoterPerpetual::cancel(Order order)
 {
-    // Need to implement later (current code is wrong)
-    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "");
+    // DELETE /api/v3/order?symbol=BTCUSDT&origClientOrderId=my_custom_id_123&timestamp=1743540000000&signature=abcdef
+    std::string query_str;
+
+    spdlog::debug("cancel order: {}", order.to_json());
+
+    query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
+    query_str += "&origClientOrderId=" + std::to_string(order.order_id);
+
+    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/order", std::move(query_str));
 }
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
