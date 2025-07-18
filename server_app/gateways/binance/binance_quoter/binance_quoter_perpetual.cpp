@@ -3,6 +3,7 @@
 #include <coroutine/event_base_manager.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
+#include <app_utils/app_utils.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 3000
 
@@ -67,18 +68,51 @@ void BinanceQuoterPerpetual::init_websocket()
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
             {
-                Json order = json["o"];
-                if (order["X"] == "FILLED")
+                spdlog::info("BinanceQuoterPerpetual - Order trade update: {}", json);
+                Json o = json["o"];
+
+                std::string exchange_symbol = o["s"];
+                const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, exchange_symbol);
+
+                Order order
                 {
-                    Json data = {
-                        {"status", "FILLED"},
-                        {"symbol", order["s"]},
-                        {"price", std::stod(std::string(order["ap"]))},
-                        {"quantity", std::stod(std::string(order["z"]))}
-                    };
+                    0,                                   // Order Id
+                    InstrumentType::PERPETUAL,                // Instrument Type
+                    Order::Status::NEW,                  // Status
+                    instrument,                          // Instrument
+                    enum_reflect::enum_value<Order::Side>(o["S"]), // Side
+                    enum_reflect::enum_value<Order::OrderType>(o["o"]), // Type
+                    std::stod((std::string)o["p"]),   // Price
+                    std::stod((std::string)o["q"]),   // Quantity
+                };
 
-                    ADD_LOG("BinanceQuoterPerpetual Filled: " << data);
-
+                if (o["X"] == "NEW")
+                {
+                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
+                    order.status = Order::Status::NEW;
+                }
+                else if (o["X"] == "FILLED")
+                {
+                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
+                    order.status = Order::Status::FILLED;
+                    order.filled_quantity = std::stod((std::string)json["l"]);
+                    order.filled_price = std::stod((std::string)json["L"]);
+                    order.commission_amount = std::stod((std::string)json["n"]);
+                    order.commission_asset = (std::string)json["N"];
+                }
+                else if (o["X"] == "PARTIALLY_FILLED")
+                {
+                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
+                    order.status = Order::Status::PARTIALLY_FILLED;
+                    order.filled_quantity = std::stod((std::string)json["l"]);
+                    order.filled_price = std::stod((std::string)json["L"]);
+                    order.commission_amount = std::stod((std::string)json["n"]);
+                    order.commission_asset = (std::string)json["N"];
+                }
+                else if (o["X"] == "CANCELED")
+                {
+                    order.order_id = AppUtils::instance().parse_order_id(json["C"]);
+                    order.status = Order::Status::CANCELED;
                 }
             }
 
@@ -88,7 +122,7 @@ void BinanceQuoterPerpetual::init_websocket()
         [this]() -> TaskVoid
         {
             // Re-start
-            ADD_LOG("BinanceQuoterPerpetual - disconnect, re-starting");
+            spdlog::info("BinanceQuoterPerpetual - disconnect, re-starting");
             this->init_websocket();
 
             co_return;
@@ -96,7 +130,7 @@ void BinanceQuoterPerpetual::init_websocket()
         // on_close
         []() -> TaskVoid
         {
-            ADD_LOG("BinanceQuoterPerpetual close");
+            spdlog::info("BinanceQuoterPerpetual - close");
             co_return;
         }
     );
