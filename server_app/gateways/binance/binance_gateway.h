@@ -15,13 +15,12 @@ class BinanceGateway : public Gateway
     BinanceMarketData m_market_data_spot;
     // BinanceMarketData m_market_data_perpetual;
 
-    // Exchange info
-    Json m_symbols_info;
+    std::vector<Instrument> m_instruments;
 
 protected:
     virtual ExchangeId get_exchange() override;
     virtual std::string get_name() override;
-    virtual void load_instruments(std::unordered_map<std::string, Instrument>& instruments) override;
+    virtual std::vector<Instrument> fetch_instruments() override;
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) override;
     virtual Task<Json> cancel_on_exchange(Order order) override;

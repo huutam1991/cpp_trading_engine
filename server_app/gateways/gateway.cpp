@@ -11,33 +11,23 @@ void Gateway::init()
     m_exchange_id = get_exchange();
     m_gateway_name = get_name();
 
-    // Create instrument list by symbol and by exchange symbol
-    auto& instruments_by_symbol = Instrument::get_instrument_list_by_exchange(m_exchange_id, Instrument::StoreType::BY_SYMBOL);
-    load_instruments(instruments_by_symbol);
-    Instrument::create_instrument_list_by_exchange_symbol(m_exchange_id);
-    
-    // Print instruments by symbol
-    for (auto& [symbol, ins] : instruments_by_symbol)
-    {
-        // spdlog::debug("INSTRUMENT load - by symbol: {}, instrument: {}", symbol, ins.to_json());
-    }
+    // Load cache instruments
+    Instrument::CacheInstruments& cache_instruments = Instrument::load_cache_instruments(m_exchange_id);
 
-    // Print instruments by exchange symbol
-    auto& instruments_by_exchange_symbol = Instrument::get_instrument_list_by_exchange(m_exchange_id, Instrument::StoreType::BY_EXCHANGE_SYMBOL);
-    for (auto& [symbol, ins] : instruments_by_exchange_symbol)
+    // Fetch new instruments if cache is empty
+    if (cache_instruments.empty())
     {
-        // spdlog::debug("INSTRUMENT load - by exchange symbol: {}, instrument: {}", symbol, ins.to_json());
+        std::vector<Instrument> instruments = fetch_instruments();
+        for (const Instrument& instrument : instruments)
+        {
+            Instrument::add_instrument_to_cache(m_exchange_id, instrument);
+        }
     }
 }
 
-void Gateway::load_instruments(std::unordered_map<std::string, Instrument>& instruments)
+std::vector<Instrument> Gateway::fetch_instruments()
 {
-    m_instruments = SavableObject<Instrument>::load_objects_map<std::string>(INSTRUMENT_DB_NAME, m_gateway_name, "symbol");
-    
-    for (auto& [symbol, savable_instrument] : m_instruments)
-    {
-        instruments.insert(std::make_pair(symbol, savable_instrument.object));
-    }
+    return {};
 }
 
 void Gateway::register_price_update(std::function<void(std::string,double)> price_update_callback)
@@ -78,9 +68,4 @@ void Gateway::place_none_wait(Order order)
 void Gateway::cancel(Order order)
 {
     cancel_on_exchange(std::move(order)).start_running_on(m_event_base);
-}
-
-Instrument* Gateway::get_instrument_by_symbol(const std::string& symbol)
-{
-    return Instrument::get_instrument_by_symbol(m_exchange_id, symbol);
 }

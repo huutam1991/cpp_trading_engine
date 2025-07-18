@@ -32,20 +32,12 @@ std::string BinanceGateway::get_name()
     return "binance";
 }
 
-void BinanceGateway::load_instruments(std::unordered_map<std::string, Instrument>& instruments)
+std::vector<Instrument> BinanceGateway::fetch_instruments()
 {
-    m_instruments = SavableObject<Instrument>::load_objects_map<std::string>(INSTRUMENT_DB_NAME, m_gateway_name, "symbol");
+    get_spot_symbols_info();
+    get_perpetual_symbols_info();
 
-    m_symbols_info["spot"] = get_spot_symbols_info();
-    m_symbols_info["perpetual"] = get_perpetual_symbols_info();
-
-    // spdlog::debug("spot: {}", m_symbols_info["spot"]);
-    // spdlog::debug("perpetual: {}", m_symbols_info["perpetual"]);
-
-    for (auto& [symbol, savable_instrument] : m_instruments)
-    {
-        instruments.insert(std::make_pair(symbol, savable_instrument.object));
-    }
+    return m_instruments;
 }
 
 Task<Json> BinanceGateway::get_exchange_info()
@@ -83,24 +75,14 @@ Json BinanceGateway::get_spot_symbols_info()
         std::string quote_asset = data["quoteAsset"];
         std::string symbol_name = base_asset + "-" + quote_asset;
 
-        if (m_instruments.find(symbol_name) == m_instruments.end())
-        {
-            m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
-
-            SavableObject<Instrument>& instrument = m_instruments.find(symbol_name)->second;
-            instrument = Instrument {
-                ExchangeId::BINANCE,
-                InstrumentType::SPOT,
-                Symbol(symbol_name),
-                Symbol(exchange_symbol),
-                get_rounded_number(data["filters"][1]["stepSize"]),
-                std::stod((std::string&&)data["filters"][0]["tickSize"])
-            };
-        }
-
-        symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
-        symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
-        symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
+        m_instruments.push_back(Instrument {
+            ExchangeId::BINANCE,
+            InstrumentType::SPOT,
+            Symbol(symbol_name),
+            Symbol(exchange_symbol),
+            get_rounded_number(data["filters"][1]["stepSize"]),
+            std::stod((std::string&&)data["filters"][0]["tickSize"])
+        });
     });
 
     return symbols_info;
@@ -125,20 +107,14 @@ Json BinanceGateway::get_perpetual_symbols_info()
         std::string quote_asset = data["quoteAsset"];
         std::string symbol_name = base_asset + "-" + quote_asset + "-PERPETUAL";
 
-        if (m_instruments.find(symbol_name) == m_instruments.end())
-        {
-            m_instruments.insert(std::make_pair(symbol_name, SavableObject<Instrument>(INSTRUMENT_DB_NAME, m_gateway_name)));
-
-            SavableObject<Instrument>& instrument = m_instruments.find(symbol_name)->second;
-            instrument = Instrument {
-                ExchangeId::BINANCE,
-                InstrumentType::PERPETUAL,
-                Symbol(symbol_name),
-                Symbol(exchange_symbol),
-                get_rounded_number(data["filters"][1]["stepSize"]),
-                std::stod((std::string&&)data["filters"][0]["tickSize"])
-            };
-        }
+        m_instruments.push_back(Instrument {
+            ExchangeId::BINANCE,
+            InstrumentType::PERPETUAL,
+            Symbol(symbol_name),
+            Symbol(exchange_symbol),
+            get_rounded_number(data["filters"][1]["stepSize"]),
+            std::stod((std::string&&)data["filters"][0]["tickSize"])
+        });
 
         symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
         symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
@@ -271,17 +247,4 @@ Task<Json> BinanceGateway::get_balances()
     });
 
     co_return balances["balances"];
-}
-
-double BinanceGateway::round_up_quantity(const std::string& type, const std::string& symbol, double quantity)
-{
-    size_t lot_size = m_symbols_info[type][symbol]["lotSize"];
-    std::string round_str_number = round_string_number(std::to_string(quantity), lot_size);
-
-    return std::stod(round_str_number);
-}
-
-size_t BinanceGateway::get_lot_size(const std::string& type, const std::string& symbol)
-{
-    return m_symbols_info[type][symbol]["lotSize"];
 }

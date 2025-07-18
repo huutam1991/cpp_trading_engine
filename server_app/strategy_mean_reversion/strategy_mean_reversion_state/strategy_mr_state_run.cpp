@@ -25,7 +25,8 @@ void StrategyMeanReversionStateRun::end()
 Order StrategyMeanReversionStateRun::get_limit_buy_spot_order_by_price(double price)
 {
     // // MeasureTime t("get_limit_buy_spot_order_by_price");
-    Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
+    // Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
+    Instrument* instrument = nullptr;
 
     double quantity = m_config.buy_volumn / price;
     double round_up_quantity = instrument->get_round_up_quantity(quantity);
@@ -44,7 +45,8 @@ Order StrategyMeanReversionStateRun::get_limit_buy_spot_order_by_price(double pr
 
 Order StrategyMeanReversionStateRun::get_limit_sell_spot_order_by_price_and_quantity(double price, double quantity)
 {
-    Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
+    // Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
+    Instrument* instrument = nullptr;
     double round_up_quantity = instrument->get_round_up_quantity(quantity);
 
     return Order(

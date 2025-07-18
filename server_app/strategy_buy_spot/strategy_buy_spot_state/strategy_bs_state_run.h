@@ -25,7 +25,7 @@ public:
     // virtual Json get_open_orders() override;
 
 private:
-    Instrument* m_instrument = nullptr;
+    const Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
     double m_lower_nearest_price = 0.0;
     std::string m_strategy_buy_spot_db_name = STRATEGY_BUY_SPOT_NAME + std::string("_strategy");

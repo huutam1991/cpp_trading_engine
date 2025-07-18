@@ -19,27 +19,25 @@ class Gateway
 protected:
     ExchangeId m_exchange_id;
     std::string m_gateway_name;
-    std::unordered_map<std::string, SavableObject<Instrument>> m_instruments;
     std::function<void(std::string,double)> m_price_update_callback;
     EventBase* m_event_base = nullptr;
 
     Gateway();
-    virtual ExchangeId get_exchange() = 0;
-    virtual std::string get_name() = 0;
-    virtual void load_instruments(std::unordered_map<std::string, Instrument>& instruments);
+    virtual std::vector<Instrument> fetch_instruments();
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) = 0;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) = 0;
     virtual Task<Json> cancel_on_exchange(Order order) = 0;
     virtual Task<Json> place_on_exchange(Order order) = 0;
 
 public:
+    virtual ExchangeId get_exchange() = 0;
+    virtual std::string get_name() = 0;
     void register_price_update(std::function<void(std::string,double)> price_update_callback);
     void check_remove_canceled_orders(std::string symbol);
     void cancel_all(std::string symbol);
     void place_none_wait(Order order);
     void cancel(Order order);
 
-    Instrument* get_instrument_by_symbol(const std::string& symbol);
     void init();
 
     virtual void subscribe_symbol(std::vector<std::string> symbols) = 0;

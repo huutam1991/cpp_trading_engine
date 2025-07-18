@@ -24,7 +24,7 @@ Instrument Instrument::from_json(Json& data)
     };
 };
 
-std::string Instrument::round_string_number(const std::string& str_number, size_t precision)
+std::string Instrument::round_string_number(const std::string& str_number, size_t precision) const
 {
     int point_pos = str_number.find_first_of(".");
     if (point_pos > -1)
@@ -35,7 +35,7 @@ std::string Instrument::round_string_number(const std::string& str_number, size_
     return str_number;
 }
 
-double Instrument::get_round_up_quantity(double quantity)
+double Instrument::get_round_up_quantity(double quantity) const
 {
     std::string round_str_number = round_string_number(std::to_string(quantity), lot_size);
     return std::stod(round_str_number);

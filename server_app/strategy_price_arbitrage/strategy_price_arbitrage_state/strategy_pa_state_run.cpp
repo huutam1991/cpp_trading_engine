@@ -27,14 +27,16 @@ void StrategyPriceArbitrageStateRun::on_config_change()
     m_current_price = 0.0;
     
     // Re-subscribe symbols
-    auto ins1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
-    auto ins2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
+    // auto ins1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
+    // auto ins2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
+    Instrument* ins1 = nullptr;
+    Instrument* ins2 = nullptr;
     m_gateway->subscribe_symbol({ins1->exchange_symbol, ins2->exchange_symbol});
 
     // Get new instruments
-    m_instrument_1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
-    m_instrument_2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
-    m_instrument_3 = m_gateway->get_instrument_by_symbol(m_config.symbol_3);
+    // m_instrument_1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
+    // m_instrument_2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
+    // m_instrument_3 = m_gateway->get_instrument_by_symbol(m_config.symbol_3);
 
     spdlog::debug("StrategyPriceArbitrageStateRun, instrument 1: {}", m_instrument_1->to_json());
     spdlog::debug("StrategyPriceArbitrageStateRun, instrument 2: {}", m_instrument_2->to_json());

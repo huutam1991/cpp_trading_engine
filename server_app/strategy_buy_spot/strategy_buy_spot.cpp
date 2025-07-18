@@ -23,7 +23,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyBuySpot::init_stat
 void StrategyBuySpot::start()
 {
     // Subscribe symbols
-    auto instrument = m_gateway->get_instrument_by_symbol(m_config.object.symbol);
+    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.object.symbol);
     m_gateway->subscribe_symbol({instrument->exchange_symbol});
 }
 
@@ -41,7 +41,7 @@ void StrategyBuySpot::on_config_change(StrategyBuySpotConfig new_config)
     }
 
     // Re-subscribe symbols
-    auto instrument = m_gateway->get_instrument_by_symbol(m_config.object.symbol);
+    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.object.symbol);
     m_gateway->subscribe_symbol({instrument->exchange_symbol});
 }
 
