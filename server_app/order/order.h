@@ -31,7 +31,13 @@ public:
     enum OrderType
     {
         LIMIT,
-        MARKET
+        MARKET,
+        TAKE_PROFIT_MARKET,
+        STOP_LOSS_MARKET,
+        TAKE_PROFIT_LIMIT,
+        STOP_LOSS_LIMIT,
+        TRAILING_STOP_MARKET,
+        TOTAL_ORDER_TYPES
     };
 
     // Input data
