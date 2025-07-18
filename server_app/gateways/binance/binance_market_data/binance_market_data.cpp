@@ -28,7 +28,6 @@ void BinanceMarketData::start()
     for (auto& [_, websocket] : m_websockets)
     {
         websocket->close();
-        spdlog::debug("BinanceMarketData: reference count: {}", websocket.use_count());
     }
     m_websockets.clear();
     
