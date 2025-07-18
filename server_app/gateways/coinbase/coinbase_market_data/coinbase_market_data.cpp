@@ -27,7 +27,7 @@ void CoinbaseMarketData::start()
     }
 }
 
-void CoinbaseMarketData::start_websocket(std::string symbol)
+void CoinbaseMarketData::start_websocket(const Instrument* instrument)
 {
     if (m_websockets.find(symbol) != m_websockets.end())
     {
@@ -117,7 +117,7 @@ void CoinbaseMarketData::update_url_and_port(const std::string& url, const std::
     m_port = port;
 }
 
-void CoinbaseMarketData::subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back)
+void CoinbaseMarketData::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const std::string& symbol, Json& payload)> call_back)
 {
     m_symbols = std::move(symbols);
     m_on_callback = std::move(call_back);

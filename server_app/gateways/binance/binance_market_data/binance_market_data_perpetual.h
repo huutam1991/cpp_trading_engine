@@ -6,6 +6,8 @@
 #include <websocket/websocket_client_async.h>
 #include <json/json.h>
 
+#include <instrument/instrument.h>
+
 class BinanceMarketDataPerpetual
 {
 public:
@@ -14,8 +16,8 @@ public:
 
     void update_url_and_port(const std::string& url, const std::string& port);
     virtual void start();
-    void start_websocket(std::string symbol);
-    void subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back);
+    void start_websocket(const Instrument* instrument);
+    void subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back);
 
 protected:
     virtual bool standardize_data(const std::string& buffer, Json& data);
@@ -23,12 +25,12 @@ protected:
 private:
     std::string m_url;
     std::string m_port;
-    std::vector<std::string> m_symbols;
+    std::vector<const Instrument*> m_instruments;
 
     EventBase* m_event_base = nullptr;
 
-    std::unordered_map<std::string, std::shared_ptr<WebsocketClientAsync>> m_websockets;
-    std::function<void(const std::string& symbol, Json& payload)> m_on_callback = nullptr;
+    std::unordered_map<const Instrument*, std::shared_ptr<WebsocketClientAsync>> m_websockets;
+    std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
 
     size_t get_stream_id_count();
 };

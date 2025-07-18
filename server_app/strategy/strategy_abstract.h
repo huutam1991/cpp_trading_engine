@@ -8,7 +8,7 @@
 
 struct PriceUpdate
 {
-    std::string symbol;
+    const Instrument* instrument;
     double price;
 };
 using StrategyUpdateData = std::variant<PriceUpdate, Order>;

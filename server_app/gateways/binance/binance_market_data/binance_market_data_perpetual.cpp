@@ -31,31 +31,31 @@ void BinanceMarketDataPerpetual::start()
     }
     m_websockets.clear();
     
-    for (size_t i = 0; i < m_symbols.size(); i++)
+    for (size_t i = 0; i < m_instruments.size(); i++)
     {
-        start_websocket(m_symbols[i]);
+        start_websocket(m_instruments[i]);
     }
 }
 
-void BinanceMarketDataPerpetual::start_websocket(std::string symbol)
+void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
 {
-    if (m_websockets.find(symbol) != m_websockets.end())
+    if (m_websockets.find(instrument) != m_websockets.end())
     {
         return; // Already started
     }
 
     auto websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
-    m_websockets.insert(std::make_pair(symbol, websocket));
+    m_websockets.insert(std::make_pair(instrument, websocket));
 
     websocket->set_callbacks(
         // on_connect
-        [this, symbol, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> TaskVoid
+        [this, instrument, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> TaskVoid
         {
             spdlog::info("Binance websocket depth connected");
 
             // Subcribe for depth
             size_t stream_id = get_stream_id_count();
-            std::string lower_case_symbol = symbol;
+            std::string lower_case_symbol = instrument->exchange_symbol;
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
@@ -87,7 +87,7 @@ void BinanceMarketDataPerpetual::start_websocket(std::string symbol)
             co_return;
         },
         // on_message
-        [this, symbol](std::string buffer) -> TaskVoid
+        [this, instrument](std::string buffer) -> TaskVoid
         {
             // MeasureTime t("Handle price update", MeasureUnit::MICROSECOND);
 
@@ -97,7 +97,7 @@ void BinanceMarketDataPerpetual::start_websocket(std::string symbol)
                 // ADD_LOG("Stream depth: " << depth);
                 if (m_on_callback != nullptr)
                 {
-                    m_on_callback(symbol, depth);
+                    m_on_callback(instrument, depth);
                 }
             }
             else
@@ -111,11 +111,11 @@ void BinanceMarketDataPerpetual::start_websocket(std::string symbol)
             co_return;
         },
         // on_disconnect
-        [this, symbol]() -> TaskVoid
+        [this, instrument]() -> TaskVoid
         {
             // Re-start
             spdlog::debug("Disconnect, re-start BinanceMarketDataPerpetual");
-            this->start_websocket(symbol);
+            this->start_websocket(instrument);
 
             co_return;
         },
@@ -142,9 +142,9 @@ void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, con
     m_port = port;
 }
 
-void BinanceMarketDataPerpetual::subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back)
+void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
 {
-    m_symbols = std::move(symbols);
+    m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
 }
 

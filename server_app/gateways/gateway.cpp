@@ -41,7 +41,7 @@ std::vector<Instrument> Gateway::fetch_instruments()
     return {};
 }
 
-void Gateway::register_price_update(std::function<void(std::string,double)> price_update_callback)
+void Gateway::register_price_update(std::function<void(const Instrument*,double)> price_update_callback)
 {
     m_price_update_callback = std::move(price_update_callback);
 }

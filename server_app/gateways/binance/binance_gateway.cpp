@@ -144,16 +144,10 @@ std::string BinanceGateway::round_string_number(const std::string& str_number, s
 
 void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
-    std::vector<std::string> symbols;
-    for (const Instrument* instrument : instruments)
-    {
-        symbols.push_back(instrument->exchange_symbol);
-    }
-
     // Spot
     if (instruments[0]->instrument_type == InstrumentType::SPOT)
     {
-        m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
+        m_market_data_spot.subscribe_instruments(instruments, [this](const Instrument* symbol, Json& payload)
         {
             this->on_depth_update(symbol, payload);
         });
@@ -163,7 +157,7 @@ void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instru
     // Perpetual
     if (instruments[0]->instrument_type == InstrumentType::PERPETUAL)
     {
-        m_market_data_perpetual.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
+        m_market_data_perpetual.subscribe_instruments(instruments, [this](const Instrument* symbol, Json& payload)
         {
             this->on_depth_update(symbol, payload);
         });
@@ -171,13 +165,13 @@ void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instru
     }
 }
 
-void BinanceGateway::on_depth_update(const std::string& symbol, Json& payload)
+void BinanceGateway::on_depth_update(const Instrument* instrument, Json& payload)
 {
     double best_bid = payload["bids"][0][0];
     double best_ask = payload["asks"][0][0];
     // ADD_LOG("On depth update - symbol: " << symbol << " - best_bid: " << best_bid << " - best_ask: " << best_ask);
 
-    m_price_update_callback(symbol, best_ask);
+    m_price_update_callback(instrument, best_ask);
 }
 
 Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(std::string symbol)
