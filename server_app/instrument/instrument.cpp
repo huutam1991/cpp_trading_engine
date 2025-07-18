@@ -61,9 +61,6 @@ Instrument::CacheInstruments& Instrument::get_cache_instruments(ExchangeId excha
 
 Instrument::CacheInstruments& Instrument::load_cache_instruments(ExchangeId exchange_id)
 {
-    static std::unordered_map<ExchangeId, CacheInstruments> cache_instruments_by_exchange;
-    static std::mutex cache_instruments_mutex;
-
     CacheInstruments& cache_instruments = get_cache_instruments(exchange_id);
 
     // Clear existing instruments for this exchange
