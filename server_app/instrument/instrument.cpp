@@ -80,7 +80,7 @@ Instrument::CacheInstruments& Instrument::load_cache_instruments(ExchangeId exch
 
 void Instrument::add_instrument_to_cache(ExchangeId exchange_id, const Instrument& instrument)
 {
-    CacheInstruments& cache_instruments = load_cache_instruments(exchange_id);
+    CacheInstruments& cache_instruments = get_cache_instruments(exchange_id);
     std::string exchange_name(enum_reflect::enum_name(exchange_id));
     std::string symbol = instrument.symbol.to_string();
     
