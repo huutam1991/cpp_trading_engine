@@ -68,7 +68,7 @@ void BinanceQuoterPerpetual::init_websocket()
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
             {
-                spdlog::info("BinanceQuoterPerpetual - Order trade update: {}", json);
+                // spdlog::info("BinanceQuoterPerpetual - Order trade update: {}", json);
                 Json o = json["o"];
 
                 std::string exchange_symbol = o["s"];
