@@ -16,7 +16,7 @@ private:
     std::string m_listen_key;
     void init_websocket();
     Task<std::string> get_listen_key();
-    void add_timer_keep_alive_listen_key(size_t period);
+    TaskVoid keep_listen_key();
 
 protected:
     virtual std::string& get_url() override;

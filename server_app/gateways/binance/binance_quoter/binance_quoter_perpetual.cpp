@@ -4,6 +4,8 @@
 
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 
+#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 3000
+
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key) : BinanceQuoter(key)
 {
     m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL;
@@ -50,8 +52,11 @@ void BinanceQuoterPerpetual::init_websocket()
         {
             spdlog::info("BinanceQuoterPerpetual websocket connected");
 
-            // Set period time to re-active m_listen_key at every 30 minutes (1800 seconds)
-            add_timer_keep_alive_listen_key(1800000);
+            // Set period time to re-active m_listen_key at every 30 seconds
+            m_websocket->add_keep_websocket_alive_task([this]() -> TaskVoid
+            {
+                return keep_listen_key();
+            }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
 
             co_return;
         },
@@ -119,20 +124,18 @@ Task<std::string> BinanceQuoterPerpetual::get_listen_key()
     co_return data["listenKey"];
 }
 
-void BinanceQuoterPerpetual::add_timer_keep_alive_listen_key(size_t period)
+TaskVoid BinanceQuoterPerpetual::keep_listen_key()
 {
-    // m_schedule_task_id = Timer::instance().add_schedule_task([this]()
-    // {
-    //     ExternalRequestSsl binance_request(m_url, "443", "/fapi/v1/listenKey?listenKey=" + m_listen_key, RequestMethod::PUT);
-    //     binance_request.add_header("X-MBX-APIKEY", m_api_key);
+    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
+    client->add_header("X-MBX-APIKEY", m_api_key);
 
-    //     ADD_LOG("BinanceQuoterPerpetual re-active m_listen_key = " << m_listen_key);
+    std::string str = co_await client->put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
+    Json data = Json::parse(str);
 
-    //     std::string res = binance_request.send_request();
-    //     Json data = Json::parse(res);
-    //     ADD_LOG("re-active data: " << data.get_string_value());
-    // },
-    // period);
+    spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key = {}", m_listen_key);
+
+    // Send ping
+    m_websocket->send_ping();
 }
 
 Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
