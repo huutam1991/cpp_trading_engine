@@ -73,8 +73,8 @@ void CoinbaseQuoterSpot::init_websocket()
                     InstrumentType::SPOT,           // Exchange Type
                     Order::Status::NEW,                  // Status
                     instrument,                          // Instrument
-                    enum_reflect::enum_value<Order::Side>(json["S"]), // Side
-                    enum_reflect::enum_value<Order::OrderType>(json["o"]), // Type
+                    enum_reflect::enum_value<Order::Side>((std::string)json["S"]), // Side
+                    enum_reflect::enum_value<Order::OrderType>((std::string)json["o"]), // Type
                     std::stod((std::string)json["p"]),   // Price
                     std::stod((std::string)json["q"]),   // Quantity
                 };

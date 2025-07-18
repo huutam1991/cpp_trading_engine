@@ -68,7 +68,7 @@ void BinanceQuoterPerpetual::init_websocket()
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
             {
-                // spdlog::info("BinanceQuoterPerpetual - Order trade update: {}", json);
+                spdlog::info("BinanceQuoterPerpetual - Order trade update: {}", json);
                 Json o = json["o"];
 
                 std::string exchange_symbol = o["s"];
@@ -80,11 +80,12 @@ void BinanceQuoterPerpetual::init_websocket()
                     InstrumentType::PERPETUAL,                // Instrument Type
                     Order::Status::NEW,                  // Status
                     instrument,                          // Instrument
-                    enum_reflect::enum_value<Order::Side>(o["S"]), // Side
-                    enum_reflect::enum_value<Order::OrderType>(o["o"]), // Type
+                    enum_reflect::enum_value<Order::Side>((std::string)o["S"]), // Side
+                    enum_reflect::enum_value<Order::OrderType>((std::string)o["o"]), // Type
                     std::stod((std::string)o["p"]),   // Price
                     std::stod((std::string)o["q"]),   // Quantity
                 };
+                spdlog::info("BinanceQuoterPerpetual - Order parse update: {}", order.to_json());
 
                 if (o["X"] == "NEW")
                 {
