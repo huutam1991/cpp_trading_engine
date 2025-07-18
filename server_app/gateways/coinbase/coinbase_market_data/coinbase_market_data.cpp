@@ -21,32 +21,32 @@ CoinbaseMarketData::~CoinbaseMarketData()
 
 void CoinbaseMarketData::start()
 {
-    for (size_t i = 0; i < m_symbols.size(); i++)
+    for (size_t i = 0; i < m_instruments.size(); i++)
     {
-        start_websocket(m_symbols[i]);
+        start_websocket(m_instruments[i]);
     }
 }
 
 void CoinbaseMarketData::start_websocket(const Instrument* instrument)
 {
-    if (m_websockets.find(symbol) != m_websockets.end())
+    if (m_websockets.find(instrument) != m_websockets.end())
     {
-        m_websockets[symbol]->close();
-        m_websockets.erase(symbol);
+        m_websockets[instrument]->close();
+        m_websockets.erase(instrument);
     }
 
     auto websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
-    m_websockets.insert(std::make_pair(symbol, websocket));
+    m_websockets.insert(std::make_pair(instrument, websocket));
 
     websocket->set_callbacks(
         // on_connect
-        [this, symbol, websocket]() -> TaskVoid
+        [this, instrument, websocket]() -> TaskVoid
         {
             ADD_LOG("Coinbase websocket depth connected");
 
             // Subcribe for depth
             size_t stream_id = get_stream_id_count();
-            std::string lower_case_symbol = symbol;
+            std::string lower_case_symbol = instrument->exchange_symbol;
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
@@ -64,7 +64,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_message
-        [this, symbol](std::string buffer) -> TaskVoid
+        [this, instrument](std::string buffer) -> TaskVoid
         {
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
@@ -72,7 +72,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
                 // ADD_LOG("Stream depth: " << depth);
                 if (m_on_callback != nullptr)
                 {
-                    m_on_callback(symbol, depth);
+                    m_on_callback(instrument, depth);
                 }
             }
             else
@@ -86,11 +86,11 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_disconnect
-        [this, symbol]() -> TaskVoid
+        [this, instrument]() -> TaskVoid
         {
             // Re-start
             ADD_LOG("Disconnect, re-start CoinbaseMarketData");
-            this->start_websocket(symbol);
+            this->start_websocket(instrument);
 
             co_return;
         },
@@ -117,9 +117,9 @@ void CoinbaseMarketData::update_url_and_port(const std::string& url, const std::
     m_port = port;
 }
 
-void CoinbaseMarketData::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const std::string& symbol, Json& payload)> call_back)
+void CoinbaseMarketData::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
 {
-    m_symbols = std::move(symbols);
+    m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
 }
 

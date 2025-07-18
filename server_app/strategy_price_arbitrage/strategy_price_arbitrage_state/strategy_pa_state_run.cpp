@@ -145,7 +145,7 @@ void StrategyPriceArbitrageStateRun::update_orders_at_price(double price)
 
 TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
 {
-    if (price_update.symbol == m_instrument_2->exchange_symbol.to_string())
+    if (price_update.instrument == m_instrument_2)
     {
         m_symbol_2_price = price_update.price;
         co_return;

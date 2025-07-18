@@ -25,11 +25,11 @@ void StrategyManager::subscribe_data_update()
 {
     // Add price callback + subscribe to symbol
     auto gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    gateway->register_price_update([this](std::string symbol, double price)
+    gateway->register_price_update([this](const Instrument* instrument, double price)
     {
         for (auto& strategy : m_strategy_list)
         {
-            strategy->update(PriceUpdate{std::move(symbol), price}).start_running_on(strategy->event_base);
+            strategy->update(PriceUpdate{instrument, price}).start_running_on(strategy->event_base);
         }
     });
 

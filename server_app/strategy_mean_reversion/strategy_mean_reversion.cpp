@@ -69,7 +69,7 @@ void StrategyMeanReversion::init()
 
     // Add price callback + subscribe to symbol
     m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    m_gateway->register_price_update([this](std::string symbol, double price)
+    m_gateway->register_price_update([this](const Instrument* instrument, double price)
     {
         std::unique_lock lock(m_strategy_mutex);
 
@@ -78,7 +78,7 @@ void StrategyMeanReversion::init()
         // Can miss some price update
         if (m_has_data_update.is_value_set() == false)
         {
-            m_state_data_queue.push(MRPriceUpdate{std::move(symbol), price});
+            m_state_data_queue.push(MRPriceUpdate{instrument->exchange_symbol, price});
 
             // Inform has data update
             m_has_data_update.set_value(true);
