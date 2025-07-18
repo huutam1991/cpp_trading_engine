@@ -72,7 +72,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
             {
                 ws->send(subcribe.get_string_value());
 
-                // Set period time to re-active m_listen_key at every 30 seconds
+                // Set period time to send ping frame at every 30 seconds
                 ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> TaskVoid
                 {
                     if (auto ws = websocket.lock())
