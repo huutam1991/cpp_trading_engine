@@ -213,16 +213,20 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
 
 TaskVoid BinanceGateway::cancel_all_on_exchange(std::string symbol)
 {
-    // Currently, only implement for SPOT
-    co_await m_quoter_spot.cancel_all(std::move(symbol));
+    co_await m_quoter_spot.cancel_all(symbol);
+    co_await m_quoter_perpetual.cancel_all(symbol);
 
     co_return;
 }
 
 Task<Json> BinanceGateway::cancel_on_exchange(Order order)
 {
-    // Currently, only implement for SPOT
-    co_return co_await m_quoter_spot.cancel(std::move(order));
+    // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
+    BinanceQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
+        (BinanceQuoter*)&m_quoter_spot :
+        (BinanceQuoter*)&m_quoter_perpetual;
+
+    co_return co_await quoter->cancel(std::move(order));
 }
 
 Task<Json> BinanceGateway::place_on_exchange(Order order)
