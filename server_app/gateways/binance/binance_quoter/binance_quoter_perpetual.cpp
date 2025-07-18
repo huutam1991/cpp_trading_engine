@@ -5,6 +5,8 @@
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 #include <app_utils/app_utils.h>
 
+#include <time/measure_time.h>
+
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key) : BinanceQuoter(key)
@@ -68,7 +70,6 @@ void BinanceQuoterPerpetual::init_websocket()
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
             {
-                spdlog::info("BinanceQuoterPerpetual - Order trade update: {}", json);
                 Json o = json["o"];
 
                 std::string exchange_symbol = o["s"];
@@ -85,7 +86,6 @@ void BinanceQuoterPerpetual::init_websocket()
                     std::stod((std::string)o["p"]),   // Price
                     std::stod((std::string)o["q"]),   // Quantity
                 };
-                spdlog::info("BinanceQuoterPerpetual - Order parse update: {}", order.to_json());
 
                 if (o["X"] == "NEW")
                 {
