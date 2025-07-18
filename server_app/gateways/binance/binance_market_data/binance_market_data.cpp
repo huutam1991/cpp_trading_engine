@@ -6,6 +6,8 @@
 
 #include <app_constants.h>
 
+#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 3000
+
 BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)
@@ -48,7 +50,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
 
     websocket->set_callbacks(
         // on_connect
-        [this, symbol, websocket]() -> TaskVoid
+        [this, symbol, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> TaskVoid
         {
             spdlog::info("Binance websocket depth connected");
 
@@ -67,7 +69,21 @@ void BinanceMarketData::start_websocket(std::string symbol)
 
             spdlog::info("subcribe = {}", subcribe);
 
-            websocket->send(subcribe.get_string_value());
+            if (auto ws = websocket.lock())
+            {
+                ws->send(subcribe.get_string_value());
+
+                // Set period time to re-active m_listen_key at every 30 seconds
+                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> TaskVoid
+                {
+                    if (auto ws = websocket.lock())
+                    {
+                        ws->send_ping();
+                    }
+
+                    co_return;
+                }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
+            }
 
             co_return;
         },
