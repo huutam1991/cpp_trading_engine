@@ -93,7 +93,7 @@ void Instrument::add_instrument_to_cache(ExchangeId exchange_id, const Instrumen
     }
 
     // Add to static list
-    add_instrument_to_list(exchange_id, instrument);
+    add_instrument_to_list(exchange_id, it->second.object);
 }
 
 void Instrument::clear_instrument_by_exchange(ExchangeId exchange_id)

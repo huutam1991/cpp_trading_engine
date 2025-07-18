@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     GatewayManager::instance().init();
     OrderManager::instance().init();
 
-    // // Strategy
+    // Strategy
     StrategyManager::instance().init();
 
     // Server
