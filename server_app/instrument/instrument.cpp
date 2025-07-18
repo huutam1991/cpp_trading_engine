@@ -83,7 +83,7 @@ void Instrument::add_instrument_to_cache(ExchangeId exchange_id, const Instrumen
     
     // Add to cache
     auto [it, success] = cache_instruments.emplace(symbol, SavableObject<Instrument>(INSTRUMENT_DB_NAME, exchange_name));
-    if (success == false)
+    if (success == true)
     {
         it->second = instrument; // Update to DB
     }

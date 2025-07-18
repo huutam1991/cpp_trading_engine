@@ -14,10 +14,17 @@ void Gateway::init()
     // Load cache instruments
     Instrument::CacheInstruments& cache_instruments = Instrument::load_cache_instruments(m_exchange_id);
 
+    for (auto& [symbol, savable_object] : cache_instruments)
+    {
+        spdlog::info("Gateway::init - Loaded cache instrument: {}", savable_object.object.to_json());
+    }
+
     // Fetch new instruments if cache is empty
     if (cache_instruments.empty())
     {
+        spdlog::info("Gateway::init - Fetching instruments for exchange: {}", m_gateway_name);
         std::vector<Instrument> instruments = fetch_instruments();
+
         for (const Instrument& instrument : instruments)
         {
             Instrument::add_instrument_to_cache(m_exchange_id, instrument);

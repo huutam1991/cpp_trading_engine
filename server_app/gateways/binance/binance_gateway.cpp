@@ -102,6 +102,12 @@ Json BinanceGateway::get_perpetual_symbols_info()
             return;
         }
 
+        // Only process PERPETUAL contracts
+        if (data["contractType"] != "PERPETUAL")
+        {
+            return;
+        }
+
         std::string exchange_symbol = data["symbol"];
         std::string base_asset = data["baseAsset"];
         std::string quote_asset = data["quoteAsset"];
