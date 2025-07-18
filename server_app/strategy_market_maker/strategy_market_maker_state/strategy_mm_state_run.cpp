@@ -32,7 +32,7 @@ void StrategyMarketMakerStateRun::on_config_change()
 
 void StrategyMarketMakerStateRun::update_lot_size()
 {
-    m_lot_size = m_gateway->get_lot_size("spot", m_config.symbol);
+    // m_lot_size = m_gateway->get_lot_size("spot", m_config.symbol);
     spdlog::debug("StrategyMarketMakerStateRun - update [m_lot_size] = {}", m_lot_size);
 }
 

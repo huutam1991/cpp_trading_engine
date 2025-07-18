@@ -40,11 +40,14 @@ Order Order::from_json(Json& data)
     Json instrument_json = data["instrument"];
     ExchangeId exchange_id = enum_reflect::enum_value<ExchangeId>(std::string(instrument_json["exchange_id"]));
     std::string symbol = instrument_json["symbol"];
-    Instrument* instrument_ptr = Instrument::get_instrument_by_symbol(exchange_id, symbol);
+    InstrumentType instrument_type = enum_reflect::enum_value<InstrumentType>(std::string(data["instrument_type"]));
+    
+    // Get instrument pointer
+    const Instrument* instrument_ptr = Instrument::get_instrument_by_symbol(exchange_id, instrument_type, symbol);
 
     Order res;
     res.order_id = (OrderId)data["order_id"];
-    res.instrument_type = enum_reflect::enum_value<InstrumentType>(std::string(data["instrument_type"]));
+    res.instrument_type = instrument_type;
     res.status = enum_reflect::enum_value<Status>(std::string(data["status"]));
     res.instrument = instrument_ptr;
     res.side = enum_reflect::enum_value<Side>(std::string(data["side"]));

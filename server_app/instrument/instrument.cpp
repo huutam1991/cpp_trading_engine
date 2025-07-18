@@ -101,9 +101,9 @@ void Instrument::add_instrument_to_cache(ExchangeId exchange_id, const Instrumen
 
 void Instrument::clear_instrument_by_exchange(ExchangeId exchange_id)
 {
-    for (size_t i = 0; i < InstrumentType::TOTAL; i++)
+    for (size_t i = 0; i < InstrumentType::TOTAL_INSTRUMENTS; i++)
     {
-        for (size_t j = 0; j < StoreType::TOTAL; j++)
+        for (size_t j = 0; j < StoreType::TOTAL_STORE_TYPES; j++)
         {
             get_instrument_list(exchange_id, (InstrumentType)i, (StoreType)j).clear();
         }
@@ -112,7 +112,7 @@ void Instrument::clear_instrument_by_exchange(ExchangeId exchange_id)
 
 void Instrument::add_instrument_to_list(ExchangeId exchange_id, const Instrument& instrument)
 {
-    for (size_t i = 0; i < InstrumentType::TOTAL; i++)
+    for (size_t i = 0; i < InstrumentType::TOTAL_INSTRUMENTS; i++)
     {
         std::unordered_map<std::string, const Instrument*>& ins_by_symbol = get_instrument_list(exchange_id, (InstrumentType)i, StoreType::BY_SYMBOL);
         std::unordered_map<std::string, const Instrument*>& ins_by_exchange_symbol = get_instrument_list(exchange_id, (InstrumentType)i, StoreType::BY_EXCHANGE_SYMBOL);

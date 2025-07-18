@@ -202,16 +202,3 @@ Task<Json> CoinbaseGateway::get_balances()
 
     co_return balances["balances"];
 }
-
-double CoinbaseGateway::round_up_quantity(const std::string& type, const std::string& symbol, double quantity)
-{
-    size_t lot_size = m_symbols_info[type][symbol]["lotSize"];
-    std::string round_str_number = round_string_number(std::to_string(quantity), lot_size);
-
-    return std::stod(round_str_number);
-}
-
-size_t CoinbaseGateway::get_lot_size(const std::string& type, const std::string& symbol)
-{
-    return 1;
-}

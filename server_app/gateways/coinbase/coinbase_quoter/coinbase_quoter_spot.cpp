@@ -65,7 +65,7 @@ void CoinbaseQuoterSpot::init_websocket()
             if (json["e"] == "executionReport")
             {
                 std::string exchange_symbol = json["s"];
-                Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::COINBASE, exchange_symbol);
+                const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::COINBASE, InstrumentType::SPOT, exchange_symbol);
 
                 Order order
                 {

@@ -14,14 +14,14 @@ enum ExchangeId
 {
     BINANCE,
     COINBASE,
-    TOTAL
+    TOTAL_EXCHANGES
 };
 
 enum InstrumentType
 {
     SPOT,
     PERPETUAL,
-    TOTAL
+    TOTAL_INSTRUMENTS
 };
 
 class Instrument
@@ -53,7 +53,7 @@ private:
     {
         BY_SYMBOL,
         BY_EXCHANGE_SYMBOL,
-        TOTAL
+        TOTAL_STORE_TYPES
     };
 
     static CacheInstruments& get_cache_instruments(ExchangeId exchange_id);
@@ -63,7 +63,7 @@ private:
     static std::unordered_map<std::string, const Instrument*>& get_instrument_list(ExchangeId exchange_id, InstrumentType instrument_type, StoreType store_type)
     {
         using InstrumentList = std::unordered_map<std::string, const Instrument*>;
-        static InstrumentList instrument_list[ExchangeId::TOTAL][InstrumentType::TOTAL][StoreType::TOTAL];
+        static InstrumentList instrument_list[ExchangeId::TOTAL_EXCHANGES][InstrumentType::TOTAL_INSTRUMENTS][StoreType::TOTAL_STORE_TYPES];
 
         return instrument_list[exchange_id][instrument_type][store_type];
     }

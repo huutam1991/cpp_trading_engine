@@ -286,7 +286,7 @@ void add_app_route()
             OrderManager::generate_order_id(),
             InstrumentType::SPOT,
             Order::Status::NOT_AVAILABLE,
-            Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, symbol),
+            Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, InstrumentType::SPOT, symbol),
             enum_reflect::enum_value<Order::Side>(side),
             enum_reflect::enum_value<Order::OrderType>(type),
             price,

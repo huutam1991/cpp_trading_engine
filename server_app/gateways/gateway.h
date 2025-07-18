@@ -44,6 +44,4 @@ public:
 
     // Util methods
     virtual Task<Json> get_balances() = 0;
-    virtual double round_up_quantity(const std::string& type, const std::string& symbol, double quantity) = 0;
-    virtual size_t get_lot_size(const std::string& type, const std::string& symbol) = 0;
 };
