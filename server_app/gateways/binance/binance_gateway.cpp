@@ -144,25 +144,34 @@ std::string BinanceGateway::round_string_number(const std::string& str_number, s
 
 void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
-    // Spot
-    if (instruments[0]->instrument_type == InstrumentType::SPOT)
+    // Split instruments into SPOT and PERPETUAL
+    std::vector<const Instrument*> spot_instruments;
+    std::vector<const Instrument*> perpetual_instruments;
+    for (const Instrument* instrument : instruments)
     {
-        m_market_data_spot.subscribe_instruments(instruments, [this](const Instrument* symbol, Json& payload)
+        if (instrument->instrument_type == InstrumentType::SPOT)
         {
-            this->on_depth_update(symbol, payload);
-        });
-        m_market_data_spot.start();
+            spot_instruments.push_back(instrument);
+        }
+        else if (instrument->instrument_type == InstrumentType::PERPETUAL)
+        {
+            perpetual_instruments.push_back(instrument);
+        }
     }
 
-    // Perpetual
-    if (instruments[0]->instrument_type == InstrumentType::PERPETUAL)
+    // Spot
+    m_market_data_spot.subscribe_instruments(spot_instruments, [this](const Instrument* symbol, Json& payload)
     {
-        m_market_data_perpetual.subscribe_instruments(instruments, [this](const Instrument* symbol, Json& payload)
-        {
-            this->on_depth_update(symbol, payload);
-        });
-        m_market_data_perpetual.start();
-    }
+        this->on_depth_update(symbol, payload);
+    });
+    m_market_data_spot.start();
+
+    // Perpetual
+    m_market_data_perpetual.subscribe_instruments(perpetual_instruments, [this](const Instrument* symbol, Json& payload)
+    {
+        this->on_depth_update(symbol, payload);
+    });
+    m_market_data_perpetual.start();
 }
 
 void BinanceGateway::on_depth_update(const Instrument* instrument, Json& payload)
