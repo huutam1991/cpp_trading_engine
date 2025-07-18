@@ -5,7 +5,7 @@
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 #include <app_utils/app_utils.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 3000
+#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key) : BinanceQuoter(key)
 {
@@ -88,31 +88,39 @@ void BinanceQuoterPerpetual::init_websocket()
 
                 if (o["X"] == "NEW")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
+                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
                     order.status = Order::Status::NEW;
                 }
                 else if (o["X"] == "FILLED")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
+                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
                     order.status = Order::Status::FILLED;
-                    order.filled_quantity = std::stod((std::string)json["l"]);
-                    order.filled_price = std::stod((std::string)json["L"]);
-                    order.commission_amount = std::stod((std::string)json["n"]);
-                    order.commission_asset = (std::string)json["N"];
+                    order.filled_quantity = std::stod((std::string)o["l"]);
+                    order.filled_price = std::stod((std::string)o["L"]);
+                    order.commission_amount = std::stod((std::string)o["n"]);
+                    order.commission_asset = (std::string)o["N"];
                 }
                 else if (o["X"] == "PARTIALLY_FILLED")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(json["c"]);
+                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
                     order.status = Order::Status::PARTIALLY_FILLED;
-                    order.filled_quantity = std::stod((std::string)json["l"]);
-                    order.filled_price = std::stod((std::string)json["L"]);
-                    order.commission_amount = std::stod((std::string)json["n"]);
-                    order.commission_asset = (std::string)json["N"];
+                    order.filled_quantity = std::stod((std::string)o["l"]);
+                    order.filled_price = std::stod((std::string)o["L"]);
+                    order.commission_amount = std::stod((std::string)o["n"]);
+                    order.commission_asset = (std::string)o["N"];
                 }
                 else if (o["X"] == "CANCELED")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(json["C"]);
+                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
                     order.status = Order::Status::CANCELED;
+                }
+
+                // spdlog::info("BinanceQuoterPerpetual Order: {}", order.to_json());
+
+                // Only update order if [order.order_id] != 0
+                if (order.order_id != 0)
+                {
+                    OrderManager::instance().update_order(order);
                 }
             }
 
