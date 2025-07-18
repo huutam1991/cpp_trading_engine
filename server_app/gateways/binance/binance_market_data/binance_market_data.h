@@ -6,11 +6,11 @@
 #include <websocket/websocket_client_async.h>
 #include <json/json.h>
 
-class BinanceMarketData
+class BinanceMarketDataSpot
 {
 public:
-    BinanceMarketData(const std::string& url, const std::string& port);
-    ~BinanceMarketData();
+    BinanceMarketDataSpot(const std::string& url, const std::string& port);
+    ~BinanceMarketDataSpot();
 
     void update_url_and_port(const std::string& url, const std::string& port);
     virtual void start();

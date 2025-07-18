@@ -8,7 +8,7 @@
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
-BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& port):
+BinanceMarketDataSpot::BinanceMarketDataSpot(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)
 {
@@ -16,13 +16,13 @@ BinanceMarketData::BinanceMarketData(const std::string& url, const std::string& 
     m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
 }
 
-BinanceMarketData::~BinanceMarketData()
+BinanceMarketDataSpot::~BinanceMarketDataSpot()
 {
     // del_timer_to_check_websocket_stream_is_stop();
-    ADD_LOG("~BinanceMarketData");
+    ADD_LOG("~BinanceMarketDataSpot");
 }
 
-void BinanceMarketData::start()
+void BinanceMarketDataSpot::start()
 {
     // Close all remaining websockets
     for (auto& [_, websocket] : m_websockets)
@@ -37,7 +37,7 @@ void BinanceMarketData::start()
     }
 }
 
-void BinanceMarketData::start_websocket(std::string symbol)
+void BinanceMarketDataSpot::start_websocket(std::string symbol)
 {
     if (m_websockets.find(symbol) != m_websockets.end())
     {
@@ -114,7 +114,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         [this, symbol]() -> TaskVoid
         {
             // Re-start
-            spdlog::debug("Disconnect, re-start BinanceMarketData");
+            spdlog::debug("Disconnect, re-start BinanceMarketDataSpot");
             this->start_websocket(symbol);
 
             co_return;
@@ -122,7 +122,7 @@ void BinanceMarketData::start_websocket(std::string symbol)
         // on_close
         []() -> TaskVoid
         {
-            spdlog::debug("BinanceMarketData close");
+            spdlog::debug("BinanceMarketDataSpot close");
             co_return;
         }
     );
@@ -130,25 +130,25 @@ void BinanceMarketData::start_websocket(std::string symbol)
     websocket->connect(m_url, m_port, "/ws");
 }
 
-size_t BinanceMarketData::get_stream_id_count()
+size_t BinanceMarketDataSpot::get_stream_id_count()
 {
     static int stream_id_count = 0;
     return ++stream_id_count;
 }
 
-void BinanceMarketData::update_url_and_port(const std::string& url, const std::string& port)
+void BinanceMarketDataSpot::update_url_and_port(const std::string& url, const std::string& port)
 {
     m_url = url;
     m_port = port;
 }
 
-void BinanceMarketData::subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back)
+void BinanceMarketDataSpot::subscribe_symbol(std::vector<std::string> symbols, std::function<void(const std::string& symbol, Json& payload)> call_back)
 {
     m_symbols = std::move(symbols);
     m_on_callback = std::move(call_back);
 }
 
-bool BinanceMarketData::standardize_data(const std::string& data, Json& depth)
+bool BinanceMarketDataSpot::standardize_data(const std::string& data, Json& depth)
 {
     Json order_book = Json::parse(data);
 
