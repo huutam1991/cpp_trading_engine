@@ -59,7 +59,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
-            params[0] = lower_case_symbol + "@depth5@1000ms";
+            params[0] = lower_case_symbol + "@depth5@500ms";
 
             Json subcribe;
             subcribe["method"] = "SUBSCRIBE";
@@ -89,7 +89,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
         // on_message
         [this, instrument](std::string buffer) -> TaskVoid
         {
-            // MeasureTime t("Handle price update", MeasureUnit::MICROSECOND);
+            // MeasureTime t("Handle price update PERPETUAL", MeasureUnit::MICROSECOND);
 
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
@@ -154,7 +154,7 @@ bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json&
 
     // ADD_LOG(order_book);
 
-    if (order_book.has_field("asks") && order_book.has_field("bids"))
+    if (order_book.has_field("a") && order_book.has_field("b"))
     {
         // symbol
         depth["s"] = "m_symbol";
@@ -163,7 +163,7 @@ bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json&
 
         // update asks
         Json A = Json::create_array();
-        Json asks = order_book["asks"];
+        Json asks = order_book["a"];
         asks.for_each([&A](Json& data)
         {
             Json j = Json::create_array();
@@ -175,7 +175,7 @@ bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json&
 
         // update bids
         Json B = Json::create_array();
-        Json bids = order_book["bids"];
+        Json bids = order_book["b"];
         bids.for_each([&B](Json& data)
         {
             Json j = Json::create_array();
