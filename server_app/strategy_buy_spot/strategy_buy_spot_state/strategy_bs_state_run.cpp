@@ -40,7 +40,7 @@ void StrategyBuySpotStateRun::on_config_change()
     m_current_price = 0.0;
     
     // Get new instruments
-    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), InstrumentType::SPOT, m_config.symbol);
+    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.instrument_type, m_config.symbol);
     spdlog::debug("StrategyBuySpotStateRun, instrument: {}", m_instrument->to_json());
 }
 
@@ -76,7 +76,7 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
+        m_config.instrument_type,
         Order::Status::NOT_AVAILABLE,
         m_instrument,
         Order::Side::BUY,
@@ -90,7 +90,7 @@ Order StrategyBuySpotStateRun::get_limit_sell_spot_order(double price, double qu
 {
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
+        m_config.instrument_type,
         Order::Status::NOT_AVAILABLE,
         m_instrument,
         Order::Side::SELL,
@@ -104,7 +104,7 @@ Order StrategyBuySpotStateRun::get_cancel_order(OrderId order_id)
 {
     return Order(
         order_id,
-        InstrumentType::SPOT,
+        m_config.instrument_type,
         Order::Status::NOT_AVAILABLE,
         m_instrument,
         Order::Side::BUY,

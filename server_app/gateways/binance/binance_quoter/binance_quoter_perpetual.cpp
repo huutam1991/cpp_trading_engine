@@ -185,11 +185,6 @@ Task<Json> BinanceQuoterPerpetual::cancel(Order order)
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
-    // Update order result to "placing", mean need to wait until it get filled
-    update_order_result({
-        {"status", "PLACING"},
-    });
-
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
 
@@ -197,6 +192,7 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
     query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
     query_str += "&type=" + (std::string)enum_reflect::enum_name(order.type);
     query_str += "&quantity=" + std::to_string(order.quantity);
+    query_str += "&newClientOrderId=" + std::to_string(order.order_id);
 
     if (order.type == Order::OrderType::LIMIT)
     {

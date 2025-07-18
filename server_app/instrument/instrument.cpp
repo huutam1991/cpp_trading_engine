@@ -109,14 +109,11 @@ void Instrument::clear_instrument_by_exchange(ExchangeId exchange_id)
 
 void Instrument::add_instrument_to_list(ExchangeId exchange_id, const Instrument& instrument)
 {
-    for (size_t i = 0; i < InstrumentType::TOTAL_INSTRUMENTS; i++)
-    {
-        std::unordered_map<std::string, const Instrument*>& ins_by_symbol = get_instrument_list(exchange_id, (InstrumentType)i, StoreType::BY_SYMBOL);
-        std::unordered_map<std::string, const Instrument*>& ins_by_exchange_symbol = get_instrument_list(exchange_id, (InstrumentType)i, StoreType::BY_EXCHANGE_SYMBOL);
+    std::unordered_map<std::string, const Instrument*>& ins_by_symbol = get_instrument_list(exchange_id, instrument.instrument_type, StoreType::BY_SYMBOL);
+    std::unordered_map<std::string, const Instrument*>& ins_by_exchange_symbol = get_instrument_list(exchange_id, instrument.instrument_type, StoreType::BY_EXCHANGE_SYMBOL);
 
-        ins_by_symbol.emplace(instrument.symbol, &instrument);
-        ins_by_exchange_symbol.emplace(instrument.exchange_symbol, &instrument);
-    }
+    ins_by_symbol.emplace(instrument.symbol, &instrument);
+    ins_by_exchange_symbol.emplace(instrument.exchange_symbol, &instrument);
 } 
 
 const Instrument* Instrument::get_instrument_by_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol)
