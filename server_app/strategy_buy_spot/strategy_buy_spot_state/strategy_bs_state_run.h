@@ -3,6 +3,7 @@
 #include <unordered_map>
 
 #include <data_model/savable_object.h>
+#include <enum_reflect/enum_reflect.h>
 
 #include <order/order_manager.h>
 #include <gateways/gateway.h>
@@ -28,7 +29,7 @@ private:
     const Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
     double m_lower_nearest_price = 0.0;
-    std::string m_strategy_buy_spot_db_name = STRATEGY_BUY_SPOT_NAME + std::string("_strategy");
+    std::string m_strategy_buy_spot_db_name;
 
     // List of buy points
     std::unordered_map<double, SavableObject<BuyPoint>> m_buy_points;

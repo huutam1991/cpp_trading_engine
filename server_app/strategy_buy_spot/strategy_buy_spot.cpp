@@ -62,7 +62,7 @@ Json StrategyBuySpot::get_info(Json& params)
 Json StrategyBuySpot::get_profit()
 {
     double total_profit = 0.0;
-    MongoDB::instance().set_db_and_collection(STRATEGY_BUY_SPOT_NAME + std::string("_strategy"), "buy_points").find_many().for_each
+    MongoDB::instance().set_db_and_collection(m_strategy_name, "buy_points").find_many().for_each
     (
         [&total_profit](Json& buy_point)
         {

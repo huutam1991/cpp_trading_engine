@@ -2,7 +2,7 @@
 #include <time/measure_time.h>
 
 StrategyBuySpotStateRun::StrategyBuySpotStateRun(std::shared_ptr<Gateway> gateway, const StrategyBuySpotConfig& config)
-    : m_gateway{gateway}, m_config{config}
+    : m_gateway{gateway}, m_config{config}, m_strategy_buy_spot_db_name{enum_reflect::enum_name<EventBaseID>(EventBaseID::BUY_SPOT_STRATEGY)}
 {
     m_buy_points = SavableObject<BuyPoint>::load_objects_map<double>(m_strategy_buy_spot_db_name, "buy_points", "price");
 }
