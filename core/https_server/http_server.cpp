@@ -107,9 +107,9 @@ int HttpServer::accept_new_connection()
         int n;
         unsigned int m = sizeof(n);
         getsockopt(client_fd, SOL_SOCKET, SO_RCVBUF, (void *)&n, &m);
-        // ADD_LOG("client_fd = " << client_fd << ", Receive buffer = " << n);
+        // spdlog::debug("client_fd = {}, Receive buffer = {}", client_fd, n);
         getsockopt(client_fd, SOL_SOCKET, SO_SNDBUF, (void *)&n, &m);
-        // ADD_LOG("client_fd = " << client_fd << ", Send    buffer = " << n);
+        // spdlog::debug("client_fd = {}, Send buffer = {}", client_fd, n);
     }
     fcntl(client_fd, F_SETFL, O_NONBLOCK);
 
@@ -136,7 +136,7 @@ void HttpServer::handle_client_request(int client_fd)
 
         if (read_bytes == 0)
         {
-            ADD_LOG("Connection lost, fd = " << client_fd);
+            spdlog::debug("Connection lost, fd = {}", client_fd);
             // Clean save buffer
             m_save_buffer_by_socket_id[client_fd] = "";
             close_connection(client_fd);
@@ -147,7 +147,7 @@ void HttpServer::handle_client_request(int client_fd)
     }
     else
     {
-        ADD_LOG("Connection lost, fd = " << client_fd);
+        spdlog::debug("Connection lost, fd = {}", client_fd);
         // Clean save buffer
         m_save_buffer_by_socket_id[client_fd] = "";
         close_connection(client_fd);

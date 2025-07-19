@@ -52,7 +52,7 @@ void ThreadPool::update_counting_running_thread(int amount)
     m_running_threads += amount;
     if (m_is_write_log)
     {
-        ADD_LOG(m_thread_pool_name << ": " << m_running_threads << " / " << m_total_threads);
+        spdlog::debug("{}: {} / {}", m_thread_pool_name, m_running_threads, m_total_threads);
     }
 }
 

@@ -32,7 +32,6 @@ std::function<HttpResponse(HttpRequest*)> HttpRequest::s_bad_request_getter = ba
 
 HttpRequest::HttpRequest(const std::string& content, const std::string& dir_path) : m_dir_path(dir_path)
 {
-    // ADD_LOG("");
     deserialize(content);
 }
 
@@ -50,13 +49,12 @@ void HttpRequest::deserialize_url(const std::string& content)
     size_t end_of_url_pos = content.find_first_of(' ', end_of_method_pos + 1);
     if (end_of_url_pos == std::string::npos)
     {
-        // // LOG(INFO) << "deserialize_url No URL substring found" << std::endl;
-        ADD_LOG("deserialize_url No URL substring found");
+        spdlog::error("deserialize_url No URL substring found");
         return;
     }
     m_url = content.substr(end_of_method_pos + 1, end_of_url_pos - end_of_method_pos - 1);
 
-    // ADD_LOG("Route = " << m_url);
+    // spdlog::debug("Route = {}", m_url);
 }
 
 void HttpRequest::deserialize_query_string(const std::string& content)
@@ -314,12 +312,11 @@ void HttpRequest::add_custom_bad_request_getter(std::function<HttpResponse(HttpR
 HttpRequest* HttpRequest::CreateNewHttpRequest(const std::string& content, const std::string& dir_path)
 {
     // // Get String method of request
-    // ADD_LOG("Content = \n" << content);
+    // spdlog::debug("Content = {}", content);
 
     size_t end_of_method_pos = content.find_first_of(' ', 0);
     if (end_of_method_pos == std::string::npos) {
-        // // LOG(INFO) << "No HTTP-Method substring found" << std::endl;
-        ADD_LOG("No HTTP-Method substring found");
+        spdlog::error("No HTTP-Method substring found");
         // exit(EXIT_FAILURE);
         return nullptr;
     }
@@ -328,8 +325,7 @@ HttpRequest* HttpRequest::CreateNewHttpRequest(const std::string& content, const
     // Get Enum method of request
     auto method_it = request_method_map.find(request_method_str);
     if (method_it == request_method_map.end()) {
-        // // LOG(INFO) << "No valid HTTP-Method found" << std::endl;
-        ADD_LOG("No valid HTTP-Method found");
+        spdlog::error("No valid HTTP-Method found: {}", request_method_str);
         // exit(EXIT_FAILURE);
         return nullptr;
     }

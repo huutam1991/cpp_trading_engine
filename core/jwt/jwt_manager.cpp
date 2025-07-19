@@ -36,7 +36,7 @@ std::string JWTManager::verify_token(const std::string& token)
     }
     catch (std::exception const& e)
     {
-        ADD_LOG("Token verification error: " << e.what());
+        spdlog::error("Token verification error: {}", e.what());
         return e.what();
     }
 

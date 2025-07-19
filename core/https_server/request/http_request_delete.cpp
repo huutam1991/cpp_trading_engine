@@ -3,5 +3,5 @@
 
 HttpRequestDelete::HttpRequestDelete(const std::string& content, const std::string& dir_path) : HttpRequestPost(content, dir_path)
 {
-    ADD_LOG("Create HttpRequestDelete, " << m_url);
+    spdlog::debug("Create HttpRequestDelete, {}", m_url);
 }
