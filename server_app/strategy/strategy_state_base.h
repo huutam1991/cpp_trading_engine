@@ -1,7 +1,9 @@
 #pragma once
 
 #include <coroutine/task_void.h>
+#include <enum_reflect/enum_reflect.h>
 #include <strategy/strategy_abstract.h>
+
 
 enum StrategyState
 {
@@ -14,20 +16,10 @@ struct StrategyStateData
 {
     StrategyState state = StrategyState::STOP;
 
-    static inline std::string to_string(StrategyState data)
-    {
-        return data == StrategyState::RUN ? "RUN" : "STOP";
-    }
-
-    static inline StrategyState from_string(const std::string& data)
-    {
-        return data == "RUN" ? StrategyState::RUN : StrategyState::STOP;
-    }
-
     Json to_json()
     {
         return {
-            {"state", to_string(state)}
+            {"state", enum_reflect::enum_name(state)}
         };
     }
 
@@ -36,7 +28,7 @@ struct StrategyStateData
         StrategyStateData res;
 
         res.state = data.has_field("state") ? 
-            from_string((std::string)data["state"]) : StrategyState::STOP;
+            enum_reflect::enum_value<StrategyState>((std::string)data["state"]) : StrategyState::STOP;
 
         return res;
     }
