@@ -5,9 +5,7 @@
 #include <strategy/strategy_base.h>
 #include <strategy_price_arbitrage/strategy_price_arbitrage_config.h>
 
-inline constexpr char PriceArbitrageName[] = STRATEGY_PRICE_ARBITRAGE_NAME;
-
-class StrategyPriceArbitrage : public StrategyBase<StrategyPriceArbitrageConfig, PriceArbitrageName, EventBaseID::PRICE_ARBITRAGE_STRATEGY>
+class StrategyPriceArbitrage : public StrategyBase<StrategyPriceArbitrageConfig, EventBaseID::PRICE_ARBITRAGE_STRATEGY>
 {
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;

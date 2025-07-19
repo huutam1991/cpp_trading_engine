@@ -5,8 +5,9 @@
 #include <app_constants.h>
 #include <strategy/strategy_abstract.h>
 #include <strategy/strategy_state_base.h>
+#include <enum_reflect/enum_reflect.h>
 
-template<class StrategyConfig, const char* StrategyName, size_t eventBaseID>
+template<class StrategyConfig, size_t eventBaseID>
 class StrategyBase : public StrategyAbstract
 {
 protected:
@@ -19,9 +20,9 @@ protected:
 public:
     StrategyBase() : 
         StrategyAbstract(EventBaseManager::get_event_base_by_id(eventBaseID)),
-        m_strategy_name(StrategyName),
-        m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name + "_strategy", "config")},
-        m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name + "_strategy", "state")}
+        m_strategy_name(enum_reflect::enum_name<EventBaseID>((EventBaseID)eventBaseID)),
+        m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name, "config")},
+        m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name, "state")}
     {}
 
     TaskVoid init() override

@@ -5,9 +5,7 @@
 #include <strategy_buy_spot/strategy_buy_spot_config.h>
 #include <gateways/gateway_manager.h>
 
-inline constexpr char BuySpotName[] = STRATEGY_BUY_SPOT_NAME;
-
-class StrategyBuySpot : public StrategyBase<StrategyBuySpotConfig, BuySpotName, EventBaseID::BUY_SPOT_STRATEGY>
+class StrategyBuySpot : public StrategyBase<StrategyBuySpotConfig, EventBaseID::BUY_SPOT_STRATEGY>
 {
 private:
     std::shared_ptr<Gateway> m_gateway;

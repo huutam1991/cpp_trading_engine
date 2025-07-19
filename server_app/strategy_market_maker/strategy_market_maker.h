@@ -4,9 +4,7 @@
 #include <strategy/strategy_base.h>
 #include <strategy_market_maker/strategy_market_maker_config.h>
 
-inline constexpr char MarketMakerName[] = STRATEGY_MARKET_MAKER_NAME;
-
-class StrategyMarketMaker : public StrategyBase<StrategyMarketMakerConfig, MarketMakerName, EventBaseID::MARKET_MAKER_STRATEGY>
+class StrategyMarketMaker : public StrategyBase<StrategyMarketMakerConfig, EventBaseID::MARKET_MAKER_STRATEGY>
 {
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
