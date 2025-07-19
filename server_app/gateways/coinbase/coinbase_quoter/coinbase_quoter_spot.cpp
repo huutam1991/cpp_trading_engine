@@ -52,8 +52,6 @@ void CoinbaseQuoterSpot::init_websocket()
         // on_connect
         [this]() -> TaskVoid
         {
-            ADD_LOG("CoinbaseQuoterSpot websocket connected");
-
             co_return;
         },
         // on_message
@@ -108,8 +106,6 @@ void CoinbaseQuoterSpot::init_websocket()
                     order.status = Order::Status::CANCELED;
                 }
 
-                // ADD_LOG("CoinbaseQuoterSpot Order: " << order.to_json());
-
                 // Only update order if [order.order_id] != 0
                 if (order.order_id != 0)
                 {
@@ -135,7 +131,6 @@ void CoinbaseQuoterSpot::init_websocket()
                 });
 
             // Re-start
-            ADD_LOG("CoinbaseQuoterSpot - disconnect, re-starting");
             this->init_websocket();
 
             co_return;
@@ -143,8 +138,6 @@ void CoinbaseQuoterSpot::init_websocket()
         // on_close
         [this]() -> TaskVoid
         {
-            ADD_LOG("CoinbaseQuoterSpot close");
-
             // Save when websocket spot close
             auto now = std::chrono::system_clock::now();
             auto duration = now.time_since_epoch();
@@ -181,8 +174,6 @@ TaskVoid CoinbaseQuoterSpot::keep_listen_key()
     // coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
     // co_await coinbase_request.send_request();
 
-    // ADD_LOG("CoinbaseQuoterSpot, re-active m_listen_key = " << m_listen_key);
-
     // // Send ping
     // m_websocket->send_ping();
 
@@ -194,7 +185,6 @@ Json CoinbaseQuoterSpot::get_trade_result_from_response(Json& response)
     // Return empty data if has error
     if ((long)response["code"] < 0)
     {
-        ADD_LOG("Spot order error: " << response);
         return {
             {"type", "spot"},
             {"symbol", response["symbol"]},
@@ -215,7 +205,6 @@ Json CoinbaseQuoterSpot::get_trade_result_from_response(Json& response)
 
         fills.for_each([&](Json& fill)
         {
-            ADD_LOG("fill: " << fill);
             double f_quantity = std::stod(std::string(fill["qty"]));
             double f_commission = std::stod(std::string(fill["commission"]));
             double f_price = std::stod(std::string(fill["price"]));
@@ -233,8 +222,6 @@ Json CoinbaseQuoterSpot::get_trade_result_from_response(Json& response)
                 volumn_in_usdt += (f_quantity * f_price) - f_commission;
             }
         });
-
-        ADD_LOG("Spot order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
     }
 
     return {
@@ -284,8 +271,6 @@ Task<Json> CoinbaseQuoterSpot::place(Order order)
         query_str += "&timeInForce=GTC";
         query_str += "&price=" + std::to_string(order.price);
     }
-
-    ADD_LOG("query: " << query_str);
 
     co_return co_await send_coinbase_request(RequestMethod::POST, "/api/v3/order", std::move(query_str));
 }

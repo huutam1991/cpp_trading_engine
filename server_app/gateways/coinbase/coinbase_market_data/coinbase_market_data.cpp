@@ -15,8 +15,6 @@ CoinbaseMarketData::CoinbaseMarketData(const std::string& url, const std::string
 
 CoinbaseMarketData::~CoinbaseMarketData()
 {
-    // del_timer_to_check_websocket_stream_is_stop();
-    ADD_LOG("~CoinbaseMarketData");
 }
 
 void CoinbaseMarketData::start()
@@ -42,8 +40,6 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
         // on_connect
         [this, instrument, websocket]() -> TaskVoid
         {
-            ADD_LOG("Coinbase websocket depth connected");
-
             // Subcribe for depth
             size_t stream_id = get_stream_id_count();
             std::string lower_case_symbol = instrument->exchange_symbol;
@@ -57,8 +53,6 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             subcribe["params"] = params;
             subcribe["id"] = stream_id;
 
-            ADD_LOG("subcribe = " << subcribe);
-
             websocket->send(subcribe.get_string_value());
 
             co_return;
@@ -69,7 +63,6 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
             {
-                // ADD_LOG("Stream depth: " << depth);
                 if (m_on_callback != nullptr)
                 {
                     m_on_callback(instrument, depth);
@@ -89,7 +82,6 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
         [this, instrument]() -> TaskVoid
         {
             // Re-start
-            ADD_LOG("Disconnect, re-start CoinbaseMarketData");
             this->start_websocket(instrument);
 
             co_return;
@@ -97,7 +89,6 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
         // on_close
         []() -> TaskVoid
         {
-            ADD_LOG("CoinbaseMarketData close");
             co_return;
         }
     );
@@ -126,8 +117,6 @@ void CoinbaseMarketData::subscribe_instruments(std::vector<const Instrument*> in
 bool CoinbaseMarketData::standardize_data(const std::string& data, Json& depth)
 {
     Json order_book = Json::parse(data);
-
-    // ADD_LOG(order_book);
 
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {

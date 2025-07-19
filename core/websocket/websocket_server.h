@@ -51,7 +51,7 @@ public:
 
     ~session()
     {
-        ADD_LOG("Delete session = " << get_id());
+        // ADD_LOG("Delete session = " << get_id());
     }
 
     // Get on the correct executor
@@ -405,7 +405,7 @@ private:
 
     void on_accept(beast::error_code ec, tcp::socket socket)
     {
-        ADD_LOG("Websocket Server on_accept");
+        // ADD_LOG("Websocket Server on_accept");
 
         if(ec)
         {
@@ -415,9 +415,9 @@ private:
         {
             // Create the session and run it
             std::shared_ptr<session> session_ptr = std::make_shared<session>(std::move(socket));
-            ADD_LOG("Websocket Server - create session: " << session_ptr.get());
+            // ADD_LOG("Websocket Server - create session: " << session_ptr.get());
             m_websocket_server.on_new_session(session_ptr);
-            ADD_LOG("Websocket Server - run session: " << session_ptr.get());
+            // ADD_LOG("Websocket Server - run session: " << session_ptr.get());
             session_ptr->run();
         }
 
@@ -500,7 +500,7 @@ void WebsocketServer<SessionType,ListenerType>::start()
                 ioc.run();
             });
         }
-        ADD_LOG("Websocket Server is running on: " << host << ":" << port);
+        // ADD_LOG("Websocket Server is running on: " << host << ":" << port);
         ioc.run();
     });
 }
@@ -511,12 +511,12 @@ void WebsocketServer<SessionType,ListenerType>::on_new_session(std::shared_ptr<S
     // Set callback functions for the session
     session_ptr->on_connect([](SessionType& session)
     {
-        ADD_LOG("Session connect = " << session.get_id());
+        // ADD_LOG("Session connect = " << session.get_id());
     });
 
     session_ptr->on_message([this](const std::string& buffer, SessionType& session)
     {
-        ADD_LOG("Session message = " << buffer);
+        // ADD_LOG("Session message = " << buffer);
 
         if (buffer == "close")
         {
@@ -550,7 +550,7 @@ void WebsocketServer<SessionType,ListenerType>::on_new_session(std::shared_ptr<S
 
     session_ptr->on_close([this](SessionType& session)
     {
-        ADD_LOG("Close session");
+        // ADD_LOG("Close session");
         close_session(session.get_id());
     });
 
@@ -570,14 +570,14 @@ void WebsocketServer<SessionType,ListenerType>::close_session(size_t session_id)
     if (it != m_session_list.end())
     {
         m_session_list.erase(it);
-        ADD_LOG("WebsocketServer - session " << session_id << " remove from m_session_list");
+        // ADD_LOG("WebsocketServer - session " << session_id << " remove from m_session_list");
     }
     else
     {
-        ADD_LOG("WebsocketServer - session " << session_id << " cannot find in m_session_list");
+        // ADD_LOG("WebsocketServer - session " << session_id << " cannot find in m_session_list");
     }
 
-    ADD_LOG("WebsocketServer remaining sessions = " << m_session_list.size());
+    // ADD_LOG("WebsocketServer remaining sessions = " << m_session_list.size());
 }
 
 template<class SessionType, class ListenerType>
@@ -726,7 +726,7 @@ void WebsocketServer<SessionType,ListenerType>::subscribe_channel(std::string ch
         subscribed_session_id.push_back(session_id);
     }
 
-    ADD_LOG("Channel " << channel_name << " size: " << m_channel_list[channel_name].size());
+    // ADD_LOG("Channel " << channel_name << " size: " << m_channel_list[channel_name].size());
 }
 
 template<class SessionType, class ListenerType>
@@ -746,10 +746,10 @@ void WebsocketServer<SessionType,ListenerType>::unsubscribe_channel(std::string 
     if (it != subscribed_session_id.end())
     {
         subscribed_session_id.erase(it);
-        ADD_LOG("WebsocketServer - session " << session_id << " unsubscribe from channel: " << channel_name);
+        // ADD_LOG("WebsocketServer - session " << session_id << " unsubscribe from channel: " << channel_name);
     }
 
-    ADD_LOG("Channel " << channel_name << " size: " << m_channel_list[channel_name].size());
+    // ADD_LOG("Channel " << channel_name << " size: " << m_channel_list[channel_name].size());
 }
 
 template<class SessionType, class ListenerType>
@@ -767,18 +767,18 @@ void WebsocketServer<SessionType,ListenerType>::unsubscribe_all_channel(size_t s
         if (find != subscribed_session_id.end())
         {
             subscribed_session_id.erase(find);
-            ADD_LOG("WebsocketServer - session " << session_id << " unsubscribe from channel: " << channel_name);
+            // ADD_LOG("WebsocketServer - session " << session_id << " unsubscribe from channel: " << channel_name);
         }
 
-        ADD_LOG("Channel " << channel_name << " size: " << m_channel_list[channel_name].size());
+        // ADD_LOG("Channel " << channel_name << " size: " << m_channel_list[channel_name].size());
     }
 }
 
 template<class SessionType, class ListenerType>
 void WebsocketServer<SessionType,ListenerType>::send_data_through_channel(std::string channel, const std::string& user_id, Json data)
 {
-    // ADD_LOG("Websocket Server - start write to channel: " << channel);
-    // ADD_LOG("Websocket Server - total session = " << m_session_list.size());
+    // // ADD_LOG("Websocket Server - start write to channel: " << channel);
+    // // ADD_LOG("Websocket Server - total session = " << m_session_list.size());
 
     bool is_minor_chanel = m_minor_channel_list[channel];
 
@@ -810,8 +810,8 @@ void WebsocketServer<SessionType,ListenerType>::send_data_through_channel(std::s
             continue;
         }
 
-        // ADD_LOG("Websocket Server - write to session id = " << subscribed_session_id[i]);
+        // // ADD_LOG("Websocket Server - write to session id = " << subscribed_session_id[i]);
     }
 
-    // ADD_LOG("Websocket Server - total write = " << subscribed_session_id.size());
+    // // ADD_LOG("Websocket Server - total write = " << subscribed_session_id.size());
 }

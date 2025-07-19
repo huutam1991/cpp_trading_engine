@@ -53,7 +53,7 @@ public:
 
     ~session_ssl()
     {
-        ADD_LOG("Delete session_ssl = " << get_id());
+        // ADD_LOG("Delete session_ssl = " << get_id());
     }
 
     bool is_writing()
@@ -247,7 +247,7 @@ private:
             // Invoke callback
             check_invoke_close_callback();
 
-            ADD_LOG("After check_invoke_close_callback");
+            // ADD_LOG("After check_invoke_close_callback");
 
             return fail(ec, "read");
         }
@@ -296,7 +296,7 @@ private:
     void fail(beast::error_code ec, char const* what)
     {
         // LOG(ERROR) << what << ": " << ec.message() << "\n";
-        ADD_LOG("After Report a failure");
+        // ADD_LOG("After Report a failure");
     }
 
     void check_invoke_close_callback()
@@ -401,7 +401,7 @@ private:
 
     void on_accept(beast::error_code ec, tcp::socket socket)
     {
-        ADD_LOG("Websocket Server SSL on_accept");
+        // ADD_LOG("Websocket Server SSL on_accept");
 
         if(ec)
         {
@@ -411,9 +411,9 @@ private:
         {
             // Create the session_ssl and run it
             std::shared_ptr<session_ssl> session_ptr = std::make_shared<session_ssl>(std::move(socket), ctx_);
-            ADD_LOG("Websocket Server SSL - create session_ssl: " << session_ptr.get());
+            // ADD_LOG("Websocket Server SSL - create session_ssl: " << session_ptr.get());
             m_websocket_server.on_new_session(session_ptr);
-            ADD_LOG("Websocket Server SSL - run session_ssl: " << session_ptr.get());
+            // ADD_LOG("Websocket Server SSL - run session_ssl: " << session_ptr.get());
             session_ptr->run();
         }
 

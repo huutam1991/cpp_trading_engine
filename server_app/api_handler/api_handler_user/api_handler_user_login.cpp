@@ -5,6 +5,7 @@
 #include <openssl/sha.h>
 #include <sstream>
 #include <iomanip>
+#include <spdlog/spdlog.h>
 
 APIHandlerUserLogin::APIHandlerUserLogin(HttpRequest* request) : APIHandler(request)
 {
@@ -44,7 +45,7 @@ Task<HttpResponse> APIHandlerUserLogin::child_handle()
     }
     else
     {
-        ADD_LOG("Valid username + password");
+        spdlog::info("Valid username + password: {}", username);
 
         // Return values
         std::string token = JWTManager::instance().generate_token({

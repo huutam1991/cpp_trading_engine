@@ -30,69 +30,7 @@ std::string& CoinbaseQuoterPerpetual::get_port()
 
 void CoinbaseQuoterPerpetual::init_websocket()
 {
-    if (m_websocket != nullptr)
-    {
-        m_websocket->close();
-        m_websocket = nullptr;
-    }
-
-    // Event base: GATEWAY
-    EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
-
-    m_listen_key = this->get_listen_key();
-
-    m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), event_base);
-    m_websocket->set_callbacks(
-        // on_connect
-        [this]() -> TaskVoid
-        {
-            ADD_LOG("CoinbaseQuoterPerpetual websocket connected");
-
-            co_return;
-        },
-        // on_message
-        [this](std::string buffer) -> TaskVoid
-        {
-            Json json = Json::parse(buffer);
-
-            if (json["e"] == "ORDER_TRADE_UPDATE")
-            {
-                Json order = json["o"];
-                if (order["X"] == "FILLED")
-                {
-                    Json data = {
-                        {"status", "FILLED"},
-                        {"symbol", order["s"]},
-                        {"price", std::stod(std::string(order["ap"]))},
-                        {"quantity", std::stod(std::string(order["z"]))}
-                    };
-
-                    ADD_LOG("CoinbaseQuoterPerpetual Filled: " << data);
-
-                    update_order_result(data);
-                }
-            }
-
-            co_return;
-        },
-        // on_disconnect
-        [this]() -> TaskVoid
-        {
-            // Re-start
-            ADD_LOG("CoinbaseQuoterPerpetual - disconnect, re-starting");
-            this->init_websocket();
-
-            co_return;
-        },
-        // on_close
-        []() -> TaskVoid
-        {
-            ADD_LOG("CoinbaseQuoterPerpetual close");
-            co_return;
-        }
-    );
-
-    m_websocket->connect(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
+    
 }
 
 std::string CoinbaseQuoterPerpetual::get_listen_key()
@@ -111,7 +49,6 @@ Json CoinbaseQuoterPerpetual::get_trade_result_from_response(Json& response)
     // Return empty data if has error
     if ((long)response["code"] < 0)
     {
-        ADD_LOG("Perpetual order error: " << response);
         return {
             {"type", "perpetual"},
             {"symbol", response["symbol"]},
@@ -130,8 +67,6 @@ Json CoinbaseQuoterPerpetual::get_trade_result_from_response(Json& response)
     double quantity = m_order_result["quantity"];
     double price = m_order_result["price"];
     double volumn_in_usdt = quantity * price;
-
-    ADD_LOG("Perpetual order place - symbol: " << symbol << ", quantity: " << quantity << ", volumn_in_usdt: " << volumn_in_usdt);
 
     return {
         {"type", "perpetual"},

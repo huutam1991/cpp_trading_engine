@@ -30,8 +30,6 @@ namespace time_log
     std::string get_time_now_in_string();
 };
 
-#define ADD_LOG(...) std::cout << time_log::get_time_now_in_string() << " | " << __VA_ARGS__ << std::endl;
-// #define ADD_LOG(...) // LOG(INFO) << __VA_ARGS__
 #define SAFE_RELEASE(pointer) if (pointer != nullptr) { delete pointer; pointer = nullptr; }
 
 #define GET_CURRENT_TIME(current_time) \
