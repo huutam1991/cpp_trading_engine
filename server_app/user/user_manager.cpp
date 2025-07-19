@@ -23,7 +23,6 @@ bool UserManager::register_new_user(const std::string& username, const std::stri
         return false;
     }
 
-    ADD_LOG("Registering");
     unsigned char hash[SHA256_DIGEST_LENGTH];
     unsigned char upassword[password.size()];
     std::copy(password.begin(), password.end(), upassword);

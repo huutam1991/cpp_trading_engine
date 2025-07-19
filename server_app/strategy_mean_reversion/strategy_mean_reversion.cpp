@@ -58,14 +58,14 @@ void StrategyMeanReversion::init()
     m_config.is_running = (bool)config["is_running"];
 
     // Log config
-    ADD_LOG("StrategyMeanReversion config:");
-    ADD_LOG("- symbol: " << m_config.symbol);
-    ADD_LOG("- buy_volumn: " << m_config.buy_volumn);
-    ADD_LOG("- buy_at_lower_price: " << m_config.buy_at_lower_price);
-    ADD_LOG("- sell_at_higher_price: " << m_config.sell_at_higher_price);
-    ADD_LOG("- too_low_price_delta: " << m_config.too_low_price_delta);
-    ADD_LOG("- too_high_price_delta: " << m_config.too_high_price_delta);
-    ADD_LOG("- is_running: " << m_config.is_running);
+    spdlog::info("StrategyMeanReversion config:");
+    spdlog::info("- symbol: {}", m_config.symbol);
+    spdlog::info("- buy_volumn: {}", m_config.buy_volumn);
+    spdlog::info("- buy_at_lower_price: {}", m_config.buy_at_lower_price);
+    spdlog::info("- sell_at_higher_price: {}", m_config.sell_at_higher_price);
+    spdlog::info("- too_low_price_delta: {}", m_config.too_low_price_delta);
+    spdlog::info("- too_high_price_delta: {}", m_config.too_high_price_delta);
+    spdlog::info("- is_running: {}", m_config.is_running);
 
     // Add price callback + subscribe to symbol
     m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
@@ -73,7 +73,7 @@ void StrategyMeanReversion::init()
     {
         std::unique_lock lock(m_strategy_mutex);
 
-        // ADD_LOG("symbol: " << symbol << ", price: " << price);
+        // spdlog::debug("symbol: {}, price: {}", instrument->exchange_symbol, price);
 
         // Can miss some price update
         if (m_has_data_update.is_value_set() == false)

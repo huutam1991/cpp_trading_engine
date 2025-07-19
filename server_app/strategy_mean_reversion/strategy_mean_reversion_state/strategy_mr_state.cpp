@@ -37,17 +37,17 @@ void StrategyMeanReversionState::set_state_status(const std::string& status)
 
 void StrategyMeanReversionState::begin()
 {
-    ADD_LOG("StrategyMeanReversionState - begin");
+    spdlog::info("StrategyMeanReversionState - begin");
 }
 
 void StrategyMeanReversionState::end()
 {
-    ADD_LOG("StrategyMeanReversionState - end");
+    spdlog::info("StrategyMeanReversionState - end");
 }
 
 TaskVoid StrategyMeanReversionState::run(StrategyMeanReversionData data)
 {
-    ADD_LOG("StrategyMeanReversionState - run");
+    spdlog::info("StrategyMeanReversionState - run");
 
     co_return;
 }

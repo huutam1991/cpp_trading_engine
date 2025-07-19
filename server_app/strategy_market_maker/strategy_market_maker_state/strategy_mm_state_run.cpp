@@ -10,12 +10,12 @@ StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway
 void StrategyMarketMakerStateRun::begin()
 {
     on_config_change();
-    ADD_LOG("StrategyMarketMakerStateRun - begin");
+    spdlog::info("StrategyMarketMakerStateRun - begin");
 }
 
 void StrategyMarketMakerStateRun::end()
 {
-    ADD_LOG("StrategyMarketMakerStateRun - end");
+    spdlog::info("StrategyMarketMakerStateRun - end");
 
     m_is_placing = false;
 

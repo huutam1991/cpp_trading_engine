@@ -19,7 +19,7 @@ BinanceMarketDataSpot::BinanceMarketDataSpot(const std::string& url, const std::
 BinanceMarketDataSpot::~BinanceMarketDataSpot()
 {
     // del_timer_to_check_websocket_stream_is_stop();
-    ADD_LOG("~BinanceMarketDataSpot");
+    spdlog::debug("~BinanceMarketDataSpot");
 }
 
 void BinanceMarketDataSpot::start()
@@ -94,7 +94,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
             {
-                // ADD_LOG("Stream depth: " << depth);
+                // spdlog::debug("Stream depth: {}", depth);
                 if (m_on_callback != nullptr)
                 {
                     m_on_callback(instrument, depth);
@@ -152,7 +152,7 @@ bool BinanceMarketDataSpot::standardize_data(const std::string& data, Json& dept
 {
     Json order_book = Json::parse(data);
 
-    // ADD_LOG(order_book);
+    // spdlog::debug(order_book);
 
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {

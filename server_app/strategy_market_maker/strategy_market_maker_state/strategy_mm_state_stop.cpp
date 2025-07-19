@@ -6,12 +6,12 @@ StrategyMarketMakerStateStop::StrategyMarketMakerStateStop()
 
 void StrategyMarketMakerStateStop::begin()
 {
-    ADD_LOG("StrategyMarketMakerStateStop - begin");
+    spdlog::info("StrategyMarketMakerStateStop - begin");
 }
 
 void StrategyMarketMakerStateStop::end()
 {
-    ADD_LOG("StrategyMarketMakerStateStop - end");
+    spdlog::info("StrategyMarketMakerStateStop - end");
 }
 
 TaskVoid StrategyMarketMakerStateStop::update(StrategyUpdateData data)

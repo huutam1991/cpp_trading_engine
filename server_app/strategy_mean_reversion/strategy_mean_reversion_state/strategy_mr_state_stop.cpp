@@ -7,12 +7,12 @@ StrategyMeanReversionStateStop::StrategyMeanReversionStateStop(std::shared_ptr<G
 
 void StrategyMeanReversionStateStop::begin()
 {
-    ADD_LOG("StrategyMeanReversionStateStop - begin");
+    spdlog::info("StrategyMeanReversionStateStop - begin");
 }
 
 void StrategyMeanReversionStateStop::end()
 {
-    ADD_LOG("StrategyMeanReversionStateStop - end");
+    spdlog::info("StrategyMeanReversionStateStop - end");
 }
 
 TaskVoid StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
@@ -23,7 +23,7 @@ TaskVoid StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
         price_update = std::get<MRPriceUpdate>(data);
     }
 
-    ADD_LOG("StrategyMeanReversionStateStop: do nothing, symbol: " << price_update.symbol << ", price: " << price_update.price);
+    spdlog::debug("StrategyMeanReversionStateStop: do nothing, symbol: {}, price: {}", price_update.symbol, price_update.price);
 
     co_return;
 }

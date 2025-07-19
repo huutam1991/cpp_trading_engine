@@ -9,12 +9,12 @@ StrategyMeanReversionStateRun::StrategyMeanReversionStateRun(std::shared_ptr<Gat
 void StrategyMeanReversionStateRun::begin()
 {
     m_current_price = 0.0;
-    ADD_LOG("StrategyMeanReversionStateRun - begin");
+    spdlog::info("StrategyMeanReversionStateRun - begin");
 }
 
 void StrategyMeanReversionStateRun::end()
 {
-    ADD_LOG("StrategyMeanReversionStateRun - end");
+    spdlog::info("StrategyMeanReversionStateRun - end");
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol);

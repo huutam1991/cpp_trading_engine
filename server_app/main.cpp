@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
     HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
     server.start();
 
-    ADD_LOG("Main exit");
+    spdlog::info("Main exit");
 
     return EXIT_SUCCESS;
 }
