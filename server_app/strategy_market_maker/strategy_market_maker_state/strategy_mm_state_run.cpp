@@ -177,7 +177,7 @@ TaskVoid StrategyMarketMakerStateRun::update(StrategyUpdateData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
-        co_await handle_price_update(std::move(price_update));
+        co_await handle_price_update(price_update);
     }
     else
     {
