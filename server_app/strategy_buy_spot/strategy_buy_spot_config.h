@@ -37,7 +37,9 @@ struct StrategyBuySpotConfig
         if (data.has_field("symbol"))
         {
             res.symbol = (std::string)data["symbol"];
-            res.instrument_type = res.symbol.find("-PERPETUAL") != std::string::npos ? InstrumentType::PERPETUAL : InstrumentType::SPOT;
+            res.instrument_type = res.symbol.find("-PERPETUAL") != std::string::npos ? 
+                InstrumentType::PERPETUAL : 
+                InstrumentType::SPOT;
             res.buy_volumn = (double)data["buy_volumn"];
             res.move_price = (double)data["move_price"];
             res.max_price = (double)data["max_price"];
