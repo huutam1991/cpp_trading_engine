@@ -1,4 +1,3 @@
-#include <external_request/external_request_ssl.h>
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 
@@ -98,12 +97,7 @@ void CoinbaseQuoterPerpetual::init_websocket()
 
 std::string CoinbaseQuoterPerpetual::get_listen_key()
 {
-    ExternalRequestSsl coinbase_request(m_url, m_port, "/fapi/v1/listenKey", RequestMethod::POST);
-    coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
-
-    std::string res = coinbase_request.send_request();
-    Json data = Json::parse(res);
-    return data["listenKey"];
+    return {};
 }
 
 void CoinbaseQuoterPerpetual::update_order_result(const Json& order_result)

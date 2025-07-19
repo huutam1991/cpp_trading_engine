@@ -2,8 +2,6 @@
 #include <utils/constants.h>
 #include <app_constants.h>
 #include <https_server/route/route_controller.h>
-#include <external_request/external_request_ssl.h>
-#include <external_request/external_request.h>
 #include <json/json.h>
 #include <json/json_value.h>
 #include <mongo_db/mongo_db_header.h>

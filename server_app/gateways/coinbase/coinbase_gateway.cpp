@@ -1,5 +1,3 @@
-#include <external_request/external_request_ssl.h>
-
 #include <gateways/coinbase/coinbase_gateway.h>
 #include <app_utils/app_utils.h>
 #include <account/account.h>
@@ -29,43 +27,12 @@ CoinbaseGateway::CoinbaseGateway(const std::string& key) :
 
 Json CoinbaseGateway::get_spot_symbols_info()
 {
-    ExternalRequestSsl coinbase_request(COINBASE_ADVANCE_REALNET_URL, COINBASE_ADVANCE_REALNET_PORT, "/api/v3/exchangeInfo?symbols=[\"BTCUSDT\",\"ETHUSDT\",\"BTCUSDC\",\"ETHUSDC\",\"ETHBTC\"]", RequestMethod::GET);
-
-    Json exchange_info = Json::parse(coinbase_request.send_request());
-    Json symbols_info;
-
-    exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
-    {
-        std::string symbol_name = data["symbol"];
-
-        symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
-        symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
-        symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
-    });
-
-    return symbols_info;
+    return {};
 }
 
 Json CoinbaseGateway::get_perpetual_symbols_info()
 {
-    ExternalRequestSsl coinbase_request(COINBASE_ADVANCE_REALNET_URL, COINBASE_ADVANCE_REALNET_PORT, "/fapi/v1/exchangeInfo", RequestMethod::GET);
-
-    Json exchange_info = Json::parse(coinbase_request.send_request());
-    Json symbols_info;
-
-    exchange_info["symbols"].for_each([&symbols_info, this](Json& data)
-    {
-        std::string symbol_name = data["symbol"];
-
-        if (symbol_name == "ETHUSDT" || symbol_name == "BTCUSDT")
-        {
-            symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
-            symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
-            symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
-        }
-    });
-
-    return symbols_info;
+    return {};
 }
 
 size_t CoinbaseGateway::get_rounded_number(const std::string& lot_size)

@@ -1,4 +1,3 @@
-#include <external_request/external_request_ssl.h>
 #include <time/measure_time.h>
 #include <ioc_pool.h>
 

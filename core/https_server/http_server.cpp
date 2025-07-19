@@ -11,7 +11,6 @@
 #include <utils/util_macros.h>
 #include <https_server/http_server.h>
 #include <https_server/request/http_request.h>
-#include <external_request/external_request.h>
 #include <utils/util_macros.h>
 
 HttpServer::HttpServer(int port, std::string dir_path, EventBase* event_base) : m_port(port), m_dir_path(dir_path), m_event_base(event_base)

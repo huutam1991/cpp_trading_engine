@@ -299,16 +299,6 @@ void add_app_route()
 
         co_return HttpResponse(OK_200, Json());
     };
-
-    ADD_ROUTE(RequestMethod::POST, "/external_request")
-    {
-        std::string body = request->get_body();
-        Json data = Json::parse(body);
-
-        std::string response = ExternalRequest("www.google.com", 80, "/", RequestMethod::GET).send_request();
-
-        co_return HttpResponse(OK_200, response);
-    };
     
     // Register new user
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
