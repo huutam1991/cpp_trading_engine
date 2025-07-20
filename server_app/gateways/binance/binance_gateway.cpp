@@ -160,16 +160,16 @@ void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instru
     }
 
     // Spot
-    m_market_data_spot.subscribe_instruments(spot_instruments, [this](const Instrument* symbol, Json& payload)
+    m_market_data_spot.subscribe_instruments(spot_instruments, [this](const Instrument* instrument, Json& payload)
     {
-        this->on_depth_update(symbol, payload);
+        this->on_depth_update(instrument, payload);
     });
     m_market_data_spot.start();
 
     // Perpetual
-    m_market_data_perpetual.subscribe_instruments(perpetual_instruments, [this](const Instrument* symbol, Json& payload)
+    m_market_data_perpetual.subscribe_instruments(perpetual_instruments, [this](const Instrument* instrument, Json& payload)
     {
-        this->on_depth_update(symbol, payload);
+        this->on_depth_update(instrument, payload);
     });
     m_market_data_perpetual.start();
 }
