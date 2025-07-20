@@ -58,7 +58,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
-            params[0] = lower_case_symbol + "@depth5@500ms";
+            params[0] = lower_case_symbol + "@depth20@500ms";
 
             Json subcribe;
             subcribe["method"] = "SUBSCRIBE";
@@ -149,6 +149,7 @@ void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrum
 
 bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json& depth)
 {
+    MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
     Json order_book = Json::parse(data);
     // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
 
