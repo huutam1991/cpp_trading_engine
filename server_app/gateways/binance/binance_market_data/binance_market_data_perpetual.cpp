@@ -155,6 +155,7 @@ bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json&
 
     if (order_book.has_field("a") && order_book.has_field("b"))
     {
+        MeasureTime t2("build depth PERPETUAL", MeasureUnit::MICROSECOND);
         // symbol
         depth["s"] = "m_symbol";
         // event name
