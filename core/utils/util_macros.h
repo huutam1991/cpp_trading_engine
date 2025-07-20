@@ -4,7 +4,6 @@
 #include <chrono>
 #include <spdlog/spdlog.h>
 // #include <glog/logging.h>
-#include <utils/time_log.h>
 
 #define Singleton(className) \
 public: \
