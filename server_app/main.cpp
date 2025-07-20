@@ -1,9 +1,6 @@
 #include <iostream>
 #include <filesystem>
 // #include <glog/logging.h>
-#include <spdlog/async.h>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include <utils/constants.h>
 #include <app_constants.h>
@@ -17,6 +14,7 @@
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 
+#include <log_init.h>
 #include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
@@ -48,14 +46,8 @@ int main(int argc, char **argv) {
     add_app_route();
     add_bad_request();
 
-    // Init SpdLog format
-    std::string log_level = std::getenv("LOG_LEVEL") ? std::getenv("LOG_LEVEL") : "trace";
-    auto log_level_enum = spdlog::level::from_str(log_level);
-    auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("async_logger");
-    async_logger->set_pattern("%d-%m-%Y %H:%M:%S %^%l%$ %v");
-    async_logger->set_level(log_level_enum);
-    spdlog::set_default_logger(async_logger);
-    spdlog::info("LOG_LEVEL: {}", log_level);   
+    // Init SpdLog format  
+    LogInit::init();
 
     // Init Timer with ioc TIMER
     Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
