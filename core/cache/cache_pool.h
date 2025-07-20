@@ -41,10 +41,6 @@ class CachePool
         size_t tail = 0;
         size_t size = Size;
 
-        inline bool empty() const {
-            return size == 0;
-        }
-
         inline void move_head()
         {
             head++;
@@ -99,7 +95,7 @@ public:
 
         PoolBuffer& pool_buffer = get_pool_buffer();
 
-        if (pool_buffer.empty())
+        if (pool_buffer.size == 0)
         {
             throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
         }
