@@ -13,6 +13,7 @@
 #include <external_request/https_client_async.h>
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
+#include <cache/cache_pool.h>
 
 #include <app_utils/log_init.h>
 #include <instrument/instrument.h>
@@ -49,21 +50,49 @@ int main(int argc, char **argv) {
     // Init SpdLog format  
     LogInit::init();
 
-    // Init Timer with ioc TIMER
-    Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    // // Init Timer with ioc TIMER
+    // Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
-    // Init DBHelper with 
-    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
+    // // Init DBHelper with 
+    // DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
 
-    GatewayManager::instance().init();
-    OrderManager::instance().init();
+    // GatewayManager::instance().init();
+    // OrderManager::instance().init();
 
-    // Strategy
-    StrategyManager::instance().init();
+    // // Strategy
+    // StrategyManager::instance().init();
 
-    // Server
-    HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
-    server.start();
+    // // Server
+    // HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
+    // server.start();
+
+    // Example usage of CachePool>
+
+    struct TamTest
+    {
+    public:
+        size_t id = 0;
+        static std::string name() {
+            return "TamTest";
+        }
+    };
+
+    using PoolInt = CachePool<TamTest, 100>; 
+    auto* item = PoolInt::acquire();
+    *item = TamTest();
+    std::cout << "Acquired item: " << item->id << std::endl;
+
+    for (size_t i = 0; i < 90; ++i) {
+        item = PoolInt::acquire();
+        *item = TamTest();
+        // PoolInt::release(item); 
+
+        // spdlog::info("pool size: {}", PoolInt::size());
+    }
+
+    // auto* item2 = PoolInt::acquire();
+    PoolInt::release(item); 
+    // PoolInt::release(nullptr); // This will throw an error
 
     spdlog::info("Main exit");
 
