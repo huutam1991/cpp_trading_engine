@@ -49,10 +49,13 @@ int main(int argc, char **argv) {
     add_bad_request();
 
     // Init SpdLog format
+    std::string log_level = std::getenv("LOG_LEVEL") ? std::getenv("LOG_LEVEL") : "trace";
+    auto log_level_enum = spdlog::level::from_str(log_level);
     auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("async_logger");
     async_logger->set_pattern("%d-%m-%Y %H:%M:%S %^%l%$ %v");
-    async_logger->set_level(spdlog::level::trace);
+    async_logger->set_level(log_level_enum);
     spdlog::set_default_logger(async_logger);
+    spdlog::info("LOG_LEVEL: {}", log_level);   
 
     // Init Timer with ioc TIMER
     Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));

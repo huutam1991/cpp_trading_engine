@@ -150,7 +150,7 @@ void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrum
 bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json& depth)
 {
     Json order_book = Json::parse(data);
-    spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
+    // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
 
     if (order_book.has_field("a") && order_book.has_field("b"))
     {
