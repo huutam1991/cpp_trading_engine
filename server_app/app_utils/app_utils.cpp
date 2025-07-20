@@ -2,23 +2,6 @@
 #include <app_constants.h>
 #include <utils/utils.h>
 
-ThreadPool* AppUtils::get_app_pool()
-{
-    static ThreadPool* app_pool = nullptr;
-
-    if (app_pool == nullptr)
-    {
-        std::unique_lock lock(m_app_pool_mutex);
-        if (app_pool == nullptr)
-        {
-            app_pool = new ThreadPool(NUMBER_OF_APP_THREADS, "App Pool");
-            app_pool->set_write_log(false);
-        }
-    }
-
-    return app_pool;
-}
-
 EventBase* AppUtils::get_app_event_base()
 {
     if (m_event_base == nullptr)

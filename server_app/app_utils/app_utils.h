@@ -27,6 +27,5 @@ public:
     OrderId parse_order_id(const std::string& str);
     static double round_up_quantity_by_instrument(Instrument* instrument, double quantity);
 
-    ThreadPool* get_app_pool();
     EventBase* get_app_event_base();
 };
