@@ -10,7 +10,6 @@
 #include <https_server/http_server.h>
 #include <https_server/https_server.h>
 #include <websocket/websocket_client_async.h>
-#include <websocket/websocket_server.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
 #include <time/timer.h>
@@ -49,31 +48,7 @@ int main(int argc, char **argv) {
     add_app_route();
     add_bad_request();
 
-    // // Websocket server
-    // WebSocketServerType::instance().set_info("0.0.0.0", "8081");
-    // WebSocketServerType::instance().set_available_channel_name({
-    //     CHANNEL_ORDER_STATUS,
-    //     CHANNEL_PROFIT,
-    //     CHANNEL_BALANCE,
-    //     CHANNEL_AUTO_TRADE
-    // });
-    // WebSocketServerType::instance().set_available_common_channel_name({
-    //     CHANNEL_SCANNING_MARKET,
-    //     CHANNEL_SCANNING_MARKET_NOTIFICATION,
-    //     CHANNEL_TRADE_HISTORY,
-    //     CHANNEL_POSITION_UPDATE
-    // });
-    // WebSocketServerType::instance().set_minor_channel_name({
-    //     CHANNEL_SCANNING_MARKET,
-    //     CHANNEL_SCANNING_MARKET_NOTIFICATION
-    // });
-    // WebSocketServerType::instance().start();
-
     // Init SpdLog format
-    // auto console = spdlog::stdout_color_mt("console");
-    // console->set_level(spdlog::level::trace);
-    // spdlog::set_default_logger(console); 
-
     auto async_logger = spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("async_logger");
     async_logger->set_pattern("%d-%m-%Y %H:%M:%S %^%l%$ %v");
     async_logger->set_level(spdlog::level::trace);

@@ -2,9 +2,6 @@
 
 #include <string>
 
-#include <websocket/websocket_server_ssl.h>
-#include <websocket/websocket_server.h>
-
 // App pool
 #define NUMBER_OF_APP_THREADS 1
 
@@ -22,9 +19,6 @@
 #define CHANNEL_SCANNING_MARKET_NOTIFICATION "scanning_market_notification"
 #define CHANNEL_TRADE_HISTORY "trade_history"
 #define CHANNEL_POSITION_UPDATE "position_update"
-
-// using WebSocketServerType = WebsocketServer<session,listener>;
-using WebSocketServerType = WebsocketServer<session_ssl,listener_ssl>;
 
 enum class SourceType
 {
