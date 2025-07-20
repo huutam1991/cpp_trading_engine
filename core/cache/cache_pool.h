@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cstddef>
-#include <list>
+#include <vector>
 #include <string>
 #include <cxxabi.h>
 
 #include <utils/spin_lock.h>
+#include <time/measure_time.h>
 
 template <typename T>
 std::string demangled_name() {
@@ -33,23 +34,58 @@ struct TypeName<T, std::void_t<decltype(T::name())>> {
 template <class T, size_t Size>
 class CachePool
 {
-    static std::list<T*>& get_available_items_list()
+    struct PoolBuffer
     {
-        static std::list<T*> available_items;
-        static T pool[Size];
+        std::vector<T*> available_items;
+        size_t head = 0;
+        size_t tail = 0;
+        size_t size = Size;
+
+        inline bool empty() const {
+            return size == 0;
+        }
+
+        inline void move_head()
+        {
+            head++;
+            if (head >= available_items.size())
+            {
+                head = 0; // cycle the head index
+            }
+        }
+
+        inline void move_tail()
+        {
+            tail++;
+            if (tail >= available_items.size())
+            {
+                tail = 0; // cycle the tail index
+            }
+        }
+    };
+
+    inline static PoolBuffer& get_pool_buffer()
+    {
+        static PoolBuffer pool_buffer;
+        static T data[Size];
         static bool initialized = [] 
         {
+            pool_buffer.available_items.resize(Size);
             for (size_t i = 0; i < Size; ++i)
             {
-                available_items.push_back(&pool[i]);
+                pool_buffer.available_items[i] = &data[i];
             }
+
+            pool_buffer.head = 0;
+            pool_buffer.tail = pool_buffer.available_items.size() - 1;
+
             return true;
         }();
 
-        return available_items;
+        return pool_buffer;
     }
 
-    static SpinLock& get_spin_lock()
+    inline static SpinLock& get_spin_lock()
     {
         static SpinLock spin_lock;
         return spin_lock;
@@ -57,35 +93,45 @@ class CachePool
 
 public:
     // Acquire a cache item
-    static T* acquire()
+    inline static T* acquire()
     {
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
-        std::list<T*>& available_items = get_available_items_list();
+        PoolBuffer& pool_buffer = get_pool_buffer();
 
-        if (available_items.empty())
+        if (pool_buffer.empty())
         {
             throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
         }
 
-        T* item = available_items.front();
-        available_items.pop_front();
+        T* item = pool_buffer.available_items[pool_buffer.head];
+        pool_buffer.move_head();
+        pool_buffer.size--;
+
         return item;
     }
 
     // Release a cache item back to the pool
-    static void release(T* item)
+    inline static void release(T* item)
     {
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
-        std::list<T*>& available_items = get_available_items_list();    
+        PoolBuffer& pool_buffer = get_pool_buffer();
         if (item != nullptr)
         {
-            available_items.push_back(item);
+            pool_buffer.move_tail();
+            pool_buffer.available_items[pool_buffer.tail] = item;
+            pool_buffer.size++;
         }
         else
         {
             throw std::runtime_error("Attempt to release a null item back to the cache pool: [" + TypeName<T>::name() + "]");
         }
+    }
+
+    inline static size_t size()
+    {
+        std::lock_guard<SpinLock> guard(get_spin_lock());
+        return get_pool_buffer().size;
     }
 };
