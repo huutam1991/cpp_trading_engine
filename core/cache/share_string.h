@@ -11,7 +11,7 @@
 struct StringReference
 {
     std::string data;
-    size_t count;
+    uint32_t count;
 
     static std::string name()
     {
