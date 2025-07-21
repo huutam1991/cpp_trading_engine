@@ -77,15 +77,17 @@ int main(int argc, char **argv) {
         spdlog::info("size of string pool: {}", StringPool::size());
 
         str3 = str2;
+        auto str4 = str3.substr(0, 3);
         spdlog::info("str1: {}", str1);
         spdlog::info("str2: {}", str2);
         spdlog::info("str3: {}", str3);
+        spdlog::info("str4: {}", str4);
         spdlog::info("size of string pool: {}", StringPool::size());
 
-        for (size_t i = 0; i < 100; i++)
+        for (size_t i = 0; i < 10; i++)
         {
-            ShareString str4 = str1;
-            spdlog::info("str4: {}", str4);
+            auto str5 = str1.substr(4, 6);
+            spdlog::info("str5: {}", str5);
         }
     }
     spdlog::info("size of string pool: {}", StringPool::size());

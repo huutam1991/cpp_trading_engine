@@ -43,6 +43,16 @@ public:
         return std::string_view(m_string_reference->data).substr(m_start_index, m_length);
     }
 
+    inline std::string_view substr(size_t start_index, size_t length) const
+    {
+        if (!m_string_reference) return {};
+
+        if (start_index + length > m_length) {
+            throw std::out_of_range("Substr out of range");
+        }
+        return std::string_view(m_string_reference->data).substr(start_index, length);
+    }
+
 private:
     inline void check_release_current_data();
 };
