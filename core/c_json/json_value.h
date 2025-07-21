@@ -4,7 +4,11 @@
 #include <string>
 
 #include <c_json/json_type_base.h>
+#include <cache/cache_pool.h>
 #include <cache/share_string.h>
+
+class JsonValue;
+using JsonValuePool = CachePool<JsonValue, 10000>;
 
 class JsonValue : public JsonTypeBase
 {
@@ -20,6 +24,15 @@ class JsonValue : public JsonTypeBase
     > m_value;
 
 public:
+    JsonValue& operator=(const JsonValue& other)
+    {
+        if (this != &other)
+        {
+            m_value = other.m_value;
+        }
+        return *this;
+    }
+
     template<class T>
     operator T()
     {
@@ -40,5 +53,22 @@ public:
     {
         m_value = value;
         return *this;
+    }
+
+    virtual bool is_json_value() override
+    {
+        return true;
+    }
+
+    virtual const std::string get_string_value() const override
+    {
+        return {};
+    }
+
+    virtual JsonTypeBase* get_copy(const JsonTypeBase* other) override
+    {
+        JsonValue* json_value = JsonValuePool::acquire();
+        *json_value = *this;
+        return json_value;
     }
 };
