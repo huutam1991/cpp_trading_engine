@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <vector>
 #include <string>
 #include <cxxabi.h>
 
@@ -36,7 +35,7 @@ class CachePool
 {
     struct PoolBuffer
     {
-        std::vector<T*> available_items;
+        T* available_items[Size];
         size_t head = 0;
         size_t tail = 0;
         size_t size = Size;
@@ -44,7 +43,7 @@ class CachePool
         inline void move_head()
         {
             head++;
-            if (head >= available_items.size())
+            if (head >= Size)
             {
                 head = 0; // cycle the head index
             }
@@ -53,7 +52,7 @@ class CachePool
         inline void move_tail()
         {
             tail++;
-            if (tail >= available_items.size())
+            if (tail >= Size)
             {
                 tail = 0; // cycle the tail index
             }
@@ -66,14 +65,13 @@ class CachePool
         static T data[Size];
         static bool initialized = [] 
         {
-            pool_buffer.available_items.resize(Size);
             for (size_t i = 0; i < Size; ++i)
             {
                 pool_buffer.available_items[i] = &data[i];
             }
 
             pool_buffer.head = 0;
-            pool_buffer.tail = pool_buffer.available_items.size() - 1;
+            pool_buffer.tail = Size - 1;
 
             return true;
         }();
