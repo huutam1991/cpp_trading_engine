@@ -84,10 +84,11 @@ int main(int argc, char **argv) {
         spdlog::info("str4: {}", str4);
         spdlog::info("size of string pool: {}", StringPool::size());
 
-        for (size_t i = 0; i < 10; i++)
+        for (size_t i = 0; i < 20; i++)
         {
-            auto str5 = str1.substr(4, 6);
+            auto str5 = str1.from_substr(5, 6);
             spdlog::info("str5: {}", str5);
+            spdlog::info("size of string pool: {}", StringPool::size());
         }
     }
     spdlog::info("size of string pool: {}", StringPool::size());

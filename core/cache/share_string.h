@@ -12,6 +12,11 @@ struct StringReference
 {
     std::string data;
     size_t count;
+
+    static std::string name()
+    {
+        return "StringReference";
+    }
 };
 
 using StringPool = CachePool<StringReference, MAX_STRING_NUM>;
@@ -46,10 +51,14 @@ public:
     {
         if (!m_string_reference) return {};
 
-        if (start_index + length > m_length) {
-            throw std::out_of_range("Substr out of range");
+        if (start_index + length <= m_length)
+        {
+            return std::string_view(m_string_reference->data).substr(start_index, length);
         }
-        return std::string_view(m_string_reference->data).substr(start_index, length);
+        else
+        {
+            throw std::out_of_range("ShareString - Substr out of range, start_index: " + std::to_string(start_index) + ", length: " + std::to_string(length) + ", m_length: " + std::to_string(m_length));
+        }
     }
 
 private:
@@ -57,9 +66,11 @@ private:
 };
 
 template <>
-struct fmt::formatter<ShareString> : fmt::formatter<std::string_view> {
+struct fmt::formatter<ShareString> : fmt::formatter<std::string_view>
+{
     template <typename FormatContext>
-    auto format(const ShareString& data, FormatContext& ctx) {
+    auto format(const ShareString& data, FormatContext& ctx)
+    {
         return fmt::formatter<std::string_view>::format(data.data(), ctx);
     }
 };

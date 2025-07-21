@@ -74,7 +74,7 @@ ShareString ShareString::from_substr(size_t start_index, size_t length) const
     }
     else
     {
-        throw std::out_of_range("Substr out of range");
+        throw std::out_of_range("ShareString - Substr out of range, start_index: " + std::to_string(start_index) + ", length: " + std::to_string(length) + ", m_length: " + std::to_string(m_length));
     }
 }
 
