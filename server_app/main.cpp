@@ -14,6 +14,7 @@
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 #include <cache/cache_pool.h>
+#include <cache/share_string.h>
 
 #include <app_utils/log_init.h>
 #include <instrument/instrument.h>
@@ -47,13 +48,13 @@ int main(int argc, char **argv) {
     add_app_route();
     add_bad_request();
 
-    // Init SpdLog format  
+    // Init SpdLog format
     LogInit::init();
 
     // // Init Timer with ioc TIMER
     // Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
-    // // Init DBHelper with 
+    // // Init DBHelper with
     // DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
 
     // GatewayManager::instance().init();
@@ -68,31 +69,26 @@ int main(int argc, char **argv) {
 
     // Example usage of CachePool>
 
-    struct TamTest
     {
-    public:
-        size_t id = 0;
-        static std::string name() {
-            return "TamTest";
+        ShareString str1 = std::string("Tam Nguyen");
+        ShareString str2 = str1;
+        ShareString str3(std::string("Hello World"));
+        spdlog::info("str3: {}", str3);
+        spdlog::info("size of string pool: {}", StringPool::size());
+
+        str3 = str2;
+        spdlog::info("str1: {}", str1);
+        spdlog::info("str2: {}", str2);
+        spdlog::info("str3: {}", str3);
+        spdlog::info("size of string pool: {}", StringPool::size());
+
+        for (size_t i = 0; i < 100; i++)
+        {
+            ShareString str4 = str1;
+            spdlog::info("str4: {}", str4);
         }
-    };
-
-    using PoolInt = CachePool<TamTest, 100>; 
-    auto* item = PoolInt::acquire();
-    *item = TamTest();
-    std::cout << "Acquired item: " << item->id << std::endl;
-
-    for (size_t i = 0; i < 90; ++i) {
-        item = PoolInt::acquire();
-        *item = TamTest();
-        // PoolInt::release(item); 
-
-        // spdlog::info("pool size: {}", PoolInt::size());
     }
-
-    // auto* item2 = PoolInt::acquire();
-    PoolInt::release(item); 
-    // PoolInt::release(nullptr); // This will throw an error
+    spdlog::info("size of string pool: {}", StringPool::size());
 
     spdlog::info("Main exit");
 

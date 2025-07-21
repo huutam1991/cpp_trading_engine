@@ -78,7 +78,7 @@ class CachePool
     {
         static SpinLock spin_lock;
         return spin_lock;
-    }   
+    }
 
 public:
     // Acquire a cache item

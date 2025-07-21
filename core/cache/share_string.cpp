@@ -1,4 +1,5 @@
 #include <cache/share_string.h>
+#include <time/measure_time.h>
 
 ShareString::ShareString(const std::string& data) :
     m_string_reference{StringPool::acquire()}

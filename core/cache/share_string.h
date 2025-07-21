@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <cache/cache_pool.h>
 
@@ -33,6 +35,16 @@ public:
 
     ~ShareString();
 
+    const std::string& data() const { return m_string_reference->data; }
+
 private:
-    void check_release_current_data();
+    inline void check_release_current_data();
+};
+
+template <>
+struct fmt::formatter<ShareString> : fmt::formatter<std::string> {
+    template <typename FormatContext>
+    auto format(const ShareString& data, FormatContext& ctx) {
+        return fmt::formatter<std::string>::format(data.data(), ctx);
+    }
 };
