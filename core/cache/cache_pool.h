@@ -36,9 +36,18 @@ class CachePool
     struct PoolBuffer
     {
         T* available_items[Size];
+        T data[Size];
         size_t head = 0;
-        size_t tail = 0;
+        size_t tail = Size - 1;
         size_t size = Size;
+
+        PoolBuffer()
+        {
+            for (size_t i = 0; i < Size; ++i)
+            {
+                available_items[i] = &data[i];
+            }
+        }
 
         inline void move_head()
         {
@@ -62,20 +71,6 @@ class CachePool
     inline static PoolBuffer& get_pool_buffer()
     {
         static PoolBuffer pool_buffer;
-        static T data[Size];
-        static bool initialized = [] 
-        {
-            for (size_t i = 0; i < Size; ++i)
-            {
-                pool_buffer.available_items[i] = &data[i];
-            }
-
-            pool_buffer.head = 0;
-            pool_buffer.tail = Size - 1;
-
-            return true;
-        }();
-
         return pool_buffer;
     }
 
