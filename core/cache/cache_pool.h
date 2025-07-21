@@ -87,7 +87,6 @@ public:
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
         PoolBuffer& pool_buffer = get_pool_buffer();
-
         if (pool_buffer.size == 0)
         {
             throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
