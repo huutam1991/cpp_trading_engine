@@ -51,7 +51,6 @@ web_data/angular_src/.angular
 
 # Targets log
 .vscode/targets.log
-.vscode/settings.json
 
 # Certificate
 server-certificate.crt
