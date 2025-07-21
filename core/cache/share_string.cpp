@@ -6,6 +6,9 @@ ShareString::ShareString(const std::string& data) :
 {
     m_string_reference->data = data;
     m_string_reference->count = 1;
+
+    m_start_index = 0;
+    m_length = m_string_reference->data.length();
 }
 
 ShareString::ShareString(std::string&& data) :
@@ -13,10 +16,15 @@ ShareString::ShareString(std::string&& data) :
 {
     m_string_reference->data = std::move(data);
     m_string_reference->count = 1;
+
+    m_start_index = 0;
+    m_length = m_string_reference->data.length();
 }
 
 ShareString::ShareString(const ShareString& copy) :
-    m_string_reference{copy.m_string_reference}
+    m_string_reference{copy.m_string_reference},
+    m_start_index{copy.m_start_index},
+    m_length{copy.m_length}
 {
     m_string_reference->count++;
 }
@@ -28,6 +36,8 @@ ShareString& ShareString::operator=(const ShareString& copy)
 
     m_string_reference = copy.m_string_reference;
     m_string_reference->count++;
+    m_start_index = copy.m_start_index;
+    m_length = copy.m_length;
 
     return *this;
 }

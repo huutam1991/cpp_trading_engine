@@ -19,6 +19,8 @@ using StringPool = CachePool<StringReference, MAX_STRING_NUM>;
 class ShareString
 {
     StringReference* m_string_reference = nullptr;
+    size_t m_start_index = 0;
+    size_t m_length = 0;
 
 public:
     ShareString() = delete;
@@ -35,16 +37,20 @@ public:
 
     ~ShareString();
 
-    const std::string& data() const { return m_string_reference->data; }
+    inline std::string_view data() const
+    {
+        if (!m_string_reference) return {};
+        return std::string_view(m_string_reference->data).substr(m_start_index, m_length);
+    }
 
 private:
     inline void check_release_current_data();
 };
 
 template <>
-struct fmt::formatter<ShareString> : fmt::formatter<std::string> {
+struct fmt::formatter<ShareString> : fmt::formatter<std::string_view> {
     template <typename FormatContext>
     auto format(const ShareString& data, FormatContext& ctx) {
-        return fmt::formatter<std::string>::format(data.data(), ctx);
+        return fmt::formatter<std::string_view>::format(data.data(), ctx);
     }
 };
