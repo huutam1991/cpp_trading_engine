@@ -28,12 +28,11 @@ public:
     ShareString(std::string&& data);
 
     ShareString(const ShareString&);
+    ShareString(ShareString&&);
     ShareString& operator=(const ShareString&);
+    ShareString& operator=(ShareString&&);
 
-    // Delete move constructor and move assignment operator
-    // Cause the data is just pointers, no need to move
-    ShareString(ShareString&&) = delete;
-    ShareString& operator=(ShareString&&) = delete;
+    ShareString from_substr(size_t start_index, size_t length) const;
 
     ~ShareString();
 

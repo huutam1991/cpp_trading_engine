@@ -29,6 +29,14 @@ ShareString::ShareString(const ShareString& copy) :
     m_string_reference->count++;
 }
 
+ShareString::ShareString(ShareString&& copy):
+    m_string_reference{copy.m_string_reference},
+    m_start_index{copy.m_start_index},
+    m_length{copy.m_length}
+{
+    m_string_reference->count++;
+}
+
 ShareString& ShareString::operator=(const ShareString& copy)
 {
     // Release current data if it exists
@@ -40,6 +48,34 @@ ShareString& ShareString::operator=(const ShareString& copy)
     m_length = copy.m_length;
 
     return *this;
+}
+
+ShareString& ShareString::operator=(ShareString&& copy)
+{
+    // Release current data if it exists
+    check_release_current_data();
+
+    m_string_reference = copy.m_string_reference;
+    m_string_reference->count++;
+    m_start_index = copy.m_start_index;
+    m_length = copy.m_length;
+
+    return *this;
+}
+
+ShareString ShareString::from_substr(size_t start_index, size_t length) const
+{
+    if (start_index + length <= m_length)
+    {
+        ShareString new_string = *this; // Copy current ShareString
+        new_string.m_start_index = m_start_index + start_index;
+        new_string.m_length = length;
+        return new_string;
+    }
+    else
+    {
+        throw std::out_of_range("Substr out of range");
+    }
 }
 
 ShareString::~ShareString()
