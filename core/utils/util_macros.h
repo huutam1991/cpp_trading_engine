@@ -24,11 +24,7 @@ static type& get_##propertyName() \
     return m_##propertyName; \
 } \
 
-namespace time_log
-{
-    std::string get_time_now_in_string();
-};
-
+#define FORCE_INLINE inline __attribute__((always_inline))
 #define SAFE_RELEASE(pointer) if (pointer != nullptr) { delete pointer; pointer = nullptr; }
 
 #define GET_CURRENT_TIME(current_time) \

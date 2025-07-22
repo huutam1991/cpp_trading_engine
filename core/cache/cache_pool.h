@@ -4,11 +4,13 @@
 #include <string>
 #include <cxxabi.h>
 
+#include <utils/util_macros.h>
 #include <utils/spin_lock.h>
 #include <time/measure_time.h>
 
 template <typename T>
-std::string demangled_name() {
+std::string demangled_name()
+{
     int status;
     char* realname = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
     std::string result = (status == 0 && realname) ? realname : typeid(T).name();
@@ -17,15 +19,19 @@ std::string demangled_name() {
 }
 
 template <typename T, typename = void>
-struct TypeName {
-    static std::string name() {
+struct TypeName
+{
+    static std::string name()
+    {
         return demangled_name<T>();
     }
 };
 
 template <typename T>
-struct TypeName<T, std::void_t<decltype(T::name())>> {
-    static std::string name() {
+struct TypeName<T, std::void_t<decltype(T::name())>>
+{
+    static std::string name()
+    {
         return T::name();
     }
 };
@@ -49,7 +55,7 @@ class CachePool
             }
         }
 
-        inline void move_head()
+        FORCE_INLINE void move_head()
         {
             head++;
             if (head >= Size)
@@ -58,7 +64,7 @@ class CachePool
             }
         }
 
-        inline void move_tail()
+        FORCE_INLINE void move_tail()
         {
             tail++;
             if (tail >= Size)
@@ -68,13 +74,13 @@ class CachePool
         }
     };
 
-    inline static PoolBuffer& get_pool_buffer()
+    FORCE_INLINE static PoolBuffer& get_pool_buffer()
     {
         static PoolBuffer pool_buffer;
         return pool_buffer;
     }
 
-    inline static SpinLock& get_spin_lock()
+    FORCE_INLINE static SpinLock& get_spin_lock()
     {
         static SpinLock spin_lock;
         return spin_lock;
@@ -82,8 +88,9 @@ class CachePool
 
 public:
     // Acquire a cache item
-    inline static T* acquire()
+    FORCE_INLINE static T* acquire()
     {
+        MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
         PoolBuffer& pool_buffer = get_pool_buffer();
@@ -100,8 +107,9 @@ public:
     }
 
     // Release a cache item back to the pool
-    inline static void release(T* item)
+    FORCE_INLINE static void release(T* item)
     {
+        MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
         PoolBuffer& pool_buffer = get_pool_buffer();
@@ -117,7 +125,7 @@ public:
         }
     }
 
-    inline static size_t size()
+    FORCE_INLINE static size_t size()
     {
         std::lock_guard<SpinLock> guard(get_spin_lock());
         return get_pool_buffer().size;
