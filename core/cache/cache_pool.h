@@ -1,8 +1,9 @@
 #pragma once
 
+#include <cxxabi.h>
 #include <cstddef>
 #include <string>
-#include <cxxabi.h>
+#include <array>
 
 #include <utils/util_macros.h>
 #include <utils/spin_lock.h>
@@ -41,8 +42,8 @@ class CachePool
 {
     struct PoolBuffer
     {
-        T* available_items[Size];
-        T data[Size];
+        std::array<T*, Size> available_items;
+        std::array<T, Size> data;
         size_t head = 0;
         size_t tail = Size - 1;
         size_t size = Size;
@@ -90,7 +91,7 @@ public:
     // Acquire a cache item
     FORCE_INLINE static T* acquire()
     {
-        MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
         PoolBuffer& pool_buffer = get_pool_buffer();
@@ -109,7 +110,7 @@ public:
     // Release a cache item back to the pool
     FORCE_INLINE static void release(T* item)
     {
-        MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
         std::lock_guard<SpinLock> guard(get_spin_lock());
 
         PoolBuffer& pool_buffer = get_pool_buffer();
