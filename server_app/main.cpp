@@ -86,9 +86,9 @@ int main(int argc, char **argv) {
 
         for (size_t i = 0; i < 20; i++)
         {
-            auto str5 = str1.from_substr(5, 6);
-            spdlog::info("str5: {}", str5);
-            spdlog::info("size of string pool: {}", StringPool::size());
+            {
+                auto str6 = ShareString(std::string("New String " + std::to_string(i)));
+            }
         }
     }
     spdlog::info("size of string pool: {}", StringPool::size());
