@@ -70,4 +70,9 @@ public:
         json_value->m_value = m_value;
         return json_value;
     }
+
+    virtual void release() override
+    {
+        JsonValuePool::release(this);
+    }
 };

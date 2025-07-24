@@ -1,14 +1,21 @@
 #pragma once
 
+#include <unordered_map>
+#include <vector>
+
 #include <c_json/json_type_base.h>
+#include <c_json/json.h>
 #include <cache/cache_pool.h>
 
 class JsonObject;
-using JsonValuePool = CachePool<JsonObject, 10000>;
+using JsonObjectPool = CachePool<JsonObject, 10000>;
 
 class JsonObject : public JsonTypeBase
 {
     uint32_t reference_count = 0; // Reference count for shared ownership
+    bool m_is_array = false; // Flag to indicate if this is an array
+    std::unordered_map<std::string, JsonNew> m_object; // Key-value pairs for JSON object
+    std::vector<JsonNew> m_array; // Array for JSON object
 
 public:
     JsonObject() = default;
@@ -33,5 +40,14 @@ public:
     {
         reference_count++;
         return this;
+    }
+
+    virtual void release() override
+    {
+        reference_count--;
+        if (reference_count == 0)
+        {
+            JsonObjectPool::release(this);
+        }
     }
 };

@@ -15,4 +15,5 @@ public:
     virtual bool is_json_value() = 0;
     virtual const std::string get_string_value() const = 0;
     virtual JsonTypeBase* get_copy() = 0;
+    virtual void release() = 0;
 };
