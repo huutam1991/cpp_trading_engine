@@ -16,7 +16,8 @@
 #include <coroutine/event_base_manager.h>
 #include <cache/cache_pool.h>
 #include <cache/share_string.h>
-#include <c_json/json.h>
+#include <c_json/json_object.h>
+// #include <c_json/json.h>
 
 #include <app_utils/log_init.h>
 #include <instrument/instrument.h>
@@ -113,17 +114,15 @@ int main(int argc, char **argv) {
     //     spdlog::info("Value of f1: {}", f);
     // }
 
-    // a = "123";
-    spdlog::debug("a address: {}", (size_t)&a);
-    a[3] = 123;
-    uint32_t f = a[1];
-    spdlog::info("Value of f2: {}", f);
-
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     std::string f = a[2];
-    //     spdlog::info("Value of f2: {}", f);
-    // }
+    for (int i = 0; i < 10; i++)
+    {
+        spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
+        JsonNew b;
+        b[1][2] = "Hello World";
+        std::string f = b[1][2];
+        spdlog::info("Value of f2: {}", f);
+        spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
+    }
 
     spdlog::info("Main exit");
 
