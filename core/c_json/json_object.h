@@ -14,8 +14,8 @@ public:
     JsonObject() = default;
     JsonObject(const JsonObject&) = delete;
     JsonObject(JsonObject&&) = delete;
-    JsonObject& operator=(const JsonObject& other) = delete;
-    JsonObject& operator=(JsonObject&& other) = delete;
+    JsonObject& operator=(const JsonObject&) = delete;
+    JsonObject& operator=(JsonObject&&) = delete;
 
     virtual ~JsonObject() override = default;
 
@@ -31,7 +31,7 @@ public:
 
     virtual JsonTypeBase* get_copy() override
     {
-        // TBD
-        return nullptr;
+        reference_count++;
+        return this;
     }
 };

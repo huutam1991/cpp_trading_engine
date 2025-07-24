@@ -27,8 +27,8 @@ public:
     JsonValue() = default;
     JsonValue(const JsonValue&) = delete;
     JsonValue(JsonValue&&) = delete;
-    JsonValue& operator=(const JsonValue& other) = delete;
-    JsonValue& operator=(JsonValue&& other) = delete;
+    JsonValue& operator=(const JsonValue&) = delete;
+    JsonValue& operator=(JsonValue&&) = delete;
 
     virtual ~JsonValue() override = default;
 
