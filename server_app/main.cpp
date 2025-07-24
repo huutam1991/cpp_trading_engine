@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
         spdlog::info("size of string pool: {}", StringPool::size());
 
         str3 = str2;
-        auto str4 = str3.substr(0, 3);
+        auto str4 = str3.from_substr(0, 3);
         spdlog::info("str1: {}", str1);
         spdlog::info("str2: {}", str2);
         spdlog::info("str3: {}", str3);

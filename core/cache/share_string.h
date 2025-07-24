@@ -47,6 +47,7 @@ public:
         return std::string_view(m_string_reference->data).substr(m_start_index, m_length);
     }
 
+private:
     inline std::string_view substr(size_t start_index, size_t length) const
     {
         if (!m_string_reference) return {};
@@ -61,7 +62,6 @@ public:
         }
     }
 
-private:
     inline void check_release_current_data();
 };
 
