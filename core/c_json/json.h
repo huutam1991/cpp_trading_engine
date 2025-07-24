@@ -27,7 +27,6 @@ public:
                 m_value->release();
             }
 
-            m_value->release();
             m_value = copy.m_value->get_copy();
         }
         return *this;
@@ -74,9 +73,14 @@ public:
 
     ~JsonNew()
     {
-        if (m_value)
+        spdlog::debug("JsonNew destructor called this: {}", (size_t)this);
+        spdlog::debug("JsonNew destructor called m_value: {}", (size_t)m_value);
+
+        std::cout << "JsonNew - check release 1" << std::endl;
+        if (m_value != nullptr)
         {
             m_value->release();
+            m_value = nullptr;
         }
     }
 

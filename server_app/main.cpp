@@ -96,30 +96,34 @@ int main(int argc, char **argv) {
     spdlog::info("size of string pool: {}", StringPool::size());
 
     JsonNew a;
-    a[1] = 123;
+    // a[1] = 123;
 
-    int b = a;
-    spdlog::info("Value of b: {}", b);
-    long c = a;
-    spdlog::info("Value of c: {}", c);
-    size_t d = a;
-    spdlog::info("Value of d: {}", d);
-    uint32_t e = a;
-    spdlog::info("Value of e: {}", e);
+    // int b = a;
+    // spdlog::info("Value of b: {}", b);
+    // long c = a;
+    // spdlog::info("Value of c: {}", c);
+    // size_t d = a;
+    // spdlog::info("Value of d: {}", d);
+    // uint32_t e = a;
+    // spdlog::info("Value of e: {}", e);
 
-    for (int i = 0; i < 10; i++)
-    {
-        uint32_t f = a[1];
-        spdlog::info("Value of f1: {}", f);
-    }
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     uint32_t f = a[1];
+    //     spdlog::info("Value of f1: {}", f);
+    // }
 
-    a = nullptr;
+    // a = "123";
+    spdlog::debug("a address: {}", (size_t)&a);
+    a[3] = 123;
+    uint32_t f = a[1];
+    spdlog::info("Value of f2: {}", f);
 
-    for (int i = 0; i < 10; i++)
-    {
-        std::string f = a[1];
-        spdlog::info("Value of f2: {}", f);
-    }
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     std::string f = a[2];
+    //     spdlog::info("Value of f2: {}", f);
+    // }
 
     spdlog::info("Main exit");
 

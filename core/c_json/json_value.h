@@ -56,6 +56,9 @@ public:
         return *this;
     }
 
+    // Methosds from JsonTypeBaseNew
+    virtual void init() override {}
+
     virtual bool is_json_value() override
     {
         return true;
@@ -69,12 +72,14 @@ public:
     virtual JsonTypeBaseNew* get_copy() override
     {
         JsonValueNew* json_value = JsonValuePool::acquire();
+        json_value->init();
         json_value->m_value = m_value;
         return json_value;
     }
 
     virtual void release() override
     {
+        spdlog::debug("JsonValueNew release called for this: {}", (size_t)this);
         JsonValuePool::release(this);
     }
 };

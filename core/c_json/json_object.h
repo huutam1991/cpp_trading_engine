@@ -41,6 +41,12 @@ public:
         return m_array[index];
     }
 
+    // Methosds from JsonTypeBaseNew
+    virtual void init() override
+    {
+        reference_count = 1; // Initialize reference count to 1
+    }
+
     virtual bool is_json_value() override
     {
         return false; // This is not a JSON value, but an object
@@ -59,10 +65,16 @@ public:
 
     virtual void release() override
     {
+        spdlog::debug("JsonObject release called, current reference count: {}, this: {}", reference_count, (size_t)this);
+        std::cout << "check release 1" << std::endl;
         reference_count--;
+        std::cout << "check release 2" << std::endl;
         if (reference_count == 0)
         {
+        std::cout << "check release 3" << std::endl;
             JsonObjectPool::release(this);
+        std::cout << "check release 4" << std::endl;
         }
+        std::cout << "check release 5" << std::endl;
     }
 };
