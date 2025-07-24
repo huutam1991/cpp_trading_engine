@@ -24,14 +24,13 @@ class JsonValue : public JsonTypeBase
     > m_value;
 
 public:
-    JsonValue& operator=(const JsonValue& other)
-    {
-        if (this != &other)
-        {
-            m_value = other.m_value;
-        }
-        return *this;
-    }
+    JsonValue() = default;
+    JsonValue(const JsonValue&) = delete;
+    JsonValue(JsonValue&&) = delete;
+    JsonValue& operator=(const JsonValue& other) = delete;
+    JsonValue& operator=(JsonValue&& other) = delete;
+
+    virtual ~JsonValue() override = default;
 
     template<class T>
     operator T()
@@ -65,10 +64,10 @@ public:
         return {};
     }
 
-    virtual JsonTypeBase* get_copy(const JsonTypeBase* other) override
+    virtual JsonTypeBase* get_copy() override
     {
         JsonValue* json_value = JsonValuePool::acquire();
-        *json_value = *this;
+        json_value->m_value = m_value;
         return json_value;
     }
 };
