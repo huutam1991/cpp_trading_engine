@@ -1,23 +1,51 @@
 #pragma once
 
 #include <c_json/json_type_base.h>
+#include <c_json/json_value.h>
 
 class JsonNew
 {
-    JsonTypeBase* m_value = nullptr;
+    JsonTypeBaseNew* m_value = nullptr;
 
 public:
     JsonNew();
-    JsonNew(const JsonNew& copy)
+
+    JsonNew(const JsonNew& copy) : m_value{copy.m_value->get_copy()}
+    {}
+
+    JsonNew(JsonNew&& copy) : m_value{copy.m_value}
     {
-        m_value = copy.m_value->get_copy();
+        copy.m_value = nullptr; // Transfer ownership
     }
 
-    JsonNew& operator=(const JsonNew&) = delete;
+    JsonNew& operator=(const JsonNew& copy)
+    {
+        if (this != &copy)
+        {
+            m_value->release();
+            m_value = copy.m_value->get_copy();
+        }
+        return *this;
+    }
 
+    JsonNew& operator=(JsonNew&& copy)
+    {
+        if (this != &copy)
+        {
+            m_value->release();
+            m_value = copy.m_value;
+            copy.m_value = nullptr; // Transfer ownership
+        }
+        return *this;
+    }
 
-    JsonNew(JsonNew&&) = delete;
-    JsonNew& operator=(JsonNew&&) = delete;
+    template<class T>
+    JsonNew& operator=(T&& value)
+    {
+        check_create_json_value();
+        ((JsonValueNew*)m_value)->operator=(std::forward<T>(value));
+        return *this;
+    }
 
     ~JsonNew()
     {
@@ -32,5 +60,6 @@ public:
         return m_value->get_string_value();
     }
 
-    // Other methods...
+private:
+    void check_create_json_value();
 };

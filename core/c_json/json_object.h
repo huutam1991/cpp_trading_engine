@@ -10,7 +10,7 @@
 class JsonObject;
 using JsonObjectPool = CachePool<JsonObject, 10000>;
 
-class JsonObject : public JsonTypeBase
+class JsonObject : public JsonTypeBaseNew
 {
     uint32_t reference_count = 0; // Reference count for shared ownership
     bool m_is_array = false; // Flag to indicate if this is an array
@@ -36,7 +36,7 @@ public:
         return "{}"; // Placeholder for object representation
     }
 
-    virtual JsonTypeBase* get_copy() override
+    virtual JsonTypeBaseNew* get_copy() override
     {
         reference_count++;
         return this;

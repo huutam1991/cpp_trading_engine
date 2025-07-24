@@ -7,10 +7,10 @@
 #include <cache/cache_pool.h>
 #include <cache/share_string.h>
 
-class JsonValue;
-using JsonValuePool = CachePool<JsonValue, 10000>;
+class JsonValueNew;
+using JsonValuePool = CachePool<JsonValueNew, 10000>;
 
-class JsonValue : public JsonTypeBase
+class JsonValueNew : public JsonTypeBaseNew
 {
     std::variant<
         std::nullptr_t,
@@ -24,13 +24,13 @@ class JsonValue : public JsonTypeBase
     > m_value;
 
 public:
-    JsonValue() = default;
-    JsonValue(const JsonValue&) = delete;
-    JsonValue(JsonValue&&) = delete;
-    JsonValue& operator=(const JsonValue&) = delete;
-    JsonValue& operator=(JsonValue&&) = delete;
+    JsonValueNew() = default;
+    JsonValueNew(const JsonValueNew&) = delete;
+    JsonValueNew(JsonValueNew&&) = delete;
+    JsonValueNew& operator=(const JsonValueNew&) = delete;
+    JsonValueNew& operator=(JsonValueNew&&) = delete;
 
-    virtual ~JsonValue() override = default;
+    virtual ~JsonValueNew() override = default;
 
     template<class T>
     operator T()
@@ -48,9 +48,9 @@ public:
     }
 
     template<class T>
-    JsonValue& operator=(T value)
+    JsonValueNew& operator=(T&& value)
     {
-        m_value = value;
+        m_value = std::forward<T>(value);
         return *this;
     }
 
@@ -64,9 +64,9 @@ public:
         return {};
     }
 
-    virtual JsonTypeBase* get_copy() override
+    virtual JsonTypeBaseNew* get_copy() override
     {
-        JsonValue* json_value = JsonValuePool::acquire();
+        JsonValueNew* json_value = JsonValuePool::acquire();
         json_value->m_value = m_value;
         return json_value;
     }

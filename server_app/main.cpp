@@ -15,6 +15,7 @@
 #include <coroutine/event_base_manager.h>
 #include <cache/cache_pool.h>
 #include <cache/share_string.h>
+#include <c_json/json.h>
 
 #include <app_utils/log_init.h>
 #include <instrument/instrument.h>
@@ -92,6 +93,9 @@ int main(int argc, char **argv) {
         }
     }
     spdlog::info("size of string pool: {}", StringPool::size());
+
+    JsonNew a;
+    a = 1;
 
     spdlog::info("Main exit");
 

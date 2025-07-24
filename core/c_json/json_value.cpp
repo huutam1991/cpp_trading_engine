@@ -1,21 +1,21 @@
 #include <c_json/json_value.h>
 
 template<>
-JsonValue& JsonValue::operator=(const std::string& value)
+JsonValueNew& JsonValueNew::operator=(const std::string& value)
 {
     m_value = ShareString(value);
     return *this;
 }
 
 template<>
-JsonValue& JsonValue::operator=(std::string&& value)
+JsonValueNew& JsonValueNew::operator=(std::string&& value)
 {
     m_value = ShareString(std::move(value));
     return *this;
 }
 
 template<>
-JsonValue::operator std::string_view()
+JsonValueNew::operator std::string_view()
 {
     if (std::holds_alternative<ShareString>(m_value))
     {
@@ -36,7 +36,7 @@ JsonValue::operator std::string_view()
 }
 
 template<>
-JsonValue::operator std::string()
+JsonValueNew::operator std::string()
 {
     if (std::holds_alternative<ShareString>(m_value))
     {
