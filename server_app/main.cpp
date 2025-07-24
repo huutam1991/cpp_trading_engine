@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     }
     spdlog::info("size of string pool: {}", StringPool::size());
 
-    JsonNew a;
+    // JsonNew a;
     // a[1] = 123;
 
     // int b = a;
@@ -114,15 +114,19 @@ int main(int argc, char **argv) {
     //     spdlog::info("Value of f1: {}", f);
     // }
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 100; i++)
     {
+        spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
         JsonNew b;
         b[1][2] = "Hello World";
         std::string f = b[1][2];
         spdlog::info("Value of f2: {}", f);
+        spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
     }
+    spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
+    spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
 
     spdlog::info("Main exit");
 
