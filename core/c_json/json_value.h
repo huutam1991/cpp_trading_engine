@@ -16,7 +16,7 @@ class JsonValueNew : public JsonTypeBaseNew
         std::nullptr_t,
         bool,
         int64_t,
-        size_t,
+        uint64_t,
         double,
         ShareString,
         std::string_view,
@@ -33,18 +33,20 @@ public:
     virtual ~JsonValueNew() override = default;
 
     template<class T>
-    operator T()
+    operator T() const
     {
-        // If conversion value has the same type of current value, return it
-        if (std::holds_alternative<T>(m_value))
+        return std::visit([](auto&& arg) -> T
         {
-            return std::get<T>(m_value);
-        }
-        // otherwise, return a default value of T
-        else
-        {
-            return T();
-        }
+            using U = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_convertible_v<U, T>)
+            {
+                return static_cast<T>(arg);
+            }
+            else
+            {
+                throw std::runtime_error("Invalid type conversion from variant");
+            }
+        }, m_value);
     }
 
     template<class T>

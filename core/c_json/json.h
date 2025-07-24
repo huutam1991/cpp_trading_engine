@@ -47,6 +47,19 @@ public:
         return *this;
     }
 
+    template<class T>
+    operator T()
+    {
+        if (m_value == nullptr || m_value->is_json_value() == false)
+        {
+            return T(); // Return default value if not a valid JsonValue
+        }
+        else
+        {
+            return ((JsonValueNew*)m_value)->operator T();
+        }
+    }
+
     ~JsonNew()
     {
         if (m_value)

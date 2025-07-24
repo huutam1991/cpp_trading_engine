@@ -15,7 +15,7 @@ JsonValueNew& JsonValueNew::operator=(std::string&& value)
 }
 
 template<>
-JsonValueNew::operator std::string_view()
+JsonValueNew::operator std::string_view() const
 {
     if (std::holds_alternative<ShareString>(m_value))
     {
@@ -36,7 +36,7 @@ JsonValueNew::operator std::string_view()
 }
 
 template<>
-JsonValueNew::operator std::string()
+JsonValueNew::operator std::string() const
 {
     if (std::holds_alternative<ShareString>(m_value))
     {

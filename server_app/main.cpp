@@ -95,7 +95,10 @@ int main(int argc, char **argv) {
     spdlog::info("size of string pool: {}", StringPool::size());
 
     JsonNew a;
-    a = 1;
+    a = (size_t)123;
+
+    int b = a;
+    spdlog::info("Value of b: {}", b);
 
     spdlog::info("Main exit");
 
