@@ -7,10 +7,10 @@
 #include <c_json/json.h>
 #include <cache/cache_pool.h>
 
-class JsonObject;
-using JsonObjectPool = CachePool<JsonObject, 10000>;
+class JsonObjectNew;
+using JsonObjectPool = CachePool<JsonObjectNew, 10000>;
 
-class JsonObject : public JsonTypeBaseNew
+class JsonObjectNew : public JsonTypeBaseNew
 {
     uint32_t reference_count = 0; // Reference count for shared ownership
     bool m_is_array = false; // Flag to indicate if this is an array
@@ -18,13 +18,13 @@ class JsonObject : public JsonTypeBaseNew
     std::vector<JsonNew> m_array; // Array for JSON object
 
 public:
-    JsonObject() = default;
-    JsonObject(const JsonObject&) = delete;
-    JsonObject(JsonObject&&) = delete;
-    JsonObject& operator=(const JsonObject&) = delete;
-    JsonObject& operator=(JsonObject&&) = delete;
+    JsonObjectNew() = default;
+    JsonObjectNew(const JsonObjectNew&) = delete;
+    JsonObjectNew(JsonObjectNew&&) = delete;
+    JsonObjectNew& operator=(const JsonObjectNew&) = delete;
+    JsonObjectNew& operator=(JsonObjectNew&&) = delete;
 
-    virtual ~JsonObject() override = default;
+    virtual ~JsonObjectNew() override = default;
 
     JsonNew& operator[](const char* key)
     {
@@ -65,16 +65,10 @@ public:
 
     virtual void release() override
     {
-        spdlog::debug("JsonObject release called, current reference count: {}, this: {}", reference_count, (size_t)this);
-        std::cout << "check release 1" << std::endl;
         reference_count--;
-        std::cout << "check release 2" << std::endl;
         if (reference_count == 0)
         {
-        std::cout << "check release 3" << std::endl;
             JsonObjectPool::release(this);
-        std::cout << "check release 4" << std::endl;
         }
-        std::cout << "check release 5" << std::endl;
     }
 };

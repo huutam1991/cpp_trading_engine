@@ -3,23 +3,22 @@
 #include <c_json/json_value.h>
 
 JsonNew::JsonNew()
-    : m_value(JsonObjectPool::acquire()) // Default to a JsonObject
+    : m_value(JsonObjectPool::acquire()) // Default to a JsonObjectNew
 {
-    spdlog::debug("JsonObject acquire called, m_value: {}", (size_t)m_value);
     m_value->init();
 }
 
 JsonNew& JsonNew::operator[](const char* key)
 {
     check_create_json_object();
-    JsonObject* json_object = (JsonObject*)m_value;
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
     return (*json_object)[key];
 }
 
 JsonNew& JsonNew::operator[](size_t index)
 {
     check_create_json_object();
-    JsonObject* json_object = (JsonObject*)m_value;
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
     return (*json_object)[index];
 }
 
