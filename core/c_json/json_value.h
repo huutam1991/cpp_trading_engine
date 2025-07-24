@@ -79,7 +79,6 @@ public:
 
     virtual void release() override
     {
-        spdlog::debug("JsonValueNew release called for this: {}", (size_t)this);
         JsonValuePool::release(this);
     }
 };
