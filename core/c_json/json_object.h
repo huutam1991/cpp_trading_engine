@@ -8,7 +8,7 @@
 #include <cache/cache_pool.h>
 
 class JsonObjectNew;
-using JsonObjectPool = CachePool<JsonObjectNew, 10000>;
+using JsonObjectPool = CachePool<JsonObjectNew, 100000>;
 
 class JsonObjectNew : public JsonTypeBaseNew
 {
