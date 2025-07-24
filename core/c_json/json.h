@@ -22,6 +22,11 @@ public:
     {
         if (this != &copy)
         {
+            if (m_value)
+            {
+                m_value->release();
+            }
+
             m_value->release();
             m_value = copy.m_value->get_copy();
         }
@@ -32,7 +37,11 @@ public:
     {
         if (this != &copy)
         {
-            m_value->release();
+            if (m_value)
+            {
+                m_value->release();
+            }
+
             m_value = copy.m_value;
             copy.m_value = nullptr; // Transfer ownership
         }
@@ -60,6 +69,9 @@ public:
         }
     }
 
+    JsonNew& operator[](const char* key);
+    JsonNew& operator[](size_t index);
+
     ~JsonNew()
     {
         if (m_value)
@@ -75,4 +87,5 @@ public:
 
 private:
     void check_create_json_value();
+    void check_create_json_object();
 };

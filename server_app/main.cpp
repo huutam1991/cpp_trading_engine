@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     spdlog::info("size of string pool: {}", StringPool::size());
 
     JsonNew a;
-    a = (size_t)123;
+    a[1] = 123;
 
     int b = a;
     spdlog::info("Value of b: {}", b);
@@ -109,16 +109,16 @@ int main(int argc, char **argv) {
 
     for (int i = 0; i < 10; i++)
     {
-        uint32_t f = a;
-        spdlog::info("Value of f: {}", f);
+        uint32_t f = a[1];
+        spdlog::info("Value of f1: {}", f);
     }
 
     a = nullptr;
 
     for (int i = 0; i < 10; i++)
     {
-        std::string f = a;
-        spdlog::info("Value of f: {}", f);
+        std::string f = a[1];
+        spdlog::info("Value of f2: {}", f);
     }
 
     spdlog::info("Main exit");

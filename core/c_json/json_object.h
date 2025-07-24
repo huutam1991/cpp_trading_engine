@@ -26,6 +26,21 @@ public:
 
     virtual ~JsonObject() override = default;
 
+    JsonNew& operator[](const char* key)
+    {
+        return m_object[key];
+    }
+
+    JsonNew& operator[](size_t index)
+    {
+        if (index >= m_array.size())
+        {
+            m_array.resize(index + 1);
+        }
+
+        return m_array[index];
+    }
+
     virtual bool is_json_value() override
     {
         return false; // This is not a JSON value, but an object
