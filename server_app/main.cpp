@@ -1,5 +1,6 @@
 #include <iostream>
 #include <filesystem>
+#include <string>
 // #include <glog/logging.h>
 
 #include <utils/constants.h>
@@ -99,6 +100,26 @@ int main(int argc, char **argv) {
 
     int b = a;
     spdlog::info("Value of b: {}", b);
+    long c = a;
+    spdlog::info("Value of c: {}", c);
+    size_t d = a;
+    spdlog::info("Value of d: {}", d);
+    uint32_t e = a;
+    spdlog::info("Value of e: {}", e);
+
+    for (int i = 0; i < 10; i++)
+    {
+        uint32_t f = a;
+        spdlog::info("Value of f: {}", f);
+    }
+
+    a = nullptr;
+
+    for (int i = 0; i < 10; i++)
+    {
+        std::string f = a;
+        spdlog::info("Value of f: {}", f);
+    }
 
     spdlog::info("Main exit");
 

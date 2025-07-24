@@ -15,27 +15,6 @@ JsonValueNew& JsonValueNew::operator=(std::string&& value)
 }
 
 template<>
-JsonValueNew::operator std::string_view() const
-{
-    if (std::holds_alternative<ShareString>(m_value))
-    {
-        return std::get<ShareString>(m_value).data();
-    }
-    else if (std::holds_alternative<std::string_view>(m_value))
-    {
-        return std::get<std::string_view>(m_value);
-    }
-    else if (std::holds_alternative<const char*>(m_value))
-    {
-        return std::string_view(std::get<const char*>(m_value));
-    }
-    else
-    {
-        return {};
-    }
-}
-
-template<>
 JsonValueNew::operator std::string() const
 {
     if (std::holds_alternative<ShareString>(m_value))

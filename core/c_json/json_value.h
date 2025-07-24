@@ -44,7 +44,7 @@ public:
             }
             else
             {
-                throw std::runtime_error("Invalid type conversion from variant");
+                return T(); // Return default value if conversion is not possible
             }
         }, m_value);
     }
