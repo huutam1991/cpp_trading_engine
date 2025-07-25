@@ -70,58 +70,18 @@ int main(int argc, char **argv) {
     // HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
     // server.start();
 
-    // Example usage of CachePool>
-
-    {
-        ShareString str1 = std::string("Tam Nguyen");
-        ShareString str2 = str1;
-        ShareString str3(std::string("Hello World"));
-        spdlog::info("str3: {}", str3);
-        spdlog::info("size of string pool: {}", StringPool::size());
-
-        str3 = str2;
-        auto str4 = str3.from_substr(0, 3);
-        spdlog::info("str1: {}", str1);
-        spdlog::info("str2: {}", str2);
-        spdlog::info("str3: {}", str3);
-        spdlog::info("str4: {}", str4);
-        spdlog::info("size of string pool: {}", StringPool::size());
-
-        for (size_t i = 0; i < 20; i++)
-        {
-            {
-                auto str6 = ShareString(std::string("New String " + std::to_string(i)));
-            }
-        }
-    }
-    spdlog::info("size of string pool: {}", StringPool::size());
-
-    // JsonNew a;
-    // a[1] = 123;
-
-    // int b = a;
-    // spdlog::info("Value of b: {}", b);
-    // long c = a;
-    // spdlog::info("Value of c: {}", c);
-    // size_t d = a;
-    // spdlog::info("Value of d: {}", d);
-    // uint32_t e = a;
-    // spdlog::info("Value of e: {}", e);
-
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     uint32_t f = a[1];
-    //     spdlog::info("Value of f1: {}", f);
-    // }
-
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 1; i++)
     {
         spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
         JsonNew b;
-        b[1][2] = "Hello World";
-        std::string f = b[1][2];
-        spdlog::info("Value of f2: {}", f);
+        b[1][6] = "Hello World";
+        b[1][8] = 123;
+        JsonNew c = b;
+        std::string e = c[1][6];
+        spdlog::info("Value of e: {}", e);
+        size_t f = c[1][8];
+        spdlog::info("Value of f: {}", f);
         spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
     }
