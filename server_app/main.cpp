@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     // HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
     // server.start();
 
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 100; i++)
     {
         spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
@@ -78,10 +78,15 @@ int main(int argc, char **argv) {
         b[1][6] = "Hello World";
         b[1][8] = 123;
         JsonNew c = b;
-        std::string e = c[1][6];
+
+        JsonNew d = c;
+        std::string e = d[1][6];
         spdlog::info("Value of e: {}", e);
-        size_t f = c[1][8];
+        size_t f = d[1][8];
         spdlog::info("Value of f: {}", f);
+        d[1][8] = 456;
+        size_t g = b[1][8];
+        spdlog::info("Value of g: {}", g);
         spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
     }
