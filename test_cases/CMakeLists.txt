@@ -8,6 +8,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines")
 # Get real root of the project
 get_filename_component(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 
+# Debug output to verify the root path
+# message(STATUS "PROJECT_ROOT = ${PROJECT_ROOT}")
+
 find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
 find_package(mongocxx REQUIRED)
@@ -15,8 +18,9 @@ find_package(bsoncxx REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(spdlog REQUIRED)
 
-
-message(STATUS "PROJECT_ROOT = ${PROJECT_ROOT}")
+include_directories("/usr/local/lib")
+include_directories(${LIBMONGOCXX_INCLUDE_DIR})
+include_directories(${LIBBSONCXX_INCLUDE_DIR})
 
 # Add files from the core directory
 file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
@@ -28,10 +32,15 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/*.cpp
 )
 
+# Test sources
+file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/**/*.cpp
+)
+
 enable_testing()
 
 add_executable(${PROJECT_NAME}
-    test_main.cpp
+    ${TEST_SOURCES}
     ${SRC_FILES}
     ${HEADER_FILES}
 )
