@@ -44,9 +44,9 @@ concept has_init = requires
 };
 
 template <typename T>
-concept has_release = requires
+concept has_clear = requires
 {
-    { &T::release };
+    { &T::clear };
 };
 
 template <class T, size_t Size>
@@ -134,10 +134,10 @@ public:
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (item != nullptr)
         {
-            // Check if the item has release method and call it
-            if constexpr (has_release<T>)
+            // Check if the item has clear method and call it
+            if constexpr (has_clear<T>)
             {
-                item->release();
+                item->clear();
             }
 
             pool_buffer.move_tail();
