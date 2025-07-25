@@ -10,15 +10,19 @@ class JsonNew
 public:
     JsonNew();
 
-    JsonNew(const JsonNew& copy) : m_value{copy.m_value->get_copy()}
-    {}
-
-    JsonNew(JsonNew&& copy) : m_value{copy.m_value}
+    JsonNew(const JsonNew& copy) noexcept
     {
-        copy.m_value = nullptr; // Transfer ownership
+        m_value = copy.m_value ? copy.m_value->get_copy() : nullptr;
     }
 
-    JsonNew& operator=(const JsonNew& copy)
+    JsonNew(JsonNew&& copy) noexcept
+    {
+        // Transfer ownership
+        m_value = copy.m_value;
+        copy.m_value = nullptr;
+    }
+
+    JsonNew& operator=(const JsonNew& copy) noexcept
     {
         if (this != &copy)
         {
@@ -32,7 +36,7 @@ public:
         return *this;
     }
 
-    JsonNew& operator=(JsonNew&& copy)
+    JsonNew& operator=(JsonNew&& copy) noexcept
     {
         if (this != &copy)
         {

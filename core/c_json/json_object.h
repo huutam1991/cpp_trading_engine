@@ -77,8 +77,6 @@ public:
         reference_count--;
         if (reference_count == 0)
         {
-            m_object.clear();
-            m_array.clear();
             JsonObjectPool::release(this);
         }
     }
