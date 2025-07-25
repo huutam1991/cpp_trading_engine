@@ -28,25 +28,34 @@ public:
 
     JsonNew& operator[](const char* key)
     {
+        m_is_array = false; // This is an object, not an array
         return m_object[key];
     }
 
     JsonNew& operator[](size_t index)
     {
+        m_is_array = true; // This is an array, not an object
+
         if (index >= m_array.size())
         {
             m_array.resize(index + 1);
         }
-
         return m_array[index];
     }
 
-    // Methosds from JsonTypeBaseNew
-    virtual void init() override
+    void init()
     {
         reference_count = 1; // Initialize reference count to 1
     }
 
+    void clear()
+    {
+        m_object.clear();
+        m_array.clear();
+        m_is_array = false;
+    }
+
+    // Methods from JsonTypeBaseNew
     virtual bool is_json_value() override
     {
         return false; // This is not a JSON value, but an object

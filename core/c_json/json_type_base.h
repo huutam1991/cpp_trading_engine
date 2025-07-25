@@ -12,7 +12,6 @@ protected:
 public:
     virtual ~JsonTypeBaseNew() {};
 
-    virtual void init() = 0;
     virtual bool is_json_value() = 0;
     virtual const std::string get_string_value() const = 0;
     virtual JsonTypeBaseNew* get_copy() = 0;

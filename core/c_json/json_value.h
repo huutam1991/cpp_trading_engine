@@ -57,8 +57,6 @@ public:
     }
 
     // Methosds from JsonTypeBaseNew
-    virtual void init() override {}
-
     virtual bool is_json_value() override
     {
         return true;
@@ -72,7 +70,6 @@ public:
     virtual JsonTypeBaseNew* get_copy() override
     {
         JsonValueNew* json_value = JsonValuePool::acquire();
-        json_value->init();
         json_value->m_value = m_value;
         return json_value;
     }

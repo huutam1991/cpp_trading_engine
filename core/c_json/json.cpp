@@ -24,14 +24,12 @@ void JsonNew::check_create_json_value()
     if (m_value == nullptr)
     {
         m_value = JsonValuePool::acquire();
-        m_value->init();
     }
 
     if (m_value->is_json_value() == false)
     {
         m_value->release();
         m_value = JsonValuePool::acquire();
-        m_value->init();
     }
 }
 
@@ -40,13 +38,11 @@ void JsonNew::check_create_json_object()
     if (m_value == nullptr)
     {
         m_value = JsonObjectPool::acquire();
-        m_value->init();
     }
 
     if (m_value->is_json_value() == true)
     {
         m_value->release();
         m_value = JsonObjectPool::acquire();
-        m_value->init();
     }
 }
