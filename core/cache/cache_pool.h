@@ -104,7 +104,6 @@ public:
     FORCE_INLINE static T* acquire()
     {
         // MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
-        std::lock_guard<SpinLock> guard(get_spin_lock());
 
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (pool_buffer.size == 0)
@@ -112,15 +111,22 @@ public:
             throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
         }
 
-        T* item = pool_buffer.available_items[pool_buffer.head];
+        T* item;
+        {
+            // Lock the spin lock to ensure thread safety
+            std::lock_guard<SpinLock> guard(get_spin_lock());
+
+            // Get the item from the pool
+            item = pool_buffer.available_items[pool_buffer.head];
+            pool_buffer.move_head();
+            pool_buffer.size--;
+        }
+
         // Check if the item has init method and call it
         if constexpr (has_init<T>)
         {
             item->init();
         }
-
-        pool_buffer.move_head();
-        pool_buffer.size--;
 
         return item;
     }
@@ -129,9 +135,7 @@ public:
     FORCE_INLINE static void release(T* item)
     {
         // MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
-        std::lock_guard<SpinLock> guard(get_spin_lock());
 
-        PoolBuffer& pool_buffer = get_pool_buffer();
         if (item != nullptr)
         {
             // Check if the item has clear method and call it
@@ -140,9 +144,16 @@ public:
                 item->clear();
             }
 
-            pool_buffer.move_tail();
-            pool_buffer.available_items[pool_buffer.tail] = item;
-            pool_buffer.size++;
+            {
+                // Lock the spin lock to ensure thread safety
+                std::lock_guard<SpinLock> guard(get_spin_lock());
+
+                // Add item back to the pool
+                PoolBuffer& pool_buffer = get_pool_buffer();
+                pool_buffer.move_tail();
+                pool_buffer.available_items[pool_buffer.tail] = item;
+                pool_buffer.size++;
+            }
         }
         else
         {
