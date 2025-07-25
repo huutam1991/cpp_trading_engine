@@ -50,7 +50,7 @@ TEST(JsonNewTest, NestedComplexJsonStructure)
     JsonNew me;
     me["name"] = "Nguyen Huu Tam";
     me["country"] = "Singapore";
-    me["role"] = "Quant Developer";
+    me["role"] = "C++ Trading Engine Developer";
     me["active"] = true;
     me["years_experience"] = 7;
     me["seeking_opportunity"] = false;
@@ -104,7 +104,7 @@ TEST(JsonNewTest, NestedComplexJsonStructure)
     // -------------------------------
     ASSERT_EQ((std::string)me["name"], "Nguyen Huu Tam");
     ASSERT_EQ((std::string)me["country"], "Singapore");
-    ASSERT_EQ((std::string)me["role"], "Quant Developer");
+    ASSERT_EQ((std::string)me["role"], "C++ Trading Engine Developer");
     ASSERT_EQ((bool)me["active"], true);
     ASSERT_EQ((int)me["years_experience"], 7);
     ASSERT_EQ((bool)me["seeking_opportunity"], false);
