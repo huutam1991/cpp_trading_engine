@@ -52,9 +52,9 @@ private:
     {
         if (!m_string_reference) return {};
 
-        if (start_index + length <= m_length)
+        if (m_start_index + start_index + length <= m_length)
         {
-            return std::string_view(m_string_reference->data).substr(start_index, length);
+            return std::string_view(m_string_reference->data).substr(m_start_index + start_index, length);
         }
         else
         {

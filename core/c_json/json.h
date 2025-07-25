@@ -86,7 +86,7 @@ public:
 
     const std::string get_string_value() const
     {
-        return m_value->get_string_value();
+        return m_value ? m_value->get_string_value() : "null";
     }
 
 private:

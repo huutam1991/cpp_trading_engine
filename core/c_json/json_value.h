@@ -22,6 +22,7 @@ class JsonValueNew : public JsonTypeBaseNew
         std::string_view,
         const char*
     > m_value;
+    bool m_is_string_format = true; // Indicates if value is string, it should has string format
 
 public:
     JsonValueNew() = default;
@@ -62,10 +63,7 @@ public:
         return true;
     }
 
-    virtual const std::string get_string_value() const override
-    {
-        return {};
-    }
+    virtual const std::string get_string_value() const override;
 
     virtual JsonTypeBaseNew* get_copy() override
     {

@@ -35,3 +35,51 @@ JsonValueNew::operator std::string() const
         return {};
     }
 }
+
+const std::string JsonValueNew::get_string_value() const
+{
+    return std::visit([this](auto&& arg) -> std::string
+    {
+        using U = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<U, std::nullptr_t>)
+        {
+            return "null";
+        }
+        else if constexpr (std::is_same_v<U, bool>)
+        {
+            return arg ? "true" : "false";
+        }
+        else if constexpr (std::is_arithmetic_v<U>)
+        {
+            return std::to_string(arg);
+        }
+        else if constexpr (std::is_same_v<U, ShareString>)
+        {
+            if (m_is_string_format)
+            {
+                return "\"" + std::string(arg.data()) + "\"";
+            }
+            return std::string(arg.data());
+        }
+        else if constexpr (std::is_same_v<U, std::string_view>)
+        {
+            if (m_is_string_format)
+            {
+                return "\"" + std::string(arg) + "\"";
+            }
+            return std::string(arg);
+        }
+        else if constexpr (std::is_same_v<U, const char*>)
+        {
+            if (m_is_string_format)
+            {
+                return "\"" + std::string(arg) + "\"";
+            }
+            return std::string(arg);
+        }
+        else
+        {
+            return "<unsupported>";
+        }
+    }, m_value);
+}

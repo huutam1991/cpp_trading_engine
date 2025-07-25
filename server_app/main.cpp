@@ -87,6 +87,10 @@ int main(int argc, char **argv) {
         d[1][8] = 456;
         size_t g = b[1][8];
         spdlog::info("Value of g: {}", g);
+
+        std::string json_str = d.get_string_value();
+        spdlog::info("JSON String: {}", json_str);
+
         spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
     }
