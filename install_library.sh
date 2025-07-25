@@ -49,13 +49,20 @@ cmake --build . --target install
 # ./bootstrap.sh
 # ./b2 install --prefix=/usr/
 
-# Install SpdLog 
+# Install SpdLog
 apt update -y
 apt install -y libspdlog-dev
 
 # Install Boost
 apt update -y
 apt install -y libboost-all-dev
+
+# Install google test
+git clone https://github.com/google/googletest.git
+cd googletest
+cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
+cmake --build build
+cmake --install build
 
 # # Install GLog
 # cd /
@@ -66,9 +73,11 @@ apt install -y libboost-all-dev
 # make -j$(nproc) && make install
 
 # Clean up if you want to keep the image size smaller
+cd /
 rm -rf /glog
 rm -rf /boost_1_71_0*
 rm -rf /mongo-c*
+rm -rf googletest/
 
 # Add Path
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
