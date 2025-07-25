@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <mutex>
 #include <utility>
 #include <unordered_map>
 #include <tuple>
@@ -9,6 +8,7 @@
 #include <utils/util_macros.h>
 #include <utils/constants.h>
 #include <json/json.h>
+#include <utils/spin_lock.h>
 #include "mongo_db_header.h"
 
 using mongo_find = bsoncxx::stdx::optional<bsoncxx::document::value>;
@@ -63,8 +63,7 @@ class MongoDB
 private:
     mongocxx::instance m_instance{};
     mongocxx::pool* m_pool = nullptr;
-
-    std::mutex m_mutex;
+    SpinLock m_spin_lock;
 
     std::string m_db;
     std::string m_collection;

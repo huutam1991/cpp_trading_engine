@@ -13,8 +13,9 @@ mongocxx::pool& MongoDB::get_pool()
         }
         spdlog::debug("MONGO_URI = {}", uri);
 
-        // Lock mutext and re-check if m_pool is still null
-        std::unique_lock lock(m_mutex);
+        // Use SpinLock to ensure thread safety when initializing the pool
+        SpinLockGuard lock(m_spin_lock);
+
         if (m_pool == nullptr)
         {
             m_pool = new mongocxx::pool{mongocxx::uri{uri}};
