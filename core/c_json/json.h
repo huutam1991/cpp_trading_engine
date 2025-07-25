@@ -106,3 +106,13 @@ private:
     void check_create_json_value();
     void check_create_json_object();
 };
+
+template <>
+struct fmt::formatter<JsonNew> : fmt::formatter<std::string>
+{
+    template <typename FormatContext>
+    auto format(const JsonNew& json, FormatContext& ctx)
+    {
+        return fmt::formatter<std::string>::format(json.get_string_value(), ctx);
+    }
+};

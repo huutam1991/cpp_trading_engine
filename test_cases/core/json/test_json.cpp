@@ -255,7 +255,7 @@ TEST(JsonNewTest, SoftSkillJsonPoolTracking)
         profile["ambition"]["inspiration_sources"][0] = "HRT";
         profile["ambition"]["inspiration_sources"][1] = "Jump";
 
-        spdlog::info("Profile JSON: {}", profile.get_string_value());
+        spdlog::info("Profile JSON: {}", profile);
     }
 
     // -------------------------------
