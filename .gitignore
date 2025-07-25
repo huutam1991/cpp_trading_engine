@@ -31,7 +31,7 @@
 *.app
 http_server_cpp
 http_server_cpp_debug
-/test_cases/run_tests
+/test_cases/test_cases
 
 # Build folder
 build/
