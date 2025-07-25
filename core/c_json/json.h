@@ -75,6 +75,22 @@ public:
     JsonNew& operator[](const char* key);
     JsonNew& operator[](size_t index);
 
+    template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+    JsonNew& operator[](T index)
+    {
+        return (*this)[static_cast<size_t>(index)];
+    }
+
+    bool operator==(std::nullptr_t t) const
+    {
+        return m_value == nullptr;
+    }
+
+    bool is_null() const
+    {
+        return m_value == nullptr;
+    }
+
     ~JsonNew()
     {
         if (m_value != nullptr)
