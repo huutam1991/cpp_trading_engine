@@ -29,7 +29,8 @@ public:
     JsonNew& operator[](const char* key)
     {
         m_is_array = false; // This is an object, not an array
-        return m_object[key];
+        auto [it, inserted] = m_object.emplace(key, JsonNew());
+        return it->second;
     }
 
     JsonNew& operator[](size_t index)
