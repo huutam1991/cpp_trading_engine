@@ -3,10 +3,7 @@
 #include <c_json/json_value.h>
 
 JsonNew::JsonNew()
-    : m_value(JsonObjectPool::acquire()) // Default to a JsonObjectNew
-{
-    m_value->init();
-}
+{}
 
 JsonNew& JsonNew::operator[](const char* key)
 {
