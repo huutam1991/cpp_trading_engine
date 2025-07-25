@@ -8,7 +8,7 @@ TEST(JsonNewTest, ComplexObjectStructure)
     root["active"] = true;
     root["version"] = 4.0;
     root["users"] = 1000000;
-    root["null_field"] = JsonNew();
+    root["null_field"] = nullptr;
 
     JsonNew arr;
     arr[0] = "openai";

@@ -19,6 +19,11 @@ JsonNew& JsonNew::operator[](size_t index)
     return (*json_object)[index];
 }
 
+bool JsonNew::is_null() const
+{
+    return m_value == nullptr || (m_value->is_json_value() && ((JsonValueNew*)m_value)->is_null());
+}
+
 void JsonNew::check_create_json_value()
 {
     if (m_value == nullptr)

@@ -57,6 +57,11 @@ public:
         return *this;
     }
 
+    bool is_null() const
+    {
+        return std::holds_alternative<std::nullptr_t>(m_value);
+    }
+
     // Methosds from JsonTypeBaseNew
     virtual bool is_json_value() override
     {

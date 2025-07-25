@@ -81,15 +81,12 @@ public:
         return (*this)[static_cast<size_t>(index)];
     }
 
+    // Null check
     bool operator==(std::nullptr_t t) const
     {
-        return m_value == nullptr;
+        return is_null();
     }
-
-    bool is_null() const
-    {
-        return m_value == nullptr;
-    }
+    bool is_null() const;
 
     ~JsonNew()
     {
