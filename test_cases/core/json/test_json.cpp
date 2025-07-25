@@ -192,11 +192,11 @@ TEST(JsonNewTest, SoftSkillJsonPoolTracking)
     size_t value_pool_before = JsonValuePool::size();
     size_t object_pool_before = JsonObjectPool::size();
 
+    // -------------------------------
+    // Action: Build a deeply nested soft skill profile
+    // -------------------------------
     {
         MeasureTime measure_time("SoftSkillJsonPoolTracking", MeasureUnit::NANOSECOND);
-        // -------------------------------
-        // Action: Build a deeply nested soft skill profile
-        // -------------------------------
         JsonNew profile;
         profile["name"] = "Nguyen Huu Tam";
         profile["traits"]["intelligence"]["IQ"] = 75;
