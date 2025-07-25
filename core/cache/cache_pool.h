@@ -37,6 +37,18 @@ struct TypeName<T, std::void_t<decltype(T::name())>>
     }
 };
 
+template <typename T>
+concept has_init = requires
+{
+    { &T::init };
+};
+
+template <typename T>
+concept has_release = requires
+{
+    { &T::release };
+};
+
 template <class T, size_t Size>
 class CachePool
 {
@@ -101,6 +113,12 @@ public:
         }
 
         T* item = pool_buffer.available_items[pool_buffer.head];
+        // Check if the item has init method and call it
+        if constexpr (has_init<T>)
+        {
+            item->init();
+        }
+
         pool_buffer.move_head();
         pool_buffer.size--;
 
@@ -116,6 +134,12 @@ public:
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (item != nullptr)
         {
+            // Check if the item has release method and call it
+            if constexpr (has_release<T>)
+            {
+                item->release();
+            }
+
             pool_buffer.move_tail();
             pool_buffer.available_items[pool_buffer.tail] = item;
             pool_buffer.size++;
