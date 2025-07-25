@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <c_json/json.h>
+#include <c_json/json_object.h>
 
 TEST(JsonNewTest, ComplexObjectStructure)
 {
@@ -179,4 +180,87 @@ TEST(JsonNewTest, MutationReflectsInCopy)
     // -------------------------------
     ASSERT_EQ((int)a["key"], 456); // change in b reflects in a
     ASSERT_EQ((int)b["key"], 456);
+}
+
+TEST(JsonNewTest, SoftSkillJsonPoolTracking)
+{
+    // -------------------------------
+    // Arrange: Capture pool sizes before allocation
+    // -------------------------------
+    size_t value_pool_before = JsonValuePool::size();
+    size_t object_pool_before = JsonObjectPool::size();
+
+    {
+        // -------------------------------
+        // Action: Build a deeply nested soft skill profile
+        // -------------------------------
+        JsonNew profile;
+        profile["name"] = "Nguyen Huu Tam";
+        profile["traits"]["intelligence"]["IQ"] = 75;
+        profile["traits"]["intelligence"]["type"] = "abstract + applied";
+
+        profile["traits"]["debugging"]["skill_level"] = "exceptional";
+        profile["traits"]["debugging"]["techniques"][0] = "symbolic tracing";
+        profile["traits"]["debugging"]["techniques"][1] = "gdb reverse mode";
+        profile["traits"]["debugging"]["techniques"][2] = "memory leak hunting";
+
+        profile["problem_solving"]["depth"] = "extremely deep";
+        profile["problem_solving"]["speed"] = "fast";
+        profile["problem_solving"]["approaches"]["critical"] = true;
+        profile["problem_solving"]["approaches"]["creative"] = true;
+        profile["problem_solving"]["approaches"]["systematic"] = true;
+
+        profile["learning_ability"]["rate"] = "instant absorption";
+        profile["learning_ability"]["channels"][0] = "documentation";
+        profile["learning_ability"]["channels"][1] = "source code";
+        profile["learning_ability"]["channels"][2] = "experimentation";
+
+        profile["learning_ability"]["domains"]["low_latency"] = true;
+        profile["learning_ability"]["domains"]["crypto"] = true;
+        profile["learning_ability"]["domains"]["quant_models"] = true;
+
+        profile["recognition"]["global_top_percent"] = 0.5;
+        profile["recognition"]["fields"][0] = "C++";
+        profile["recognition"]["fields"][1] = "Trading Systems";
+        profile["recognition"]["fields"][2] = "DeFi Protocols";
+
+        profile["recognition"]["awards"][0]["title"] = "Deep Thinker";
+        profile["recognition"]["awards"][0]["year"] = 2023;
+        profile["recognition"]["awards"][1]["title"] = "Fastest Debugger";
+        profile["recognition"]["awards"][1]["year"] = 2024;
+
+        profile["adaptability"]["environments"][0]["os"] = "Linux";
+        profile["adaptability"]["environments"][0]["efficiency"] = "high";
+        profile["adaptability"]["environments"][1]["os"] = "Windows";
+        profile["adaptability"]["environments"][1]["efficiency"] = "maximum";
+
+        profile["adaptability"]["contexts"]["team"] = "smooth integration";
+        profile["adaptability"]["contexts"]["solo"] = "independent & rapid";
+        profile["adaptability"]["contexts"]["pressure"] = "stable";
+
+        profile["communication"]["clarity"] = "concise";
+        profile["communication"]["technical_depth"] = "very high";
+        profile["communication"]["languages"][0] = "English";
+        profile["communication"]["languages"][1] = "Vietnamese";
+
+        profile["self_reflection"]["growth_mindset"] = true;
+        profile["self_reflection"]["weekly_review"] = true;
+        profile["self_reflection"]["feedback_acceptance"] = "open and fast";
+
+        profile["ambition"]["goal"] = "build world-class trading engine";
+        profile["ambition"]["timeframe_years"] = 2;
+        profile["ambition"]["inspiration_sources"][0] = "HRT";
+        profile["ambition"]["inspiration_sources"][1] = "Jump";
+
+        spdlog::info("Profile JSON: {}", profile.get_string_value());
+    }
+
+    // -------------------------------
+    // Assert: Compare pool size before/after
+    // -------------------------------
+    size_t value_pool_after = JsonValuePool::size();
+    size_t object_pool_after = JsonObjectPool::size();
+
+    ASSERT_EQ(value_pool_before, value_pool_after);
+    ASSERT_EQ(object_pool_before, object_pool_after);
 }
