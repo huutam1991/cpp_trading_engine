@@ -47,7 +47,7 @@ public:
         return *this;
     }
 
-    template<class T>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
     JsonNew& operator=(T&& value)
     {
         check_create_json_value();
