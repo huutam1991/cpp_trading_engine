@@ -91,6 +91,38 @@ int main(int argc, char **argv) {
         std::string json_str = d.get_string_value();
         spdlog::info("JSON String: {}", json_str);
 
+        d["name"] = "Tam";
+        d["age"] = 30;
+        d["is_active"] = true;
+        d["balance"] = 1000.50;
+        d["job"]["name"] = "Developer";
+        d["job"]["position"] = "Trading engine developer";
+        d["job"]["skills"][1] = "C++";
+        d["job"]["skills"][2] = "Python";
+        d["job"]["skills"][3] = "Rust";
+        json_str = d.get_string_value();
+        spdlog::info("JSON String: {}", json_str);
+
+        b["age"] = 32;
+        b["job"]["skills"][4] = "Low latency";
+        b["job"]["skills"][5] = "High performance";
+        b["job"]["skills"][6] = "Concurrency";
+        b["job"]["skills"][7] = "Coroutines";
+        b["job"]["skills"][8] = "Asynchronous programming";
+        b["job"]["skills"][9] = "Metaprogramming";
+
+        JsonNew trading_skills;
+        trading_skills["name"] = "Trading Skills";
+        trading_skills["skill"][1] = "Trading";
+        trading_skills["skill"][2] = "Market analysis";
+        trading_skills["skill"][3] = "Risk management";
+        trading_skills["skill"][4] = "Algorithmic trading";
+        trading_skills["skill"][5] = "Quantitative analysis";
+        b["job"]["skills"][10] = trading_skills;
+
+        json_str = d.get_string_value();
+        spdlog::info("JSON String: {}", json_str);
+
         spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
         spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
     }
