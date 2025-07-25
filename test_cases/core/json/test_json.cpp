@@ -2,6 +2,8 @@
 #include <c_json/json.h>
 #include <c_json/json_object.h>
 
+#include <time/measure_time.h>
+
 TEST(JsonNewTest, ComplexObjectStructure)
 {
     // -------------------------------
@@ -191,6 +193,7 @@ TEST(JsonNewTest, SoftSkillJsonPoolTracking)
     size_t object_pool_before = JsonObjectPool::size();
 
     {
+        MeasureTime measure_time("SoftSkillJsonPoolTracking", MeasureUnit::NANOSECOND);
         // -------------------------------
         // Action: Build a deeply nested soft skill profile
         // -------------------------------
