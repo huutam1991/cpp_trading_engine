@@ -58,10 +58,10 @@ void JsonValueNew::write_string_value(JsonStringBuilder& builder)
         }
         else if constexpr (std::is_arithmetic_v<U>)
         {
-            auto [ptr, ec] = std::to_chars(this->buffer_number, this->buffer_number + sizeof(this->buffer_number), arg);
+            auto [ptr, ec] = std::to_chars(buffer_number, buffer_number + sizeof(buffer_number), arg);
             if (ec == std::errc{})
             {
-                builder.write_raw(this->buffer_number, ptr - this->buffer_number);
+                builder.write_raw(buffer_number, ptr - buffer_number);
             }
         }
         else if constexpr (std::is_same_v<U, ShareString>)

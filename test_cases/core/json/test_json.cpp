@@ -196,66 +196,72 @@ TEST(JsonNewTest, SoftSkillJsonPoolTracking)
     // Action: Build a deeply nested soft skill profile
     // -------------------------------
     {
-        MeasureTime measure_time("SoftSkillJsonPoolTracking", MeasureUnit::NANOSECOND);
-        JsonNew profile;
-        profile["name"] = "Nguyen Huu Tam";
-        profile["traits"]["intelligence"]["IQ"] = 75;
-        profile["traits"]["intelligence"]["type"] = "abstract + applied";
+        MeasureTime measure_time("SoftSkillJsonPoolTracking", MeasureUnit::MICROSECOND);
 
-        profile["traits"]["debugging"]["skill_level"] = "exceptional";
-        profile["traits"]["debugging"]["techniques"][0] = "symbolic tracing";
-        profile["traits"]["debugging"]["techniques"][1] = "gdb reverse mode";
-        profile["traits"]["debugging"]["techniques"][2] = "memory leak hunting";
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            JsonNew profile;
+            profile["name"] = "Nguyen Huu Tam";
+            profile["traits"]["intelligence"]["IQ"] = 75;
+            profile["traits"]["intelligence"]["type"] = "abstract + applied";
 
-        profile["problem_solving"]["depth"] = "extremely deep";
-        profile["problem_solving"]["speed"] = "fast";
-        profile["problem_solving"]["approaches"]["critical"] = true;
-        profile["problem_solving"]["approaches"]["creative"] = true;
-        profile["problem_solving"]["approaches"]["systematic"] = true;
+            profile["traits"]["debugging"]["skill_level"] = "exceptional";
+            profile["traits"]["debugging"]["techniques"][0] = "symbolic tracing";
+            profile["traits"]["debugging"]["techniques"][1] = "gdb reverse mode";
+            profile["traits"]["debugging"]["techniques"][2] = "memory leak hunting";
 
-        profile["learning_ability"]["rate"] = "instant absorption";
-        profile["learning_ability"]["channels"][0] = "documentation";
-        profile["learning_ability"]["channels"][1] = "source code";
-        profile["learning_ability"]["channels"][2] = "experimentation";
+            profile["problem_solving"]["depth"] = "extremely deep";
+            profile["problem_solving"]["speed"] = "fast";
+            profile["problem_solving"]["approaches"]["critical"] = true;
+            profile["problem_solving"]["approaches"]["creative"] = true;
+            profile["problem_solving"]["approaches"]["systematic"] = true;
 
-        profile["learning_ability"]["domains"]["low_latency"] = true;
-        profile["learning_ability"]["domains"]["crypto"] = true;
-        profile["learning_ability"]["domains"]["quant_models"] = true;
+            profile["learning_ability"]["rate"] = "instant absorption";
+            profile["learning_ability"]["channels"][0] = "documentation";
+            profile["learning_ability"]["channels"][1] = "source code";
+            profile["learning_ability"]["channels"][2] = "experimentation";
 
-        profile["recognition"]["global_top_percent"] = 0.5;
-        profile["recognition"]["fields"][0] = "C++";
-        profile["recognition"]["fields"][1] = "Trading Systems";
-        profile["recognition"]["fields"][2] = "DeFi Protocols";
+            profile["learning_ability"]["domains"]["low_latency"] = true;
+            profile["learning_ability"]["domains"]["crypto"] = true;
+            profile["learning_ability"]["domains"]["quant_models"] = true;
 
-        profile["recognition"]["awards"][0]["title"] = "Deep Thinker";
-        profile["recognition"]["awards"][0]["year"] = 2023;
-        profile["recognition"]["awards"][1]["title"] = "Fastest Debugger";
-        profile["recognition"]["awards"][1]["year"] = 2024;
+            profile["recognition"]["global_top_percent"] = 0.5;
+            profile["recognition"]["fields"][0] = "C++";
+            profile["recognition"]["fields"][1] = "Trading Systems";
+            profile["recognition"]["fields"][2] = "DeFi Protocols";
 
-        profile["adaptability"]["environments"][0]["os"] = "Linux";
-        profile["adaptability"]["environments"][0]["efficiency"] = "high";
-        profile["adaptability"]["environments"][1]["os"] = "Windows";
-        profile["adaptability"]["environments"][1]["efficiency"] = "maximum";
+            profile["recognition"]["awards"][0]["title"] = "Deep Thinker";
+            profile["recognition"]["awards"][0]["year"] = 2023;
+            profile["recognition"]["awards"][1]["title"] = "Fastest Debugger";
+            profile["recognition"]["awards"][1]["year"] = 2024;
 
-        profile["adaptability"]["contexts"]["team"] = "smooth integration";
-        profile["adaptability"]["contexts"]["solo"] = "independent & rapid";
-        profile["adaptability"]["contexts"]["pressure"] = "stable";
+            profile["adaptability"]["environments"][0]["os"] = "Linux";
+            profile["adaptability"]["environments"][0]["efficiency"] = "high";
+            profile["adaptability"]["environments"][1]["os"] = "Windows";
+            profile["adaptability"]["environments"][1]["efficiency"] = "maximum";
 
-        profile["communication"]["clarity"] = "concise";
-        profile["communication"]["technical_depth"] = "very high";
-        profile["communication"]["languages"][0] = "English";
-        profile["communication"]["languages"][1] = "Vietnamese";
+            profile["adaptability"]["contexts"]["team"] = "smooth integration";
+            profile["adaptability"]["contexts"]["solo"] = "independent & rapid";
+            profile["adaptability"]["contexts"]["pressure"] = "stable";
 
-        profile["self_reflection"]["growth_mindset"] = true;
-        profile["self_reflection"]["weekly_review"] = true;
-        profile["self_reflection"]["feedback_acceptance"] = "open and fast";
+            profile["communication"]["clarity"] = "concise";
+            profile["communication"]["technical_depth"] = "very high";
+            profile["communication"]["languages"][0] = "English";
+            profile["communication"]["languages"][1] = "Vietnamese";
 
-        profile["ambition"]["goal"] = "build world-class trading engine";
-        profile["ambition"]["timeframe_years"] = 2;
-        profile["ambition"]["inspiration_sources"][0] = "HRT";
-        profile["ambition"]["inspiration_sources"][1] = "Jump";
+            profile["self_reflection"]["growth_mindset"] = true;
+            profile["self_reflection"]["weekly_review"] = true;
+            profile["self_reflection"]["feedback_acceptance"] = "open and fast";
 
-        spdlog::info("Profile JSON: {}", profile);
+            profile["ambition"]["goal"] = "build world-class trading engine";
+            profile["ambition"]["timeframe_years"] = 2;
+            profile["ambition"]["inspiration_sources"][0] = "HRT";
+            profile["ambition"]["inspiration_sources"][1] = "Jump";
+
+            std::string json_string = profile.get_string_value();
+            // spdlog::info("Profile JSON: {}", json_string);
+        }
+
     }
 
     // -------------------------------
