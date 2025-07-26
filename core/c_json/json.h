@@ -1,7 +1,11 @@
 #pragma once
 
+#include <cache/cache_pool.h>
+#include <cache/fix_string.h>
 #include <c_json/json_type_base.h>
 #include <c_json/json_value.h>
+
+using FixStringPool = CachePool<FixString, 100>;
 
 class JsonNew
 {
@@ -99,10 +103,16 @@ public:
 
     std::string get_string_value() const
     {
-        std::string buffer;
-        buffer.reserve(2000);
-        JsonStringBuilder builder(buffer.data());
+        // Get a FixString from the pool
+        FixString* buffer = FixStringPool::acquire();
+
+        // Write the JSON value to the FixString buffer
+        JsonStringBuilder builder(buffer->data());
         write_string_value(builder);
+
+        // Release the FixString back to the pool
+        FixStringPool::release(buffer);
+
         return builder.finish();
     }
 
