@@ -2,7 +2,7 @@
 
 #include <array>
 
-#define STRING_FIXED_SIZE 20000 // Reserve space for 10000 characters
+#define STRING_FIXED_SIZE 20000 // Reserve space for 20000 characters
 
 class FixString
 {
