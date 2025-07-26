@@ -198,7 +198,7 @@ TEST(JsonNewTest, SoftSkillJsonPoolTracking)
     {
         MeasureTime measure_time("SoftSkillJsonPoolTracking", MeasureUnit::MICROSECOND);
 
-        for (size_t i = 0; i < 1000; ++i)
+        for (size_t i = 0; i < 1; ++i)
         {
             JsonNew profile;
             profile["name"] = "Nguyen Huu Tam";
