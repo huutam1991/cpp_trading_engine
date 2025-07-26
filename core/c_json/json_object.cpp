@@ -1,6 +1,6 @@
 #include <c_json/json_object.h>
 
-void JsonObjectNew::write_string_value(JsonStringBuilder& builder) const
+void JsonObjectNew::write_string_value(JsonStringBuilder& builder)
 {
     if (m_is_array)
     {

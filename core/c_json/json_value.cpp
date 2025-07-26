@@ -36,7 +36,7 @@ JsonValueNew::operator std::string() const
     }
 }
 
-void JsonValueNew::write_string_value(JsonStringBuilder& builder) const
+void JsonValueNew::write_string_value(JsonStringBuilder& builder)
 {
     std::visit([this, &builder](auto&& arg) -> void
     {
@@ -58,20 +58,24 @@ void JsonValueNew::write_string_value(JsonStringBuilder& builder) const
         }
         else if constexpr (std::is_arithmetic_v<U>)
         {
-            std::string number = std::to_string(arg);
-            builder.write_raw(number.c_str(), number.size());
+            auto [ptr, ec] = std::to_chars(this->buffer_number, this->buffer_number + sizeof(this->buffer_number), arg);
+            if (ec == std::errc{})
+            {
+                builder.write_raw(this->buffer_number, ptr - this->buffer_number);
+            }
         }
         else if constexpr (std::is_same_v<U, ShareString>)
         {
+            std::string_view str_view = arg.data();
             if (m_is_string_format)
             {
                 builder.write_char('\"');
-                builder.write_raw(arg.data().data(), arg.data().size());
+                builder.write_raw(str_view.data(), str_view.size());
                 builder.write_char('\"');
             }
             else
             {
-                builder.write_raw(arg.data().data(), arg.data().size());
+                builder.write_raw(str_view.data(), str_view.size());
             }
         }
         else if constexpr (std::is_same_v<U, std::string_view>)

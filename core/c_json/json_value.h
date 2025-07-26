@@ -22,7 +22,9 @@ class JsonValueNew : public JsonTypeBaseNew
         std::string_view,
         const char*
     > m_value;
+
     bool m_is_string_format = true; // Indicates if value is string, it should has string format
+    char buffer_number[50]; // Buffer for number conversion
 
 public:
     JsonValueNew() = default;
@@ -68,7 +70,7 @@ public:
         return true;
     }
 
-    virtual void write_string_value(JsonStringBuilder& builder) const override;
+    virtual void write_string_value(JsonStringBuilder& builder) override;
 
     virtual JsonTypeBaseNew* get_copy() override
     {
