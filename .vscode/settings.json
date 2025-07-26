@@ -77,6 +77,7 @@
         "variant": "cpp",
         "format": "cpp",
         "shared_mutex": "cpp",
-        "ciso646": "cpp"
+        "ciso646": "cpp",
+        "any": "cpp"
     }
 }

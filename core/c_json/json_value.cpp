@@ -36,7 +36,7 @@ JsonValueNew::operator std::string() const
     }
 }
 
-const std::string JsonValueNew::get_string_value() const
+std::string JsonValueNew::get_string_value() const
 {
     return std::visit([this](auto&& arg) -> std::string
     {

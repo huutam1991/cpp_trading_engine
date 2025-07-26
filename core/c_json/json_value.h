@@ -68,7 +68,7 @@ public:
         return true;
     }
 
-    virtual const std::string get_string_value() const override;
+    virtual std::string get_string_value() const override;
 
     virtual JsonTypeBaseNew* get_copy() override
     {

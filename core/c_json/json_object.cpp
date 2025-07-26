@@ -1,6 +1,6 @@
 #include <c_json/json_object.h>
 
-const std::string JsonObjectNew::get_string_value() const
+std::string JsonObjectNew::get_string_value() const
 {
     if (m_is_array)
     {
