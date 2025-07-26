@@ -1,27 +1,23 @@
 #pragma once
 
-#include <string>
+#include <array>
 
-#define STRING_FIXED_SIZE 10000 // Reserve space for 10000 characters
+#define STRING_FIXED_SIZE 20000 // Reserve space for 10000 characters
 
 class FixString
 {
-    std::string m_string;
+    std::array<char, STRING_FIXED_SIZE> m_data;
 
 public:
-    FixString()
-    {
-        m_string.reserve(STRING_FIXED_SIZE);
-    }
-
+    FixString() = default;
+    ~FixString() = default;
     FixString(const FixString&) = delete;
     FixString(FixString&&) = default;
     FixString& operator=(const FixString&) = delete;
     FixString& operator=(FixString&&) = delete;
-    ~FixString() = default;
 
     char* data()
     {
-        return m_string.data();
+        return m_data.data();
     }
 };
