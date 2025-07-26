@@ -36,50 +36,73 @@ JsonValueNew::operator std::string() const
     }
 }
 
-std::string JsonValueNew::get_string_value() const
+void JsonValueNew::write_string_value(JsonStringBuilder& builder) const
 {
-    return std::visit([this](auto&& arg) -> std::string
+    std::visit([this, &builder](auto&& arg) -> void
     {
         using U = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<U, std::nullptr_t>)
         {
-            return "null";
+            builder.write_raw("null", 4);
         }
         else if constexpr (std::is_same_v<U, bool>)
         {
-            return arg ? "true" : "false";
+            if (arg)
+            {
+                builder.write_raw("true", 4);
+            }
+            else
+            {
+                builder.write_raw("false", 5);
+            }
         }
         else if constexpr (std::is_arithmetic_v<U>)
         {
-            return std::to_string(arg);
+            std::string number = std::to_string(arg);
+            builder.write_raw(number.c_str(), number.size());
         }
         else if constexpr (std::is_same_v<U, ShareString>)
         {
             if (m_is_string_format)
             {
-                return "\"" + std::string(arg.data()) + "\"";
+                builder.write_char('\"');
+                builder.write_raw(arg.data().data(), arg.data().size());
+                builder.write_char('\"');
             }
-            return std::string(arg.data());
+            else
+            {
+                builder.write_raw(arg.data().data(), arg.data().size());
+            }
         }
         else if constexpr (std::is_same_v<U, std::string_view>)
         {
             if (m_is_string_format)
             {
-                return "\"" + std::string(arg) + "\"";
+                builder.write_char('\"');
+                builder.write_raw(arg.data(), arg.size());
+                builder.write_char('\"');
             }
-            return std::string(arg);
+            else
+            {
+                builder.write_raw(arg.data(), arg.size());
+            }
         }
         else if constexpr (std::is_same_v<U, const char*>)
         {
             if (m_is_string_format)
             {
-                return "\"" + std::string(arg) + "\"";
+                builder.write_char('\"');
+                builder.write_raw(arg, std::strlen(arg));
+                builder.write_char('\"');
             }
-            return std::string(arg);
+            else
+            {
+                builder.write_raw(arg, std::strlen(arg));
+            }
         }
         else
         {
-            return "<unsupported>";
+            builder.write_raw("<unsupported>", 13);
         }
     }, m_value);
 }

@@ -99,7 +99,23 @@ public:
 
     std::string get_string_value() const
     {
-        return m_value ? m_value->get_string_value() : "null";
+        std::string buffer;
+        buffer.reserve(2000);
+        JsonStringBuilder builder(buffer.data());
+        write_string_value(builder);
+        return builder.finish();
+    }
+
+    void write_string_value(JsonStringBuilder& builder) const
+    {
+        if (m_value)
+        {
+            m_value->write_string_value(builder);
+        }
+        else
+        {
+            builder.write_raw("null", 4); // Write "null" if m_value is nullptr
+        }
     }
 
 private:

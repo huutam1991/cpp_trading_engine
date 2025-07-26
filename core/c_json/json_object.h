@@ -62,7 +62,7 @@ public:
         return false; // This is not a JSON value, but an object
     }
 
-    virtual std::string get_string_value() const override;
+    virtual void write_string_value(JsonStringBuilder& builder) const override;
 
     virtual JsonTypeBaseNew* get_copy() override
     {
