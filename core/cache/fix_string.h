@@ -14,6 +14,12 @@ public:
         m_string.reserve(STRING_FIXED_SIZE);
     }
 
+    FixString(const FixString&) = delete;
+    FixString(FixString&&) = default;
+    FixString& operator=(const FixString&) = delete;
+    FixString& operator=(FixString&&) = delete;
+    ~FixString() = default;
+
     char* data()
     {
         return m_string.data();
