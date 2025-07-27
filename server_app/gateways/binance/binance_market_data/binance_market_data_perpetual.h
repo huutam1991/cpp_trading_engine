@@ -20,7 +20,7 @@ public:
     void subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back);
 
 protected:
-    virtual bool standardize_data(const std::string& buffer, Json& data);
+    virtual bool standardize_data(std::string&& buffer, Json& data);
 
 private:
     std::string m_url;

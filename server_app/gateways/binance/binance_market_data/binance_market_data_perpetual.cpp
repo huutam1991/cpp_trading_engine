@@ -6,6 +6,10 @@
 
 #include <app_constants.h>
 
+#include <c_json/json.h>
+#include <c_json/json_value.h>
+#include <c_json/json_object.h>
+
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
 BinanceMarketDataPerpetual::BinanceMarketDataPerpetual(const std::string& url, const std::string& port):
@@ -29,7 +33,7 @@ void BinanceMarketDataPerpetual::start()
         websocket->close();
     }
     m_websockets.clear();
-    
+
     for (size_t i = 0; i < m_instruments.size(); i++)
     {
         start_websocket(m_instruments[i]);
@@ -58,7 +62,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             STRING_LOWER_CASE(lower_case_symbol);
 
             Json params;
-            params[0] = lower_case_symbol + "@depth20@500ms";
+            params[0] = lower_case_symbol + "@depth5@500ms";
 
             Json subcribe;
             subcribe["method"] = "SUBSCRIBE";
@@ -91,20 +95,20 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             // MeasureTime t("Handle price update PERPETUAL", MeasureUnit::MICROSECOND);
 
             Json depth = Json();
-            if (this->standardize_data(buffer, depth))
+            if (this->standardize_data(std::move(buffer), depth))
             {
                 // spdlog::debug("Stream depth: {}", depth);
-                if (m_on_callback != nullptr)
-                {
-                    m_on_callback(instrument, depth);
-                }
+                // if (m_on_callback != nullptr)
+                // {
+                //     m_on_callback(instrument, depth);
+                // }
             }
             else
             {
-                // Save this none json data for checking error
-                MongoDB::instance()
-                    .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                    .insert_one(Json::parse(buffer));
+                // // Save this none json data for checking error
+                // MongoDB::instance()
+                //     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
+                //     .insert_one(Json::parse(buffer));
             }
 
             co_return;
@@ -147,43 +151,55 @@ void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrum
     m_on_callback = std::move(call_back);
 }
 
-bool BinanceMarketDataPerpetual::standardize_data(const std::string& data, Json& depth)
+bool BinanceMarketDataPerpetual::standardize_data(std::string&& data, Json& depth)
 {
     MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
-    Json order_book = Json::parse(data);
+    JsonNew order_book;
+    {
+        MeasureTime("Parse order book PERPETUAL", MeasureUnit::MICROSECOND),
+        order_book = JsonNew::parse(std::move(data));
+    }
     // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
+
+    JsonNew depth_new;
 
     if (order_book.has_field("a") && order_book.has_field("b"))
     {
         MeasureTime t2("build depth PERPETUAL", MeasureUnit::MICROSECOND);
         // symbol
-        depth["s"] = "m_symbol";
+        depth_new["s"] = "m_symbol";
         // event name
-        depth["e"] = "depthUpdate";
+        depth_new["e"] = "depthUpdate";
 
         // update asks
-        Json A = Json::create_array();
-        Json asks = order_book["a"];
-        asks.for_each([&A](Json& data)
+        JsonNew A;
+        JsonNew asks = order_book["a"];
+        A.set_size(asks.size());
+        asks.for_each([&A](JsonNew& data)
         {
-            Json j = Json::create_array();
-            j.push_back(std::stold((std::string&&)data[0]));
-            j.push_back(std::stold((std::string&&)data[1]));
+            JsonNew j;
+            JsonNew a0 = std::stod((std::string)data[0]);
+            JsonNew a1 = std::stod((std::string)data[1]);
+            j.push_back(a0);
+            j.push_back(a1);
             A.push_back(j);
         });
-        depth["asks"] = A;
+        depth_new["asks"] = A;
 
         // update bids
-        Json B = Json::create_array();
-        Json bids = order_book["b"];
-        bids.for_each([&B](Json& data)
+        JsonNew B;
+        JsonNew bids = order_book["b"];
+        B.set_size(bids.size());
+        bids.for_each([&B](JsonNew& data)
         {
-            Json j = Json::create_array();
-            j.push_back(std::stold((std::string&&)data[0]));
-            j.push_back(std::stold((std::string&&)data[1]));
+            JsonNew j;
+            JsonNew b0 = std::stod((std::string)data[0]);
+            JsonNew b1 = std::stod((std::string)data[1]);
+            j.push_back(b0);
+            j.push_back(b1);
             B.push_back(j);
         });
-        depth["bids"] = B;
+        depth_new["bids"] = B;
 
         return true;
     }
