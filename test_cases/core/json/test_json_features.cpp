@@ -14,8 +14,6 @@ TEST(JsonTestFeature, Operator_Compare)
     a["key1"] = 42;
     a["key2"] = "Tam";
 
-    bool are_equal = a["key1"] == 42;
-
     // -------------------------------
     // Assert
     // -------------------------------
@@ -25,7 +23,7 @@ TEST(JsonTestFeature, Operator_Compare)
     ASSERT_EQ(a["key1"] == "Tam", false);
 
     ASSERT_EQ(a["key2"] == "Tam", true);
-    // ASSERT_EQ(a["key2"] == "Nguyen", false);
+    ASSERT_EQ(a["key2"] == "Nguyen", false);
     ASSERT_EQ(a["key2"] == 42, false);
     ASSERT_EQ(a["key2"] == nullptr, false);
 }
