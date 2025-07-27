@@ -62,6 +62,23 @@ void JsonNew::for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func
     }
 }
 
+bool JsonNew::has_field(const std::string& field) const
+{
+    if (m_value->is_json_value() == false)
+    {
+        return ((JsonObjectNew*)m_value)->has_field(field);
+    }
+    return false; // If it's a JsonValue, it cannot have fields
+}
+
+void JsonNew::remove_field(const std::string& field)
+{
+    if (m_value->is_json_value() == false)
+    {
+        ((JsonObjectNew*)m_value)->remove_field(field);
+    }
+}
+
 bool JsonNew::is_null() const
 {
     return m_value == nullptr || (m_value->is_json_value() && ((JsonValueNew*)m_value)->is_null());

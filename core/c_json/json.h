@@ -97,6 +97,9 @@ public:
     void for_each_with_key(std::function<void(const std::string&,JsonNew&)> loop_func);
     void for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func);
 
+    bool has_field(const std::string& field) const;
+    void remove_field(const std::string& field);
+
     // Null check
     bool operator==(std::nullptr_t t) const
     {
