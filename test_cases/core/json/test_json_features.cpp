@@ -270,3 +270,70 @@ TEST(JsonTestFeature, DeepClone_CreatesFullyIndependentCopy)
     ASSERT_NE((int)clone["project"]["info"]["latency_ns"], (int)original["project"]["info"]["latency_ns"]);
     ASSERT_NE((std::string)clone["project"]["info"]["name"], (std::string)original["project"]["info"]["name"]);
 }
+
+TEST(JsonTestFeature, DeepClone_ArrayStructure_IndependentCopy)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew original;
+    original.set_size(3);
+
+    original[0]["name"] = "OrderBook";
+    original[0]["status"] = "active";
+
+    original[1]["name"] = "Vault";
+    original[1]["status"] = "completed";
+
+    original[2]["name"] = "LatencyTracker";
+    original[2]["metrics"]["latency_ns"] = 42;
+    original[2]["metrics"]["throughput"] = 15000;
+
+    // -------------------------------
+    // Action
+    // -------------------------------
+    JsonNew clone = original.deep_clone();
+
+    // -------------------------------
+    // Assert (Before modification: same values)
+    // -------------------------------
+    ASSERT_EQ((std::string)clone[0]["name"], (std::string)original[0]["name"]);
+    ASSERT_EQ((std::string)clone[1]["status"], (std::string)original[1]["status"]);
+    ASSERT_EQ((int)clone[2]["metrics"]["latency_ns"], (int)original[2]["metrics"]["latency_ns"]);
+    ASSERT_EQ((int)clone[2]["metrics"]["throughput"], (int)original[2]["metrics"]["throughput"]);
+
+    // -------------------------------
+    // Modify clone
+    // -------------------------------
+    clone[0]["name"] = "ClonedOrderBook";
+    clone[1]["status"] = "cloned_status";
+    clone[2]["metrics"]["latency_ns"] = 999;
+
+    // -------------------------------
+    // Modify original
+    // -------------------------------
+    original[1]["name"] = "OriginalVault";
+    original[2]["metrics"]["throughput"] = 8888;
+
+    // -------------------------------
+    // Assert (clone not affected by original)
+    // -------------------------------
+    ASSERT_EQ((std::string)clone[0]["name"], "ClonedOrderBook");
+    ASSERT_EQ((std::string)clone[1]["status"], "cloned_status");
+    ASSERT_EQ((int)clone[2]["metrics"]["latency_ns"], 999);
+    ASSERT_EQ((int)clone[2]["metrics"]["throughput"], 15000);
+
+    // -------------------------------
+    // Assert (original not affected by clone)
+    // -------------------------------
+    ASSERT_EQ((std::string)original[0]["name"], "OrderBook");
+    ASSERT_EQ((std::string)original[1]["status"], "completed");
+    ASSERT_EQ((int)original[2]["metrics"]["latency_ns"], 42);
+    ASSERT_EQ((int)original[2]["metrics"]["throughput"], 8888);
+
+    // -------------------------------
+    // Final: ensure true independence
+    // -------------------------------
+    ASSERT_NE((std::string)clone[0]["name"], (std::string)original[0]["name"]);
+    ASSERT_NE((int)clone[2]["metrics"]["latency_ns"], (int)original[2]["metrics"]["latency_ns"]);
+}
