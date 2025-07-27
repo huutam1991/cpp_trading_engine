@@ -14,7 +14,6 @@ ShareString::ShareString() :
 ShareString::ShareString(const std::string& data) :
     m_string_reference{StringPool::acquire()}
 {
-    spdlog::info("Creating ShareString with data: {}", data);
     m_string_reference->data = data;
     m_string_reference->count = 1;
 
@@ -25,7 +24,6 @@ ShareString::ShareString(const std::string& data) :
 ShareString::ShareString(std::string&& data) :
     m_string_reference{StringPool::acquire()}
 {
-    spdlog::info("Creating ShareString with rvalue data: {}", data);
     m_string_reference->data = std::move(data);
     m_string_reference->count = 1;
 

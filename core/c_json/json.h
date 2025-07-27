@@ -114,7 +114,23 @@ public:
         }
         else
         {
-            return ((JsonValueNew*)m_value)->operator T() == value;
+            if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
+            {
+                const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
+                const char* current_value = share_string.data().data();
+                return std::strcmp(current_value, value) == 0;
+            }
+            else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
+            {
+                const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
+                std::string_view current_value = share_string.data();
+                return current_value == value;
+            }
+            else
+            {
+                T current_value = ((JsonValueNew*)m_value)->operator T();
+                return current_value == value;
+            }
         }
     }
 

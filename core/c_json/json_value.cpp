@@ -3,6 +3,7 @@
 template<>
 JsonValueNew::operator std::string() const
 {
+    spdlog::info("Converting JsonValueNew to std::string");
     if (std::holds_alternative<ShareString>(m_value))
     {
         std::string_view str_view = std::get<ShareString>(m_value).data();
