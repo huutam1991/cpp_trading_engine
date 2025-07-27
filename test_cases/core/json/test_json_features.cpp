@@ -4,8 +4,7 @@
 
 #include <time/measure_time.h>
 
-
-TEST(JsonTestFeature, Operator_Compare)
+TEST(JsonTestFeature, Operator_Compare_Equal)
 {
     // -------------------------------
     // Arrange
