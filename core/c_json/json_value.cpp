@@ -1,20 +1,6 @@
 #include <c_json/json_value.h>
 
 template<>
-JsonValueNew& JsonValueNew::operator=(const std::string& value)
-{
-    m_value = ShareString(value);
-    return *this;
-}
-
-template<>
-JsonValueNew& JsonValueNew::operator=(std::string&& value)
-{
-    m_value = ShareString(std::move(value));
-    return *this;
-}
-
-template<>
 JsonValueNew::operator std::string() const
 {
     if (std::holds_alternative<ShareString>(m_value))

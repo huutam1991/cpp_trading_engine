@@ -106,7 +106,7 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
-    bool operator ==(const T& value) const
+    bool operator ==(T value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
         {
@@ -119,7 +119,7 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
-    bool operator !=(const T& value) const
+    bool operator !=(T value) const
     {
         // Reuse == operator
         return operator==(value) == false;

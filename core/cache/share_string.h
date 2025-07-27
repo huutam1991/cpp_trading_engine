@@ -28,7 +28,7 @@ class ShareString
     size_t m_length = 0;
 
 public:
-    ShareString() = delete;
+    ShareString();
     ShareString(const std::string& data);
     ShareString(std::string&& data);
 

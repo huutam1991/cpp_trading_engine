@@ -55,7 +55,14 @@ public:
     template<class T>
     JsonValueNew& operator=(T&& value)
     {
-        m_value = std::forward<T>(value);
+        if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
+        {
+            m_value = ShareString(std::forward<T>(value));
+        }
+        else
+        {
+            m_value = std::forward<T>(value);
+        }
         return *this;
     }
 

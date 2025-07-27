@@ -37,6 +37,22 @@ JsonNew& JsonNew::operator[](size_t index)
     return (*json_object)[index];
 }
 
+template<>
+bool JsonNew::operator ==(const char* value) const
+{
+    if (m_value == nullptr || m_value->is_json_value() == false)
+    {
+        return false; // If m_value is null or not a JsonValue, return false
+    }
+    else
+    {
+        ShareString current_value = ((JsonValueNew*)m_value)->operator ShareString();
+        std::string_view current_value_view = current_value.data();
+        std::string_view value_view(value);
+        return current_value_view == value_view;
+    }
+}
+
 void JsonNew::for_each(std::function<void(JsonNew&)> loop_func)
 {
     if (m_value->is_json_value() == false)

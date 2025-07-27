@@ -4,6 +4,32 @@
 
 #include <time/measure_time.h>
 
+
+TEST(JsonTestFeature, Operator_Compare)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew a;
+    a["key1"] = 42;
+    a["key2"] = "Tam";
+
+    bool are_equal = a["key1"] == 42;
+
+    // -------------------------------
+    // Assert
+    // -------------------------------
+    ASSERT_EQ(a["key1"] == 42, true);
+    ASSERT_EQ(a["key1"] == 43, false);
+    ASSERT_EQ(a["key1"] == 41, false);
+    ASSERT_EQ(a["key1"] == "Tam", false);
+
+    ASSERT_EQ(a["key2"] == "Tam", true);
+    // ASSERT_EQ(a["key2"] == "Nguyen", false);
+    ASSERT_EQ(a["key2"] == 42, false);
+    ASSERT_EQ(a["key2"] == nullptr, false);
+}
+
 TEST(JsonTestFeature, HasAndRemoveField_NestedStructure)
 {
     // -------------------------------
