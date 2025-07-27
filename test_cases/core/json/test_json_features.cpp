@@ -190,6 +190,57 @@ TEST(JsonTestFeature, NullFieldTransitionDeepStructure_NullptrOnly)
     ASSERT_EQ((std::string)config["user"]["profile"]["bio"], "Low-latency developer");
 }
 
+TEST(JsonTestFeature, Sort_SortsArrayBasedOnCustomComparator)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew array;
+    JsonNew item1; item1["value"] = 30;
+    JsonNew item2; item2["value"] = 10;
+    JsonNew item3; item3["value"] = 20;
+
+    array.push_back(item1);
+    array.push_back(item2);
+    array.push_back(item3);
+
+    // -------------------------------
+    // Action
+    // -------------------------------
+    array.sort([](JsonNew& a, JsonNew& b) {
+        return (int)a["value"] < (int)b["value"];
+    });
+
+    // -------------------------------
+    // Assert
+    // -------------------------------
+    ASSERT_EQ((int)array[0]["value"], 10);
+    ASSERT_EQ((int)array[1]["value"], 20);
+    ASSERT_EQ((int)array[2]["value"], 30);
+}
+
+TEST(JsonTestFeature, PushBack_AppendsToArrayCorrectly)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew array;
+    array.push_back("first");
+    array.push_back("second");
+
+    JsonNew nested;
+    nested["key"] = "value";
+    array.push_back(nested);
+
+    // -------------------------------
+    // Assert
+    // -------------------------------
+    ASSERT_EQ((std::string)array[0], "first");
+    ASSERT_EQ((std::string)array[1], "second");
+    ASSERT_EQ((std::string)array[2]["key"], "value");
+    ASSERT_EQ(array.size(), 3);
+}
+
 TEST(JsonTestFeature, DeepClone_CreatesFullyIndependentCopy)
 {
     // -------------------------------
