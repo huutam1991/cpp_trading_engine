@@ -88,6 +88,21 @@ ShareString ShareString::from_substr(size_t start_index, size_t length) const
     }
 }
 
+ShareString ShareString::from_substr_with_end(size_t start_index, size_t end_index) const
+{
+    if (start_index < m_length && end_index <= m_length && start_index < end_index)
+    {
+        ShareString new_string = *this; // Copy current ShareString
+        new_string.m_start_index = m_start_index + start_index;
+        new_string.m_length = end_index - start_index + 1; // Include the end index
+        return new_string;
+    }
+    else
+    {
+        throw std::out_of_range("ShareString - Substr with end out of range, start_index: " + std::to_string(start_index) + ", end_index: " + std::to_string(end_index) + ", m_length: " + std::to_string(m_length));
+    }
+}
+
 ShareString::~ShareString()
 {
     check_release_current_data();

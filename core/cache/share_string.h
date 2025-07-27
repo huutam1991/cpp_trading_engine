@@ -38,6 +38,7 @@ public:
     ShareString& operator=(ShareString&&);
 
     ShareString from_substr(size_t start_index, size_t length) const;
+    ShareString from_substr_with_end(size_t start_index, size_t end_index) const;
 
     ~ShareString();
 
