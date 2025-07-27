@@ -26,6 +26,31 @@ JsonNew& JsonNew::operator[](size_t index)
     return (*json_object)[index];
 }
 
+void JsonNew::for_each(std::function<void(JsonNew&)> loop_func)
+{
+    if (m_value->is_json_value() == false)
+    {
+        ((JsonObjectNew*)m_value)->for_each(loop_func);
+    }
+}
+
+void JsonNew::for_each_with_key(std::function<void(const std::string&,JsonNew&)> loop_func)
+{
+
+    if (m_value->is_json_value() == false)
+    {
+        ((JsonObjectNew*)m_value)->for_each_with_key(loop_func);
+    }
+}
+
+void JsonNew::for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func)
+{
+    if (m_value->is_json_value() == false)
+    {
+        ((JsonObjectNew*)m_value)->for_each_with_index(loop_func);
+    }
+}
+
 bool JsonNew::is_null() const
 {
     return m_value == nullptr || (m_value->is_json_value() && ((JsonValueNew*)m_value)->is_null());

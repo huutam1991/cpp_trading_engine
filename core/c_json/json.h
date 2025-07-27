@@ -24,6 +24,21 @@ public:
         copy.m_value = nullptr;
     }
 
+    // JsonNew(std::initializer_list<JsonNew> json_list)
+    // {
+    //     check_create_json_object(); // Create JsonObject if it does not exist
+    //     JsonObjectNew& json_object = *(JsonObjectNew*)m_value;
+
+    //     for (auto it = json_list.begin(); it != json_list.end(); it++)
+    //     {
+    //         const JsonNew& json = *it;
+    //         json.for_each_with_key([&json_object](const std::string& key, JsonNew& data)
+    //         {
+    //             json_object[key] = data;
+    //         });
+    //     }
+    // }
+
     JsonNew& operator=(const JsonNew& copy) noexcept
     {
         if (this != &copy)
@@ -83,6 +98,10 @@ public:
     {
         return (*this)[static_cast<size_t>(index)];
     }
+
+    void for_each(std::function<void(JsonNew&)> loop_func);
+    void for_each_with_key(std::function<void(const std::string&,JsonNew&)> loop_func);
+    void for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func);
 
     // Null check
     bool operator==(std::nullptr_t t) const
