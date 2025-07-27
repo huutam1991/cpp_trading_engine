@@ -26,7 +26,6 @@ public:
 
     inline std::string finish()
     {
-        write_char('\0'); // Null-terminate the string
         return std::string(m_ptr, pos);
     }
 };
