@@ -352,3 +352,49 @@ TEST(JsonTestCreation, SoftSkillJsonPoolTracking)
     ASSERT_EQ(value_pool_before, value_pool_after);
     ASSERT_EQ(object_pool_before, object_pool_after);
 }
+
+TEST(JsonTestCreation, JsonParse)
+{
+    // -------------------------------
+    // Arrange: Create a complex JSON string
+    // -------------------------------
+    std::string data = "{\"ambition\":{\"inspiration_sources\":[\"HRT\",\"Jump\"],\"timeframe_years\":2,\"goal\":\"build world-class trading engine\"},\"communication\":{\"languages\":[\"English\",\"Vietnamese\"],\"technical_depth\":\"very high\",\"clarity\":\"concise\"},\"self_reflection\":{\"weekly_review\":true,\"feedback_acceptance\":\"open and fast\",\"growth_mindset\":true},\"adaptability\":{\"contexts\":{\"pressure\":\"stable\",\"solo\":\"independent & rapid\",\"team\":\"smooth integration\"},\"environments\":[{\"efficiency\":\"high\",\"os\":\"Linux\"},{\"efficiency\":\"maximum\",\"os\":\"Windows\"}]},\"recognition\":{\"awards\":[{\"year\":2023,\"title\":\"Deep Thinker\"},{\"year\":2024,\"title\":\"Fastest Debugger\"}],\"fields\":[\"C++\",\"Trading Systems\",\"DeFi Protocols\"],\"global_top_percent\":0.5},\"learning_ability\":{\"domains\":{\"quant_models\":true,\"crypto\":true,\"low_latency\":true},\"channels\":[\"documentation\",\"source code\",\"experimentation\"],\"rate\":\"instant absorption\"},\"problem_solving\":{\"speed\":\"fast\",\"approaches\":{\"systematic\":true,\"creative\":true,\"critical\":true},\"depth\":\"extremely deep\"},\"traits\":{\"debugging\":{\"techniques\":[\"symbolic tracing\",\"gdb reverse mode\",\"memory leak hunting\"],\"skill_level\":\"exceptional\"},\"intelligence\":{\"type\":\"abstract + applied\",\"IQ\":75}},\"name\":\"Nguyen Huu Tam\"}";
+
+    // -------------------------------
+    // Action: Parse the JSON string using JsonNew
+    // -------------------------------
+    JsonNew json = JsonNew::parse(data);
+
+    // -------------------------------
+    // Assert: Verify the parsed values
+    // -------------------------------
+    ASSERT_EQ((std::string)json["name"], "Nguyen Huu Tam");
+    ASSERT_EQ((std::string)json["ambition"]["goal"], "build world-class trading engine");
+    ASSERT_EQ((double)json["recognition"]["global_top_percent"], 0.5);
+    ASSERT_EQ((std::string)json["communication"]["clarity"], "concise");
+    ASSERT_EQ((bool)json["self_reflection"]["growth_mindset"], true);
+    ASSERT_EQ((std::string)json["adaptability"]["contexts"]["team"], "smooth integration");
+    ASSERT_EQ((std::string)json["learning_ability"]["rate"], "instant absorption");
+    ASSERT_EQ((std::string)json["problem_solving"]["depth"], "extremely deep");
+    ASSERT_EQ((std::string)json["traits"]["debugging"]["skill_level"], "exceptional");
+    ASSERT_EQ((int)json["traits"]["intelligence"]["IQ"], 75);
+    ASSERT_EQ((std::string)json["traits"]["intelligence"]["type"], "abstract + applied");
+    ASSERT_EQ((std::string)json["traits"]["debugging"]["techniques"][0], "symbolic tracing");
+    ASSERT_EQ((std::string)json["traits"]["debugging"]["techniques"][1], "gdb reverse mode");
+    ASSERT_EQ((std::string)json["traits"]["debugging"]["techniques"][2], "memory leak hunting");
+    ASSERT_EQ((bool)json["learning_ability"]["domains"]["quant_models"], true);
+    ASSERT_EQ((bool)json["learning_ability"]["domains"]["crypto"], true);
+    ASSERT_EQ((bool)json["learning_ability"]["domains"]["low_latency"], true);
+    ASSERT_EQ((std::string)json["recognition"]["awards"][0]["title"], "Deep Thinker");
+    ASSERT_EQ((int)json["recognition"]["awards"][0]["year"], 2023);
+    ASSERT_EQ((std::string)json["recognition"]["awards"][1]["title"], "Fastest Debugger");
+    ASSERT_EQ((int)json["recognition"]["awards"][1]["year"], 2024);
+    ASSERT_EQ((std::string)json["adaptability"]["environments"][0]["os"], "Linux");
+    ASSERT_EQ((std::string)json["adaptability"]["environments"][1]["os"], "Windows");
+    ASSERT_EQ((std::string)json["adaptability"]["environments"][0]["efficiency"], "high");
+    ASSERT_EQ((std::string)json["adaptability"]["environments"][1]["efficiency"], "maximum");
+    ASSERT_EQ((std::string)json["communication"]["languages"][0], "English");
+    ASSERT_EQ((std::string)json["communication"]["languages"][1], "Vietnamese");
+    ASSERT_EQ((bool)json["self_reflection"]["weekly_review"], true);
+    ASSERT_EQ((std::string)json["self_reflection"]["feedback_acceptance"], "open and fast");
+}
