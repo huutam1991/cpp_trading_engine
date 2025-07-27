@@ -185,7 +185,7 @@ TEST(JsonNewTest, MutationReflectsInCopy)
     ASSERT_EQ((int)b["key"], 456);
 }
 
-TEST(JsonNewTest, CreateByPairInitializerList)
+TEST(JsonNewTest, CreateByPairInitializerList_Extended_NoArray)
 {
     // -------------------------------
     // Arrange
@@ -194,24 +194,47 @@ TEST(JsonNewTest, CreateByPairInitializerList)
         {"name", "Nguyen Huu Tam"},
         {"age", 30},
         {"is_developer", true},
+        {"value", "test"},
         {"skills", {
             {"C++", "expert"},
             {"Python", "intermediate"},
-            {"Rust", "beginner"}
+            {"Rust", "beginner"},
+            {"Solidity", "advanced"}
         }},
         {"projects", {
-            {"name", "Trading Engine"},
-            {"language", "C++"},
-            {"status", "in_progress"}
+            {"trading_engine", {
+                {"language", "C++"},
+                {"status", "in_progress"},
+                {"performance", {
+                    {"latency_ns", 50},
+                    {"throughput_ops", 10000}
+                }}
+            }},
+            {"vault", {
+                {"language", "Solidity"},
+                {"status", "completed"},
+                {"audited", true}
+            }}
+        }},
+        {"education", {
+            {"university", "NUS"},
+            {"degree", "Computer Science"},
+            {"graduated", true}
+        }},
+        {"preferences", {
+            {"os", {
+                {"primary", "Linux"},
+                {"secondary", "Windows"}
+            }},
+            {"language_1", "English"},
+            {"language_2", "Vietnamese"}
         }}
     };
-
-    original["value"] = "test";
 
     // -------------------------------
     // Action
     // -------------------------------
-    JsonNew copy = original; // shallow copy, shared underlying data
+    JsonNew copy = original; // shallow copy
 
     // -------------------------------
     // Assert
@@ -219,10 +242,26 @@ TEST(JsonNewTest, CreateByPairInitializerList)
     ASSERT_EQ((std::string)copy["value"], "test");
     ASSERT_EQ((int)copy["age"], 30);
     ASSERT_EQ((std::string)copy["skills"]["C++"], "expert");
-    ASSERT_EQ((std::string)copy["projects"]["name"], "Trading Engine");
+    ASSERT_EQ((std::string)copy["skills"]["Solidity"], "advanced");
+    ASSERT_EQ((std::string)copy["projects"]["trading_engine"]["language"], "C++");
+    ASSERT_EQ((std::string)copy["projects"]["trading_engine"]["status"], "in_progress");
+    ASSERT_EQ((int)copy["projects"]["trading_engine"]["performance"]["latency_ns"], 50);
+    ASSERT_EQ((int)copy["projects"]["trading_engine"]["performance"]["throughput_ops"], 10000);
+    ASSERT_EQ((std::string)copy["projects"]["vault"]["language"], "Solidity");
+    ASSERT_EQ((std::string)copy["projects"]["vault"]["status"], "completed");
+    ASSERT_EQ((bool)copy["projects"]["vault"]["audited"], true);
+    ASSERT_EQ((std::string)copy["education"]["university"], "NUS");
+    ASSERT_EQ((std::string)copy["education"]["degree"], "Computer Science");
+    ASSERT_EQ((bool)copy["education"]["graduated"], true);
+    ASSERT_EQ((std::string)copy["preferences"]["os"]["primary"], "Linux");
+    ASSERT_EQ((std::string)copy["preferences"]["os"]["secondary"], "Windows");
+    ASSERT_EQ((std::string)copy["preferences"]["language_1"], "English");
+    ASSERT_EQ((std::string)copy["preferences"]["language_2"], "Vietnamese");
 
-    // Check that they point to same value instance
+    // Check shared reference
     ASSERT_EQ((std::string)original["value"], (std::string)copy["value"]);
+    ASSERT_EQ((int)original["projects"]["trading_engine"]["performance"]["latency_ns"],
+              (int)copy["projects"]["trading_engine"]["performance"]["latency_ns"]);
 }
 
 TEST(JsonNewTest, SoftSkillJsonPoolTracking)
