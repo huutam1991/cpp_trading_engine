@@ -93,6 +93,97 @@ public:
         return (*this)[static_cast<size_t>(index)];
     }
 
+    bool operator==(const JsonNew& other) const
+    {
+        // Check if both m_value pointers are the same
+        return m_value == other.m_value;
+    }
+
+    bool operator!=(const JsonNew& other) const
+    {
+        // Check if both m_value pointers are the same
+        return m_value != other.m_value;
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    bool operator ==(const T& value) const
+    {
+        if (m_value == nullptr || m_value->is_json_value() == false)
+        {
+            return false; // If m_value is null or not a JsonValue, return false
+        }
+        else
+        {
+            return ((JsonValueNew*)m_value)->operator T() == value;
+        }
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    bool operator !=(const T& value) const
+    {
+        // Reuse == operator
+        return operator==(value) == false;
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    bool operator <(const T& value) const
+    {
+        if (m_value == nullptr || m_value->is_json_value() == false)
+        {
+            return false;
+        }
+        else
+        {
+            T current_value = ((JsonValueNew*)m_value)->operator T();
+            return current_value < value;
+        }
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    bool operator >(const T& value) const
+    {
+        if (m_value == nullptr || m_value->is_json_value() == false)
+        {
+            return false;
+        }
+        else
+        {
+            T current_value = ((JsonValueNew*)m_value)->operator T();
+            return current_value > value;
+        }
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    bool operator <=(const T& value) const
+    {
+        // Reuse > operator
+        return operator>(value) == false;
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    bool operator >=(const T& value) const
+    {
+        // Reuse < operator
+        return operator<(value) == false;
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    JsonNew& operator +=(const T& value)
+    {
+        check_create_json_value();
+        T current_value = ((JsonValueNew*)m_value)->operator T();
+        current_value += value;
+        ((JsonValueNew*)m_value)->operator=(current_value);
+        return *this;
+    }
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    JsonNew& operator -=(const T& value)
+    {
+        operator+=(-value); // Reuse += operator
+        return *this;
+    }
+
     void for_each(std::function<void(JsonNew&)> loop_func);
     void for_each_with_key(std::function<void(const std::string&,JsonNew&)> loop_func);
     void for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func);
