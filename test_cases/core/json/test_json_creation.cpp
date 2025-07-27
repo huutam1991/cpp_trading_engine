@@ -4,7 +4,7 @@
 
 #include <time/measure_time.h>
 
-TEST(JsonNewTest, ComplexObjectStructure)
+TEST(JsonTestCreation, ComplexObjectStructure)
 {
     // -------------------------------
     // Arrange
@@ -45,7 +45,7 @@ TEST(JsonNewTest, ComplexObjectStructure)
     ASSERT_EQ((bool)root["metadata"][2], false);
 }
 
-TEST(JsonNewTest, NestedComplexJsonStructure)
+TEST(JsonTestCreation, NestedComplexJsonStructure)
 {
     // -------------------------------
     // Arrange
@@ -142,7 +142,7 @@ TEST(JsonNewTest, NestedComplexJsonStructure)
     ASSERT_EQ((std::string)me["contributions"]["metrics"]["tested_platforms"][1], "Base");
 }
 
-TEST(JsonNewTest, SharedReferenceCopy)
+TEST(JsonTestCreation, SharedReferenceCopy)
 {
     // -------------------------------
     // Arrange
@@ -164,7 +164,7 @@ TEST(JsonNewTest, SharedReferenceCopy)
     ASSERT_EQ((std::string)original["value"], (std::string)copy["value"]);
 }
 
-TEST(JsonNewTest, MutationReflectsInCopy)
+TEST(JsonTestCreation, MutationReflectsInCopy)
 {
     // -------------------------------
     // Arrange
@@ -185,7 +185,7 @@ TEST(JsonNewTest, MutationReflectsInCopy)
     ASSERT_EQ((int)b["key"], 456);
 }
 
-TEST(JsonNewTest, CreateByPairInitializerList_Extended_NoArray)
+TEST(JsonTestCreation, CreateByPairInitializerList_Extended_NoArray)
 {
     // -------------------------------
     // Arrange
@@ -264,7 +264,7 @@ TEST(JsonNewTest, CreateByPairInitializerList_Extended_NoArray)
               (int)copy["projects"]["trading_engine"]["performance"]["latency_ns"]);
 }
 
-TEST(JsonNewTest, SoftSkillJsonPoolTracking)
+TEST(JsonTestCreation, SoftSkillJsonPoolTracking)
 {
     // -------------------------------
     // Arrange: Capture pool sizes before allocation
