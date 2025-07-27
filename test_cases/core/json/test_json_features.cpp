@@ -189,3 +189,84 @@ TEST(JsonTestFeature, NullFieldTransitionDeepStructure_NullptrOnly)
     ASSERT_EQ((std::string)config["user"]["name"], "Nguyen Huu Tam");
     ASSERT_EQ((std::string)config["user"]["profile"]["bio"], "Low-latency developer");
 }
+
+TEST(JsonTestFeature, DeepClone_CreatesFullyIndependentCopy)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew original;
+    original["name"] = "Nguyen Huu Tam";
+    original["age"] = 30;
+
+    // Nested object
+    original["skills"]["C++"] = "expert";
+    original["skills"]["Rust"] = "intermediate";
+
+    // Array-like structure
+    original.set_size(2);
+    original[0] = "first";
+    original[1] = "second";
+
+    // Deep nested object
+    original["project"]["info"]["name"] = "TradingEngine";
+    original["project"]["info"]["latency_ns"] = 50;
+
+    // -------------------------------
+    // Action
+    // -------------------------------
+    JsonNew clone = original.deep_clone();
+
+    // -------------------------------
+    // Assert (Before modification: values must match)
+    // -------------------------------
+    ASSERT_EQ((std::string)clone["name"], (std::string)original["name"]);
+    ASSERT_EQ((int)clone["age"], (int)original["age"]);
+    ASSERT_EQ((std::string)clone["skills"]["C++"], (std::string)original["skills"]["C++"]);
+    ASSERT_EQ((std::string)clone["skills"]["Rust"], (std::string)original["skills"]["Rust"]);
+    ASSERT_EQ((std::string)clone[0], (std::string)original[0]);
+    ASSERT_EQ((std::string)clone[1], (std::string)original[1]);
+    ASSERT_EQ((std::string)clone["project"]["info"]["name"], (std::string)original["project"]["info"]["name"]);
+    ASSERT_EQ((int)clone["project"]["info"]["latency_ns"], (int)original["project"]["info"]["latency_ns"]);
+
+    // -------------------------------
+    // Modify clone
+    // -------------------------------
+    clone["name"] = "Clone Tam";
+    clone["skills"]["Rust"] = "beginner";
+    clone[0] = "changed in clone";
+    clone["project"]["info"]["latency_ns"] = 999;
+
+    // -------------------------------
+    // Modify original
+    // -------------------------------
+    original["name"] = "Original Tam";
+    original["skills"]["C++"] = "master";
+    original[1] = "changed in original";
+    original["project"]["info"]["name"] = "NewEngine";
+
+    // -------------------------------
+    // Assert (clone not affected by original changes)
+    // -------------------------------
+    ASSERT_EQ((std::string)clone["name"], "Clone Tam");
+    ASSERT_EQ((std::string)clone["skills"]["C++"], "expert");
+    ASSERT_EQ((std::string)clone[1], "second");
+    ASSERT_EQ((std::string)clone["project"]["info"]["name"], "TradingEngine");
+
+    // -------------------------------
+    // Assert (original not affected by clone changes)
+    // -------------------------------
+    ASSERT_EQ((std::string)original["name"], "Original Tam");
+    ASSERT_EQ((std::string)original["skills"]["Rust"], "intermediate");
+    ASSERT_EQ((std::string)original[0], "first");
+    ASSERT_EQ((int)original["project"]["info"]["latency_ns"], 50);
+
+    // -------------------------------
+    // Final Assert: Same key but different value
+    // -------------------------------
+    ASSERT_NE((std::string)clone["name"], (std::string)original["name"]);
+    ASSERT_NE((std::string)clone["skills"]["Rust"], (std::string)original["skills"]["Rust"]);
+    ASSERT_NE((std::string)clone[0], (std::string)original[0]);
+    ASSERT_NE((int)clone["project"]["info"]["latency_ns"], (int)original["project"]["info"]["latency_ns"]);
+    ASSERT_NE((std::string)clone["project"]["info"]["name"], (std::string)original["project"]["info"]["name"]);
+}
