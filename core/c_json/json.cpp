@@ -61,6 +61,35 @@ void JsonNew::for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func
         ((JsonObjectNew*)m_value)->for_each_with_index(loop_func);
     }
 }
+JsonNew::iterator JsonNew::begin()
+{
+    check_create_json_object();
+    return ((JsonObjectNew*)m_value)->begin();
+}
+
+JsonNew::iterator JsonNew::end()
+{
+    check_create_json_object();
+    return ((JsonObjectNew*)m_value)->end();
+}
+
+JsonNew::const_iterator JsonNew::begin() const
+{
+    if (m_value && !m_value->is_json_value())
+    {
+        return ((const JsonObjectNew*)m_value)->begin();
+    }
+    throw std::runtime_error("Not a JSON object");
+}
+
+JsonNew::const_iterator JsonNew::end() const
+{
+    if (m_value && !m_value->is_json_value())
+    {
+        return ((const JsonObjectNew*)m_value)->end();
+    }
+    throw std::runtime_error("Not a JSON object");
+}
 
 bool JsonNew::has_field(const std::string& field) const
 {

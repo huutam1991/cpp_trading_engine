@@ -204,6 +204,13 @@ public:
     void for_each_with_key(std::function<void(const std::string&,JsonNew&)> loop_func);
     void for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func);
 
+    using iterator = std::unordered_map<std::string, JsonNew>::iterator;
+    using const_iterator = std::unordered_map<std::string, JsonNew>::const_iterator;
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+
     bool has_field(const std::string& field) const;
     void remove_field(const std::string& field);
 

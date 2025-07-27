@@ -66,6 +66,14 @@ public:
     void for_each_with_key(std::function<void(const std::string&,JsonNew&)>& loop_func);
     void for_each_with_index(std::function<void(size_t,JsonNew&)>& loop_func);
 
+    // For iterating through the object
+    using iterator = std::unordered_map<std::string, JsonNew>::iterator;
+    using const_iterator = std::unordered_map<std::string, JsonNew>::const_iterator;
+    iterator begin() { return m_object.begin(); }
+    iterator end() { return m_object.end(); }
+    const_iterator begin() const { return m_object.begin(); }
+    const_iterator end() const { return m_object.end(); }
+
     bool has_field(const std::string& field) const
     {
         return m_is_array ? false :m_object.find(field) != m_object.end();

@@ -516,3 +516,84 @@ TEST(JsonTestFeature, DeepClone_ArrayStructure_IndependentCopy)
     ASSERT_NE((std::string)clone[0]["name"], (std::string)original[0]["name"]);
     ASSERT_NE((int)clone[2]["metrics"]["latency_ns"], (int)original[2]["metrics"]["latency_ns"]);
 }
+
+TEST(JsonTestFeature, RangeBasedForLoop_Modify)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew json = {
+        {"name", "Tam"},
+        {"age", 33},
+        {"lang", "C++"},
+        {"skills", {
+            {"C++", "expert"},
+            {"Python", "intermediate"},
+            {"Rust", "beginner"}
+        }}
+    };
+
+    // Modify values inside loop
+    for (auto& [key, value] : json)
+    {
+        if (value == "Tam")
+        {
+            value = "Nguyen Huu Tam";
+        }
+        else if (value == "C++")
+        {
+            value = "Rust";
+        }
+        else if (key == "age")
+        {
+            value += 1; // age becomes 34
+        }
+        else if (key == "skills")
+        {
+            value["C++"] = "advanced";
+            value["Python"] = "expert";
+        }
+    }
+
+    // -------------------------------
+    // Assert
+    // -------------------------------
+    ASSERT_EQ((std::string)json["name"], "Nguyen Huu Tam");
+    ASSERT_EQ((std::string)json["lang"], "Rust");
+    ASSERT_EQ((int)json["age"], 34);
+    ASSERT_EQ((std::string)json["skills"]["C++"], "advanced");
+    ASSERT_EQ((std::string)json["skills"]["Python"], "expert");
+    ASSERT_EQ((std::string)json["skills"]["Rust"], "beginner");
+}
+
+TEST(JsonTestFeature, RangeBasedForLoop_Const)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew json;
+    json["name"] = "Nguyen Huu Tam";
+    json["age"] = 33;
+    json["language"] = "C++";
+
+    const JsonNew& const_json = json;
+
+    // -------------------------------
+    // Act
+    // -------------------------------
+    for (const auto& [key, value] : const_json)
+    {
+        if (key == "name")
+        {
+            ASSERT_EQ(value == "Nguyen Huu Tam", true);
+        }
+        else if (key == "age")
+        {
+            ASSERT_EQ(value == 33, true);
+        }
+        else if (key == "language")
+        {
+            ASSERT_EQ(value == "C++", true);
+        }
+    }
+}
