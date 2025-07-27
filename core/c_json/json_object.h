@@ -88,7 +88,7 @@ public:
     void set_size(size_t size)
     {
         m_is_array = true; // Ensure this is treated as an array
-        m_array.resize(size);
+        m_array.reserve(size);
     }
 
     int size() const
