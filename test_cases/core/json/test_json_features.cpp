@@ -4,6 +4,25 @@
 
 #include <time/measure_time.h>
 
+TEST(JsonTestFeature, Operator_Compare_EqualJsonNew)
+{
+    JsonNew a;
+    a["data"] = "same";
+    JsonNew b = a;
+
+    ASSERT_EQ(a["data"] == b["data"], true);
+}
+
+TEST(JsonTestFeature, Operator_Compare_NotEqualJsonNew)
+{
+    JsonNew a;
+    a["data"] = "Tam";
+    JsonNew b;
+    b["data"] = "Nguyen";
+
+    ASSERT_EQ(a["data"] != b["data"], true);
+}
+
 TEST(JsonTestFeature, Operator_Compare_Equal)
 {
     // -------------------------------
@@ -25,6 +44,92 @@ TEST(JsonTestFeature, Operator_Compare_Equal)
     ASSERT_EQ(a["key2"] == "Nguyen", false);
     ASSERT_EQ(a["key2"] == 42, false);
     ASSERT_EQ(a["key2"] == nullptr, false);
+}
+
+TEST(JsonTestFeature, Operator_Compare_NotEqual)
+{
+    JsonNew a;
+    a["num"] = 100;
+    a["name"] = "Tam";
+
+    ASSERT_EQ(a["num"] != 99, true);
+    ASSERT_EQ(a["num"] != 100, false);
+    ASSERT_EQ(a["name"] != "Tam", false);
+    ASSERT_EQ(a["name"] != "Nguyen", true);
+}
+
+TEST(JsonTestFeature, Operator_Compare_LessThan)
+{
+    JsonNew a;
+    a["score"] = 75;
+
+    ASSERT_EQ(a["score"] < 80, true);
+    ASSERT_EQ(a["score"] < 75, false);
+    ASSERT_EQ(a["score"] < 70, false);
+}
+
+TEST(JsonTestFeature, Operator_Compare_GreaterThan)
+{
+    JsonNew a;
+    a["score"] = 85;
+
+    ASSERT_EQ(a["score"] > 80, true);
+    ASSERT_EQ(a["score"] > 85, false);
+    ASSERT_EQ(a["score"] > 90, false);
+}
+
+TEST(JsonTestFeature, Operator_Compare_LessThanOrEqual)
+{
+    JsonNew a;
+    a["score"] = 60;
+
+    ASSERT_EQ(a["score"] <= 60, true);
+    ASSERT_EQ(a["score"] <= 70, true);
+    ASSERT_EQ(a["score"] <= 50, false);
+}
+
+TEST(JsonTestFeature, Operator_Compare_GreaterThanOrEqual)
+{
+    JsonNew a;
+    a["score"] = 90;
+
+    ASSERT_EQ(a["score"] >= 90, true);
+    ASSERT_EQ(a["score"] >= 80, true);
+    ASSERT_EQ(a["score"] >= 100, false);
+}
+
+TEST(JsonTestFeature, Operator_AddAssign)
+{
+    JsonNew a;
+    a["count"] = 5;
+
+    a["count"] += 3;
+    ASSERT_EQ(a["count"] == 8, true);
+
+    a["text"] = "Hello";
+    a["text"] += std::string(" World");
+    ASSERT_EQ(a["text"] == "Hello World", true);
+}
+
+TEST(JsonTestFeature, Operator_SubtractAssign)
+{
+    JsonNew a;
+    a["value"] = 20;
+
+    a["value"] -= 5;
+    ASSERT_EQ(a["value"] == 15, true);
+
+    a["value"] -= 15;
+    ASSERT_EQ(a["value"] == 0, true);
+
+    JsonNew b;
+    b["value"] = 20.6;
+
+    b["value"] -= 5.2;
+    ASSERT_NEAR((double)b["value"], 15.4, 1e-9);
+
+    b["value"] -= 15.9;
+    ASSERT_NEAR((double)b["value"], -0.5, 1e-9);
 }
 
 TEST(JsonTestFeature, HasAndRemoveField_NestedStructure)
