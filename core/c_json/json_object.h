@@ -26,6 +26,12 @@ public:
 
     virtual ~JsonObjectNew() override = default;
 
+    void add_pair(std::pair<std::string, JsonNew> field)
+    {
+        m_is_array = false; // This is an object, not an array
+        m_object.insert(std::move(field));
+    }
+
     JsonNew& operator[](const char* key)
     {
         m_is_array = false; // This is an object, not an array

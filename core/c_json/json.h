@@ -11,6 +11,7 @@ class JsonNew
 
 public:
     JsonNew();
+    JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_list);
 
     JsonNew(const JsonNew& copy) noexcept
     {
@@ -23,21 +24,6 @@ public:
         m_value = copy.m_value;
         copy.m_value = nullptr;
     }
-
-    // JsonNew(std::initializer_list<JsonNew> json_list)
-    // {
-    //     check_create_json_object(); // Create JsonObject if it does not exist
-    //     JsonObjectNew& json_object = *(JsonObjectNew*)m_value;
-
-    //     for (auto it = json_list.begin(); it != json_list.end(); it++)
-    //     {
-    //         const JsonNew& json = *it;
-    //         json.for_each_with_key([&json_object](const std::string& key, JsonNew& data)
-    //         {
-    //             json_object[key] = data;
-    //         });
-    //     }
-    // }
 
     JsonNew& operator=(const JsonNew& copy) noexcept
     {

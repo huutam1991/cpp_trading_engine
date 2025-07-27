@@ -5,6 +5,17 @@
 JsonNew::JsonNew()
 {}
 
+JsonNew::JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_list)
+{
+    check_create_json_object(); // Create JsonObject if it does not exist
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+
+    for (auto& pair : json_list)
+    {
+        json_object->add_pair(pair);
+    }
+}
+
 JsonNew& JsonNew::operator[](const char* key)
 {
     check_create_json_object();
