@@ -98,6 +98,20 @@ void JsonNew::reverse()
     json_object->reverse();
 }
 
+void JsonNew::sort(std::function<bool(JsonNew&, JsonNew&)> compare_func)
+{
+    check_create_json_object();
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+    json_object->sort(compare_func);
+}
+
+void JsonNew::push_back(const JsonNew& value)
+{
+    check_create_json_object();
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+    json_object->push_back(value);
+}
+
 bool JsonNew::is_null() const
 {
     return m_value == nullptr || (m_value->is_json_value() && ((JsonValueNew*)m_value)->is_null());

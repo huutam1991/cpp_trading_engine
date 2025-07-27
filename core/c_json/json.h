@@ -110,6 +110,8 @@ public:
     void set_size(size_t size);
     int size() const;
     void reverse();
+    void sort(std::function<bool(JsonNew&, JsonNew&)> compare_func);
+    void push_back(const JsonNew& value);
 
     JsonNew deep_clone()
     {

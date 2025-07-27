@@ -90,10 +90,20 @@ public:
 
     void reverse()
     {
-        if (m_is_array)
-        {
-            std::reverse(m_array.begin(), m_array.end());
-        }
+        m_is_array = true;
+        std::reverse(m_array.begin(), m_array.end());
+    }
+
+    void sort(std::function<bool(JsonNew&, JsonNew&)> compare_func)
+    {
+        m_is_array = true; // Ensure this is treated as an array
+        std::sort(m_array.begin(), m_array.end(), compare_func);
+    }
+
+    void push_back(const JsonNew& value)
+    {
+        m_is_array = true; // Ensure this is treated as an array
+        m_array.push_back(value);
     }
 
     // Methods from JsonTypeBaseNew
