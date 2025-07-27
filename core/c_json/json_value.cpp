@@ -8,14 +8,6 @@ JsonValueNew::operator std::string() const
         std::string_view str_view = std::get<ShareString>(m_value).data();
         return std::string(str_view);
     }
-    else if (std::holds_alternative<std::string_view>(m_value))
-    {
-        return std::string(std::get<std::string_view>(m_value));
-    }
-    else if (std::holds_alternative<const char*>(m_value))
-    {
-        return std::string(std::get<const char*>(m_value));
-    }
     else
     {
         return {};

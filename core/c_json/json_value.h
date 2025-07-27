@@ -18,9 +18,7 @@ class JsonValueNew : public JsonTypeBaseNew
         int64_t,
         uint64_t,
         double,
-        ShareString,
-        std::string_view,
-        const char*
+        ShareString
     > m_value;
 
     bool m_is_string_format = true; // Indicates if value is string, it should has string format
@@ -58,6 +56,14 @@ public:
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
         {
             m_value = ShareString(std::forward<T>(value));
+        }
+        else if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
+        {
+            m_value = ShareString(std::forward<T>(value));
+        }
+        else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
+        {
+            m_value = ShareString(std::string(std::forward<T>(value)));
         }
         else
         {
