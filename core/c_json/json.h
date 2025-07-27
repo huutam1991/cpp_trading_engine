@@ -33,6 +33,9 @@ public:
         ((JsonValueNew*)m_value)->operator=(std::forward<T>(value));
     }
 
+    static JsonNew parse(const std::string& json_string);
+    static JsonNew parse(std::string&& json_string);
+
     JsonNew& operator=(const JsonNew& copy) noexcept
     {
         if (this != &copy)

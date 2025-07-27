@@ -1,6 +1,7 @@
 #include <c_json/json.h>
 #include <c_json/json_object.h>
 #include <c_json/json_value.h>
+#include <c_json/json_parse.h>
 
 JsonNew::JsonNew()
 {}
@@ -14,6 +15,18 @@ JsonNew::JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_lis
     {
         json_object->add_pair(pair);
     }
+}
+
+JsonNew JsonNew::parse(const std::string& json_string)
+{
+    JsonParseNew parser(json_string);
+    return parser.parse();
+}
+
+JsonNew JsonNew::parse(std::string&& json_string)
+{
+    JsonParseNew parser(std::move(json_string));
+    return parser.parse();
 }
 
 JsonNew& JsonNew::operator[](const char* key)

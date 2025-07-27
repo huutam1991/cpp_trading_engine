@@ -9,10 +9,6 @@
 
 class JsonParseNew
 {
-    JsonParseNew(const std::string& object);
-    JsonParseNew(std::string&& object);
-
-private:
     ShareString m_share_string;
     std::string_view m_object_string;
     size_t m_size;
@@ -59,26 +55,29 @@ private:
         return NOT_BOOLEAN_VALUE;
     }
 
-bool is_null(const char* m_object_string, size_t start, size_t size)
-{
-    // Check true value
-    if (start + 4 < size &&
-        is_letter(m_object_string[start + 4]) == false &&
-        is_number(m_object_string[start + 4]) == false &&
-        m_object_string[start]     == 'n' &&
-        m_object_string[start + 1] == 'u' &&
-        m_object_string[start + 2] == 'l' &&
-        m_object_string[start + 3] == 'l')
+    bool is_null(const char* m_object_string, size_t start, size_t size)
     {
-        return true;
+        // Check true value
+        if (start + 4 < size &&
+            is_letter(m_object_string[start + 4]) == false &&
+            is_number(m_object_string[start + 4]) == false &&
+            m_object_string[start]     == 'n' &&
+            m_object_string[start + 1] == 'u' &&
+            m_object_string[start + 2] == 'l' &&
+            m_object_string[start + 3] == 'l')
+        {
+            return true;
+        }
+
+        return false;
     }
 
-    return false;
-}
-
-
 public:
+    JsonParseNew(const std::string& object);
+    JsonParseNew(std::string&& object);
     JsonNew parse();
+
+private:
     JsonNew parse_object(size_t& start_pos);
     JsonNew parse_array(size_t& start_pos);
     JsonNew parse_value_number(size_t& start_pos);
