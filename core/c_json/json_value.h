@@ -81,7 +81,13 @@ public:
     {
         JsonValueNew* json_value = JsonValuePool::acquire();
         json_value->m_value = m_value;
+        json_value->m_is_string_format = m_is_string_format;
         return json_value;
+    }
+
+    virtual JsonTypeBaseNew* get_deep_clone() override
+    {
+        return get_copy(); // For simplicity, deep clone is same as copy in this case
     }
 
     virtual void release() override

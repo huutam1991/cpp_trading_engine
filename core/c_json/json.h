@@ -111,6 +111,13 @@ public:
     int size() const;
     void reverse();
 
+    JsonNew deep_clone()
+    {
+        JsonNew res;
+        res.m_value = m_value ? m_value->get_deep_clone() : nullptr;
+        return res;
+    }
+
     // Null check
     bool operator==(std::nullptr_t t) const
     {

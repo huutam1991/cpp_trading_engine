@@ -110,6 +110,8 @@ public:
         return this;
     }
 
+    virtual JsonTypeBaseNew* get_deep_clone();
+
     virtual void release() override
     {
         reference_count--;

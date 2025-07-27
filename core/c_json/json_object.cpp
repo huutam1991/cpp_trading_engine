@@ -73,3 +73,24 @@ void JsonObjectNew::write_string_value(JsonStringBuilder& builder)
         builder.write_char('}');
     }
 }
+
+JsonTypeBaseNew* JsonObjectNew::get_deep_clone()
+{
+    JsonObjectNew* clone = JsonObjectPool::acquire();
+    clone->m_is_array = m_is_array;
+
+    // Deep clone the array
+    clone->m_array.reserve(m_array.size());
+    for (auto& item : m_array)
+    {
+        clone->m_array.push_back(item.deep_clone());
+    }
+
+    // Deep clone the object
+    for (auto& [key, value] : m_object)
+    {
+        clone->m_object[key] = value.deep_clone();
+    }
+
+    return clone;
+}
