@@ -11,7 +11,6 @@ class JsonNew
 
 public:
     JsonNew();
-    JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_list);
 
     JsonNew(const JsonNew& copy) noexcept
     {
@@ -23,6 +22,15 @@ public:
         // Transfer ownership
         m_value = copy.m_value;
         copy.m_value = nullptr;
+    }
+
+    JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_list);
+
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    JsonNew(T&& value)
+    {
+        check_create_json_value();
+        ((JsonValueNew*)m_value)->operator=(std::forward<T>(value));
     }
 
     JsonNew& operator=(const JsonNew& copy) noexcept

@@ -185,6 +185,34 @@ TEST(JsonNewTest, MutationReflectsInCopy)
     ASSERT_EQ((int)b["key"], 456);
 }
 
+TEST(JsonNewTest, CreateByPairInitializerList)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew original = {
+        {"name", "Nguyen Huu Tam"},
+        {"age", 30},
+        {"is_developer", true}
+    };
+
+    original["value"] = "test";
+
+    // -------------------------------
+    // Action
+    // -------------------------------
+    JsonNew copy = original; // shallow copy, shared underlying data
+
+    // -------------------------------
+    // Assert
+    // -------------------------------
+    ASSERT_EQ((std::string)copy["value"], "test");
+    ASSERT_EQ((int)copy["age"], 30);
+
+    // Check that they point to same value instance
+    ASSERT_EQ((std::string)original["value"], (std::string)copy["value"]);
+}
+
 TEST(JsonNewTest, SoftSkillJsonPoolTracking)
 {
     // -------------------------------
