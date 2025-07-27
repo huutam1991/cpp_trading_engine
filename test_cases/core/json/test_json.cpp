@@ -193,7 +193,17 @@ TEST(JsonNewTest, CreateByPairInitializerList)
     JsonNew original = {
         {"name", "Nguyen Huu Tam"},
         {"age", 30},
-        {"is_developer", true}
+        {"is_developer", true},
+        {"skills", {
+            {"C++", "expert"},
+            {"Python", "intermediate"},
+            {"Rust", "beginner"}
+        }},
+        {"projects", {
+            {"name", "Trading Engine"},
+            {"language", "C++"},
+            {"status", "in_progress"}
+        }}
     };
 
     original["value"] = "test";
@@ -208,6 +218,8 @@ TEST(JsonNewTest, CreateByPairInitializerList)
     // -------------------------------
     ASSERT_EQ((std::string)copy["value"], "test");
     ASSERT_EQ((int)copy["age"], 30);
+    ASSERT_EQ((std::string)copy["skills"]["C++"], "expert");
+    ASSERT_EQ((std::string)copy["projects"]["name"], "Trading Engine");
 
     // Check that they point to same value instance
     ASSERT_EQ((std::string)original["value"], (std::string)copy["value"]);
