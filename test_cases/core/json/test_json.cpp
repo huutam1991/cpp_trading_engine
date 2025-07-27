@@ -64,15 +64,16 @@ TEST(JsonNewTest, NestedComplexJsonStructure)
     skills["languages"][2] = "Python";
 
     skills["trading_knowledge"]["domain"][0] = "HFT";
-    skills["trading_knowledge"]["domain"][1] = "Market Making";
-    skills["trading_knowledge"]["domain"][2] = "Arbitrage";
+    std::string key = "trading_knowledge";
+    skills[key]["domain"][1] = "Market Making";
+    skills[key]["domain"][2] = "Arbitrage";
 
-    skills["trading_knowledge"]["platforms"]["binance"]["type"] = "Perpetual";
-    skills["trading_knowledge"]["platforms"]["binance"]["latency_us"] = 150;
-    skills["trading_knowledge"]["platforms"]["binance"]["status"] = "Live";
+    skills[key]["platforms"]["binance"]["type"] = "Perpetual";
+    skills[key]["platforms"]["binance"]["latency_us"] = 150;
+    skills[key]["platforms"]["binance"]["status"] = "Live";
 
-    skills["trading_knowledge"]["platforms"]["uniswap"]["type"] = "Spot";
-    skills["trading_knowledge"]["platforms"]["uniswap"]["status"] = "Tested";
+    skills[key]["platforms"]["uniswap"]["type"] = "Spot";
+    skills[key]["platforms"]["uniswap"]["status"] = "Tested";
 
     skills["latency_optimization"]["profile"] = "extreme";
     skills["latency_optimization"]["core_areas"][0] = "Custom memory pools";

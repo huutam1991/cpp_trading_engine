@@ -12,6 +12,13 @@ JsonNew& JsonNew::operator[](const char* key)
     return (*json_object)[key];
 }
 
+JsonNew& JsonNew::operator[](const std::string& key)
+{
+    check_create_json_object();
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+    return (*json_object)[key.c_str()];
+}
+
 JsonNew& JsonNew::operator[](size_t index)
 {
     check_create_json_object();

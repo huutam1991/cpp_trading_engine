@@ -75,6 +75,7 @@ public:
     }
 
     JsonNew& operator[](const char* key);
+    JsonNew& operator[](const std::string& key);
     JsonNew& operator[](size_t index);
 
     template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
