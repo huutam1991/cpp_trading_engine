@@ -398,3 +398,93 @@ TEST(JsonTestCreation, JsonParse)
     ASSERT_EQ((bool)json["self_reflection"]["weekly_review"], true);
     ASSERT_EQ((std::string)json["self_reflection"]["feedback_acceptance"], "open and fast");
 }
+
+TEST(JsonTestCreation, JsonParse_PoolCountStable)
+{
+    // -------------------------------
+    // Arrange: Create JSON string
+    // -------------------------------
+    std::string data = R"({
+        "system": {
+            "name": "EngineX",
+            "version": "1.2.3",
+            "performance": {
+                "latency_us": 15.7,
+                "throughput": 1000000,
+                "stability": true
+            },
+            "modules": ["parser", "matcher", "router", "logger"],
+            "platform": {"os": "Linux", "arch": "x86_64"},
+            "team": {"lead": "Tam", "members": ["Alice", "Bob", "Charlie"]}
+        },
+        "features": {
+            "realtime": true,
+            "backtest": true,
+            "exchange_support": ["Binance", "Bybit", "OKX", "Deribit"],
+            "languages": {"primary": "C++", "secondary": "Rust"}
+        },
+        "limits": {
+            "max_orders": 100000,
+            "max_symbols": 5000,
+            "rate_limit_per_sec": 1500
+        },
+        "meta": {
+            "timestamp": 1724000000000,
+            "description": "Stress test for parser and memory pool integrity"
+        }
+    })";
+
+    // -------------------------------
+    // Record pool state before parse
+    // -------------------------------
+    int obj_count_before = JsonObjectPool::size();
+    int val_count_before = JsonValuePool::size();
+    int str_count_before = StringPool::size();
+
+    // -------------------------------
+    // Parse
+    // -------------------------------
+
+    {
+        JsonNew json;
+        json = JsonNew::parse(data);
+
+        // -------------------------------
+        // Basic field verification
+        // -------------------------------
+        ASSERT_EQ((std::string)json["system"]["name"], "EngineX");
+        ASSERT_EQ((std::string)json["system"]["team"]["lead"], "Tam");
+        ASSERT_EQ((std::string)json["features"]["languages"]["primary"], "C++");
+        ASSERT_EQ((int)json["limits"]["max_orders"], 100000);
+        ASSERT_EQ((bool)json["system"]["performance"]["stability"], true);
+        ASSERT_EQ((std::string)json["features"]["exchange_support"][0], "Binance");
+        ASSERT_EQ((std::string)json["features"]["exchange_support"][1], "Bybit");
+        ASSERT_EQ((std::string)json["features"]["exchange_support"][2], "OKX");
+        ASSERT_EQ((std::string)json["features"]["exchange_support"][3], "Deribit");
+        ASSERT_EQ((int)json["system"]["performance"]["latency_us"], 15);
+        ASSERT_EQ((int)json["system"]["performance"]["throughput"], 1000000);
+        ASSERT_EQ((std::string)json["meta"]["description"], "Stress test for parser and memory pool integrity");
+        ASSERT_EQ((int)json["limits"]["rate_limit_per_sec"], 1500);
+        ASSERT_EQ((int)json["limits"]["max_symbols"], 5000);
+        ASSERT_EQ((int)json["system"]["team"]["members"].size(), 3);
+        ASSERT_EQ((std::string)json["system"]["platform"]["os"], "Linux");
+        ASSERT_EQ((std::string)json["system"]["platform"]["arch"], "x86_64");
+        ASSERT_EQ((int)json["system"]["modules"].size(), 4);
+        ASSERT_EQ((std::string)json["system"]["modules"][0], "parser");
+        ASSERT_EQ((std::string)json["system"]["modules"][1], "matcher");
+        ASSERT_EQ((std::string)json["system"]["modules"][2], "router");
+        ASSERT_EQ((std::string)json["system"]["modules"][3], "logger");
+        ASSERT_EQ((uint64_t)json["meta"]["timestamp"], 1724000000000);
+    }
+
+    // -------------------------------
+    // Assert: pool usage remains consistent
+    // -------------------------------
+    int obj_count_after = JsonObjectPool::size();
+    int val_count_after = JsonValuePool::size();
+    int str_count_after = StringPool::size();
+
+    ASSERT_EQ(obj_count_before, obj_count_after);
+    ASSERT_EQ(val_count_before, val_count_after);
+    ASSERT_EQ(str_count_before, str_count_after);
+}
