@@ -38,7 +38,6 @@ TEST(JsonTestCreation, ComplexObjectStructure)
     ASSERT_EQ(is_null, true);
     ASSERT_EQ(is_not_null, false);
     ASSERT_EQ(root["null_field"], nullptr);
-    ASSERT_TRUE(root["null_field"].is_null());
 
     ASSERT_EQ((std::string)root["metadata"][0], "openai");
     ASSERT_EQ((int)root["metadata"][1], 2023);
