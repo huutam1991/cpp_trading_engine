@@ -246,7 +246,7 @@ JsonNew JsonParseNew::parse_value_number(size_t& start_pos)
     start_pos = end;
 
     std::string_view number_string = get_sub_string(start, end).data();
-    if (is_float)
+    if (is_float == false)
     {
         uint64_t int_number = 0;
         auto [ptr, ec] = std::from_chars(number_string.data(), number_string.data() + number_string.size(), int_number);
@@ -258,11 +258,13 @@ JsonNew JsonParseNew::parse_value_number(size_t& start_pos)
     }
     else
     {
+        spdlog::info("Parsing float number: {}", number_string);
         double double_number = 0.0;
         auto [ptr, ec] = std::from_chars(number_string.data(), number_string.data() + number_string.size(), double_number);
         if (ec == std::errc())
         {
             // Success
+            spdlog::info("Parsing double_number: {}", double_number);
             res = double_number;
         }
     }
