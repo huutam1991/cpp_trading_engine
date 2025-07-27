@@ -105,6 +105,7 @@ public:
 
     virtual void release() override
     {
+        m_value = nullptr; // Clear the value
         JsonValuePool::release(this);
     }
 };
