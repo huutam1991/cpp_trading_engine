@@ -258,13 +258,11 @@ JsonNew JsonParseNew::parse_value_number(size_t& start_pos)
     }
     else
     {
-        spdlog::info("Parsing float number: {}", number_string);
         double double_number = 0.0;
         auto [ptr, ec] = std::from_chars(number_string.data(), number_string.data() + number_string.size(), double_number);
         if (ec == std::errc())
         {
             // Success
-            spdlog::info("Parsing double_number: {}", double_number);
             res = double_number;
         }
     }
