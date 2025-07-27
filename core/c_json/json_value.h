@@ -59,6 +59,11 @@ public:
         return *this;
     }
 
+    void set_is_string_format(bool val)
+    {
+        m_is_string_format = val;
+    }
+
     bool is_null() const
     {
         return std::holds_alternative<std::nullptr_t>(m_value);

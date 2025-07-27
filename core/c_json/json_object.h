@@ -68,12 +68,32 @@ public:
 
     bool has_field(const std::string& field) const
     {
-        return m_object.find(field) != m_object.end();
+        return m_is_array ? false :m_object.find(field) != m_object.end();
     }
 
     void remove_field(const std::string& field)
     {
+        m_is_array = false; // Ensure this is treated as an object
         m_object.erase(field);
+    }
+
+    void set_size(size_t size)
+    {
+        m_is_array = true; // Ensure this is treated as an array
+        m_array.resize(size);
+    }
+
+    int size() const
+    {
+        return m_is_array ? m_array.size() : m_object.size();
+    }
+
+    void reverse()
+    {
+        if (m_is_array)
+        {
+            std::reverse(m_array.begin(), m_array.end());
+        }
     }
 
     // Methods from JsonTypeBaseNew

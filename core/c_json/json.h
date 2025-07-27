@@ -100,6 +100,17 @@ public:
     bool has_field(const std::string& field) const;
     void remove_field(const std::string& field);
 
+    void set_is_string_format(bool val)
+    {
+        if (m_value)
+        {
+            ((JsonValueNew*)m_value)->set_is_string_format(val);
+        }
+    }
+    void set_size(size_t size);
+    int size() const;
+    void reverse();
+
     // Null check
     bool operator==(std::nullptr_t t) const
     {

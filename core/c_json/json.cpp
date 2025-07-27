@@ -79,6 +79,25 @@ void JsonNew::remove_field(const std::string& field)
     }
 }
 
+void JsonNew::set_size(size_t size)
+{
+    check_create_json_object();
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+    json_object->set_size(size);
+}
+
+int JsonNew::size() const
+{
+    return m_value->is_json_value() ? 0 : ((JsonObjectNew*)m_value)->size();
+}
+
+void JsonNew::reverse()
+{
+    check_create_json_object();
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+    json_object->reverse();
+}
+
 bool JsonNew::is_null() const
 {
     return m_value == nullptr || (m_value->is_json_value() && ((JsonValueNew*)m_value)->is_null());
