@@ -66,6 +66,79 @@ TEST(JsonTestFeature, HasAndRemoveField_NestedStructure)
     ASSERT_FALSE(config["metadata"].has_field("version"));
 }
 
+TEST(JsonTestFeature, SetIsStringFormat_WorksCorrectly)
+{
+    // Arrange
+    JsonNew a = {
+        {"key", "Tam"}
+    };
+
+    // Act
+    a["key"].set_is_string_format(true);
+
+    // Assert
+    std::string result = a.get_string_value();
+    ASSERT_EQ(result, "{\"key\":\"Tam\"}");
+
+    // Act: Set to false
+    a["key"].set_is_string_format(false);
+    std::string result2 = a.get_string_value();
+    ASSERT_EQ(result2, "{\"key\":Tam}");  // still string, but not formatted as string
+}
+
+TEST(JsonTestFeature, SetSize_MakesArrayWithGivenSize)
+{
+    // Arrange
+    JsonNew json;
+    // Act
+    json.set_size(3);
+    // Assert
+    ASSERT_EQ(json.size(), 3);
+
+    // Act
+    json.set_size(2);
+    // Assert
+    ASSERT_EQ(json.size(), 2);
+
+    // Act
+    json.set_size(4);
+    // Assert
+    ASSERT_EQ(json.size(), 4);
+}
+
+TEST(JsonTestFeature, Size_ReturnsCorrectObjectOrArraySize)
+{
+    // Object case
+    JsonNew obj = {
+        {"name", "Tam"},
+        {"age", 30}
+    };
+    ASSERT_EQ(obj.size(), 2);
+
+    // Array case
+    JsonNew arr;
+    arr.set_size(4);
+    ASSERT_EQ(arr.size(), 4);
+}
+
+TEST(JsonTestFeature, Reverse_ReversesArrayCorrectly)
+{
+    // Arrange
+    JsonNew arr;
+    arr.set_size(3);
+    arr[0] = "first";
+    arr[1] = "second";
+    arr[2] = "third";
+
+    // Act
+    arr.reverse();
+
+    // Assert
+    ASSERT_EQ((std::string)arr[0], "third");
+    ASSERT_EQ((std::string)arr[1], "second");
+    ASSERT_EQ((std::string)arr[2], "first");
+}
+
 TEST(JsonTestFeature, NullFieldTransitionDeepStructure_NullptrOnly)
 {
     // -------------------------------
