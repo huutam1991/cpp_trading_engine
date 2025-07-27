@@ -19,7 +19,7 @@ std::string demangled_name()
     return result;
 }
 
-template <typename T, typename = void>
+template <typename T, typename U = void>
 struct TypeName
 {
     static std::string name()
