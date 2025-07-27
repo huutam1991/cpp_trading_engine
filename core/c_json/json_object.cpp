@@ -1,5 +1,49 @@
 #include <c_json/json_object.h>
 
+
+void JsonObjectNew::for_each(std::function<void(JsonNew&)>& loop_func)
+{
+    // Loop through object
+    if (m_is_array == false)
+    {
+        for (auto it = m_object.begin(); it != m_object.end(); it++)
+        {
+            loop_func(it->second);
+        }
+    }
+    // Loop through array
+    else
+    {
+        for (auto it = m_array.begin(); it != m_array.end(); it++)
+        {
+            loop_func(*it);
+        }
+    }
+}
+
+void JsonObjectNew::for_each_with_key(std::function<void(const std::string&, JsonNew&)>& loop_func)
+{
+    if (m_is_array == false)
+    {
+        // Loop through object
+        for (auto it = m_object.begin(); it != m_object.end(); it++)
+        {
+            loop_func(it->first, it->second);
+        }
+    }
+}
+
+void JsonObjectNew::for_each_with_index(std::function<void(size_t,JsonNew&)>& loop_func)
+{
+    if (m_is_array == true)
+    {
+        for (size_t i = 0; i < m_array.size(); i++)
+        {
+            loop_func(i, m_array[i]);
+        }
+    }
+}
+
 void JsonObjectNew::write_string_value(JsonStringBuilder& builder)
 {
     if (m_is_array)

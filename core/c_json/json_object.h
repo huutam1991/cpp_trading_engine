@@ -56,6 +56,10 @@ public:
         m_is_array = false;
     }
 
+    void for_each(std::function<void(JsonNew&)>& loop_func);
+    void for_each_with_key(std::function<void(const std::string&,JsonNew&)>& loop_func);
+    void for_each_with_index(std::function<void(size_t,JsonNew&)>& loop_func);
+
     // Methods from JsonTypeBaseNew
     virtual bool is_json_value() override
     {
