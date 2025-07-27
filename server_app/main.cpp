@@ -54,80 +54,21 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    // // Init Timer with ioc TIMER
-    // Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    // Init Timer with ioc TIMER
+    Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
-    // // Init DBHelper with
-    // DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
+    // Init DBHelper with
+    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
 
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
 
-    // // Strategy
-    // StrategyManager::instance().init();
+    // Strategy
+    StrategyManager::instance().init();
 
-    // // Server
-    // HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
-    // server.start();
-
-    for (int i = 0; i < 100; i++)
-    {
-        spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
-        spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
-        JsonNew b;
-        b[1][6] = "Hello World";
-        b[1][8] = 123;
-        JsonNew c = b;
-
-        JsonNew d = c;
-        std::string e = d[1][6];
-        spdlog::info("Value of e: {}", e);
-        size_t f = d[1][8];
-        spdlog::info("Value of f: {}", f);
-        d[1][8] = 456;
-        size_t g = b[1][8];
-        spdlog::info("Value of g: {}", g);
-
-        std::string json_str = d.get_string_value();
-        spdlog::info("JSON String: {}", json_str);
-
-        d["name"] = "Tam";
-        d["age"] = 30;
-        d["is_active"] = true;
-        d["balance"] = 1000.50;
-        d["job"]["name"] = "Developer";
-        d["job"]["position"] = "Trading engine developer";
-        d["job"]["skills"][1] = "C++";
-        d["job"]["skills"][2] = "Python";
-        d["job"]["skills"][3] = "Rust";
-        json_str = d.get_string_value();
-        spdlog::info("JSON String: {}", json_str);
-
-        b["age"] = 32;
-        b["job"]["skills"][4] = "Low latency";
-        b["job"]["skills"][5] = "High performance";
-        b["job"]["skills"][6] = "Concurrency";
-        b["job"]["skills"][7] = "Coroutines";
-        b["job"]["skills"][8] = "Asynchronous programming";
-        b["job"]["skills"][9] = "Metaprogramming";
-
-        JsonNew trading_skills;
-        trading_skills["name"] = "Trading Skills";
-        trading_skills["skill"][1] = "Trading";
-        trading_skills["skill"][2] = "Market analysis";
-        trading_skills["skill"][3] = "Risk management";
-        trading_skills["skill"][4] = "Algorithmic trading";
-        trading_skills["skill"][5] = "Quantitative analysis";
-        b["job"]["skills"][10] = trading_skills;
-
-        json_str = d.get_string_value();
-        spdlog::info("JSON String: {}", json_str);
-
-        spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
-        spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
-    }
-    spdlog::info("Current size of JsonValuePool: {}", JsonValuePool::size());
-    spdlog::info("Current size of JsonObjectPool: {}", JsonObjectPool::size());
+    // Server
+    HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
+    server.start();
 
     spdlog::info("Main exit");
 
