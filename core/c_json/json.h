@@ -105,7 +105,6 @@ public:
     {
         return is_null();
     }
-    bool is_null() const;
 
     ~JsonNew()
     {
@@ -140,6 +139,7 @@ public:
     }
 
 private:
+    bool is_null() const;
     void check_create_json_value();
     void check_create_json_object();
 };
