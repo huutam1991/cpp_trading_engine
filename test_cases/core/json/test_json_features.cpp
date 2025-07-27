@@ -65,3 +65,54 @@ TEST(JsonTestFeature, HasAndRemoveField_NestedStructure)
     ASSERT_TRUE(config["metadata"].has_field("created"));
     ASSERT_FALSE(config["metadata"].has_field("version"));
 }
+
+TEST(JsonTestFeature, NullFieldTransitionDeepStructure_NullptrOnly)
+{
+    // -------------------------------
+    // Arrange
+    // -------------------------------
+    JsonNew config = {
+        {"user", {
+            {"name", nullptr},
+            {"email", "huutam1991@gmail.com"},
+            {"profile", {
+                {"age", 30},
+                {"bio", nullptr}
+            }}
+        }},
+        {"system", {
+            {"version", "1.0"},
+            {"description", "default config"}
+        }}
+    };
+
+    // -------------------------------
+    // Initial null checks
+    // -------------------------------
+    ASSERT_TRUE(config["user"]["name"] == nullptr);
+    ASSERT_TRUE(config["user"]["profile"]["bio"] == nullptr);
+    ASSERT_FALSE(config["user"]["email"] == nullptr);
+    ASSERT_FALSE(config["system"]["version"] == nullptr);
+
+    // -------------------------------
+    // Modify values
+    // -------------------------------
+    config["user"]["name"] = "Nguyen Huu Tam";  // from null to string
+    config["user"]["profile"]["bio"] = "Low-latency developer";
+    config["user"]["email"] = nullptr;          // from string to null
+    config["system"]["version"] = nullptr;
+
+    // -------------------------------
+    // Post-modification checks
+    // -------------------------------
+    ASSERT_FALSE(config["user"]["name"] == nullptr);
+    ASSERT_FALSE(config["user"]["profile"]["bio"] == nullptr);
+    ASSERT_TRUE(config["user"]["email"] == nullptr);
+    ASSERT_TRUE(config["system"]["version"] == nullptr);
+
+    // -------------------------------
+    // Extra value assertions
+    // -------------------------------
+    ASSERT_EQ((std::string)config["user"]["name"], "Nguyen Huu Tam");
+    ASSERT_EQ((std::string)config["user"]["profile"]["bio"], "Low-latency developer");
+}
