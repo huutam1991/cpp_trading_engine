@@ -128,7 +128,7 @@ void HttpsClientAsync::on_write(beast::error_code ec, std::size_t bytes_transfer
     if (ec) return fail("write", ec);
 
     m_parser.get().clear();
-    m_parser.body_limit(10 * 1024 * 1024); // Reset body limit to 10MB
+    m_parser.body_limit(50 * 1024 * 1024); // Reset body limit to 10MB
 
     http::async_read(m_stream, m_buffer, m_parser,
         beast::bind_front_handler(&HttpsClientAsync::on_read, shared_from_this()));
