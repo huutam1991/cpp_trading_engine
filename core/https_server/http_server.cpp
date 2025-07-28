@@ -75,6 +75,7 @@ void HttpServer::init_socket()
 
 void HttpServer::start()
 {
+    spdlog::info("HttpServer started on port: {}", m_port);
     m_epoll->start_waitting
     (
         [&]()               { return accept_new_connection(); },
