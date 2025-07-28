@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     OrderManager::instance().init();
 
     // Strategy
-    StrategyManager::instance().init();
+    // StrategyManager::instance().init();
 
     // Server
     HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
