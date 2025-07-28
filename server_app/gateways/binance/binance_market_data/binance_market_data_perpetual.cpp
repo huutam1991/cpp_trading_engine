@@ -151,7 +151,7 @@ void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrum
     m_on_callback = std::move(call_back);
 }
 
-bool BinanceMarketDataPerpetual::standardize_data(std::string&& data, Json& depth)
+bool BinanceMarketDataPerpetual::standardize_data(std::string data, Json& depth)
 {
     MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
     JsonNew order_book;

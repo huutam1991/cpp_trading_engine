@@ -9,10 +9,7 @@ ShareString JsonParseNew::get_sub_string(size_t start, size_t end)
     return ShareString(m_share_string.from_substr(start, size));
 }
 
-JsonParseNew::JsonParseNew(const std::string& object) : m_share_string(object)
-{}
-
-JsonParseNew::JsonParseNew(std::string&& object) : m_share_string(std::move(object))
+JsonParseNew::JsonParseNew(std::string object) : m_share_string(std::move(object))
 {}
 
 JsonNew JsonParseNew::parse()

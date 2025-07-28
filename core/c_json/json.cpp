@@ -17,13 +17,7 @@ JsonNew::JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_lis
     }
 }
 
-JsonNew JsonNew::parse(const std::string& json_string)
-{
-    JsonParseNew parser(json_string);
-    return parser.parse();
-}
-
-JsonNew JsonNew::parse(std::string&& json_string)
+JsonNew JsonNew::parse(std::string json_string)
 {
     JsonParseNew parser(std::move(json_string));
     return parser.parse();

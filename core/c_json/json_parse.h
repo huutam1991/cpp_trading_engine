@@ -73,8 +73,7 @@ class JsonParseNew
     }
 
 public:
-    JsonParseNew(const std::string& object);
-    JsonParseNew(std::string&& object);
+    JsonParseNew(std::string object);
     JsonNew parse();
 
 private:
