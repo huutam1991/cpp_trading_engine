@@ -83,6 +83,15 @@ void add_app_route()
         co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/index.html");
     };
 
+    ADD_ROUTE(RequestMethod::GET, "/check_health")
+    {
+        Json response;
+        response["message"] = "OK";
+        response["status"] = "Healthy";
+
+        co_return HttpResponse(OK_200, response);
+    };
+
     ADD_ROUTE(RequestMethod::GET, "/test_random")
     {
         DataModel data("test_data_model", "user");
@@ -299,7 +308,7 @@ void add_app_route()
 
         co_return HttpResponse(OK_200, Json());
     };
-    
+
     // Register new user
     ADD_ROUTE(RequestMethod::POST, "/register_new_user")
     {
