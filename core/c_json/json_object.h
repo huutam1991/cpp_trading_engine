@@ -88,12 +88,23 @@ public:
     void set_size(size_t size)
     {
         m_is_array = true; // Ensure this is treated as an array
+        m_array.resize(size);
+    }
+
+    void set_capacity(size_t size)
+    {
+        m_is_array = true; // Ensure this is treated as an array
         m_array.reserve(size);
     }
 
     int size() const
     {
         return m_is_array ? m_array.size() : m_object.size();
+    }
+
+    int capacity() const
+    {
+        return m_is_array ? m_array.capacity() : m_object.size();
     }
 
     void reverse()

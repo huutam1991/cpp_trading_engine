@@ -225,6 +225,8 @@ public:
         }
     }
     void set_size(size_t size);
+    void set_capacity(size_t size);
+    int capacity() const;
     int size() const;
     void reverse();
     void sort(std::function<bool(JsonNew&, JsonNew&)> compare_func);

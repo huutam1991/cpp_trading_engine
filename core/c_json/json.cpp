@@ -128,9 +128,21 @@ void JsonNew::set_size(size_t size)
     json_object->set_size(size);
 }
 
+void JsonNew::set_capacity(size_t size)
+{
+    check_create_json_object();
+    JsonObjectNew* json_object = (JsonObjectNew*)m_value;
+    json_object->set_capacity(size);
+}
+
 int JsonNew::size() const
 {
     return m_value->is_json_value() ? 0 : ((JsonObjectNew*)m_value)->size();
+}
+
+int JsonNew::capacity() const
+{
+    return m_value->is_json_value() ? 0 : ((JsonObjectNew*)m_value)->capacity();
 }
 
 void JsonNew::reverse()
