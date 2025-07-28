@@ -24,7 +24,7 @@ services:
      - 8081:8081
     environment:
       - MONGO_URI=mongodb://mongodb:27017
-      - LOG_LEVEL=info
+      - LOG_LEVEL=debug
       - GLOG_logbufsecs=0
       - DOCKER=1
     volumes:
