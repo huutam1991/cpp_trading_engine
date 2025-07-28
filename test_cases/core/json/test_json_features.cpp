@@ -234,6 +234,26 @@ TEST(JsonTestFeature, SetSize_MakesArrayWithGivenSize)
     ASSERT_EQ(json.size(), 4);
 }
 
+TEST(JsonTestFeature, SetCapacity_MakesArrayWithGivenCapacity)
+{
+    // Arrange
+    JsonNew json;
+    // Act
+    json.set_capacity(3);
+    // Assert
+    ASSERT_EQ(json.capacity(), 3);
+
+    // Act
+    json.set_capacity(7);
+    // Assert
+    ASSERT_EQ(json.capacity(), 7);
+
+    // Act
+    json.set_size(4);
+    // Assert
+    ASSERT_EQ(json.capacity(), 7);
+}
+
 TEST(JsonTestFeature, Size_ReturnsCorrectObjectOrArraySize)
 {
     // Object case
