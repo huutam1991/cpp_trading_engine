@@ -124,7 +124,9 @@ void HttpsClientAsync::on_write(beast::error_code ec, std::size_t bytes_transfer
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("write", ec);
 
-    http::async_read(m_stream, m_buffer, m_res,
+    m_parser.body_limit(10 * 1024 * 1024);
+
+    http::async_read(m_stream, m_buffer, m_parser,
         beast::bind_front_handler(&HttpsClientAsync::on_read, shared_from_this()));
 }
 
@@ -133,6 +135,7 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("read", ec);
 
+    m_res = m_parser.get();
     m_future_value.set_value(m_res.body());
 
     beast::error_code shutdown_ec;

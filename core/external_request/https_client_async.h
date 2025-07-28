@@ -40,6 +40,7 @@ private:
     beast::flat_buffer m_buffer;
     http::request<http::string_body> m_request;
     http::response<http::string_body> m_res;
+    http::response_parser<http::string_body> m_parser;
     http::verb m_method;
     std::string m_host;
     std::string m_endpoint;
@@ -48,7 +49,7 @@ private:
     Future<std::string>::FutureValue m_future_value;
 
     Future<std::string> send_request(http::verb method, const std::string& endpoint, std::string body);
-    
+
     static tcp::resolver::results_type& get_resolve_result_cache(tcp::resolver& resolver, const std::string& host, const std::string& port);
     static ssl::context& get_ssl_ctx();
 
