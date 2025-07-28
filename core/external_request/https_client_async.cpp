@@ -6,10 +6,8 @@ HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host
     :   m_resolver(ioc),
         m_resolve_result{get_resolve_result_cache(m_resolver, host, port)},
         m_stream{ioc, get_ssl_ctx()},
-        m_parser{},
         m_host{host}
 {
-    m_parser.body_limit(10 * 1024 * 1024); // Set body limit to 10MB
 }
 
 Future<std::string> HttpsClientAsync::get(const std::string& endpoint)
@@ -128,6 +126,9 @@ void HttpsClientAsync::on_write(beast::error_code ec, std::size_t bytes_transfer
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("write", ec);
+
+    m_parser.get().clear();
+    m_parser.body_limit(10 * 1024 * 1024); // Reset body limit to 10MB
 
     http::async_read(m_stream, m_buffer, m_parser,
         beast::bind_front_handler(&HttpsClientAsync::on_read, shared_from_this()));
