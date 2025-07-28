@@ -10,26 +10,26 @@ services:
     volumes:
       - ./mongo_docker_data:/data/db
 
-  cpp_trading_engine:
-    build:
-      context: ../
-      dockerfile: z_docker/Dockerfile
-    depends_on:
-      - mongodb
-    networks:
-      - cpp_trading_engine_network
-    ports:
-     - 80:80
-     - 443:443
-     - 8081:8081
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - LOG_LEVEL=debug
-      - GLOG_logbufsecs=0
-      - DOCKER=1
-    volumes:
-      - ./excel:/web_data/excel
-      - /home/ubuntu/manualtrader/logs:/tmp
+  # cpp_trading_engine:
+  #   build:
+  #     context: ../
+  #     dockerfile: z_docker/Dockerfile
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - cpp_trading_engine_network
+  #   ports:
+  #    - 80:80
+  #    - 443:443
+  #    - 8081:8081
+  #   environment:
+  #     - MONGO_URI=mongodb://mongodb:27017
+  #     - LOG_LEVEL=debug
+  #     - GLOG_logbufsecs=0
+  #     - DOCKER=1
+  #   volumes:
+  #     - ./excel:/web_data/excel
+  #     - /home/ubuntu/manualtrader/logs:/tmp
 
 networks:
   cpp_trading_engine_network:
