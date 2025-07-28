@@ -426,7 +426,9 @@ TEST(JsonTestCreation, JsonParse_PoolCountStable)
         "limits": {
             "max_orders": 100000,
             "max_symbols": 5000,
-            "rate_limit_per_sec": 1500
+            "rate_limit_per_sec": 1500,
+            "negative1": -234,
+            "negative2": -816.48364
         },
         "meta": {
             "timestamp": 1724000000000,
@@ -456,6 +458,8 @@ TEST(JsonTestCreation, JsonParse_PoolCountStable)
         ASSERT_EQ((std::string)json["system"]["team"]["lead"], "Tam");
         ASSERT_EQ((std::string)json["features"]["languages"]["primary"], "C++");
         ASSERT_EQ((int)json["limits"]["max_orders"], 100000);
+        ASSERT_EQ((int)json["limits"]["negative1"], -234);
+        ASSERT_EQ((double)json["limits"]["negative2"], -816.48364);
         ASSERT_EQ((bool)json["system"]["performance"]["stability"], true);
         ASSERT_EQ((std::string)json["features"]["exchange_support"][0], "Binance");
         ASSERT_EQ((std::string)json["features"]["exchange_support"][1], "Bybit");
