@@ -7,7 +7,7 @@ HttpsClientAsync::HttpsClientAsync(net::io_context& ioc, const std::string& host
 {
 }
 
-Future<std::string> HttpsClientAsync::get(const std::string& endpoint) 
+Future<std::string> HttpsClientAsync::get(const std::string& endpoint)
 {
     return send_request(http::verb::get, endpoint, "");
 }
@@ -36,7 +36,7 @@ Future<std::string> HttpsClientAsync::send_request(http::verb method, const std:
     Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
     {
         self->m_future_value = value;
-        
+
         beast::get_lowest_layer(self->m_stream).async_connect(
             self->m_resolve_result,
             beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
@@ -57,10 +57,10 @@ tcp::resolver::results_type& HttpsClientAsync::get_resolve_result_cache(tcp::res
         // Protect [resolve_results_map] from race condition
         static std::mutex resolve_mutex;
         std::lock_guard<std::mutex> lock(resolve_mutex);
-        
+
         beast::error_code ec;
         auto resolve_result = resolver.resolve(host, port, ec);
-        if (ec) 
+        if (ec)
         {
             throw std::runtime_error("Resolve failed: " + ec.message());
         }
@@ -74,7 +74,7 @@ tcp::resolver::results_type& HttpsClientAsync::get_resolve_result_cache(tcp::res
 ssl::context& HttpsClientAsync::get_ssl_ctx()
 {
     static ssl::context ssl_ctx(ssl::context::tlsv12_client);
-    static bool initialized = [] 
+    static bool initialized = []
     {
         ssl_ctx.set_verify_mode(ssl::verify_peer);
         ssl_ctx.set_default_verify_paths();
@@ -89,14 +89,14 @@ void HttpsClientAsync::add_header(const std::string& key, const std::string valu
     m_headers.insert(std::make_pair(key, value));
 }
 
-void HttpsClientAsync::on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type) 
+void HttpsClientAsync::on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
 {
     if (ec) return fail("connect", ec);
     m_stream.async_handshake(ssl::stream_base::client,
         beast::bind_front_handler(&HttpsClientAsync::on_handshake, shared_from_this()));
 }
 
-void HttpsClientAsync::on_handshake(beast::error_code ec) 
+void HttpsClientAsync::on_handshake(beast::error_code ec)
 {
     if (ec) return fail("handshake", ec);
 
@@ -119,7 +119,7 @@ void HttpsClientAsync::on_handshake(beast::error_code ec)
         beast::bind_front_handler(&HttpsClientAsync::on_write, shared_from_this()));
 }
 
-void HttpsClientAsync::on_write(beast::error_code ec, std::size_t bytes_transferred) 
+void HttpsClientAsync::on_write(beast::error_code ec, std::size_t bytes_transferred)
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("write", ec);
@@ -128,7 +128,7 @@ void HttpsClientAsync::on_write(beast::error_code ec, std::size_t bytes_transfer
         beast::bind_front_handler(&HttpsClientAsync::on_read, shared_from_this()));
 }
 
-void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferred) 
+void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferred)
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) return fail("read", ec);
@@ -139,7 +139,8 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
     m_stream.shutdown(shutdown_ec);
 }
 
-void HttpsClientAsync::fail(const std::string& where, beast::error_code ec) 
+void HttpsClientAsync::fail(const std::string& where, beast::error_code ec)
 {
     std::cerr << "HttpsClientAsync - Error in " << where << ": " << ec.message() << std::endl;
+    spdlog::error("HttpsClientAsync - data: {}", beast::buffers_to_string(m_buffer.data()));
 }
