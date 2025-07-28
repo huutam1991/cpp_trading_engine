@@ -27,6 +27,7 @@ void Gateway::init()
 
         for (const Instrument& instrument : instruments)
         {
+            spdlog::info("Gateway::init - Adding instrument: {}", instrument.symbol.to_string());
             Instrument::add_instrument_to_cache(m_exchange_id, instrument);
         }
     }
