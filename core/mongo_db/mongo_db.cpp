@@ -7,9 +7,12 @@ mongocxx::pool& MongoDB::get_pool()
     if (m_pool == nullptr)
     {
         const char* uri = MONGO_URI;
-        if (const char* uri_env = std::getenv("MONGO_URI"))
+        if (const char* env = std::getenv("PROD"))
         {
-            uri = uri_env;
+            if (std::string(env) == "true")
+            {
+                uri = MONGO_URI_PROD;
+            }
         }
         spdlog::debug("MONGO_URI = {}", uri);
 

@@ -13,7 +13,8 @@
 #define NUMBER_OF_WEBSOCKET_CLIENT_THREADS 0 // number of websocket client threads
 #define NUMBER_OF_WEBSOCKET_SERVER_THREADS 0  // number of websocket server threads
 
-#define MONGO_URI "mongodb://172.31.9.78:27017"
+#define MONGO_URI "mongodb://127.0.0.1:27017"
+#define MONGO_URI_PROD "mongodb://172.31.9.78:27017"
 #define DB_APP_CONFIG "app_config"
 
 #define SSL_SERVER_CERTIFICATE "server-certificate.crt"

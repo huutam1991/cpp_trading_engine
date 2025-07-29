@@ -11,7 +11,7 @@ chmod 777 z_util_scripts/generate_server_certificate.sh
 ./z_util_scripts/generate_server_certificate.sh
 
 # Detect port
-if [[ "$DOCKER" == "1" ]]; then
+if [[ "$PROD" == "true" ]]; then
     PORT=443
 else
     PORT=8080

@@ -28,7 +28,7 @@ services:
   #     - MONGO_URI=mongodb://47.130.115.210:27017
   #     - LOG_LEVEL=debug
   #     - GLOG_logbufsecs=0
-  #     - DOCKER=1
+  #     - PROD=true
   #   volumes:
   #     - ./excel:/web_data/excel
   #     - /home/ubuntu/manualtrader/logs:/tmp
