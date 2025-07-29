@@ -3,6 +3,8 @@ version: "3.7"
 services:
   mongodb:
     image: mongo:latest
+    container_name: mongo_server
+    restart: always
     networks:
       - cpp_trading_engine_network
     ports:
