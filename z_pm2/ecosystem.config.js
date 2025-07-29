@@ -3,8 +3,9 @@ module.exports = {
   apps: [
     {
       name: "cpp_trading_engine",
-      script: "/home/ubuntu/cpp_trading_engine/run_bash.sh",
+      script: "./run_bash.sh",
       interpreter: "bash",
+      cwd: "/home/ubuntu/cpp_trading_engine",
       env: {
         PROD: "true"
       }
