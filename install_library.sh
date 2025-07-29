@@ -64,6 +64,14 @@ cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build build
 cmake --install build
 
+# Install PM2
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+apt install -y nodejs
+node -v
+npm -v
+sudo npm install -g pm2
+pm2 -v
+
 # # Install GLog
 # cd /
 # git clone https://github.com/google/glog.git
