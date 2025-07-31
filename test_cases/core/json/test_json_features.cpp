@@ -41,6 +41,8 @@ TEST(JsonTestFeature, Operator_Compare_Equal)
     ASSERT_EQ(a["key1"] == "Tam", false);
 
     ASSERT_EQ(a["key2"] == "Tam", true);
+    ASSERT_EQ(a["key2"] == std::string_view("Tam"), true);
+    ASSERT_EQ(a["key2"] == std::string("Tam"), true);
     ASSERT_EQ(a["key2"] == "Nguyen", false);
     ASSERT_EQ(a["key2"] == 42, false);
     ASSERT_EQ(a["key2"] == nullptr, false);
