@@ -97,11 +97,11 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             JsonNew depth = JsonNew();
             if (this->standardize_data(std::move(buffer), depth))
             {
-                // spdlog::debug("Stream depth: {}", depth);
-                // if (m_on_callback != nullptr)
-                // {
-                //     m_on_callback(instrument, depth);
-                // }
+                spdlog::debug("Stream depth: {}", depth);
+                if (m_on_callback != nullptr)
+                {
+                    m_on_callback(instrument, depth);
+                }
             }
             else
             {
@@ -161,20 +161,18 @@ bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& dep
     }
     // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
 
-    JsonNew depth_new;
-
     if (order_book.has_field("a") && order_book.has_field("b"))
     {
         MeasureTime t2("build depth PERPETUAL", MeasureUnit::MICROSECOND);
         // symbol
-        depth_new["s"] = "m_symbol";
+        depth["s"] = "m_symbol";
         // event name
-        depth_new["e"] = "depthUpdate";
+        depth["e"] = "depthUpdate";
 
         // update asks
         JsonNew A;
         JsonNew asks = order_book["a"];
-        A.set_size(asks.size());
+        A.set_size(0);
         asks.for_each([&A](JsonNew& data)
         {
             JsonNew j;
@@ -184,12 +182,12 @@ bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& dep
             j.push_back(a1);
             A.push_back(j);
         });
-        depth_new["asks"] = A;
+        depth["asks"] = A;
 
         // update bids
         JsonNew B;
         JsonNew bids = order_book["b"];
-        B.set_size(bids.size());
+        B.set_size(0);
         bids.for_each([&B](JsonNew& data)
         {
             JsonNew j;
@@ -199,7 +197,7 @@ bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& dep
             j.push_back(b1);
             B.push_back(j);
         });
-        depth_new["bids"] = B;
+        depth["bids"] = B;
 
         return true;
     }
