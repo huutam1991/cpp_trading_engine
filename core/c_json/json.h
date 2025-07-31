@@ -119,13 +119,15 @@ public:
             if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
             {
                 const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
-                const char* current_value = share_string.data().data();
-                return std::strcmp(current_value, value) == 0;
+                std::string_view current_value = share_string.data();
+                std::string_view value_view(value);
+                return current_value == value_view;
             }
             else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
             {
                 const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
                 std::string_view current_value = share_string.data();
+                spdlog::debug("Comparing string_view: {} with value: {}", current_value, value);
                 return current_value == value;
             }
             else

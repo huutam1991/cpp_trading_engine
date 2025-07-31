@@ -98,7 +98,7 @@ JsonNew BinanceGateway::get_perpetual_symbols_info()
         }
 
         // Only process PERPETUAL contracts
-        if ((std::string)data["contractType"] != "PERPETUAL")
+        if (data["contractType"] != "PERPETUAL")
         {
             return;
         }
