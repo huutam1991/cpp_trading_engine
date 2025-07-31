@@ -44,7 +44,7 @@ public:
                 m_value->release();
             }
 
-            m_value = copy.m_value->get_copy();
+            m_value = copy.m_value ? copy.m_value->get_copy() : nullptr;
         }
         return *this;
     }
