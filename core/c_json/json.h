@@ -127,7 +127,6 @@ public:
             {
                 const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
                 std::string_view current_value = share_string.data();
-                spdlog::debug("Comparing string_view: {} with value: {}", current_value, value);
                 return current_value == value;
             }
             else
