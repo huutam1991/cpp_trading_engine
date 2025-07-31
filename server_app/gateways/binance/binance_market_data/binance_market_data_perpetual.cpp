@@ -97,7 +97,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             JsonNew depth = JsonNew();
             if (this->standardize_data(std::move(buffer), depth))
             {
-                spdlog::debug("Stream depth: {}", depth);
+                // spdlog::debug("Stream depth: {}", depth);
                 if (m_on_callback != nullptr)
                 {
                     m_on_callback(instrument, depth);
