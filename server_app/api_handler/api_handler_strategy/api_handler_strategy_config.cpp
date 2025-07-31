@@ -17,8 +17,7 @@ Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
     // GET
     if (m_request->get_request_method() == RequestMethod::GET)
     {
-        JsonNew data = StrategyManager::instance().get_config_by_strategy(strategy_name);
-        JsonNew config = JsonNew::parse(data.get_string_value());
+        JsonNew config = StrategyManager::instance().get_config_by_strategy(strategy_name);
 
         if (config.has_field("code") == false)
         {
@@ -41,8 +40,7 @@ Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
     {
         JsonNew config_data = m_request->get_body_json();
         JsonNew config = JsonNew::parse(config_data.get_string_value());
-        JsonNew data = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
-        JsonNew update_result = JsonNew::parse(data.get_string_value());
+        JsonNew update_result = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
 
         if (update_result.has_field("code") && (int)update_result["code"] < 0)
         {
