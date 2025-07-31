@@ -150,6 +150,7 @@ void BinanceMarketDataSpot::subscribe_instruments(std::vector<const Instrument*>
 
 bool BinanceMarketDataSpot::standardize_data(const std::string& data, JsonNew& depth)
 {
+    MeasureTime t("Standardize data SPOT", MeasureUnit::MICROSECOND);
     JsonNew order_book = JsonNew::parse(data);
 
     // spdlog::debug(order_book);

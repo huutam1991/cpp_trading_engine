@@ -154,16 +154,11 @@ void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrum
 bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& depth)
 {
     MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
-    JsonNew order_book;
-    {
-        MeasureTime("Parse order book PERPETUAL", MeasureUnit::MICROSECOND),
-        order_book = JsonNew::parse(std::move(data));
-    }
+    JsonNew order_book = JsonNew::parse(std::move(data));
     // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
 
     if (order_book.has_field("a") && order_book.has_field("b"))
     {
-        MeasureTime t2("build depth PERPETUAL", MeasureUnit::MICROSECOND);
         // symbol
         depth["s"] = "m_symbol";
         // event name
