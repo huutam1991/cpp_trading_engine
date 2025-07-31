@@ -51,14 +51,13 @@ Task<JsonNew> BinanceGateway::get_exchange_info_perpetual()
     co_return JsonNew::parse(response);
 }
 
-JsonNew BinanceGateway::get_spot_symbols_info()
+void BinanceGateway::get_spot_symbols_info()
 {
     JsonNew exchange_info = get_exchange_info()
         .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY))
         .get();
 
-    JsonNew symbols_info;
-    exchange_info["symbols"].for_each([&symbols_info, this](JsonNew& data)
+    exchange_info["symbols"].for_each([this](JsonNew& data)
     {
         if (data["status"] != "TRADING")
         {
@@ -79,18 +78,15 @@ JsonNew BinanceGateway::get_spot_symbols_info()
             std::stod((std::string&&)data["filters"][0]["tickSize"])
         });
     });
-
-    return symbols_info;
 }
 
-JsonNew BinanceGateway::get_perpetual_symbols_info()
+void BinanceGateway::get_perpetual_symbols_info()
 {
     JsonNew exchange_info = get_exchange_info_perpetual()
         .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY))
         .get();
 
-    JsonNew symbols_info;
-    exchange_info["symbols"].for_each([&symbols_info, this](JsonNew& data)
+    exchange_info["symbols"].for_each([this](JsonNew& data)
     {
         if (data["status"] != "TRADING")
         {
@@ -116,13 +112,7 @@ JsonNew BinanceGateway::get_perpetual_symbols_info()
             get_rounded_number(data["filters"][1]["stepSize"]),
             std::stod((std::string&&)data["filters"][0]["tickSize"])
         });
-
-        symbols_info[symbol_name]["tickSize"] = std::stold((std::string&&)data["filters"][0]["tickSize"]);
-        symbols_info[symbol_name]["lotSize"] = get_rounded_number(data["filters"][1]["stepSize"]);
-        symbols_info[symbol_name]["roundUpPrice"] = get_rounded_number(data["filters"][0]["tickSize"]);
     });
-
-    return symbols_info;
 }
 
 size_t BinanceGateway::get_rounded_number(const std::string& lot_size)

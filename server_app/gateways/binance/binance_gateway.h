@@ -37,8 +37,8 @@ private:
     Task<JsonNew> get_exchange_info_perpetual();
     void on_depth_update(const Instrument* instrument, JsonNew& payload);
 
-    JsonNew get_spot_symbols_info();
-    JsonNew get_perpetual_symbols_info();
+    void get_spot_symbols_info();
+    void get_perpetual_symbols_info();
     size_t get_rounded_number(const std::string& lot_size);
     std::string round_string_number(const std::string& str_number, size_t precision);
 
