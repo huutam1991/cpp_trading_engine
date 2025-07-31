@@ -31,6 +31,7 @@ TEST(JsonTestFeature, Operator_Compare_Equal)
     JsonNew a;
     a["key1"] = 42;
     a["key2"] = "Tam";
+    a["key3"] = std::string("Nguyen");
 
     // -------------------------------
     // Assert
@@ -46,6 +47,13 @@ TEST(JsonTestFeature, Operator_Compare_Equal)
     ASSERT_EQ(a["key2"] == "Nguyen", false);
     ASSERT_EQ(a["key2"] == 42, false);
     ASSERT_EQ(a["key2"] == nullptr, false);
+
+    ASSERT_EQ(a["key3"] == "Nguyen", true);
+    ASSERT_EQ(a["key3"] == std::string_view("Nguyen"), true);
+    ASSERT_EQ(a["key3"] == std::string("Nguyen"), true);
+    ASSERT_EQ(a["key3"] == "Tam", false);
+    ASSERT_EQ(a["key3"] == 42, false);
+    ASSERT_EQ(a["key3"] == nullptr, false);
 }
 
 TEST(JsonTestFeature, Operator_Compare_NotEqual)
