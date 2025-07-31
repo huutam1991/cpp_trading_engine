@@ -102,10 +102,10 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             }
             else
             {
-                // Save this none json data for checking error
-                MongoDB::instance()
-                    .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                    .insert_one(JsonNew::parse(buffer));
+                // // Save this none json data for checking error
+                // MongoDB::instance()
+                //     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
+                //     .insert_one(JsonNew::parse(buffer));
             }
 
             co_return;
