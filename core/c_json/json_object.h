@@ -85,6 +85,11 @@ public:
         m_object.erase(field);
     }
 
+    bool is_array() const
+    {
+        return m_is_array;
+    }
+
     void set_size(size_t size)
     {
         m_is_array = true; // Ensure this is treated as an array

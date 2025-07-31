@@ -223,6 +223,19 @@ public:
             ((JsonValueNew*)m_value)->set_is_string_format(val);
         }
     }
+
+    bool is_string() const
+    {
+        return m_value == nullptr ?
+            false :
+            m_value->is_json_value() ?
+                ((JsonValueNew*)m_value)->is_string() :
+                false;
+    }
+
+    bool is_array() const;
+    bool is_object() const;
+
     void set_size(size_t size);
     void set_capacity(size_t size);
     int size() const;

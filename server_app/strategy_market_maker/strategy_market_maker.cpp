@@ -40,7 +40,7 @@ void StrategyMarketMaker::on_config_change(StrategyMarketMakerConfig new_config)
     }
 }
 
-Json StrategyMarketMaker::get_info(Json& params)
+JsonNew StrategyMarketMaker::get_info(JsonNew& params)
 {
     if ((std::string)params["type"] == "orders_chain")
     {
@@ -50,15 +50,15 @@ Json StrategyMarketMaker::get_info(Json& params)
     return {};
 }
 
-Json StrategyMarketMaker::get_orders_chain()
+JsonNew StrategyMarketMaker::get_orders_chain()
 {
-    Json orders = Json::create_array();
+    JsonNew orders;
 
-    Json filled_orders = MongoDB::instance()
+    JsonNew filled_orders = MongoDB::instance()
         .set_db_and_collection("order", "order_list")
         .find_many();
 
-    filled_orders.for_each([&orders](Json& order)
+    filled_orders.for_each([&orders](JsonNew& order)
     {
         if (order["status"] == "FILLED")
         {
@@ -67,24 +67,24 @@ Json StrategyMarketMaker::get_orders_chain()
         }
     });
 
-    orders.sort([](Json& a, Json& b)
+    orders.sort([](JsonNew& a, JsonNew& b)
     {
         return (OrderId)a["order_id"] < (OrderId)b["order_id"];
     });
 
-    Json res = Json::create_array();
+    JsonNew res;
     size_t i = 0;
     while (i < orders.size())
-    {   
+    {
         // Find triangle orders
-        if ((std::string)orders[i]["symbol"] == "BTCUSDT" && 
-            (std::string)orders[i + 1]["symbol"] == "ETHBTC" && 
+        if ((std::string)orders[i]["symbol"] == "BTCUSDT" &&
+            (std::string)orders[i + 1]["symbol"] == "ETHBTC" &&
             (std::string)orders[i + 2]["symbol"] == "ETHUSDT")
         {
             double input = (double)orders[i]["volumn_in_quote_currency"];
             double output = (double)orders[i+2]["output_quantity"];
-            
-            Json triangle;
+
+            JsonNew triangle;
             triangle["input"] = input;
             triangle["output"] = output;
             triangle["profit"] = output - input;
@@ -103,7 +103,7 @@ Json StrategyMarketMaker::get_orders_chain()
     return res;
 }
 
-// Json StrategyMarketMaker::get_open_orders()
+// JsonNew StrategyMarketMaker::get_open_orders()
 // {
 //     std::unordered_map<PAState, StrategyMarketMakerState*>* strategy_states = get_strategy_states();
 //     PAState state = m_current_state.object.state;
@@ -114,5 +114,5 @@ Json StrategyMarketMaker::get_orders_chain()
 //         return (*strategy_states)[state]->get_open_orders();
 //     }
 
-//     return Json::create_array();
+//     return JsonNew::create_array();
 // }

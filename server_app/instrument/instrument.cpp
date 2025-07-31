@@ -1,6 +1,6 @@
 #include <instrument/instrument.h>
 
-Json Instrument::to_json() const
+JsonNew Instrument::to_json() const
 {
     return {
         {"exchange_id", enum_reflect::enum_name(exchange_id)},
@@ -12,12 +12,12 @@ Json Instrument::to_json() const
     };
 }
 
-Instrument Instrument::from_json(Json& data)
+Instrument Instrument::from_json(JsonNew& data)
 {
     return Instrument {
-        enum_reflect::enum_value<ExchangeId>((std::string)data["exchange_id"]), 
+        enum_reflect::enum_value<ExchangeId>((std::string)data["exchange_id"]),
         enum_reflect::enum_value<InstrumentType>((std::string)data["instrument_type"]),
-        Symbol((std::string)data["symbol"]), 
+        Symbol((std::string)data["symbol"]),
         Symbol((std::string)data["exchange_symbol"]),
         (size_t)data["lot_size"],
         (double)data["tick_size"]
@@ -80,7 +80,7 @@ void Instrument::add_instrument_to_cache(ExchangeId exchange_id, const Instrumen
     CacheInstruments& cache_instruments = get_cache_instruments(exchange_id);
     std::string exchange_name(enum_reflect::enum_name(exchange_id));
     std::string symbol = instrument.symbol.to_string();
-    
+
     // Add to cache
     auto [it, success] = cache_instruments.emplace(symbol, SavableObject<Instrument>(INSTRUMENT_DB_NAME, exchange_name));
     if (success == true)
@@ -114,7 +114,7 @@ void Instrument::add_instrument_to_list(ExchangeId exchange_id, const Instrument
 
     ins_by_symbol.emplace(instrument.symbol, &instrument);
     ins_by_exchange_symbol.emplace(instrument.exchange_symbol, &instrument);
-} 
+}
 
 const Instrument* Instrument::get_instrument_by_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol)
 {

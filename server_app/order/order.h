@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <json/json.h>
+#include <c_json/json.h>
 #include <enum_reflect/enum_reflect.h>
 #include <symbol/symbol.h>
 #include <instrument/instrument.h>
@@ -57,11 +57,11 @@ public:
     double output_quantity = 0.0; // Can be either base currency or quote currency
     double volumn_in_quote_currency = 0.0; // Volumn of the order in quote currency
     Symbol commission_asset;
-    Symbol output_asset; 
+    Symbol output_asset;
 
     Order();
     Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
-    Json to_json();
-    static Order from_json(Json& data);
+    JsonNew to_json();
+    static Order from_json(JsonNew& data);
 };

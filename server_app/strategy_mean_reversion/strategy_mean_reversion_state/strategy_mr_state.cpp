@@ -12,9 +12,9 @@ StrategyMeanReversionState::~StrategyMeanReversionState()
 
 DataModel& StrategyMeanReversionState::get_state_status()
 {
-    static DataModel state_status = JsonNull();
+    static DataModel state_status = nullptr;
 
-    if (state_status.is_null())
+    if (state_status == nullptr)
     {
         // Load from DB
         state_status = DataModel::load_single_data_model(STRATEGY_DB_NAME, "mean_reversion_status");

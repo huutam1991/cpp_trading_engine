@@ -17,7 +17,7 @@ public:
         static EventBase* even_base = nullptr;
         return even_base;
     }
-    
+
     static void check_valid_event_base()
     {
         if (get_even_base() == nullptr)
@@ -31,10 +31,10 @@ template<class T>
 class SavableObject
 {
     std::shared_ptr<DataModel> m_data_model = nullptr;
-    
+
     std::string m_db;
     std::string m_collection;
-    
+
     SavableObject() : m_data_model{std::make_shared<DataModel>()} {}
 
 public:
@@ -83,10 +83,10 @@ public:
     {
         // Check valid EventBase for DBHelper
         DBHelper::check_valid_event_base();
-        
+
         remove_data_model(m_data_model).start_running_on(DBHelper::get_even_base());
     }
-    
+
     static TaskVoid init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
     {
         DataModel dm(db, collection);
@@ -111,12 +111,12 @@ public:
         return object;
     }
 
-    Json to_json()
+    JsonNew to_json()
     {
         return object.to_json();
     }
 
-    T from_json(Json& data)
+    T from_json(JsonNew& data)
     {
         return T::from_json(data);
     }

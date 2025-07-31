@@ -29,16 +29,16 @@ void StrategyBuySpotStateRun::end()
         {
             BuyPoint buy_point_data = buy_point.object;
             buy_point_data.status = buy_point_data.quantity == 0 ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
-            buy_point_data.current_order_id = 0; 
-            buy_point = buy_point_data;   
-        }  
+            buy_point_data.current_order_id = 0;
+            buy_point = buy_point_data;
+        }
     }
 }
 
 void StrategyBuySpotStateRun::on_config_change()
 {
     m_current_price = 0.0;
-    
+
     // Get new instruments
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.instrument_type, m_config.symbol);
     spdlog::debug("StrategyBuySpotStateRun, instrument: {}", m_instrument->to_json());
@@ -47,8 +47,8 @@ void StrategyBuySpotStateRun::on_config_change()
 void StrategyBuySpotStateRun::add_buy_point_at_price(double price)
 {
     m_buy_points.emplace(price, SavableObject<BuyPoint>(
-        m_strategy_buy_spot_db_name, 
-        "buy_points", 
+        m_strategy_buy_spot_db_name,
+        "buy_points",
         BuyPoint {
             price,
             0.0,
@@ -208,22 +208,22 @@ void StrategyBuySpotStateRun::update_sell_orders()
     {
         if (buy_point.object.status == BuyPoint::Status::HOLD)
         {
-            hold_buy_points_prices.push_back(price);        
+            hold_buy_points_prices.push_back(price);
         }
     }
 
     // Sort [hold_buy_points_prices] in ascending order
-    std::sort(hold_buy_points_prices.begin(), hold_buy_points_prices.end());    
+    std::sort(hold_buy_points_prices.begin(), hold_buy_points_prices.end());
 
     // Resize [hold_buy_points_prices] to [m_config.max_open_orders]
     if (hold_buy_points_prices.size() > m_config.max_open_orders)
     {
-        hold_buy_points_prices.resize(m_config.max_open_orders);    
+        hold_buy_points_prices.resize(m_config.max_open_orders);
     }
 
     // If there's no HOLD buy points, return
     if (hold_buy_points_prices.size() == 0)
-    {           
+    {
         return;
     }
 
@@ -256,7 +256,7 @@ void StrategyBuySpotStateRun::update_sell_orders()
             buy_point_data.status = BuyPoint::Status::CANCELING;
             buy_point = buy_point_data;
         }
-    }   
+    }
 }
 
 TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
@@ -302,7 +302,7 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
         buy_point_data.status = BuyPoint::Status::PLACED;
         buy_point_data.current_order_id = order.order_id;
     }
-    // FILLED 
+    // FILLED
     else if (order.status == Order::Status::FILLED)
     {
         if (order.side == Order::Side::BUY)
@@ -330,7 +330,7 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
         buy_point_data.status = buy_point_data.quantity == 0 ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
         buy_point_data.current_order_id = 0;
     }
-    
+
     *buy_point = buy_point_data;
 
     co_return;
@@ -353,9 +353,9 @@ TaskVoid StrategyBuySpotStateRun::update(StrategyUpdateData data)
     co_return;
 }
 
-// Json StrategyBuySpotStateRun::get_open_orders()
+// JsonNew StrategyBuySpotStateRun::get_open_orders()
 // {
-//     Json open_orders = Json::create_array();
+//     JsonNew open_orders;
 
 //     for (auto& [_, order_info] : m_current_open_orders)
 //     {

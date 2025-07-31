@@ -9,23 +9,23 @@
 
 // void ExcelReport::export_24h_price_ticker(User* user)
 // {
-//     Json price_ticker_list = BinanceUtils::instance().get_48h_price_ticker(user);
-//     Json execution_report_list = APIHandlerBinance24hProfit::get_filled_order_list_by_days_ago(user->get_active_storage_source().get(), 2);
+//     JsonNew price_ticker_list = BinanceUtils::instance().get_48h_price_ticker(user);
+//     JsonNew execution_report_list = APIHandlerBinance24hProfit::get_filled_order_list_by_days_ago(user->get_active_storage_source().get(), 2);
 
 //     generate_excel_file(price_ticker_list, execution_report_list);
 // }
 
 // void ExcelReport::export_price_ticker_by_date(User* user, long from, long to)
 // {
-//     Json price_ticker_list = BinanceUtils::instance().get_price_ticker_by_date(user, from, to);
-//     Json execution_report_list = APIHandlerBinance24hProfit::get_filled_order_list_by_day(user->get_active_storage_source().get(), from, to);
+//     JsonNew price_ticker_list = BinanceUtils::instance().get_price_ticker_by_date(user, from, to);
+//     JsonNew execution_report_list = APIHandlerBinance24hProfit::get_filled_order_list_by_day(user->get_active_storage_source().get(), from, to);
 
 //     generate_excel_file(price_ticker_list, execution_report_list);
 // }
 
-// void ExcelReport::generate_excel_file(Json& price_ticker_list, Json& execution_report_list)
+// void ExcelReport::generate_excel_file(JsonNew& price_ticker_list, JsonNew& execution_report_list)
 // {
-//     execution_report_list.sort([](Json& a, Json& b){
+//     execution_report_list.sort([](JsonNew& a, JsonNew& b){
 //         return (long)a["transactTime"] > (long)b["transactTime"];
 //     });
 
@@ -94,12 +94,12 @@
 //                 &status,
 //                 &orderId,
 //                 &line_counter
-//             ] (Json& report)
+//             ] (JsonNew& report)
 //             {
 //                 orderId = std::to_string((long)report["orderId"]);
 //                 if (price_ticker_list.has_field(orderId))
 //                 {
-//                     Json json = price_ticker_list[orderId];
+//                     JsonNew json = price_ticker_list[orderId];
 
 //                     json["user_id"].set_is_string_format(false);
 //                     json["symbol"].set_is_string_format(false);

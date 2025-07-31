@@ -61,10 +61,10 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             std::string lower_case_symbol = instrument->exchange_symbol;
             STRING_LOWER_CASE(lower_case_symbol);
 
-            Json params;
+            JsonNew params;
             params[0] = lower_case_symbol + "@depth5@500ms";
 
-            Json subcribe;
+            JsonNew subcribe;
             subcribe["method"] = "SUBSCRIBE";
             subcribe["params"] = params;
             subcribe["id"] = stream_id;
@@ -94,7 +94,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
         {
             // MeasureTime t("Handle price update PERPETUAL", MeasureUnit::MICROSECOND);
 
-            Json depth = Json();
+            JsonNew depth = JsonNew();
             if (this->standardize_data(std::move(buffer), depth))
             {
                 // spdlog::debug("Stream depth: {}", depth);
@@ -108,7 +108,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
                 // // Save this none json data for checking error
                 // MongoDB::instance()
                 //     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                //     .insert_one(Json::parse(buffer));
+                //     .insert_one(JsonNew::parse(buffer));
             }
 
             co_return;
@@ -145,13 +145,13 @@ void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, con
     m_port = port;
 }
 
-void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
+void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, JsonNew& payload)> call_back)
 {
     m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
 }
 
-bool BinanceMarketDataPerpetual::standardize_data(std::string data, Json& depth)
+bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& depth)
 {
     MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
     JsonNew order_book;

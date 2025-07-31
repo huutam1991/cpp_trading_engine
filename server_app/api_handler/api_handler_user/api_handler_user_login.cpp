@@ -14,8 +14,8 @@ APIHandlerUserLogin::APIHandlerUserLogin(HttpRequest* request) : APIHandler(requ
 
 Task<HttpResponse> APIHandlerUserLogin::child_handle()
 {
-    Json response;
-    Json custom_header = JsonNull();
+    JsonNew response;
+    JsonNew custom_header = nullptr;
     std::string username = m_request->get_body_param_string("username");
     std::string password = m_request->get_body_param_string("password");
 
@@ -32,11 +32,11 @@ Task<HttpResponse> APIHandlerUserLogin::child_handle()
     }
     std::string hashed_password = ss.str();
 
-    Json user_account = MongoDB::instance()
+    JsonNew user_account = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "user")
         .find_one("username", username);
 
-    if (user_account.is_null() == true || (user_account["username"] != username || user_account["password"] != hashed_password))
+    if (user_account == nullptr || (user_account["username"] != username || user_account["password"] != hashed_password))
     {
         response["data"] = "";
         response["msg"] = "Wrong username or password";
@@ -69,7 +69,7 @@ Task<HttpResponse> APIHandlerUserLogin::child_handle()
 
     // Add token to header's Cookie
     HttpResponse res(OK_200, response);
-    if (custom_header.is_null() == false)
+    if (custom_header != nullptr)
     {
         res.add_custom_header(custom_header);
     }

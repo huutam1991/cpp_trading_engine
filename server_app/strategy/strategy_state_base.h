@@ -16,18 +16,18 @@ struct StrategyStateData
 {
     StrategyState state = StrategyState::STOP;
 
-    Json to_json()
+    JsonNew to_json()
     {
         return {
             {"state", enum_reflect::enum_name(state)}
         };
     }
 
-    static StrategyStateData from_json(Json& data)
+    static StrategyStateData from_json(JsonNew& data)
     {
         StrategyStateData res;
 
-        res.state = data.has_field("state") ? 
+        res.state = data.has_field("state") ?
             enum_reflect::enum_value<StrategyState>((std::string)data["state"]) : StrategyState::STOP;
 
         return res;

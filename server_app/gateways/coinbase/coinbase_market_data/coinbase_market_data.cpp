@@ -45,10 +45,10 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             std::string lower_case_symbol = instrument->exchange_symbol;
             STRING_LOWER_CASE(lower_case_symbol);
 
-            Json params;
+            JsonNew params;
             params[0] = lower_case_symbol + "@depth5@1000ms";
 
-            Json subcribe;
+            JsonNew subcribe;
             subcribe["method"] = "SUBSCRIBE";
             subcribe["params"] = params;
             subcribe["id"] = stream_id;
@@ -60,7 +60,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
         // on_message
         [this, instrument](std::string buffer) -> TaskVoid
         {
-            Json depth = Json();
+            JsonNew depth = JsonNew();
             if (this->standardize_data(buffer, depth))
             {
                 if (m_on_callback != nullptr)
@@ -73,7 +73,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
                 // Save this none json data for checking error
                 MongoDB::instance()
                     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                    .insert_one(Json::parse(buffer));
+                    .insert_one(JsonNew::parse(buffer));
             }
 
             co_return;
@@ -108,15 +108,15 @@ void CoinbaseMarketData::update_url_and_port(const std::string& url, const std::
     m_port = port;
 }
 
-void CoinbaseMarketData::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
+void CoinbaseMarketData::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, JsonNew& payload)> call_back)
 {
     m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
 }
 
-bool CoinbaseMarketData::standardize_data(const std::string& data, Json& depth)
+bool CoinbaseMarketData::standardize_data(const std::string& data, JsonNew& depth)
 {
-    Json order_book = Json::parse(data);
+    JsonNew order_book = JsonNew::parse(data);
 
     if (order_book.has_field("asks") && order_book.has_field("bids"))
     {
@@ -126,11 +126,11 @@ bool CoinbaseMarketData::standardize_data(const std::string& data, Json& depth)
         depth["e"] = "depthUpdate";
 
         // update asks
-        Json A = Json::create_array();
-        Json asks = order_book["asks"];
-        asks.for_each([&A](Json& data)
+        JsonNew A;
+        JsonNew asks = order_book["asks"];
+        asks.for_each([&A](JsonNew& data)
         {
-            Json j = Json::create_array();
+            JsonNew j;
             j.push_back(std::stold((std::string&&)data[0]));
             j.push_back(std::stold((std::string&&)data[1]));
             A.push_back(j);
@@ -138,11 +138,11 @@ bool CoinbaseMarketData::standardize_data(const std::string& data, Json& depth)
         depth["asks"] = A;
 
         // update bids
-        Json B = Json::create_array();
-        Json bids = order_book["bids"];
-        bids.for_each([&B](Json& data)
+        JsonNew B;
+        JsonNew bids = order_book["bids"];
+        bids.for_each([&B](JsonNew& data)
         {
-            Json j = Json::create_array();
+            JsonNew j;
             j.push_back(std::stold((std::string&&)data[0]));
             j.push_back(std::stold((std::string&&)data[1]));
             B.push_back(j);

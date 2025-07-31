@@ -186,9 +186,9 @@ TaskVoid StrategyMeanReversionStateRun::run(StrategyMeanReversionData data)
     co_return;
 }
 
-Json StrategyMeanReversionStateRun::get_open_orders()
+JsonNew StrategyMeanReversionStateRun::get_open_orders()
 {
-    Json open_orders = Json::create_array();
+    JsonNew open_orders;
 
     for (auto& [_, order_info] : m_current_open_orders)
     {

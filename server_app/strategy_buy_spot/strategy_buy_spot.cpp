@@ -45,7 +45,7 @@ void StrategyBuySpot::on_config_change(StrategyBuySpotConfig new_config)
     m_gateway->subscribe_instruments({instrument});
 }
 
-Json StrategyBuySpot::get_info(Json& params)
+JsonNew StrategyBuySpot::get_info(JsonNew& params)
 {
     if ((std::string)params["type"] == "orders_chain")
     {
@@ -59,12 +59,12 @@ Json StrategyBuySpot::get_info(Json& params)
     return {};
 }
 
-Json StrategyBuySpot::get_profit()
+JsonNew StrategyBuySpot::get_profit()
 {
     double total_profit = 0.0;
     MongoDB::instance().set_db_and_collection(m_strategy_name, "buy_points").find_many().for_each
     (
-        [&total_profit](Json& buy_point)
+        [&total_profit](JsonNew& buy_point)
         {
             double profit = buy_point["profit"];
             total_profit += profit;

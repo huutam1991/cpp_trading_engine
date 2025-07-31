@@ -9,8 +9,9 @@ APIHandlerStrategyCurrentInfo::APIHandlerStrategyCurrentInfo(HttpRequest* reques
 
 Task<HttpResponse> APIHandlerStrategyCurrentInfo::child_handle()
 {
-    Json response;
-    Json params = m_request->get_body_json();
+    JsonNew response;
+    JsonNew data = m_request->get_body_json();
+    JsonNew params = JsonNew::parse(data.get_string_value());
     std::string strategy_name = m_request->get_query_param("strategy_name");
 
     // Response

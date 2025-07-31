@@ -21,7 +21,7 @@ public:
     void subscribe_data_update();
 
     // For API requests
-    Json get_config_by_strategy(const std::string& strategy_name);
-    Json update_config_by_strategy(const std::string& strategy_name, Json& data);
-    Json get_info(const std::string& strategy_name, Json& params);
+    JsonNew get_config_by_strategy(const std::string& strategy_name);
+    JsonNew update_config_by_strategy(const std::string& strategy_name, JsonNew& data);
+    JsonNew get_info(const std::string& strategy_name, JsonNew& params);
 };

@@ -9,10 +9,10 @@ class StrategyMarketMaker : public StrategyBase<StrategyMarketMakerConfig, Event
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
     virtual void on_config_change(StrategyMarketMakerConfig new_config) override;
-    
+
 public:
-    virtual Json get_info(Json& params) override;
+    virtual JsonNew get_info(JsonNew& params) override;
 
 private:
-    Json get_orders_chain();
+    JsonNew get_orders_chain();
 };

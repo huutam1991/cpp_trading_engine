@@ -9,13 +9,13 @@ APIHandlerAddAccount::APIHandlerAddAccount(HttpRequest* request) : APIHandler(re
 
 Task<HttpResponse> APIHandlerAddAccount::child_handle()
 {
-    Json response;
-    Json account = m_request->get_body_json();
+    JsonNew response;
+    JsonNew account = m_request->get_body_json();
 
     std::string key = account["key"];
-    Json find_account = Account::load_account_by_key(key);
+    JsonNew find_account = Account::load_account_by_key(key);
 
-    if (find_account.is_null() == false)
+    if (find_account != nullptr)
     {
         response["data"] = "";
         response["msg"] = "account [" + key + "] already exist";

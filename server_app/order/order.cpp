@@ -13,7 +13,7 @@ Order::Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i
     quantity{quantity_i}
 {}
 
-Json Order::to_json()
+JsonNew Order::to_json()
 {
     return {
         {"order_id", order_id},
@@ -34,14 +34,14 @@ Json Order::to_json()
 }
 
 
-Order Order::from_json(Json& data)
+Order Order::from_json(JsonNew& data)
 {
-    // Get instrument from Json
-    Json instrument_json = data["instrument"];
+    // Get instrument from JsonNew
+    JsonNew instrument_json = data["instrument"];
     ExchangeId exchange_id = enum_reflect::enum_value<ExchangeId>(std::string(instrument_json["exchange_id"]));
     std::string symbol = instrument_json["symbol"];
     InstrumentType instrument_type = enum_reflect::enum_value<InstrumentType>(std::string(data["instrument_type"]));
-    
+
     // Get instrument pointer
     const Instrument* instrument_ptr = Instrument::get_instrument_by_symbol(exchange_id, instrument_type, symbol);
 

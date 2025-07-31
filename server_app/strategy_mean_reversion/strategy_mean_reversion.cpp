@@ -3,7 +3,7 @@
 #include <strategy_mean_reversion/strategy_mean_reversion.h>
 #include <gateways/gateway_manager.h>
 #include <mongo_db/mongo_db.h>
-#include <json/json.h>
+#include <c_json/json.h>
 #include <time/timer.h>
 #include <app_constants.h>
 #include <app_utils/app_utils.h>
@@ -197,15 +197,15 @@ Future<bool> StrategyMeanReversion::wait_new_data_update()
     });
 }
 
-Json StrategyMeanReversion::get_orders_chain()
+JsonNew StrategyMeanReversion::get_orders_chain()
 {
-    Json info = Json::create_array();
+    JsonNew info;
 
-    Json orders = MongoDB::instance()
+    JsonNew orders = MongoDB::instance()
         .set_db_and_collection("order", "order_list")
         .find_many();
 
-    orders.for_each([&info](Json& order)
+    orders.for_each([&info](JsonNew& order)
     {
         if (order["status"] == "FILLED")
         {
@@ -214,7 +214,7 @@ Json StrategyMeanReversion::get_orders_chain()
         }
     });
 
-    info.sort([](Json& a, Json& b)
+    info.sort([](JsonNew& a, JsonNew& b)
     {
         return (size_t)a["order_id"] < (size_t)b["order_id"];
     });
@@ -222,7 +222,7 @@ Json StrategyMeanReversion::get_orders_chain()
     return info;
 }
 
-Json StrategyMeanReversion::get_open_orders()
+JsonNew StrategyMeanReversion::get_open_orders()
 {
     std::unordered_map<std::string, StrategyMeanReversionState*>* strategy_states = get_strategy_states();
     std::string status = StrategyMeanReversionState::get_state_status()["status"];
@@ -233,5 +233,5 @@ Json StrategyMeanReversion::get_open_orders()
         return (*strategy_states)[status]->get_open_orders();
     }
 
-    return Json::create_array();
+    return {};
 }

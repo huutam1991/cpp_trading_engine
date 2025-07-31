@@ -69,7 +69,7 @@ void BinanceQuoterSpot::init_websocket()
         [this](std::string buffer) -> TaskVoid
         {
             // MeasureTime a("Handle order data", MeasureUnit::MICROSECOND);
-            Json json = Json::parse(buffer);
+            JsonNew json = JsonNew::parse(buffer);
 
             if (json["e"] == "executionReport")
             {
@@ -180,13 +180,13 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     client->add_header("X-MBX-APIKEY", m_api_key);
 
     std::string str = co_await client->post("/api/v3/userDataStream", "");
-    Json data = Json::parse(str);
+    JsonNew data = JsonNew::parse(str);
 
     if (data.has_field("code") && (double)data["code"] < 0)
     {
         spdlog::error("BinanceQuoterSpot - Error fetching listen key: {}", data);
     }
-    else 
+    else
     {
         spdlog::debug("BinanceQuoterSpot - listenKey: {}", data);
     }
@@ -200,7 +200,7 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
     client->add_header("X-MBX-APIKEY", m_api_key);
 
     std::string str = co_await client->put("/api/v3/userDataStream?listenKey=" + m_listen_key, "");
-    Json data = Json::parse(str);
+    JsonNew data = JsonNew::parse(str);
 
     spdlog::debug("BinanceQuoterSpot, re-active m_listen_key = {}", m_listen_key);
 
@@ -208,7 +208,7 @@ TaskVoid BinanceQuoterSpot::keep_listen_key()
     m_websocket->send_ping();
 }
 
-Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)
+Task<JsonNew> BinanceQuoterSpot::get_open_orders(std::string symbol)
 {
     co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);
 }
@@ -220,7 +220,7 @@ TaskVoid BinanceQuoterSpot::cancel_all(std::string symbol)
     co_return;
 }
 
-Task<Json> BinanceQuoterSpot::cancel(Order order)
+Task<JsonNew> BinanceQuoterSpot::cancel(Order order)
 {
     // DELETE /api/v3/order?symbol=BTCUSDT&origClientOrderId=my_custom_id_123&timestamp=1743540000000&signature=abcdef
     std::string query_str;
@@ -233,7 +233,7 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
     co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str));
 }
 
-Task<Json> BinanceQuoterSpot::place(Order order)
+Task<JsonNew> BinanceQuoterSpot::place(Order order)
 {
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;

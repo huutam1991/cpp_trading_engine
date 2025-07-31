@@ -20,7 +20,7 @@ public:
     virtual void end() override;
     virtual TaskVoid update(StrategyUpdateData data) override;
 
-    // virtual Json get_open_orders() override;
+    // virtual JsonNew get_open_orders() override;
     void on_config_change();
 
 private:

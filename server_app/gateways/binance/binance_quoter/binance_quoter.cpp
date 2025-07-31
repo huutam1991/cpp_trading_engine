@@ -9,7 +9,7 @@
 
 BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 {
-    Json account = Account::load_account_by_key(key);
+    JsonNew account = Account::load_account_by_key(key);
     m_api_key = std::string(account["api_key"]);
     m_api_secret = std::string(account["api_secret"]);
     m_is_testnet = (bool)account["is_testnet"];
@@ -19,7 +19,7 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
     spdlog::debug("Binance account - m_is_testnet: {}", m_is_testnet);
 }
 
-Task<Json> BinanceQuoter::get_balances()
+Task<JsonNew> BinanceQuoter::get_balances()
 {
     co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "");
 }
@@ -56,20 +56,22 @@ std::string BinanceQuoter::getSignature(std::string& query)
 	return encryptWithHMAC(m_api_secret.c_str(), query.c_str());
 }
 
-void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& api_path, const std::string& query, RequestMethod method)
+void BinanceQuoter::check_save_resonse_error(JsonNew& response, const std::string& api_path, const std::string& query, RequestMethod method)
 {
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
     {
-        Json error;
+        JsonNew error;
         error["url"] = get_url();
         error["endpoint"] = api_path;
         error["query"] = query;
         error["method"] = request_method_map_string.at((size_t)method);
         error["response"] = response;
 
+        JsonNew error_new = JsonNew::parse(error.get_string_value());
+
         MongoDB::instance()
             .set_db_and_collection(STRATEGY_DB_NAME, "error")
-            .insert_one(error);
+            .insert_one(error_new);
     }
     else
     {
@@ -81,7 +83,7 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
     }
 }
 
-Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str)
+Task<JsonNew> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str)
 {
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();
@@ -109,8 +111,8 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     {
         str_response = co_await client->put(api_path + "?" + new_query_std, "");
     }
-    
-    Json response = Json::parse(str_response);
+
+    JsonNew response = JsonNew::parse(str_response);
 
     // Check to save error
     check_save_resonse_error(response, api_path, new_query_std, method);

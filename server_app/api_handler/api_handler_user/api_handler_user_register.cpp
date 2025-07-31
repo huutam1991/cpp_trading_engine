@@ -8,7 +8,7 @@ APIHandlerUserRegister::APIHandlerUserRegister(HttpRequest* request) : APIHandle
 
 Task<HttpResponse> APIHandlerUserRegister::child_handle()
 {
-    Json response;
+    JsonNew response;
     std::string username = m_request->get_body_param_string("username");
     std::string password = m_request->get_body_param_string("password");
 

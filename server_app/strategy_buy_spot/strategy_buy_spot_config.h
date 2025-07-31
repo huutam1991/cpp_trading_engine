@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <json/json.h>
+#include <c_json/json.h>
 
 struct StrategyBuySpotConfig
 {
@@ -15,7 +15,7 @@ struct StrategyBuySpotConfig
     size_t max_open_orders = 3;
     bool is_running;
 
-    Json to_json()
+    JsonNew to_json()
     {
         return {
             {"symbol", symbol},
@@ -29,7 +29,7 @@ struct StrategyBuySpotConfig
         };
     }
 
-    static StrategyBuySpotConfig from_json(Json& data)
+    static StrategyBuySpotConfig from_json(JsonNew& data)
     {
         StrategyBuySpotConfig res;
 
@@ -37,8 +37,8 @@ struct StrategyBuySpotConfig
         if (data.has_field("symbol"))
         {
             res.symbol = (std::string)data["symbol"];
-            res.instrument_type = res.symbol.find("-PERPETUAL") != std::string::npos ? 
-                InstrumentType::PERPETUAL : 
+            res.instrument_type = res.symbol.find("-PERPETUAL") != std::string::npos ?
+                InstrumentType::PERPETUAL :
                 InstrumentType::SPOT;
             res.buy_volumn = (double)data["buy_volumn"];
             res.move_price = (double)data["move_price"];

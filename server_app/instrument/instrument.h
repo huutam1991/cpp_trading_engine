@@ -3,7 +3,7 @@
 #include <string>
 #include <mutex>
 
-#include <json/json.h>
+#include <c_json/json.h>
 #include <symbol/symbol.h>
 #include <utils/spin_lock.h>
 #include <enum_reflect/enum_reflect.h>
@@ -34,15 +34,15 @@ public:
     size_t lot_size;
     double tick_size;
 
-    Json to_json() const;
-    static Instrument from_json(Json& data);
+    JsonNew to_json() const;
+    static Instrument from_json(JsonNew& data);
 
     // Helper method
     std::string round_string_number(const std::string& str_number, size_t precision) const;
     double get_round_up_quantity(double quantity) const;
 
     using CacheInstruments = std::unordered_map<std::string, SavableObject<Instrument>>;
-    
+
     static CacheInstruments& load_cache_instruments(ExchangeId exchange_id);
     static void add_instrument_to_cache(ExchangeId exchange_id, const Instrument& instrument);
     static const Instrument* get_instrument_by_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol);

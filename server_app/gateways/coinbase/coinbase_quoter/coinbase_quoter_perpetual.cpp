@@ -30,7 +30,7 @@ std::string& CoinbaseQuoterPerpetual::get_port()
 
 void CoinbaseQuoterPerpetual::init_websocket()
 {
-    
+
 }
 
 std::string CoinbaseQuoterPerpetual::get_listen_key()
@@ -38,13 +38,13 @@ std::string CoinbaseQuoterPerpetual::get_listen_key()
     return {};
 }
 
-void CoinbaseQuoterPerpetual::update_order_result(const Json& order_result)
+void CoinbaseQuoterPerpetual::update_order_result(const JsonNew& order_result)
 {
     std::unique_lock lock(m_mutex);
     m_order_result = order_result;
 }
 
-Json CoinbaseQuoterPerpetual::get_trade_result_from_response(Json& response)
+JsonNew CoinbaseQuoterPerpetual::get_trade_result_from_response(JsonNew& response)
 {
     // Return empty data if has error
     if ((long)response["code"] < 0)
@@ -76,7 +76,7 @@ Json CoinbaseQuoterPerpetual::get_trade_result_from_response(Json& response)
     };
 }
 
-Task<Json> CoinbaseQuoterPerpetual::get_open_orders(std::string symbol)
+Task<JsonNew> CoinbaseQuoterPerpetual::get_open_orders(std::string symbol)
 {
     co_return co_await send_coinbase_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol);
 }
@@ -87,13 +87,13 @@ TaskVoid CoinbaseQuoterPerpetual::cancel_all(std::string symbol)
     co_return;
 }
 
-Task<Json> CoinbaseQuoterPerpetual::cancel(Order order)
+Task<JsonNew> CoinbaseQuoterPerpetual::cancel(Order order)
 {
     // Need to implement later (current code is wrong)
     co_return co_await send_coinbase_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "");
 }
 
-Task<Json> CoinbaseQuoterPerpetual::place(Order order)
+Task<JsonNew> CoinbaseQuoterPerpetual::place(Order order)
 {
     // Update order result to "placing", mean need to wait until it get filled
     update_order_result({

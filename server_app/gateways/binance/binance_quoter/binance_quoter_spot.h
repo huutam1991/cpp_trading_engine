@@ -29,9 +29,9 @@ public:
     BinanceQuoterSpot(const std::string& key);
     ~BinanceQuoterSpot();
 
-    virtual Task<Json> get_open_orders(std::string symbol) override;
+    virtual Task<JsonNew> get_open_orders(std::string symbol) override;
     virtual TaskVoid cancel_all(std::string symbol) override;
-    virtual Task<Json> cancel(Order order) override;
-    virtual Task<Json> place(Order order) override;
+    virtual Task<JsonNew> cancel(Order order) override;
+    virtual Task<JsonNew> place(Order order) override;
 
 };

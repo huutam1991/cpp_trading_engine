@@ -115,6 +115,20 @@ void JsonNew::remove_field(const std::string& field)
     }
 }
 
+bool JsonNew::is_array() const
+{
+    return m_value == nullptr ?
+        false :
+        m_value->is_json_value() == false && ((JsonObjectNew*)m_value)->is_array();
+}
+
+bool JsonNew::is_object() const
+{
+    return m_value == nullptr ?
+        false :
+        m_value->is_json_value() == false && ((JsonObjectNew*)m_value)->is_array() == false;
+}
+
 void JsonNew::set_size(size_t size)
 {
     check_create_json_object();

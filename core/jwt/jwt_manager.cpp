@@ -1,6 +1,6 @@
 #include <jwt/jwt_manager.h>
 
-std::string JWTManager::generate_token(const Json& payload)
+std::string JWTManager::generate_token(JsonNew payload)
 {
     // Set issuer + type
     auto builder = jwt::create()
@@ -8,16 +8,13 @@ std::string JWTManager::generate_token(const Json& payload)
         .set_type("JWS");
 
     // Add payload
-    payload.for_each_with_key([&builder](const std::string& key, Json& value)
+    payload.for_each_with_key([&builder](const std::string& key, JsonNew& value)
     {
-        if (value.is_type<std::string>() || value.is_type<const char*>())
+        if (value.is_string())
         {
-            builder.set_payload_claim(key, jwt::claim((std::string&&)value));
+            value.set_is_string_format(false);
         }
-        else
-        {
-            builder.set_payload_claim(key, jwt::claim(value.get_string_value()));
-        }
+        builder.set_payload_claim(key, jwt::claim(value.get_string_value()));
     });
 
     // Add exrired time + sign
@@ -43,9 +40,9 @@ std::string JWTManager::verify_token(const std::string& token)
     return VALID_TOKEN;
 }
 
-Json JWTManager::get_payload(const std::string& token)
+JsonNew JWTManager::get_payload(const std::string& token)
 {
-    Json payload;
+    JsonNew payload;
     auto decoded = jwt::decode(token);
     std::string json_str = "{";
 
@@ -58,7 +55,7 @@ Json JWTManager::get_payload(const std::string& token)
     }
     json_str += "}";
 
-    return Json::parse(json_str);
+    return JsonNew::parse(json_str);
 }
 
 void JWTManager::update_verifier()

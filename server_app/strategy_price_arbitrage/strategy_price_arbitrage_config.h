@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include <json/json.h>
+#include <c_json/json.h>
 
 struct StrategyPriceArbitrageConfig
 {
-    std::string symbol_1 = "BTC-USDT"; 
-    std::string symbol_2 = "ETH-BTC"; 
-    std::string symbol_3 = "ETH-USDT"; 
+    std::string symbol_1 = "BTC-USDT";
+    std::string symbol_2 = "ETH-BTC";
+    std::string symbol_3 = "ETH-USDT";
     double buy_volumn = 50.0;
     double buy_at_lower_price = 10.0;
     double price_delta = 5.0;
@@ -15,7 +15,7 @@ struct StrategyPriceArbitrageConfig
     double too_high_price_delta = 15.0;
     bool is_running = false;
 
-    Json to_json()
+    JsonNew to_json()
     {
         return {
             {"symbol_1", symbol_1},
@@ -30,7 +30,7 @@ struct StrategyPriceArbitrageConfig
         };
     }
 
-    static StrategyPriceArbitrageConfig from_json(Json& data)
+    static StrategyPriceArbitrageConfig from_json(JsonNew& data)
     {
         StrategyPriceArbitrageConfig res;
 

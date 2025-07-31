@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <json/json.h>
+#include <c_json/json.h>
 #include <enum_reflect/enum_reflect.h>
 #include <order/order.h>
 
@@ -24,7 +24,7 @@ struct BuyPoint
     OrderId current_order_id = 0;
     Status status = Status::AVAILABLE;
 
-    Json to_json()
+    JsonNew to_json()
     {
         return {
             {"price", price},
@@ -37,7 +37,7 @@ struct BuyPoint
         };
     }
 
-    static BuyPoint from_json(Json& data)
+    static BuyPoint from_json(JsonNew& data)
     {
         BuyPoint res;
 

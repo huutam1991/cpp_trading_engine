@@ -18,7 +18,7 @@ protected:
     StrategyState m_previous_state;
 
 public:
-    StrategyBase() : 
+    StrategyBase() :
         StrategyAbstract(EventBaseManager::get_event_base_by_id(eventBaseID)),
         m_strategy_name(enum_reflect::enum_name<EventBaseID>((EventBaseID)eventBaseID)),
         m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name, "config")},
@@ -35,7 +35,7 @@ public:
 
         co_return;
     }
-    
+
     TaskVoid update(StrategyUpdateData data) override final
     {
         StrategyState current_state = m_current_state.object.state;
@@ -83,21 +83,21 @@ public:
         return m_strategy_name;
     }
 
-    Json get_config()
+    JsonNew get_config()
     {
         return m_config.to_json();
     }
 
-    void update_config(Json& data)
+    void update_config(JsonNew& data)
     {
         StrategyConfig new_config = StrategyConfig::from_json(data);
         apply_config(std::move(new_config)).start_running_on(event_base);
     }
 
-    virtual Json get_info(Json& params) 
-    { 
-        return Json(); 
-    } 
+    virtual JsonNew get_info(JsonNew& params)
+    {
+        return JsonNew();
+    }
 
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() { return {}; }

@@ -43,7 +43,7 @@ void StrategyPriceArbitrage::on_config_change(StrategyPriceArbitrageConfig new_c
     }
 }
 
-Json StrategyPriceArbitrage::get_info(Json& params)
+JsonNew StrategyPriceArbitrage::get_info(JsonNew& params)
 {
     if ((std::string)params["type"] == "orders_chain")
     {
@@ -53,7 +53,7 @@ Json StrategyPriceArbitrage::get_info(Json& params)
     return {};
 }
 
-Json StrategyPriceArbitrage::get_orders_chain()
+JsonNew StrategyPriceArbitrage::get_orders_chain()
 {
     // std::string symbol_1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1)->exchange_symbol;
     // std::string symbol_2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2)->exchange_symbol;
@@ -62,13 +62,13 @@ Json StrategyPriceArbitrage::get_orders_chain()
     std::string symbol_2 = m_config.object.symbol_2;
     std::string symbol_3 = m_config.object.symbol_3;
 
-    Json orders = Json::create_array();
+    JsonNew orders;
 
-    Json filled_orders = MongoDB::instance()
+    JsonNew filled_orders = MongoDB::instance()
         .set_db_and_collection("order", "order_list")
         .find_many();
 
-    filled_orders.for_each([&orders](Json& order)
+    filled_orders.for_each([&orders](JsonNew& order)
     {
         if (order["status"] == "FILLED")
         {
@@ -77,24 +77,24 @@ Json StrategyPriceArbitrage::get_orders_chain()
         }
     });
 
-    orders.sort([](Json& a, Json& b)
+    orders.sort([](JsonNew& a, JsonNew& b)
     {
         return (OrderId)a["order_id"] < (OrderId)b["order_id"];
     });
 
-    Json res = Json::create_array();
+    JsonNew res;
     size_t i = 0;
     while (i < orders.size())
-    {   
+    {
         // Find triangle orders
-        if ((std::string)orders[i]["symbol"] == symbol_1 && 
-            (std::string)orders[i + 1]["symbol"] == symbol_2 && 
+        if ((std::string)orders[i]["symbol"] == symbol_1 &&
+            (std::string)orders[i + 1]["symbol"] == symbol_2 &&
             (std::string)orders[i + 2]["symbol"] == symbol_3)
         {
             double input = (double)orders[i]["volumn_in_quote_currency"];
             double output = (double)orders[i+2]["output_quantity"];
-            
-            Json triangle;
+
+            JsonNew triangle;
             triangle["input"] = input;
             triangle["output"] = output;
             triangle["profit"] = output - input;
@@ -113,7 +113,7 @@ Json StrategyPriceArbitrage::get_orders_chain()
     return res;
 }
 
-// Json StrategyPriceArbitrage::get_open_orders()
+// JsonNew StrategyPriceArbitrage::get_open_orders()
 // {
 //     std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
 //     PAState state = m_current_state.object.state;
@@ -124,5 +124,5 @@ Json StrategyPriceArbitrage::get_orders_chain()
 //         return (*strategy_states)[state]->get_open_orders();
 //     }
 
-//     return Json::create_array();
+//     return JsonNew::create_array();
 // }

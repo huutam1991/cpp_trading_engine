@@ -1,6 +1,8 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <strategy/strategy_manager.h>
 
+#include <c_json/json.h>
+
 APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
@@ -9,13 +11,14 @@ APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHa
 
 Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
 {
-    Json response;
+    JsonNew response;
     std::string strategy_name = m_request->get_query_param("strategy_name");
 
     // GET
     if (m_request->get_request_method() == RequestMethod::GET)
     {
-        Json config = StrategyManager::instance().get_config_by_strategy(strategy_name);
+        JsonNew data = StrategyManager::instance().get_config_by_strategy(strategy_name);
+        JsonNew config = JsonNew::parse(data.get_string_value());
 
         if (config.has_field("code") == false)
         {
@@ -24,7 +27,7 @@ Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
             response["status_code"] = OK_200;
             response["error"] = false;
         }
-        else 
+        else
         {
             response["data"] = {};
             response["msg"] = config;
@@ -36,8 +39,10 @@ Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
     // POST
     else
     {
-        Json config = m_request->get_body_json();
-        Json update_result = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
+        JsonNew config_data = m_request->get_body_json();
+        JsonNew config = JsonNew::parse(config_data.get_string_value());
+        JsonNew data = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
+        JsonNew update_result = JsonNew::parse(data.get_string_value());
 
         if (update_result.has_field("code") && (int)update_result["code"] < 0)
         {

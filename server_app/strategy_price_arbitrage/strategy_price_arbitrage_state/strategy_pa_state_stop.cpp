@@ -27,7 +27,7 @@ TaskVoid StrategyPriceArbitrageStateStop::update(StrategyUpdateData data)
     co_return;
 }
 
-// Json StrategyPriceArbitrageStateStop::get_open_orders()
+// JsonNew StrategyPriceArbitrageStateStop::get_open_orders()
 // {
-//     return Json::create_array();
+//     return JsonNew::create_array();
 // }

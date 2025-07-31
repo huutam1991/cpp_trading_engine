@@ -65,6 +65,10 @@ public:
         {
             m_value = ShareString(std::string(std::forward<T>(value)));
         }
+        else if constexpr (std::is_convertible_v<std::decay_t<T>, int64_t>)
+        {
+            m_value = static_cast<int64_t>(std::forward<T>(value));
+        }
         else
         {
             m_value = std::forward<T>(value);
@@ -75,6 +79,11 @@ public:
     void set_is_string_format(bool val)
     {
         m_is_string_format = val;
+    }
+
+    bool is_string() const
+    {
+        return std::holds_alternative<ShareString>(m_value);
     }
 
     bool is_null() const

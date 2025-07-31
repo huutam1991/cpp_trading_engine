@@ -25,7 +25,7 @@ void StrategyPriceArbitrageStateRun::end()
 void StrategyPriceArbitrageStateRun::on_config_change()
 {
     m_current_price = 0.0;
-    
+
     // Re-subscribe symbols
     // auto ins1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
     // auto ins2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
@@ -251,9 +251,9 @@ TaskVoid StrategyPriceArbitrageStateRun::update(StrategyUpdateData data)
     co_return;
 }
 
-// Json StrategyPriceArbitrageStateRun::get_open_orders()
+// JsonNew StrategyPriceArbitrageStateRun::get_open_orders()
 // {
-//     Json open_orders = Json::create_array();
+//     JsonNew open_orders;
 
 //     for (auto& [_, order_info] : m_current_open_orders)
 //     {

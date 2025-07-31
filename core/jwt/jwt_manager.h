@@ -2,7 +2,7 @@
 
 #include <utils/util_macros.h>
 #include <jwt/jwt_lib/jwt.h>
-#include <json/json.h>
+#include <c_json/json.h>
 
 class JWTManager
 {
@@ -19,9 +19,9 @@ private:
         .with_issuer(m_issuer);
 
 public:
-    std::string generate_token(const Json& payload);
+    std::string generate_token(JsonNew payload);
     std::string verify_token(const std::string& token);
-    Json get_payload(const std::string& token);
+    JsonNew get_payload(const std::string& token);
     void update_verifier();
 
     JWTManager& set_issuer(const std::string& issuer);
