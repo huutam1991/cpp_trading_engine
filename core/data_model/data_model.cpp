@@ -23,6 +23,8 @@ DataModel::DataModel(const std::string& db, const std::string& collection) : m_d
 {
     m_data = std::make_shared<JsonNew>();
 
+    spdlog::debug("DataModel created with *m_data: {}", *m_data);
+
     // Save empty data to DB, but this action can init [m_id] and make this DataModel a real one
     save_to_DB();
 }
