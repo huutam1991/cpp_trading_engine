@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <c_json/json.h>
-#include <c_json/json_object.h>
+#include <json/json.h>
+#include <json/json_object.h>
 
 #include <time/measure_time.h>
 
