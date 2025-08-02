@@ -85,7 +85,7 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::GET, "/check_health")
     {
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
         response["status"] = "Healthy";
 
@@ -98,7 +98,7 @@ void add_app_route()
 
         data["tam"] = 123;
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
         response["data"] = data.get_data();
         // response["data"] = 123123;
@@ -109,9 +109,9 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/test_json_parse")
     {
         std::string body = request->get_body();
-        JsonNew data = JsonNew::parse(body);
+        Json data = Json::parse(body);
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
         response["data"] = data;
 
@@ -120,7 +120,7 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::GET, "/test_new_data_model")
     {
-        JsonNew user = {
+        Json user = {
             {"name", "tam_pattern"},
             {"age", 33},
             {"role", "Trading Engine Developer"},
@@ -136,7 +136,7 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::GET, "/test_data_model")
     {
-        JsonNew user = {
+        Json user = {
             {"name", "Nguyen Huu Tam"},
             {"age", 32},
             {"role", "Fullstack Developer"},
@@ -148,7 +148,7 @@ void add_app_route()
         dm = user;
 
         dm["age"] = 23;
-        dm["company"] = JsonNew{
+        dm["company"] = Json{
             {"name", "Alpha H Trading"},
             {"domain", "Crypto trading"},
             {"Tech stack", {
@@ -161,13 +161,13 @@ void add_app_route()
         dm["company"]["Tech stack"]["Client"] = "Python, Javascript, HTML, CSS";
         dm["company"]["Tech stack"]["Web"]["CSS"] = "Boostrap";
 
-        JsonNew data = dm;
+        Json data = dm;
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
         response["id"] = dm.get_id();
         response["data"] = data;
-        response["company"] = (JsonNew)dm["company"]["Tech stack"];
+        response["company"] = (Json)dm["company"]["Tech stack"];
 
         co_return HttpResponse(OK_200, response);
     };
@@ -183,11 +183,11 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::GET, "/test_clone")
     {
-        JsonNew data;
-        JsonNew user;
+        Json data;
+        Json user;
 
         user["age"] = 23;
-        user["company"] = JsonNew{
+        user["company"] = Json{
             {"name", "Alpha H Trading"},
             {"domain", "Crypto trading"},
             {"Tech stack", {
@@ -200,13 +200,13 @@ void add_app_route()
         user["company"]["Tech stack"]["Client"] = "Python, Javascript, HTML, CSS";
         user["company"]["Tech stack"]["Web"]["CSS"] = "Boostrap";
 
-        JsonNew user_clone = user.deep_clone();
+        Json user_clone = user.deep_clone();
         user_clone["company"]["domain"]["Name"] = "Stock Trading";
 
         data["user"] = user;
         data["user_clone"] = user_clone;
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
         response["data"] = data;
 
@@ -217,9 +217,9 @@ void add_app_route()
     {
         MongoDB::instance()
             .set_db_and_collection("test1", "trade")
-            .insert_one(JsonNew::parse(request->get_body()));
+            .insert_one(Json::parse(request->get_body()));
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
 
         co_return HttpResponse(OK_200, response);
@@ -228,14 +228,14 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/update_trade")
     {
         std::string body = request->get_body();
-        JsonNew data = JsonNew::parse(body);
+        Json data = Json::parse(body);
         long trade_id = data["trade_id"];
         std::string symbol = data["symbol"];
 
         MongoDB::instance().set_db_and_collection("test1", "trade")
             .update_one("trade_id", trade_id, "symbol", symbol);
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
 
         co_return HttpResponse(OK_200, response);
@@ -244,14 +244,14 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/delete_trade")
     {
         std::string body = request->get_body();
-        JsonNew data = JsonNew::parse(body);
+        Json data = Json::parse(body);
         long trade_id = data["trade_id"];
 
         MongoDB::instance()
             .set_db_and_collection("test1", "trade")
             .delete_one("trade_id", trade_id);
 
-        JsonNew response;
+        Json response;
         response["message"] = "OK";
 
         co_return HttpResponse(OK_200, response);
@@ -259,7 +259,7 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::POST, "/test_place")
     {
-        JsonNew params = request->get_body_json();
+        Json params = request->get_body_json();
 
         std::string symbol = params["symbol"];
         std::string side = params["side"];
@@ -282,7 +282,7 @@ void add_app_route()
             .get_gateway(ExchangeId::BINANCE)
             ->place_none_wait(order);
 
-        co_return HttpResponse(OK_200, JsonNew());
+        co_return HttpResponse(OK_200, Json());
     };
 
     // Register new user

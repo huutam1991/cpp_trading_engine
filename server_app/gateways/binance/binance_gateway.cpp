@@ -8,7 +8,7 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
-    JsonNew account = Account::load_account_by_key(key);
+    Json account = Account::load_account_by_key(key);
     bool is_testnet = account["is_testnet"];
 
     // Update url + port for market data SPOT
@@ -35,29 +35,29 @@ std::vector<Instrument> BinanceGateway::fetch_instruments()
     return m_instruments;
 }
 
-Task<JsonNew> BinanceGateway::get_exchange_info()
+Task<Json> BinanceGateway::get_exchange_info()
 {
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_SPOT_URL, BINANCE_SPOT_PORT);
     std::string response = co_await client->get("/api/v3/exchangeInfo");
 
-    co_return JsonNew::parse(response);
+    co_return Json::parse(response);
 }
 
-Task<JsonNew> BinanceGateway::get_exchange_info_perpetual()
+Task<Json> BinanceGateway::get_exchange_info_perpetual()
 {
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT);
     std::string response = co_await client->get("/fapi/v1/exchangeInfo");
 
-    co_return JsonNew::parse(response);
+    co_return Json::parse(response);
 }
 
 void BinanceGateway::get_spot_symbols_info()
 {
-    JsonNew exchange_info = get_exchange_info()
+    Json exchange_info = get_exchange_info()
         .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY))
         .get();
 
-    exchange_info["symbols"].for_each([this](JsonNew& data)
+    exchange_info["symbols"].for_each([this](Json& data)
     {
         if (data["status"] != "TRADING")
         {
@@ -82,11 +82,11 @@ void BinanceGateway::get_spot_symbols_info()
 
 void BinanceGateway::get_perpetual_symbols_info()
 {
-    JsonNew exchange_info = get_exchange_info_perpetual()
+    Json exchange_info = get_exchange_info_perpetual()
         .start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY))
         .get();
 
-    exchange_info["symbols"].for_each([this](JsonNew& data)
+    exchange_info["symbols"].for_each([this](Json& data)
     {
         if (data["status"] != "TRADING")
         {
@@ -150,21 +150,21 @@ void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instru
     }
 
     // Spot
-    m_market_data_spot.subscribe_instruments(spot_instruments, [this](const Instrument* instrument, JsonNew& payload)
+    m_market_data_spot.subscribe_instruments(spot_instruments, [this](const Instrument* instrument, Json& payload)
     {
         this->on_depth_update(instrument, payload);
     });
     m_market_data_spot.start();
 
     // Perpetual
-    m_market_data_perpetual.subscribe_instruments(perpetual_instruments, [this](const Instrument* instrument, JsonNew& payload)
+    m_market_data_perpetual.subscribe_instruments(perpetual_instruments, [this](const Instrument* instrument, Json& payload)
     {
         this->on_depth_update(instrument, payload);
     });
     m_market_data_perpetual.start();
 }
 
-void BinanceGateway::on_depth_update(const Instrument* instrument, JsonNew& payload)
+void BinanceGateway::on_depth_update(const Instrument* instrument, Json& payload)
 {
     double best_bid = payload["bids"][0][0];
     double best_ask = payload["asks"][0][0];
@@ -177,12 +177,12 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
     std::unordered_set<OrderId> res;
 
     // Currently, only implement for SPOT
-    JsonNew open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
+    Json open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
 
     // Add order_id to [res]
     if (open_orders.is_array() == true)
     {
-        open_orders.for_each([&res](JsonNew& order)
+        open_orders.for_each([&res](Json& order)
         {
             if (order.has_field("clientOrderId"))
             {
@@ -208,7 +208,7 @@ TaskVoid BinanceGateway::cancel_all_on_exchange(std::string symbol)
     co_return;
 }
 
-Task<JsonNew> BinanceGateway::cancel_on_exchange(Order order)
+Task<Json> BinanceGateway::cancel_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
     BinanceQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
@@ -218,14 +218,14 @@ Task<JsonNew> BinanceGateway::cancel_on_exchange(Order order)
     co_return co_await quoter->cancel(std::move(order));
 }
 
-Task<JsonNew> BinanceGateway::place_on_exchange(Order order)
+Task<Json> BinanceGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
     BinanceQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
         (BinanceQuoter*)&m_quoter_spot :
         (BinanceQuoter*)&m_quoter_perpetual;
 
-    JsonNew response = co_await quoter->place(order);
+    Json response = co_await quoter->place(order);
 
     // Check if order is rejected
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
@@ -239,11 +239,11 @@ Task<JsonNew> BinanceGateway::place_on_exchange(Order order)
     co_return response;
 }
 
-Task<JsonNew> BinanceGateway::get_balances()
+Task<Json> BinanceGateway::get_balances()
 {
-    JsonNew balances = co_await m_quoter_spot.get_balances();
+    Json balances = co_await m_quoter_spot.get_balances();
 
-    balances["balances"].for_each([](JsonNew& balance)
+    balances["balances"].for_each([](Json& balance)
     {
         balance["available"] = std::stod((std::string)balance["free"]) + std::stod((std::string)balance["locked"]);
 

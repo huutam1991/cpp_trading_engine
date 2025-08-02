@@ -13,9 +13,9 @@ protected:
     virtual void on_config_change(StrategyPriceArbitrageConfig new_config) override;
 
 public:
-    virtual JsonNew get_info(JsonNew& params) override;
+    virtual Json get_info(Json& params) override;
 
 private:
     std::shared_ptr<Gateway> m_gateway;
-    JsonNew get_orders_chain();
+    Json get_orders_chain();
 };

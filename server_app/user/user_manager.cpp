@@ -6,14 +6,14 @@
 
 void UserManager::init()
 {
-    JsonNew user_activate_source_list = MongoDB::instance()
+    Json user_activate_source_list = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "user")
         .find_many({});
 }
 
 bool UserManager::register_new_user(const std::string& username, const std::string& password)
 {
-    JsonNew user_account = MongoDB::instance()
+    Json user_account = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "user")
         .find_one("username", username);
 

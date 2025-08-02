@@ -1,6 +1,6 @@
 #include <jwt/jwt_manager.h>
 
-std::string JWTManager::generate_token(JsonNew payload)
+std::string JWTManager::generate_token(Json payload)
 {
     // Set issuer + type
     auto builder = jwt::create()
@@ -8,7 +8,7 @@ std::string JWTManager::generate_token(JsonNew payload)
         .set_type("JWS");
 
     // Add payload
-    payload.for_each_with_key([&builder](const std::string& key, JsonNew& value)
+    payload.for_each_with_key([&builder](const std::string& key, Json& value)
     {
         if (value.is_string())
         {
@@ -40,9 +40,9 @@ std::string JWTManager::verify_token(const std::string& token)
     return VALID_TOKEN;
 }
 
-JsonNew JWTManager::get_payload(const std::string& token)
+Json JWTManager::get_payload(const std::string& token)
 {
-    JsonNew payload;
+    Json payload;
     auto decoded = jwt::decode(token);
     std::string json_str = "{";
 
@@ -55,7 +55,7 @@ JsonNew JWTManager::get_payload(const std::string& token)
     }
     json_str += "}";
 
-    return JsonNew::parse(json_str);
+    return Json::parse(json_str);
 }
 
 void JWTManager::update_verifier()

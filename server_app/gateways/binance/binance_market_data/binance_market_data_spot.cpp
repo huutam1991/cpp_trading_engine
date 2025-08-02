@@ -58,10 +58,10 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             std::string lower_case_symbol = instrument->exchange_symbol;
             STRING_LOWER_CASE(lower_case_symbol);
 
-            JsonNew params;
+            Json params;
             params[0] = lower_case_symbol + "@depth5@1000ms";
 
-            JsonNew subcribe;
+            Json subcribe;
             subcribe["method"] = "SUBSCRIBE";
             subcribe["params"] = params;
             subcribe["id"] = stream_id;
@@ -91,7 +91,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
         {
             // MeasureTime t("Handle price update", MeasureUnit::MICROSECOND);
 
-            JsonNew depth = JsonNew();
+            Json depth = Json();
             if (this->standardize_data(buffer, depth))
             {
                 // spdlog::debug("Stream depth: {}", depth);
@@ -105,7 +105,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
                 // // Save this none json data for checking error
                 // MongoDB::instance()
                 //     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                //     .insert_one(JsonNew::parse(buffer));
+                //     .insert_one(Json::parse(buffer));
             }
 
             co_return;
@@ -142,16 +142,16 @@ void BinanceMarketDataSpot::update_url_and_port(const std::string& url, const st
     m_port = port;
 }
 
-void BinanceMarketDataSpot::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, JsonNew& payload)> call_back)
+void BinanceMarketDataSpot::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
 {
     m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
 }
 
-bool BinanceMarketDataSpot::standardize_data(const std::string& data, JsonNew& depth)
+bool BinanceMarketDataSpot::standardize_data(const std::string& data, Json& depth)
 {
     MeasureTime t("Standardize data SPOT", MeasureUnit::MICROSECOND);
-    JsonNew order_book = JsonNew::parse(data);
+    Json order_book = Json::parse(data);
 
     // spdlog::debug(order_book);
 
@@ -163,11 +163,11 @@ bool BinanceMarketDataSpot::standardize_data(const std::string& data, JsonNew& d
         depth["e"] = "depthUpdate";
 
         // update asks
-        JsonNew A;
-        JsonNew asks = order_book["asks"];
-        asks.for_each([&A](JsonNew& data)
+        Json A;
+        Json asks = order_book["asks"];
+        asks.for_each([&A](Json& data)
         {
-            JsonNew j;
+            Json j;
             j.push_back(std::stold((std::string&&)data[0]));
             j.push_back(std::stold((std::string&&)data[1]));
             A.push_back(j);
@@ -175,11 +175,11 @@ bool BinanceMarketDataSpot::standardize_data(const std::string& data, JsonNew& d
         depth["asks"] = A;
 
         // update bids
-        JsonNew B;
-        JsonNew bids = order_book["bids"];
-        bids.for_each([&B](JsonNew& data)
+        Json B;
+        Json bids = order_book["bids"];
+        bids.for_each([&B](Json& data)
         {
-            JsonNew j;
+            Json j;
             j.push_back(std::stold((std::string&&)data[0]));
             j.push_back(std::stold((std::string&&)data[1]));
             B.push_back(j);

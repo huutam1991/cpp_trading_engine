@@ -3,7 +3,7 @@
 #include <memory>
 #include <iostream>
 
-#include <c_json/json.h>
+#include <json/json.h>
 
 class DataModel;
 
@@ -15,19 +15,19 @@ protected:
 public:
     DataField();
     DataField(DataModel* parent);
-    DataField(DataModel* parent, JsonNew* root_field, JsonNew* field, const std::string& field_name);
+    DataField(DataModel* parent, Json* root_field, Json* field, const std::string& field_name);
     ~DataField()
     {
         // // LOG(INFO) << "DataField, name = " << m_field_name << std::endl;
     }
 
-    JsonNew* m_root_field;
-    JsonNew* m_field;
+    Json* m_root_field;
+    Json* m_field;
     std::string m_field_name;
 
     DataField& operator=(const DataField& copy);
 
-    operator JsonNew();
+    operator Json();
 
     template<class T>
     operator T();

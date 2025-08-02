@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <c_json/json.h>
+#include <json/json.h>
 
 struct StrategyPriceArbitrageConfig
 {
@@ -15,7 +15,7 @@ struct StrategyPriceArbitrageConfig
     double too_high_price_delta = 15.0;
     bool is_running = false;
 
-    JsonNew to_json()
+    Json to_json()
     {
         return {
             {"symbol_1", symbol_1},
@@ -30,7 +30,7 @@ struct StrategyPriceArbitrageConfig
         };
     }
 
-    static StrategyPriceArbitrageConfig from_json(JsonNew& data)
+    static StrategyPriceArbitrageConfig from_json(Json& data)
     {
         StrategyPriceArbitrageConfig res;
 

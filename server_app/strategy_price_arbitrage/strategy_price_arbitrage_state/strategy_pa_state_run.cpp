@@ -251,9 +251,9 @@ TaskVoid StrategyPriceArbitrageStateRun::update(StrategyUpdateData data)
     co_return;
 }
 
-// JsonNew StrategyPriceArbitrageStateRun::get_open_orders()
+// Json StrategyPriceArbitrageStateRun::get_open_orders()
 // {
-//     JsonNew open_orders;
+//     Json open_orders;
 
 //     for (auto& [_, order_info] : m_current_open_orders)
 //     {

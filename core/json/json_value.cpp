@@ -1,8 +1,8 @@
 #include <charconv>
-#include <c_json/json_value.h>
+#include <json/json_value.h>
 
 template<>
-JsonValueNew::operator std::string() const
+JsonValue::operator std::string() const
 {
     if (std::holds_alternative<ShareString>(m_value))
     {
@@ -15,7 +15,7 @@ JsonValueNew::operator std::string() const
     }
 }
 
-void JsonValueNew::write_string_value(JsonStringBuilder& builder)
+void JsonValue::write_string_value(JsonStringBuilder& builder)
 {
     std::visit([this, &builder](auto&& arg) -> void
     {

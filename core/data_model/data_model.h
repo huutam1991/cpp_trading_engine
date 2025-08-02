@@ -6,7 +6,7 @@
 #include <functional>
 
 #include <mongo_db/mongo_db.h>
-#include <c_json/json.h>
+#include <json/json.h>
 #include <data_model/data_field.h>
 
 class DataModel
@@ -19,7 +19,7 @@ public:
     DataModel(const std::string& db, const std::string& collection);
     DataModel(const std::string& db, const std::string& collection, const std::string& id);
 
-    DataModel& operator=(const JsonNew& json);
+    DataModel& operator=(const Json& json);
     DataModel& operator=(const DataModel& copy);
     DataField& operator[](const char* key);
     DataField& operator[](const std::string& key);
@@ -29,8 +29,8 @@ public:
     {
         return is_null();
     }
-    operator JsonNew();
-    JsonNew& get_data();
+    operator Json();
+    Json& get_data();
 
     friend std::ostream& operator<<(std::ostream& cout, const DataModel& data_model);
 
@@ -60,12 +60,12 @@ public:
     template<class T>
     static std::unordered_map<T, DataModel> load_data_model_map(const std::string& db, const std::string& collection, const std::string& key_field_name)
     {
-        JsonNew data_list = MongoDB::instance()
+        Json data_list = MongoDB::instance()
             .set_db_and_collection(db, collection)
             .find_many();
 
         std::unordered_map<T, DataModel> res;
-        data_list.for_each_with_index([&res, &db, &collection, &key_field_name](size_t index, JsonNew& data)
+        data_list.for_each_with_index([&res, &db, &collection, &key_field_name](size_t index, Json& data)
         {
             std::string _id = data["_id"]["$oid"];
             DataModel dm(db, collection, _id);
@@ -82,7 +82,7 @@ protected:
     std::string m_db;
     std::string m_collection;
 
-    std::shared_ptr<JsonNew> m_data;
+    std::shared_ptr<Json> m_data;
 
 private:
     template<class T>

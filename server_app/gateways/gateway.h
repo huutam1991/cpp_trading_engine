@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include <utils/util_macros.h>
-#include <c_json/json.h>
+#include <json/json.h>
 #include <coroutine/task.h>
 #include <data_model/savable_object.h>
 #include <external_request/https_client_async.h>
@@ -25,8 +25,8 @@ protected:
     virtual std::vector<Instrument> fetch_instruments();
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) = 0;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) = 0;
-    virtual Task<JsonNew> cancel_on_exchange(Order order) = 0;
-    virtual Task<JsonNew> place_on_exchange(Order order) = 0;
+    virtual Task<Json> cancel_on_exchange(Order order) = 0;
+    virtual Task<Json> place_on_exchange(Order order) = 0;
 
 public:
     virtual ExchangeId get_exchange() = 0;
@@ -42,5 +42,5 @@ public:
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) = 0;
 
     // Util methods
-    virtual Task<JsonNew> get_balances() = 0;
+    virtual Task<Json> get_balances() = 0;
 };

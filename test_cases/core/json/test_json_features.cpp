@@ -6,18 +6,18 @@
 
 TEST(JsonTestFeature, Operator_Compare_EqualJsonNew)
 {
-    JsonNew a;
+    Json a;
     a["data"] = "same";
-    JsonNew b = a;
+    Json b = a;
 
     ASSERT_EQ(a["data"] == b["data"], true);
 }
 
 TEST(JsonTestFeature, Operator_Compare_NotEqualJsonNew)
 {
-    JsonNew a;
+    Json a;
     a["data"] = "Tam";
-    JsonNew b;
+    Json b;
     b["data"] = "Nguyen";
 
     ASSERT_EQ(a["data"] != b["data"], true);
@@ -28,7 +28,7 @@ TEST(JsonTestFeature, Operator_Compare_Equal)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew a;
+    Json a;
     a["key1"] = 42;
     a["key2"] = "Tam";
     a["key3"] = std::string("Nguyen");
@@ -58,7 +58,7 @@ TEST(JsonTestFeature, Operator_Compare_Equal)
 
 TEST(JsonTestFeature, Operator_Compare_NotEqual)
 {
-    JsonNew a;
+    Json a;
     a["num"] = 100;
     a["name"] = "Tam";
 
@@ -70,7 +70,7 @@ TEST(JsonTestFeature, Operator_Compare_NotEqual)
 
 TEST(JsonTestFeature, Operator_Compare_LessThan)
 {
-    JsonNew a;
+    Json a;
     a["score"] = 75;
 
     ASSERT_EQ(a["score"] < 80, true);
@@ -80,7 +80,7 @@ TEST(JsonTestFeature, Operator_Compare_LessThan)
 
 TEST(JsonTestFeature, Operator_Compare_GreaterThan)
 {
-    JsonNew a;
+    Json a;
     a["score"] = 85;
 
     ASSERT_EQ(a["score"] > 80, true);
@@ -90,7 +90,7 @@ TEST(JsonTestFeature, Operator_Compare_GreaterThan)
 
 TEST(JsonTestFeature, Operator_Compare_LessThanOrEqual)
 {
-    JsonNew a;
+    Json a;
     a["score"] = 60;
 
     ASSERT_EQ(a["score"] <= 60, true);
@@ -100,7 +100,7 @@ TEST(JsonTestFeature, Operator_Compare_LessThanOrEqual)
 
 TEST(JsonTestFeature, Operator_Compare_GreaterThanOrEqual)
 {
-    JsonNew a;
+    Json a;
     a["score"] = 90;
 
     ASSERT_EQ(a["score"] >= 90, true);
@@ -110,7 +110,7 @@ TEST(JsonTestFeature, Operator_Compare_GreaterThanOrEqual)
 
 TEST(JsonTestFeature, Operator_AddAssign)
 {
-    JsonNew a;
+    Json a;
     a["count"] = 5;
 
     a["count"] += 3;
@@ -123,7 +123,7 @@ TEST(JsonTestFeature, Operator_AddAssign)
 
 TEST(JsonTestFeature, Operator_SubtractAssign)
 {
-    JsonNew a;
+    Json a;
     a["value"] = 20;
 
     a["value"] -= 5;
@@ -132,7 +132,7 @@ TEST(JsonTestFeature, Operator_SubtractAssign)
     a["value"] -= 15;
     ASSERT_EQ(a["value"] == 0, true);
 
-    JsonNew b;
+    Json b;
     b["value"] = 20.6;
 
     b["value"] -= 5.2;
@@ -147,7 +147,7 @@ TEST(JsonTestFeature, HasAndRemoveField_NestedStructure)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew config = {
+    Json config = {
         {"name", "Nguyen Huu Tam"},
         {"settings", {
             {"display", {
@@ -207,7 +207,7 @@ TEST(JsonTestFeature, HasAndRemoveField_NestedStructure)
 TEST(JsonTestFeature, SetIsStringFormat_WorksCorrectly)
 {
     // Arrange
-    JsonNew a = {
+    Json a = {
         {"key", "Tam"}
     };
 
@@ -227,7 +227,7 @@ TEST(JsonTestFeature, SetIsStringFormat_WorksCorrectly)
 TEST(JsonTestFeature, SetSize_MakesArrayWithGivenSize)
 {
     // Arrange
-    JsonNew json;
+    Json json;
     // Act
     json.set_size(3);
     // Assert
@@ -247,7 +247,7 @@ TEST(JsonTestFeature, SetSize_MakesArrayWithGivenSize)
 TEST(JsonTestFeature, SetCapacity_MakesArrayWithGivenCapacity)
 {
     // Arrange
-    JsonNew json;
+    Json json;
     // Act
     json.set_capacity(3);
     // Assert
@@ -267,14 +267,14 @@ TEST(JsonTestFeature, SetCapacity_MakesArrayWithGivenCapacity)
 TEST(JsonTestFeature, Size_ReturnsCorrectObjectOrArraySize)
 {
     // Object case
-    JsonNew obj = {
+    Json obj = {
         {"name", "Tam"},
         {"age", 30}
     };
     ASSERT_EQ(obj.size(), 2);
 
     // Array case
-    JsonNew arr;
+    Json arr;
     arr.set_size(4);
     ASSERT_EQ(arr.size(), 4);
 }
@@ -282,7 +282,7 @@ TEST(JsonTestFeature, Size_ReturnsCorrectObjectOrArraySize)
 TEST(JsonTestFeature, Reverse_ReversesArrayCorrectly)
 {
     // Arrange
-    JsonNew arr;
+    Json arr;
     arr.set_size(3);
     arr[0] = "first";
     arr[1] = "second";
@@ -302,7 +302,7 @@ TEST(JsonTestFeature, NullFieldTransitionDeepStructure_NullptrOnly)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew config = {
+    Json config = {
         {"user", {
             {"name", nullptr},
             {"email", "huutam1991@gmail.com"},
@@ -353,10 +353,10 @@ TEST(JsonTestFeature, Sort_SortsArrayBasedOnCustomComparator)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew array;
-    JsonNew item1; item1["value"] = 30;
-    JsonNew item2; item2["value"] = 10;
-    JsonNew item3; item3["value"] = 20;
+    Json array;
+    Json item1; item1["value"] = 30;
+    Json item2; item2["value"] = 10;
+    Json item3; item3["value"] = 20;
 
     array.push_back(item1);
     array.push_back(item2);
@@ -365,7 +365,7 @@ TEST(JsonTestFeature, Sort_SortsArrayBasedOnCustomComparator)
     // -------------------------------
     // Action
     // -------------------------------
-    array.sort([](JsonNew& a, JsonNew& b) {
+    array.sort([](Json& a, Json& b) {
         return (int)a["value"] < (int)b["value"];
     });
 
@@ -382,11 +382,11 @@ TEST(JsonTestFeature, PushBack_AppendsToArrayCorrectly)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew array;
+    Json array;
     array.push_back("first");
     array.push_back("second");
 
-    JsonNew nested;
+    Json nested;
     nested["key"] = "value";
     array.push_back(nested);
 
@@ -404,7 +404,7 @@ TEST(JsonTestFeature, DeepClone_CreatesFullyIndependentCopy)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew original;
+    Json original;
     original["name"] = "Nguyen Huu Tam";
     original["age"] = 30;
 
@@ -424,7 +424,7 @@ TEST(JsonTestFeature, DeepClone_CreatesFullyIndependentCopy)
     // -------------------------------
     // Action
     // -------------------------------
-    JsonNew clone = original.deep_clone();
+    Json clone = original.deep_clone();
 
     // -------------------------------
     // Assert (Before modification: values must match)
@@ -485,7 +485,7 @@ TEST(JsonTestFeature, DeepClone_ArrayStructure_IndependentCopy)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew original;
+    Json original;
     original.set_size(3);
 
     original[0]["name"] = "OrderBook";
@@ -501,7 +501,7 @@ TEST(JsonTestFeature, DeepClone_ArrayStructure_IndependentCopy)
     // -------------------------------
     // Action
     // -------------------------------
-    JsonNew clone = original.deep_clone();
+    Json clone = original.deep_clone();
 
     // -------------------------------
     // Assert (Before modification: same values)
@@ -552,7 +552,7 @@ TEST(JsonTestFeature, RangeBasedForLoop_Modify)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew json = {
+    Json json = {
         {"name", "Tam"},
         {"age", 33},
         {"lang", "C++"},
@@ -601,12 +601,12 @@ TEST(JsonTestFeature, RangeBasedForLoop_Const)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew json;
+    Json json;
     json["name"] = "Nguyen Huu Tam";
     json["age"] = 33;
     json["language"] = "C++";
 
-    const JsonNew& const_json = json;
+    const Json& const_json = json;
 
     // -------------------------------
     // Act

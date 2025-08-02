@@ -32,12 +32,12 @@ APIHandlerStrategyPAConfig::APIHandlerStrategyPAConfig(HttpRequest* request) : A
 
 Task<HttpResponse> APIHandlerStrategyPAConfig::child_handle()
 {
-    JsonNew response;
+    Json response;
     MongoQuery query = MongoDB::instance()
         .set_db_and_collection(STRATEGY_DB_NAME, "price_arbitrage_config");
     // MongoQuery query = MongoDB::instance()
     //     .set_db_and_collection(STRATEGY_DB_NAME, "mean_reversion_config");
-    JsonNew current_config = query.find_any();
+    Json current_config = query.find_any();
 
     // GET
     if (m_request->get_request_method() == RequestMethod::GET)
@@ -53,7 +53,7 @@ Task<HttpResponse> APIHandlerStrategyPAConfig::child_handle()
     // POST
     else
     {
-        JsonNew config = m_request->get_body_json();
+        Json config = m_request->get_body_json();
         std::string symbol = config["symbol"];
 
         if (current_config == nullptr)

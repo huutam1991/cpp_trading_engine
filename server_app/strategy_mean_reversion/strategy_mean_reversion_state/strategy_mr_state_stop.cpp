@@ -28,7 +28,7 @@ TaskVoid StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
     co_return;
 }
 
-JsonNew StrategyMeanReversionStateStop::get_open_orders()
+Json StrategyMeanReversionStateStop::get_open_orders()
 {
     return {};
 }

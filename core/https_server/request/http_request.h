@@ -41,14 +41,14 @@ public:
     const std::string& get_query_string();
     const std::string  get_header_param(const std::string& param);
     const std::string  check_missing_params(const std::vector<std::string>& params);
-    JsonNew get_query_json();
-    static const std::string  get_query_string_from_query_json(JsonNew& query_object);
+    Json get_query_json();
+    static const std::string  get_query_string_from_query_json(Json& query_object);
 
     virtual bool        is_valid_format() { return true; }
     virtual std::string get_body() { return std::string(""); }
-    virtual JsonNew        get_body_json() { return nullptr; }
+    virtual Json        get_body_json() { return nullptr; }
     virtual std::string get_body_param_string(const std::string& param) { return std::string(""); }
-    virtual JsonNew        get_body_param_json(const std::string& param) { return nullptr; }
+    virtual Json        get_body_param_json(const std::string& param) { return nullptr; }
     virtual std::string check_missing_body_params(const std::vector<std::string> fields) { return PARAM_NO_MISSING; }
     bool                check_is_file_path_exist(const std::string& file_path);
     HttpResponse send_file_from_directory(const std::string& url, const FileInfo& file_info);

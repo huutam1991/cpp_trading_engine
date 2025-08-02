@@ -4,7 +4,7 @@
 #include <functional>
 
 #include <utils/constants.h>
-#include <c_json/json.h>
+#include <json/json.h>
 
 enum ResponseFileType
 {
@@ -24,7 +24,7 @@ class HttpResponse
 {
 private:
     ResponseStatusCode m_response_code;
-    JsonNew m_custom_header = nullptr;
+    Json m_custom_header = nullptr;
     const std::string* m_content;
     bool m_is_json_format = false;
     FileInfo m_file_info;
@@ -35,7 +35,7 @@ public:
     HttpResponse();
     HttpResponse(HttpResponse& response);
     HttpResponse(const HttpResponse& response);
-    HttpResponse(ResponseStatusCode response_code, const JsonNew& json);
+    HttpResponse(ResponseStatusCode response_code, const Json& json);
     HttpResponse(ResponseStatusCode response_code, const std::string& content, const std::string& file_name);
     HttpResponse(ResponseStatusCode response_code, const std::string& content, ResponseFileType file_type = ResponseFileType::NONE_TYPE);
     HttpResponse(ResponseStatusCode response_code, const std::string& content, const FileInfo& file_info);
@@ -45,5 +45,5 @@ public:
     const HttpResponse& operator=(HttpResponse&& response);
     virtual std::string get_response_in_string();
 
-    void add_custom_header(JsonNew& custom_header);
+    void add_custom_header(Json& custom_header);
 };

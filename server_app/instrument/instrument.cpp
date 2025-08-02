@@ -1,6 +1,6 @@
 #include <instrument/instrument.h>
 
-JsonNew Instrument::to_json() const
+Json Instrument::to_json() const
 {
     return {
         {"exchange_id", enum_reflect::enum_name(exchange_id)},
@@ -12,7 +12,7 @@ JsonNew Instrument::to_json() const
     };
 }
 
-Instrument Instrument::from_json(JsonNew& data)
+Instrument Instrument::from_json(Json& data)
 {
     return Instrument {
         enum_reflect::enum_value<ExchangeId>((std::string)data["exchange_id"]),

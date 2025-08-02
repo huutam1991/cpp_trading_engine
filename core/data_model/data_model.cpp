@@ -2,12 +2,12 @@
 
 DataModel::DataModel()
 {
-    m_data = std::make_shared<JsonNew>();
+    m_data = std::make_shared<Json>();
 }
 
 DataModel::DataModel(std::nullptr_t t)
 {
-    m_data = std::make_shared<JsonNew>(nullptr);
+    m_data = std::make_shared<Json>(nullptr);
 }
 
 DataModel::DataModel(const DataModel& copy) : m_db(copy.m_db), m_collection(copy.m_collection), m_id(copy.m_id), m_data(copy.m_data)
@@ -21,7 +21,7 @@ DataModel::DataModel(DataModel&& copy) : m_db(std::move(copy.m_db)), m_collectio
 
 DataModel::DataModel(const std::string& db, const std::string& collection) : m_db(db), m_collection(collection)
 {
-    m_data = std::make_shared<JsonNew>(JsonNew({}));
+    m_data = std::make_shared<Json>(Json({}));
 
     // Save empty data to DB, but this action can init [m_id] and make this DataModel a real one
     save_to_DB();
@@ -29,7 +29,7 @@ DataModel::DataModel(const std::string& db, const std::string& collection) : m_d
 
 DataModel::DataModel(const std::string& db, const std::string& collection, const std::string& id) : m_db(db), m_collection(collection), m_id(id)
 {
-    m_data = std::make_shared<JsonNew>();
+    m_data = std::make_shared<Json>();
     get_from_DB();
 }
 
@@ -61,12 +61,12 @@ bool DataModel::is_null() const
     return *m_data == nullptr;
 }
 
-DataModel::operator JsonNew()
+DataModel::operator Json()
 {
     return *m_data;
 }
 
-DataModel& DataModel::operator=(const JsonNew& json)
+DataModel& DataModel::operator=(const Json& json)
 {
     // Update data in memory
     *m_data = json;
@@ -79,7 +79,7 @@ DataModel& DataModel::operator=(const JsonNew& json)
 
 DataField& DataModel::operator[](const std::string& key)
 {
-    JsonNew& field = (*m_data)[key];
+    Json& field = (*m_data)[key];
     // root_field == field at the beginning
     m_data_field.m_root_field = &field;
     m_data_field.m_field = &field;
@@ -152,10 +152,10 @@ void DataModel::remove()
 
     // Reset [m_id] + [m_data]
     m_id = "-1";
-    *m_data = JsonNew();
+    *m_data = Json();
 }
 
-JsonNew& DataModel::get_data()
+Json& DataModel::get_data()
 {
     return *m_data;
 }
@@ -175,12 +175,12 @@ DataModel DataModel::load_single_data_model(const std::string& db, const std::st
 
 std::vector<DataModel> DataModel::load_data_model_list(const std::string& db, const std::string& collection)
 {
-    JsonNew data_list = MongoDB::instance()
+    Json data_list = MongoDB::instance()
         .set_db_and_collection(db, collection)
         .find_many();
 
     std::vector<DataModel> res;
-    data_list.for_each_with_index([&res, &db, &collection](size_t index, JsonNew& data)
+    data_list.for_each_with_index([&res, &db, &collection](size_t index, Json& data)
     {
         std::string _id = data["_id"]["$oid"];
         res.emplace_back(db, collection, _id);

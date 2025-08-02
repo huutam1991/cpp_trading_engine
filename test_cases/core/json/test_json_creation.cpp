@@ -9,14 +9,14 @@ TEST(JsonTestCreation, ComplexObjectStructure)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew root;
+    Json root;
     root["name"] = "ChatGPT";
     root["active"] = true;
     root["version"] = 4.0;
     root["users"] = 1000000;
     root["null_field"] = nullptr;
 
-    JsonNew arr;
+    Json arr;
     arr[0] = "openai";
     arr[1] = 2023;
     arr[2] = false;
@@ -49,7 +49,7 @@ TEST(JsonTestCreation, NestedComplexJsonStructure)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew me;
+    Json me;
     me["name"] = "Nguyen Huu Tam";
     me["country"] = "Singapore";
     me["role"] = "C++ Trading Engine Developer";
@@ -57,7 +57,7 @@ TEST(JsonTestCreation, NestedComplexJsonStructure)
     me["years_experience"] = 7;
     me["seeking_opportunity"] = false;
 
-    JsonNew skills;
+    Json skills;
     skills["languages"][0] = "C++";
     skills["languages"][1] = "Rust";
     skills["languages"][2] = "Python";
@@ -79,7 +79,7 @@ TEST(JsonTestCreation, NestedComplexJsonStructure)
     skills["latency_optimization"]["core_areas"][1] = "Cache-local design";
     skills["latency_optimization"]["core_areas"][2] = "Precompiled routing";
 
-    JsonNew contributions;
+    Json contributions;
     contributions["projects"][0]["name"] = "BinanceOrderBook";
     contributions["projects"][0]["language"] = "C++";
     contributions["projects"][0]["features"][0] = "Snapshot+WebSocket sync";
@@ -146,13 +146,13 @@ TEST(JsonTestCreation, SharedReferenceCopy)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew original;
+    Json original;
     original["value"] = "test";
 
     // -------------------------------
     // Action
     // -------------------------------
-    JsonNew copy = original; // shallow copy, shared underlying data
+    Json copy = original; // shallow copy, shared underlying data
 
     // -------------------------------
     // Assert
@@ -168,13 +168,13 @@ TEST(JsonTestCreation, MutationReflectsInCopy)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew a;
+    Json a;
     a["key"] = 123;
 
     // -------------------------------
     // Action
     // -------------------------------
-    JsonNew b = a; // same underlying object
+    Json b = a; // same underlying object
     b["key"] = 456;
 
     // -------------------------------
@@ -189,7 +189,7 @@ TEST(JsonTestCreation, CreateByPairInitializerList_Extended_NoArray)
     // -------------------------------
     // Arrange
     // -------------------------------
-    JsonNew original = {
+    Json original = {
         {"name", "Nguyen Huu Tam"},
         {"age", 30},
         {"is_developer", true},
@@ -233,7 +233,7 @@ TEST(JsonTestCreation, CreateByPairInitializerList_Extended_NoArray)
     // -------------------------------
     // Action
     // -------------------------------
-    JsonNew copy = original; // shallow copy
+    Json copy = original; // shallow copy
 
     // -------------------------------
     // Assert
@@ -279,7 +279,7 @@ TEST(JsonTestCreation, SoftSkillJsonPoolTracking)
 
         for (size_t i = 0; i < 1; ++i)
         {
-            JsonNew profile;
+            Json profile;
             profile["name"] = "Nguyen Huu Tam";
             profile["traits"]["intelligence"]["IQ"] = 75;
             profile["traits"]["intelligence"]["type"] = "abstract + applied";
@@ -361,9 +361,9 @@ TEST(JsonTestCreation, JsonParse)
     std::string data = "{\"ambition\":{\"inspiration_sources\":[\"HRT\",\"Jump\"],\"timeframe_years\":2,\"goal\":\"build world-class trading engine\"},\"communication\":{\"languages\":[\"English\",\"Vietnamese\"],\"technical_depth\":\"very high\",\"clarity\":\"concise\"},\"self_reflection\":{\"weekly_review\":true,\"feedback_acceptance\":\"open and fast\",\"growth_mindset\":true},\"adaptability\":{\"contexts\":{\"pressure\":\"stable\",\"solo\":\"independent & rapid\",\"team\":\"smooth integration\"},\"environments\":[{\"efficiency\":\"high\",\"os\":\"Linux\"},{\"efficiency\":\"maximum\",\"os\":\"Windows\"}]},\"recognition\":{\"awards\":[{\"year\":2023,\"title\":\"Deep Thinker\"},{\"year\":2024,\"title\":\"Fastest Debugger\"}],\"fields\":[\"C++\",\"Trading Systems\",\"DeFi Protocols\"],\"global_top_percent\":0.5},\"learning_ability\":{\"domains\":{\"quant_models\":true,\"crypto\":true,\"low_latency\":true},\"channels\":[\"documentation\",\"source code\",\"experimentation\"],\"rate\":\"instant absorption\"},\"problem_solving\":{\"speed\":\"fast\",\"approaches\":{\"systematic\":true,\"creative\":true,\"critical\":true},\"depth\":\"extremely deep\"},\"traits\":{\"debugging\":{\"techniques\":[\"symbolic tracing\",\"gdb reverse mode\",\"memory leak hunting\"],\"skill_level\":\"exceptional\"},\"intelligence\":{\"type\":\"abstract + applied\",\"IQ\":75}},\"name\":\"Nguyen Huu Tam\"}";
 
     // -------------------------------
-    // Action: Parse the JSON string using JsonNew
+    // Action: Parse the JSON string using Json
     // -------------------------------
-    JsonNew json = JsonNew::parse(data);
+    Json json = Json::parse(data);
 
     // -------------------------------
     // Assert: Verify the parsed values
@@ -448,8 +448,8 @@ TEST(JsonTestCreation, JsonParse_PoolCountStable)
     // -------------------------------
 
     {
-        JsonNew json;
-        json = JsonNew::parse(data);
+        Json json;
+        json = Json::parse(data);
 
         // -------------------------------
         // Basic field verification

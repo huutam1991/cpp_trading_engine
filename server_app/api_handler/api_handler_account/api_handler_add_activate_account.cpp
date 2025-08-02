@@ -9,14 +9,14 @@ APIHandlerAddActivateAccount::APIHandlerAddActivateAccount(HttpRequest* request)
 
 Task<HttpResponse> APIHandlerAddActivateAccount::child_handle()
 {
-    JsonNew response;
-    JsonNew account = m_request->get_body_json();
+    Json response;
+    Json account = m_request->get_body_json();
     std::string key = account["key"];
 
     MongoQuery query = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts");
 
-    JsonNew find_account = query.find_one("key", key);
+    Json find_account = query.find_one("key", key);
 
     if (find_account != nullptr)
     {
@@ -28,7 +28,7 @@ Task<HttpResponse> APIHandlerAddActivateAccount::child_handle()
     else
     {
         std::string exchange = account["exchange"];
-        JsonNew available_account = query.find_one("exchange", exchange);
+        Json available_account = query.find_one("exchange", exchange);
 
         // Insert
         if (available_account == nullptr)

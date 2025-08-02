@@ -27,7 +27,7 @@ TaskVoid StrategyMarketMakerStateStop::update(StrategyUpdateData data)
     co_return;
 }
 
-// JsonNew StrategyMarketMakerStateStop::get_open_orders()
+// Json StrategyMarketMakerStateStop::get_open_orders()
 // {
-//     return JsonNew::create_array();
+//     return Json::create_array();
 // }

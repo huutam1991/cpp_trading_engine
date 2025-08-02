@@ -1,7 +1,7 @@
-#include <c_json/json_object.h>
+#include <json/json_object.h>
 
 
-void JsonObjectNew::for_each(std::function<void(JsonNew&)>& loop_func)
+void JsonObject::for_each(std::function<void(Json&)>& loop_func)
 {
     // Loop through object
     if (m_is_array == false)
@@ -21,7 +21,7 @@ void JsonObjectNew::for_each(std::function<void(JsonNew&)>& loop_func)
     }
 }
 
-void JsonObjectNew::for_each_with_key(std::function<void(const std::string&, JsonNew&)>& loop_func)
+void JsonObject::for_each_with_key(std::function<void(const std::string&, Json&)>& loop_func)
 {
     if (m_is_array == false)
     {
@@ -33,7 +33,7 @@ void JsonObjectNew::for_each_with_key(std::function<void(const std::string&, Jso
     }
 }
 
-void JsonObjectNew::for_each_with_index(std::function<void(size_t,JsonNew&)>& loop_func)
+void JsonObject::for_each_with_index(std::function<void(size_t,Json&)>& loop_func)
 {
     if (m_is_array == true)
     {
@@ -44,7 +44,7 @@ void JsonObjectNew::for_each_with_index(std::function<void(size_t,JsonNew&)>& lo
     }
 }
 
-void JsonObjectNew::write_string_value(JsonStringBuilder& builder)
+void JsonObject::write_string_value(JsonStringBuilder& builder)
 {
     if (m_is_array)
     {
@@ -74,9 +74,9 @@ void JsonObjectNew::write_string_value(JsonStringBuilder& builder)
     }
 }
 
-JsonTypeBaseNew* JsonObjectNew::get_deep_clone()
+JsonTypeBase* JsonObject::get_deep_clone()
 {
-    JsonObjectNew* clone = JsonObjectPool::acquire();
+    JsonObject* clone = JsonObjectPool::acquire();
     clone->m_is_array = m_is_array;
 
     // Deep clone the array

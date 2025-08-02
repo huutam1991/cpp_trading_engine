@@ -14,8 +14,8 @@ APIHandlerUserLogin::APIHandlerUserLogin(HttpRequest* request) : APIHandler(requ
 
 Task<HttpResponse> APIHandlerUserLogin::child_handle()
 {
-    JsonNew response;
-    JsonNew custom_header = nullptr;
+    Json response;
+    Json custom_header = nullptr;
     std::string username = m_request->get_body_param_string("username");
     std::string password = m_request->get_body_param_string("password");
 
@@ -32,7 +32,7 @@ Task<HttpResponse> APIHandlerUserLogin::child_handle()
     }
     std::string hashed_password = ss.str();
 
-    JsonNew user_account = MongoDB::instance()
+    Json user_account = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "user")
         .find_one("username", username);
 

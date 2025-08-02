@@ -27,7 +27,7 @@ TaskVoid StrategyBuySpotStateStop::update(StrategyUpdateData data)
     co_return;
 }
 
-// JsonNew StrategyBuySpotStateStop::get_open_orders()
+// Json StrategyBuySpotStateStop::get_open_orders()
 // {
-//     return JsonNew::create_array();
+//     return Json::create_array();
 // }

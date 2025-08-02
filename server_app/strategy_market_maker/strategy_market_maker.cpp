@@ -40,7 +40,7 @@ void StrategyMarketMaker::on_config_change(StrategyMarketMakerConfig new_config)
     }
 }
 
-JsonNew StrategyMarketMaker::get_info(JsonNew& params)
+Json StrategyMarketMaker::get_info(Json& params)
 {
     if ((std::string)params["type"] == "orders_chain")
     {
@@ -50,15 +50,15 @@ JsonNew StrategyMarketMaker::get_info(JsonNew& params)
     return {};
 }
 
-JsonNew StrategyMarketMaker::get_orders_chain()
+Json StrategyMarketMaker::get_orders_chain()
 {
-    JsonNew orders;
+    Json orders;
 
-    JsonNew filled_orders = MongoDB::instance()
+    Json filled_orders = MongoDB::instance()
         .set_db_and_collection("order", "order_list")
         .find_many();
 
-    filled_orders.for_each([&orders](JsonNew& order)
+    filled_orders.for_each([&orders](Json& order)
     {
         if (order["status"] == "FILLED")
         {
@@ -67,12 +67,12 @@ JsonNew StrategyMarketMaker::get_orders_chain()
         }
     });
 
-    orders.sort([](JsonNew& a, JsonNew& b)
+    orders.sort([](Json& a, Json& b)
     {
         return (OrderId)a["order_id"] < (OrderId)b["order_id"];
     });
 
-    JsonNew res;
+    Json res;
     size_t i = 0;
     while (i < orders.size())
     {
@@ -84,7 +84,7 @@ JsonNew StrategyMarketMaker::get_orders_chain()
             double input = (double)orders[i]["volumn_in_quote_currency"];
             double output = (double)orders[i+2]["output_quantity"];
 
-            JsonNew triangle;
+            Json triangle;
             triangle["input"] = input;
             triangle["output"] = output;
             triangle["profit"] = output - input;
@@ -103,7 +103,7 @@ JsonNew StrategyMarketMaker::get_orders_chain()
     return res;
 }
 
-// JsonNew StrategyMarketMaker::get_open_orders()
+// Json StrategyMarketMaker::get_open_orders()
 // {
 //     std::unordered_map<PAState, StrategyMarketMakerState*>* strategy_states = get_strategy_states();
 //     PAState state = m_current_state.object.state;
@@ -114,5 +114,5 @@ JsonNew StrategyMarketMaker::get_orders_chain()
 //         return (*strategy_states)[state]->get_open_orders();
 //     }
 
-//     return JsonNew::create_array();
+//     return Json::create_array();
 // }

@@ -10,7 +10,7 @@ HttpResponse::HttpResponse() : m_response_code(OK_200)
     m_content = new std::string();
 }
 
-HttpResponse::HttpResponse(ResponseStatusCode response_code, const JsonNew& json) : m_response_code(response_code)
+HttpResponse::HttpResponse(ResponseStatusCode response_code, const Json& json) : m_response_code(response_code)
 {
     m_content = new std::string(json.get_string_value());
     m_is_json_format = true;
@@ -86,7 +86,7 @@ const HttpResponse& HttpResponse::operator=(HttpResponse&& response)
     return *this;
 }
 
-void HttpResponse::add_custom_header(JsonNew& custom_header)
+void HttpResponse::add_custom_header(Json& custom_header)
 {
     m_custom_header = custom_header;
 }
@@ -107,7 +107,7 @@ std::string HttpResponse::get_response_in_string()
     // Custom header
     if (m_custom_header != nullptr)
     {
-        m_custom_header.for_each_with_key([&response](const std::string& header_name, JsonNew& header_data)
+        m_custom_header.for_each_with_key([&response](const std::string& header_name, Json& header_data)
         {
             response.append(header_name);
             response.append(": ");

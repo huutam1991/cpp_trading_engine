@@ -7,7 +7,7 @@
 
 #include <utils/util_macros.h>
 #include <utils/constants.h>
-#include <c_json/json.h>
+#include <json/json.h>
 #include <utils/spin_lock.h>
 #include "mongo_db_header.h"
 
@@ -30,17 +30,17 @@ public:
     size_t count_documents();
 
     // Insert methods
-    std::string insert_one(const JsonNew& data);
+    std::string insert_one(const Json& data);
 
     // Replace methods
     template<class T>
-    bool replace_one(const std::string& find_key, const T& find_value, const JsonNew& data);
+    bool replace_one(const std::string& find_key, const T& find_value, const Json& data);
 
     // Update methods
     template<class T, class U>
     bool update_one(const std::string& find_key, const T& find_value, const std::string& update_key, const U& update_value);
     template<class T>
-    bool update_one(const std::string& find_key, const T& find_value, const std::string& update_key, const JsonNew& update_value);
+    bool update_one(const std::string& find_key, const T& find_value, const std::string& update_key, const Json& update_value);
 
     // Delete methods
     template<class T>
@@ -48,12 +48,12 @@ public:
     void drop();
 
     // Find methods
-    JsonNew find_any();
+    Json find_any();
     template<class T>
-    JsonNew find_one(const std::string& find_key, const T& find_value);
-    JsonNew find_one(const bsoncxx::v_noabi::document::view_or_value& filter);
-    JsonNew find_many(const bsoncxx::v_noabi::document::view_or_value& filter);
-    JsonNew find_many();
+    Json find_one(const std::string& find_key, const T& find_value);
+    Json find_one(const bsoncxx::v_noabi::document::view_or_value& filter);
+    Json find_many(const bsoncxx::v_noabi::document::view_or_value& filter);
+    Json find_many();
 };
 
 class MongoDB
@@ -87,7 +87,7 @@ size_t MongoQuery::count_documents(const std::string& find_key, const T& find_va
 }
 
 template<class T>
-bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const JsonNew& data)
+bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const Json& data)
 {
     GET_COLLECTION(m_db, m_collection, collection);
     bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
@@ -118,7 +118,7 @@ bool MongoQuery::update_one(const std::string& find_key, const T& find_value, co
 }
 
 template<class T>
-bool MongoQuery::update_one(const std::string& find_key, const T& find_value, const std::string& update_key, const JsonNew& update_value)
+bool MongoQuery::update_one(const std::string& find_key, const T& find_value, const std::string& update_key, const Json& update_value)
 {
     GET_COLLECTION(m_db, m_collection, collection);
     bsoncxx::document::value doc_value = bsoncxx::from_json(update_value.get_string_value());
@@ -140,7 +140,7 @@ bool MongoQuery::delete_one(const std::string& find_key, const T& find_value)
 }
 
 template<class T>
-JsonNew MongoQuery::find_one(const std::string& find_key, const T& find_value)
+Json MongoQuery::find_one(const std::string& find_key, const T& find_value)
 {
     GET_COLLECTION(m_db, m_collection, collection);
     bsoncxx::v_noabi::document::view_or_value filter = document{} << find_key << find_value << finalize;
@@ -148,7 +148,7 @@ JsonNew MongoQuery::find_one(const std::string& find_key, const T& find_value)
 
     if (find)
     {
-        return JsonNew::parse(bsoncxx::to_json(find.value()));
+        return Json::parse(bsoncxx::to_json(find.value()));
     }
 
     return nullptr;

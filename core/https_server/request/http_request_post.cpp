@@ -14,7 +14,7 @@ void HttpRequestPost::deserialize_body(const std::string& content)
 {
     size_t end_of_request_header = content.find("\r\n\r\n", 0);
     m_body = content.substr(end_of_request_header + 4, content.size() - 1);
-    m_body_json = JsonNew::parse(m_body);
+    m_body_json = Json::parse(m_body);
     spdlog::debug("body = {}", m_body);
 }
 
@@ -86,7 +86,7 @@ std::string HttpRequestPost::get_body()
     return m_body;
 }
 
-JsonNew HttpRequestPost::get_body_json()
+Json HttpRequestPost::get_body_json()
 {
     return m_body_json;
 }
@@ -101,7 +101,7 @@ std::string HttpRequestPost::get_body_param_string(const std::string& param)
     return PARAM_NOT_FOUND;
 }
 
-JsonNew HttpRequestPost::get_body_param_json(const std::string& param)
+Json HttpRequestPost::get_body_param_json(const std::string& param)
 {
     if (m_body_json.has_field(param))
     {

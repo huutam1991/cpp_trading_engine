@@ -7,7 +7,7 @@ DataField::DataField()
 DataField::DataField(DataModel* parent) : m_parent(parent)
 {}
 
-DataField::DataField(DataModel* parent, JsonNew* root_field, JsonNew* field, const std::string& field_name)
+DataField::DataField(DataModel* parent, Json* root_field, Json* field, const std::string& field_name)
     : m_parent(parent), m_root_field(root_field), m_field(field), m_field_name(field_name)
 {
 }
@@ -22,7 +22,7 @@ DataField& DataField::operator=(const DataField& copy)
     return *this;
 }
 
-DataField::operator JsonNew()
+DataField::operator Json()
 {
     return *m_field;
 }

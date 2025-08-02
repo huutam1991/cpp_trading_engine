@@ -111,12 +111,12 @@ public:
         return object;
     }
 
-    JsonNew to_json()
+    Json to_json()
     {
         return object.to_json();
     }
 
-    T from_json(JsonNew& data)
+    T from_json(Json& data)
     {
         return T::from_json(data);
     }

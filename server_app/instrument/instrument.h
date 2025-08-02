@@ -3,7 +3,7 @@
 #include <string>
 #include <mutex>
 
-#include <c_json/json.h>
+#include <json/json.h>
 #include <symbol/symbol.h>
 #include <utils/spin_lock.h>
 #include <enum_reflect/enum_reflect.h>
@@ -34,8 +34,8 @@ public:
     size_t lot_size;
     double tick_size;
 
-    JsonNew to_json() const;
-    static Instrument from_json(JsonNew& data);
+    Json to_json() const;
+    static Instrument from_json(Json& data);
 
     // Helper method
     std::string round_string_number(const std::string& str_number, size_t precision) const;

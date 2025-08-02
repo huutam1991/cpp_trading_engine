@@ -14,8 +14,8 @@ private:
 
     // For update order result
     std::mutex m_mutex;
-    JsonNew m_order_result;
-    void update_order_result(const JsonNew& order_result);
+    Json m_order_result;
+    void update_order_result(const Json& order_result);
 
     // Websocket to get order data
     std::shared_ptr<WebsocketClientAsync> m_websocket;
@@ -31,9 +31,9 @@ public:
     CoinbaseQuoterPerpetual(const std::string& key);
     ~CoinbaseQuoterPerpetual();
 
-    virtual JsonNew get_trade_result_from_response(JsonNew& response) override;
-    virtual Task<JsonNew> get_open_orders(std::string symbol) override;
+    virtual Json get_trade_result_from_response(Json& response) override;
+    virtual Task<Json> get_open_orders(std::string symbol) override;
     virtual TaskVoid cancel_all(std::string symbol) override;
-    virtual Task<JsonNew> cancel(Order order) override;
-    virtual Task<JsonNew> place(Order order) override;
+    virtual Task<Json> cancel(Order order) override;
+    virtual Task<Json> place(Order order) override;
 };

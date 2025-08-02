@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <c_json/json.h>
+#include <json/json.h>
 #include <enum_reflect/enum_reflect.h>
 #include <symbol/symbol.h>
 #include <instrument/instrument.h>
@@ -62,6 +62,6 @@ public:
     Order();
     Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
-    JsonNew to_json();
-    static Order from_json(JsonNew& data);
+    Json to_json();
+    static Order from_json(Json& data);
 };

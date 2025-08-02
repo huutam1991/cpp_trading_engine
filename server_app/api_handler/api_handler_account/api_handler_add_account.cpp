@@ -9,11 +9,11 @@ APIHandlerAddAccount::APIHandlerAddAccount(HttpRequest* request) : APIHandler(re
 
 Task<HttpResponse> APIHandlerAddAccount::child_handle()
 {
-    JsonNew response;
-    JsonNew account = m_request->get_body_json();
+    Json response;
+    Json account = m_request->get_body_json();
 
     std::string key = account["key"];
-    JsonNew find_account = Account::load_account_by_key(key);
+    Json find_account = Account::load_account_by_key(key);
 
     if (find_account != nullptr)
     {

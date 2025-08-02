@@ -43,7 +43,7 @@ void StrategyManager::subscribe_data_update()
     });
 }
 
-JsonNew StrategyManager::get_config_by_strategy(const std::string& strategy_name)
+Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
 {
     for (auto& strategy : m_strategy_list)
     {
@@ -60,7 +60,7 @@ JsonNew StrategyManager::get_config_by_strategy(const std::string& strategy_name
     };
 }
 
-JsonNew StrategyManager::update_config_by_strategy(const std::string& strategy_name, JsonNew& data)
+Json StrategyManager::update_config_by_strategy(const std::string& strategy_name, Json& data)
 {
     for (auto& strategy : m_strategy_list)
     {
@@ -81,7 +81,7 @@ JsonNew StrategyManager::update_config_by_strategy(const std::string& strategy_n
     };
 }
 
-JsonNew StrategyManager::get_info(const std::string& strategy_name, JsonNew& params)
+Json StrategyManager::get_info(const std::string& strategy_name, Json& params)
 {
     for (auto& strategy : m_strategy_list)
     {

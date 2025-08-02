@@ -83,20 +83,20 @@ public:
         return m_strategy_name;
     }
 
-    JsonNew get_config()
+    Json get_config()
     {
         return m_config.to_json();
     }
 
-    void update_config(JsonNew& data)
+    void update_config(Json& data)
     {
         StrategyConfig new_config = StrategyConfig::from_json(data);
         apply_config(std::move(new_config)).start_running_on(event_base);
     }
 
-    virtual JsonNew get_info(JsonNew& params)
+    virtual Json get_info(Json& params)
     {
-        return JsonNew();
+        return Json();
     }
 
 protected:

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <charconv>
 
-#include <c_json/json_parse.h>
+#include <json/json_parse.h>
 
 ShareString JsonParseNew::get_sub_string(size_t start, size_t end)
 {
@@ -13,9 +13,9 @@ ShareString JsonParseNew::get_sub_string(size_t start, size_t end)
 JsonParseNew::JsonParseNew(std::string object) : m_share_string(std::move(object))
 {}
 
-JsonNew JsonParseNew::parse()
+Json JsonParseNew::parse()
 {
-    JsonNew res;
+    Json res;
 
     m_object_string = m_share_string.data();
     m_size = m_object_string.size();
@@ -55,9 +55,9 @@ bool JsonParseNew::check_exceed_size(size_t index)
     return false;
 }
 
-JsonNew JsonParseNew::parse_object(size_t& start_pos)
+Json JsonParseNew::parse_object(size_t& start_pos)
 {
-    JsonNew res;
+    Json res;
 
     while (m_object_string[start_pos] != '}')
     {
@@ -69,7 +69,7 @@ JsonNew JsonParseNew::parse_object(size_t& start_pos)
             return res;
         }
 
-        JsonNew value = parse_value(start_pos);
+        Json value = parse_value(start_pos);
         res[std::string(key.data())] = value;
 
         if (check_exceed_size(start_pos)) break;
@@ -80,14 +80,14 @@ JsonNew JsonParseNew::parse_object(size_t& start_pos)
     return res;
 }
 
-JsonNew JsonParseNew::parse_array(size_t& start_pos)
+Json JsonParseNew::parse_array(size_t& start_pos)
 {
-    JsonNew res;
+    Json res;
     int index = 0;
 
     while (m_object_string[start_pos] != ']')
     {
-        JsonNew value = parse_value(start_pos);
+        Json value = parse_value(start_pos);
         res[index++] = value;
 
         if (check_exceed_size(start_pos)) break;
@@ -130,9 +130,9 @@ std::string JsonParseNew::parse_key(size_t& start_pos)
     return std::string(get_sub_string(start, end).data());
 }
 
-JsonNew JsonParseNew::parse_value(size_t& start_pos)
+Json JsonParseNew::parse_value(size_t& start_pos)
 {
-    JsonNew res;
+    Json res;
     size_t start = start_pos;
 
     while (m_object_string[start] != '\"' && m_object_string[start] != '{' &&
@@ -182,7 +182,7 @@ JsonNew JsonParseNew::parse_value(size_t& start_pos)
     // Null
     else if (is_null(m_object_string.data(), start, m_size))
     {
-        res = nullptr; // If null, return a null JsonNew
+        res = nullptr; // If null, return a null Json
         start_pos = start + 4;
     }
     // Object
@@ -225,9 +225,9 @@ ShareString JsonParseNew::parse_value_string(size_t& start_pos)
     return get_sub_string(start, end);
 }
 
-JsonNew JsonParseNew::parse_value_number(size_t& start_pos)
+Json JsonParseNew::parse_value_number(size_t& start_pos)
 {
-    JsonNew res;
+    Json res;
     size_t start = start_pos;
     bool is_float = false;
 

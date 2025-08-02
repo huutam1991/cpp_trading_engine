@@ -1,6 +1,6 @@
 #pragma once
 
-#include <c_json/json.h>
+#include <json/json.h>
 #include <cache/share_string.h>
 
 #define TRUE_VALUE 1
@@ -74,13 +74,13 @@ class JsonParseNew
 
 public:
     JsonParseNew(std::string object);
-    JsonNew parse();
+    Json parse();
 
 private:
-    JsonNew parse_object(size_t& start_pos);
-    JsonNew parse_array(size_t& start_pos);
-    JsonNew parse_value_number(size_t& start_pos);
-    JsonNew parse_value(size_t& start_pos);
+    Json parse_object(size_t& start_pos);
+    Json parse_array(size_t& start_pos);
+    Json parse_value_number(size_t& start_pos);
+    Json parse_value(size_t& start_pos);
     std::string parse_key(size_t& start_pos);
     ShareString parse_value_string(size_t& start_pos);
 };

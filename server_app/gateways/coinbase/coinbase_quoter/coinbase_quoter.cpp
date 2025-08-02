@@ -9,13 +9,13 @@
 
 CoinbaseQuoter::CoinbaseQuoter(const std::string& key) : m_key{key}
 {
-    JsonNew account = Account::load_account_by_key(key);
+    Json account = Account::load_account_by_key(key);
     m_api_key = std::string(account["api_key"]);
     m_api_secret = std::string(account["api_secret"]);
     m_is_testnet = (bool)account["is_testnet"];
 }
 
-Task<JsonNew> CoinbaseQuoter::get_balances()
+Task<Json> CoinbaseQuoter::get_balances()
 {
     co_return co_await send_coinbase_request(RequestMethod::GET, "/api/v3/account", "");
 }
@@ -52,11 +52,11 @@ std::string CoinbaseQuoter::getSignature(std::string& query)
 	return encryptWithHMAC(m_api_secret.c_str(), query.c_str());
 }
 
-void CoinbaseQuoter::check_save_resonse_error(JsonNew& response, const std::string& query, RequestMethod method)
+void CoinbaseQuoter::check_save_resonse_error(Json& response, const std::string& query, RequestMethod method)
 {
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
     {
-        JsonNew error;
+        Json error;
         error["query"] = query;
         error["method"] = request_method_map_string.at((size_t)method);
         error["response"] = response;
@@ -75,7 +75,7 @@ void CoinbaseQuoter::check_save_resonse_error(JsonNew& response, const std::stri
     }
 }
 
-Task<JsonNew> CoinbaseQuoter::send_coinbase_request(RequestMethod method, std::string api_path, std::string query_str)
+Task<Json> CoinbaseQuoter::send_coinbase_request(RequestMethod method, std::string api_path, std::string query_str)
 {
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();
@@ -104,7 +104,7 @@ Task<JsonNew> CoinbaseQuoter::send_coinbase_request(RequestMethod method, std::s
         str_response = co_await client->put(api_path + "?" + new_query_std, "");
     }
 
-    JsonNew response = JsonNew::parse(str_response);
+    Json response = Json::parse(str_response);
 
     // Check to save error
     check_save_resonse_error(response, new_query_std, method);

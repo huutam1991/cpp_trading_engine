@@ -10,7 +10,7 @@ APIHandlerStrategyPACurrentInfo::APIHandlerStrategyPACurrentInfo(HttpRequest* re
 
 Task<HttpResponse> APIHandlerStrategyPACurrentInfo::child_handle()
 {
-    JsonNew data;
+    Json data;
 
     // Check request parameter
     std::string type = m_request->get_query_param("type");
@@ -26,7 +26,7 @@ Task<HttpResponse> APIHandlerStrategyPACurrentInfo::child_handle()
     }
 
     // Response
-    JsonNew response;
+    Json response;
     response["data"] = data;
     response["msg"] = "";
     response["status_code"] = OK_200;

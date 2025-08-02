@@ -43,7 +43,7 @@ std::string APIHandler::check_authentication()
     {
         return check_valid_token;
     }
-    JsonNew payload = JWTManager::instance().get_payload(token);
+    Json payload = JWTManager::instance().get_payload(token);
     std::string type = payload["type"];
 
     if (type != "user")

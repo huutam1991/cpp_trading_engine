@@ -3,14 +3,14 @@
 #include <variant>
 #include <string>
 
-#include <c_json/json_type_base.h>
+#include <json/json_type_base.h>
 #include <cache/cache_pool.h>
 #include <cache/share_string.h>
 
-class JsonValueNew;
-using JsonValuePool = CachePool<JsonValueNew, 1000000>;
+class JsonValue;
+using JsonValuePool = CachePool<JsonValue, 1000000>;
 
-class JsonValueNew : public JsonTypeBaseNew
+class JsonValue : public JsonTypeBase
 {
     std::variant<
         std::nullptr_t,
@@ -25,13 +25,13 @@ class JsonValueNew : public JsonTypeBaseNew
     char buffer_number[50]; // Buffer for number conversion
 
 public:
-    JsonValueNew() = default;
-    JsonValueNew(const JsonValueNew&) = delete;
-    JsonValueNew(JsonValueNew&&) = delete;
-    JsonValueNew& operator=(const JsonValueNew&) = delete;
-    JsonValueNew& operator=(JsonValueNew&&) = delete;
+    JsonValue() = default;
+    JsonValue(const JsonValue&) = delete;
+    JsonValue(JsonValue&&) = delete;
+    JsonValue& operator=(const JsonValue&) = delete;
+    JsonValue& operator=(JsonValue&&) = delete;
 
-    virtual ~JsonValueNew() override = default;
+    virtual ~JsonValue() override = default;
 
     template<class T>
     operator T() const
@@ -51,7 +51,7 @@ public:
     }
 
     template<class T>
-    JsonValueNew& operator=(T&& value)
+    JsonValue& operator=(T&& value)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
         {
@@ -95,7 +95,7 @@ public:
         return std::holds_alternative<std::nullptr_t>(m_value);
     }
 
-    // Methosds from JsonTypeBaseNew
+    // Methosds from JsonTypeBase
     virtual bool is_json_value() override
     {
         return true;
@@ -103,15 +103,15 @@ public:
 
     virtual void write_string_value(JsonStringBuilder& builder) override;
 
-    virtual JsonTypeBaseNew* get_copy() override
+    virtual JsonTypeBase* get_copy() override
     {
-        JsonValueNew* json_value = JsonValuePool::acquire();
+        JsonValue* json_value = JsonValuePool::acquire();
         json_value->m_value = m_value;
         json_value->m_is_string_format = m_is_string_format;
         return json_value;
     }
 
-    virtual JsonTypeBaseNew* get_deep_clone() override
+    virtual JsonTypeBase* get_deep_clone() override
     {
         return get_copy(); // For simplicity, deep clone is same as copy in this case
     }

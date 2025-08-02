@@ -66,7 +66,7 @@ size_t MongoQuery::count_documents()
     return (size_t)collection.count_documents({});
 }
 
-std::string MongoQuery::insert_one(const JsonNew& data)
+std::string MongoQuery::insert_one(const Json& data)
 {
     GET_COLLECTION(m_db, m_collection, collection);
     bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
@@ -81,41 +81,41 @@ void MongoQuery::drop()
     collection.drop();
 }
 
-JsonNew MongoQuery::find_any()
+Json MongoQuery::find_any()
 {
     GET_COLLECTION(m_db, m_collection, collection);
     bsoncxx::stdx::optional<bsoncxx::document::value> find = collection.find_one({});
 
     if (find)
     {
-        return JsonNew::parse(bsoncxx::to_json(find.value()));
+        return Json::parse(bsoncxx::to_json(find.value()));
     }
 
     return nullptr;
 }
 
-JsonNew MongoQuery::find_one(const bsoncxx::v_noabi::document::view_or_value& filter)
+Json MongoQuery::find_one(const bsoncxx::v_noabi::document::view_or_value& filter)
 {
     GET_COLLECTION(m_db, m_collection, collection);
     bsoncxx::stdx::optional<bsoncxx::document::value> find = collection.find_one(filter);
 
     if (find)
     {
-        return JsonNew::parse(bsoncxx::to_json(find.value()));
+        return Json::parse(bsoncxx::to_json(find.value()));
     }
 
     return nullptr;
 }
 
-JsonNew MongoQuery::find_many(const bsoncxx::v_noabi::document::view_or_value& filter)
+Json MongoQuery::find_many(const bsoncxx::v_noabi::document::view_or_value& filter)
 {
     GET_COLLECTION(m_db, m_collection, collection);
     mongocxx::cursor cursor = collection.find(filter);
 
-    JsonNew list;
+    Json list;
 
     for (auto doc : cursor) {
-        JsonNew data = JsonNew::parse(bsoncxx::to_json(doc));
+        Json data = Json::parse(bsoncxx::to_json(doc));
 
         if (data != nullptr)
         {
@@ -126,7 +126,7 @@ JsonNew MongoQuery::find_many(const bsoncxx::v_noabi::document::view_or_value& f
     return list;
 }
 
-JsonNew MongoQuery::find_many()
+Json MongoQuery::find_many()
 {
     return find_many({});
 }

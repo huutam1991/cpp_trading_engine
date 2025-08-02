@@ -23,19 +23,19 @@ protected:
     virtual std::vector<Instrument> fetch_instruments() override;
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
     virtual TaskVoid cancel_all_on_exchange(std::string symbol) override;
-    virtual Task<JsonNew> cancel_on_exchange(Order order) override;
-    virtual Task<JsonNew> place_on_exchange(Order order) override;
+    virtual Task<Json> cancel_on_exchange(Order order) override;
+    virtual Task<Json> place_on_exchange(Order order) override;
 
 public:
     BinanceGateway(const std::string& key);
 
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
-    virtual Task<JsonNew> get_balances() override;
+    virtual Task<Json> get_balances() override;
 
 private:
-    Task<JsonNew> get_exchange_info();
-    Task<JsonNew> get_exchange_info_perpetual();
-    void on_depth_update(const Instrument* instrument, JsonNew& payload);
+    Task<Json> get_exchange_info();
+    Task<Json> get_exchange_info_perpetual();
+    void on_depth_update(const Instrument* instrument, Json& payload);
 
     void get_spot_symbols_info();
     void get_perpetual_symbols_info();

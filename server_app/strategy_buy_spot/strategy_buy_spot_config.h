@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <c_json/json.h>
+#include <json/json.h>
 
 struct StrategyBuySpotConfig
 {
@@ -15,7 +15,7 @@ struct StrategyBuySpotConfig
     size_t max_open_orders = 3;
     bool is_running;
 
-    JsonNew to_json()
+    Json to_json()
     {
         return {
             {"symbol", symbol},
@@ -29,7 +29,7 @@ struct StrategyBuySpotConfig
         };
     }
 
-    static StrategyBuySpotConfig from_json(JsonNew& data)
+    static StrategyBuySpotConfig from_json(Json& data)
     {
         StrategyBuySpotConfig res;
 

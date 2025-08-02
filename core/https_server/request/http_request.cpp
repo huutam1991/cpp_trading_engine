@@ -161,12 +161,12 @@ const std::string& HttpRequest::get_query_string()
     return m_query_string;
 }
 
-const std::string HttpRequest::get_query_string_from_query_json(JsonNew& query_object)
+const std::string HttpRequest::get_query_string_from_query_json(Json& query_object)
 {
     std::string res;
     int counter = 0;
 
-    query_object.for_each_with_key([&res, &counter](const std::string& key, JsonNew& param)
+    query_object.for_each_with_key([&res, &counter](const std::string& key, Json& param)
     {
         if (param.is_string())
         {
@@ -191,9 +191,9 @@ const std::string HttpRequest::get_header_param(const std::string& param)
     return PARAM_NOT_FOUND;
 }
 
-JsonNew HttpRequest::get_query_json()
+Json HttpRequest::get_query_json()
 {
-    JsonNew res;
+    Json res;
     for (auto it = m_query_params.begin(); it != m_query_params.end(); it++)
     {
         res[it->first] = it->second;
@@ -273,7 +273,7 @@ HttpResponse HttpRequest::response_not_found_404()
 
 HttpResponse HttpRequest::response_bad_request_400(const std::string& error)
 {
-    JsonNew response;
+    Json response;
     response["data"] = "";
     response["msg"] = error;
     response["status_code"] = BAD_REQUEST_400;
@@ -284,7 +284,7 @@ HttpResponse HttpRequest::response_bad_request_400(const std::string& error)
 
 HttpResponse HttpRequest::response_unauthorized_request_401(const std::string& error)
 {
-    JsonNew response;
+    Json response;
     response["data"] = "";
     response["msg"] = error;
     response["status_code"] = UNAUTHORIZED_REQUEST_401;
@@ -295,7 +295,7 @@ HttpResponse HttpRequest::response_unauthorized_request_401(const std::string& e
 
 HttpResponse HttpRequest::response_internal_error_500()
 {
-    JsonNew response;
+    Json response;
     response["data"] = "";
     response["msg"] = "Internal Server Error";
     response["status_code"] = INTERNAL_SERVER_ERROR_500;

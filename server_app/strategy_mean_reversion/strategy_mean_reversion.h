@@ -5,7 +5,7 @@
 
 #include <utils/util_macros.h>
 #include <app_constants.h>
-#include <c_json/json.h>
+#include <json/json.h>
 #include <data_model/data_model.h>
 #include <coroutine/task.h>
 #include <coroutine/future.h>
@@ -46,8 +46,8 @@ public:
     void on_config_change();
     TaskVoid update();
 
-    JsonNew get_orders_chain();
-    JsonNew get_open_orders();
+    Json get_orders_chain();
+    Json get_open_orders();
 };
 
 class MeanReversionSimpleGuard

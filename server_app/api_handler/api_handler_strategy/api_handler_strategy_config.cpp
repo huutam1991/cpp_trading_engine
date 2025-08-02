@@ -1,7 +1,7 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <strategy/strategy_manager.h>
 
-#include <c_json/json.h>
+#include <json/json.h>
 
 APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHandler(request)
 {
@@ -11,13 +11,13 @@ APIHandlerStrategyConfig::APIHandlerStrategyConfig(HttpRequest* request) : APIHa
 
 Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
 {
-    JsonNew response;
+    Json response;
     std::string strategy_name = m_request->get_query_param("strategy_name");
 
     // GET
     if (m_request->get_request_method() == RequestMethod::GET)
     {
-        JsonNew config = StrategyManager::instance().get_config_by_strategy(strategy_name);
+        Json config = StrategyManager::instance().get_config_by_strategy(strategy_name);
 
         if (config.has_field("code") == false)
         {
@@ -38,9 +38,9 @@ Task<HttpResponse> APIHandlerStrategyConfig::child_handle()
     // POST
     else
     {
-        JsonNew config_data = m_request->get_body_json();
-        JsonNew config = JsonNew::parse(config_data.get_string_value());
-        JsonNew update_result = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
+        Json config_data = m_request->get_body_json();
+        Json config = Json::parse(config_data.get_string_value());
+        Json update_result = StrategyManager::instance().update_config_by_strategy(strategy_name, config);
 
         if (update_result.has_field("code") && (int)update_result["code"] < 0)
         {

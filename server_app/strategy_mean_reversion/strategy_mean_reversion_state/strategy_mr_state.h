@@ -33,7 +33,7 @@ public:
     virtual void end();
     virtual TaskVoid run(StrategyMeanReversionData data);
 
-    virtual JsonNew get_open_orders() = 0;
+    virtual Json get_open_orders() = 0;
 
 protected:
 };

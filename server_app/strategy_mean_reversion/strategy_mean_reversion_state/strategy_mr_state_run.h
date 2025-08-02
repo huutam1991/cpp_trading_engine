@@ -15,7 +15,7 @@ public:
     virtual void end();
     virtual TaskVoid run(StrategyMeanReversionData data);
 
-    virtual JsonNew get_open_orders() override;
+    virtual Json get_open_orders() override;
 
 private:
     double m_current_price = 0.0;

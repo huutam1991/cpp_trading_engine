@@ -65,11 +65,11 @@ void BinanceQuoterPerpetual::init_websocket()
         // on_message
         [this](std::string buffer) -> TaskVoid
         {
-            JsonNew json = JsonNew::parse(buffer);
+            Json json = Json::parse(buffer);
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
             {
-                JsonNew o = json["o"];
+                Json o = json["o"];
 
                 std::string exchange_symbol = o["s"];
                 const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, exchange_symbol);
@@ -152,7 +152,7 @@ Task<std::string> BinanceQuoterPerpetual::get_listen_key()
     client->add_header("X-MBX-APIKEY", m_api_key);
 
     std::string str = co_await client->post("/fapi/v1/listenKey", "");
-    JsonNew data = JsonNew::parse(str);
+    Json data = Json::parse(str);
 
     if (data.has_field("code") && (double)data["code"] < 0)
     {
@@ -172,7 +172,7 @@ TaskVoid BinanceQuoterPerpetual::keep_listen_key()
     client->add_header("X-MBX-APIKEY", m_api_key);
 
     std::string str = co_await client->put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
-    JsonNew data = JsonNew::parse(str);
+    Json data = Json::parse(str);
 
     spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key = {}", m_listen_key);
 
@@ -180,7 +180,7 @@ TaskVoid BinanceQuoterPerpetual::keep_listen_key()
     m_websocket->send_ping();
 }
 
-Task<JsonNew> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
+Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
 {
     co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol);
 }
@@ -191,7 +191,7 @@ TaskVoid BinanceQuoterPerpetual::cancel_all(std::string symbol)
     co_return;
 }
 
-Task<JsonNew> BinanceQuoterPerpetual::cancel(Order order)
+Task<Json> BinanceQuoterPerpetual::cancel(Order order)
 {
     // DELETE /api/v3/order?symbol=BTCUSDT&origClientOrderId=my_custom_id_123&timestamp=1743540000000&signature=abcdef
     std::string query_str;
@@ -204,7 +204,7 @@ Task<JsonNew> BinanceQuoterPerpetual::cancel(Order order)
     co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/order", std::move(query_str));
 }
 
-Task<JsonNew> BinanceQuoterPerpetual::place(Order order)
+Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;

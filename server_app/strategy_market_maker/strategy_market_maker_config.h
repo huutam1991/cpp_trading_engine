@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <c_json/json.h>
+#include <json/json.h>
 
 struct StrategyMarketMakerConfig
 {
@@ -10,7 +10,7 @@ struct StrategyMarketMakerConfig
     double spread = 10.0;
     bool is_running = false;
 
-    JsonNew to_json()
+    Json to_json()
     {
         return {
             {"symbol", symbol},
@@ -20,7 +20,7 @@ struct StrategyMarketMakerConfig
         };
     }
 
-    static StrategyMarketMakerConfig from_json(JsonNew& data)
+    static StrategyMarketMakerConfig from_json(Json& data)
     {
         StrategyMarketMakerConfig res;
 

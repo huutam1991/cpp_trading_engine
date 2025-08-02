@@ -57,7 +57,7 @@ void CoinbaseQuoterSpot::init_websocket()
         // on_message
         [this](std::string buffer) -> TaskVoid
         {
-            JsonNew json = JsonNew::parse(buffer);
+            Json json = Json::parse(buffer);
 
             if (json["e"] == "executionReport")
             {
@@ -162,7 +162,7 @@ Task<std::string> CoinbaseQuoterSpot::get_listen_key()
     // RequestFuture coinbase_request(m_url, m_port, "/api/v3/userDataStream", RequestMethod::POST);
     // coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
 
-    // JsonNew data = co_await coinbase_request.send_request();
+    // Json data = co_await coinbase_request.send_request();
     // co_return data["listenKey"];
 
     co_return "listenKey";
@@ -180,7 +180,7 @@ TaskVoid CoinbaseQuoterSpot::keep_listen_key()
     co_return;
 }
 
-JsonNew CoinbaseQuoterSpot::get_trade_result_from_response(JsonNew& response)
+Json CoinbaseQuoterSpot::get_trade_result_from_response(Json& response)
 {
     // Return empty data if has error
     if ((long)response["code"] < 0)
@@ -201,9 +201,9 @@ JsonNew CoinbaseQuoterSpot::get_trade_result_from_response(JsonNew& response)
     // Get fill symbol + quantity
     if (response.has_field("fills"))
     {
-        JsonNew fills = response["fills"];
+        Json fills = response["fills"];
 
-        fills.for_each([&](JsonNew& fill)
+        fills.for_each([&](Json& fill)
         {
             double f_quantity = std::stod(std::string(fill["qty"]));
             double f_commission = std::stod(std::string(fill["commission"]));
@@ -232,7 +232,7 @@ JsonNew CoinbaseQuoterSpot::get_trade_result_from_response(JsonNew& response)
     };
 }
 
-Task<JsonNew> CoinbaseQuoterSpot::get_open_orders(std::string symbol)
+Task<Json> CoinbaseQuoterSpot::get_open_orders(std::string symbol)
 {
     co_return co_await send_coinbase_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);
 }
@@ -244,7 +244,7 @@ TaskVoid CoinbaseQuoterSpot::cancel_all(std::string symbol)
     co_return;
 }
 
-Task<JsonNew> CoinbaseQuoterSpot::cancel(Order order)
+Task<Json> CoinbaseQuoterSpot::cancel(Order order)
 {
     // DELETE /api/v3/order?symbol=BTCUSDT&origClientOrderId=my_custom_id_123&timestamp=1743540000000&signature=abcdef
     std::string query_str;
@@ -255,7 +255,7 @@ Task<JsonNew> CoinbaseQuoterSpot::cancel(Order order)
     co_return co_await send_coinbase_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str));
 }
 
-Task<JsonNew> CoinbaseQuoterSpot::place(Order order)
+Task<Json> CoinbaseQuoterSpot::place(Order order)
 {
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;

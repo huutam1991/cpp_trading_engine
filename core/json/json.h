@@ -1,41 +1,41 @@
 #pragma once
 
-#include <c_json/json_type_base.h>
-#include <c_json/json_value.h>
+#include <json/json_type_base.h>
+#include <json/json_value.h>
 
 #define STRING_BUFFER_SIZE 100000 // Reserve space for 100000 characters
 
-class JsonNew
+class Json
 {
-    JsonTypeBaseNew* m_value = nullptr;
+    JsonTypeBase* m_value = nullptr;
 
 public:
-    JsonNew();
+    Json();
 
-    JsonNew(const JsonNew& copy) noexcept
+    Json(const Json& copy) noexcept
     {
         m_value = copy.m_value ? copy.m_value->get_copy() : nullptr;
     }
 
-    JsonNew(JsonNew&& copy) noexcept
+    Json(Json&& copy) noexcept
     {
         // Transfer ownership
         m_value = copy.m_value;
         copy.m_value = nullptr;
     }
 
-    JsonNew(std::initializer_list<std::pair<std::string, JsonNew>> json_list);
+    Json(std::initializer_list<std::pair<std::string, Json>> json_list);
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
-    JsonNew(T&& value)
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
+    Json(T&& value)
     {
         check_create_json_value();
-        ((JsonValueNew*)m_value)->operator=(std::forward<T>(value));
+        ((JsonValue*)m_value)->operator=(std::forward<T>(value));
     }
 
-    static JsonNew parse(std::string json_string);
+    static Json parse(std::string json_string);
 
-    JsonNew& operator=(const JsonNew& copy) noexcept
+    Json& operator=(const Json& copy) noexcept
     {
         if (this != &copy)
         {
@@ -49,7 +49,7 @@ public:
         return *this;
     }
 
-    JsonNew& operator=(JsonNew&& copy) noexcept
+    Json& operator=(Json&& copy) noexcept
     {
         if (this != &copy)
         {
@@ -64,11 +64,11 @@ public:
         return *this;
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
-    JsonNew& operator=(T&& value)
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
+    Json& operator=(T&& value)
     {
         check_create_json_value();
-        ((JsonValueNew*)m_value)->operator=(std::forward<T>(value));
+        ((JsonValue*)m_value)->operator=(std::forward<T>(value));
         return *this;
     }
 
@@ -81,33 +81,33 @@ public:
         }
         else
         {
-            return ((JsonValueNew*)m_value)->operator T();
+            return ((JsonValue*)m_value)->operator T();
         }
     }
 
-    JsonNew& operator[](const char* key);
-    JsonNew& operator[](const std::string& key);
-    JsonNew& operator[](size_t index);
+    Json& operator[](const char* key);
+    Json& operator[](const std::string& key);
+    Json& operator[](size_t index);
 
     template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
-    JsonNew& operator[](T index)
+    Json& operator[](T index)
     {
         return (*this)[static_cast<size_t>(index)];
     }
 
-    bool operator==(const JsonNew& other) const
+    bool operator==(const Json& other) const
     {
         // Check if both m_value pointers are the same
         return m_value == other.m_value;
     }
 
-    bool operator!=(const JsonNew& other) const
+    bool operator!=(const Json& other) const
     {
         // Check if both m_value pointers are the same
         return m_value != other.m_value;
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
     bool operator ==(T value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
@@ -118,33 +118,33 @@ public:
         {
             if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
             {
-                const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
+                const ShareString& share_string = ((JsonValue*)m_value)->operator ShareString();
                 std::string_view current_value = share_string.data();
                 std::string_view value_view(value);
                 return current_value == value_view;
             }
             else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
             {
-                const ShareString& share_string = ((JsonValueNew*)m_value)->operator ShareString();
+                const ShareString& share_string = ((JsonValue*)m_value)->operator ShareString();
                 std::string_view current_value = share_string.data();
                 return current_value == value;
             }
             else
             {
-                T current_value = ((JsonValueNew*)m_value)->operator T();
+                T current_value = ((JsonValue*)m_value)->operator T();
                 return current_value == value;
             }
         }
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
     bool operator !=(T value) const
     {
         // Reuse == operator
         return operator==(value) == false;
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
     bool operator <(const T& value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
@@ -153,12 +153,12 @@ public:
         }
         else
         {
-            T current_value = ((JsonValueNew*)m_value)->operator T();
+            T current_value = ((JsonValue*)m_value)->operator T();
             return current_value < value;
         }
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
     bool operator >(const T& value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
@@ -167,48 +167,48 @@ public:
         }
         else
         {
-            T current_value = ((JsonValueNew*)m_value)->operator T();
+            T current_value = ((JsonValue*)m_value)->operator T();
             return current_value > value;
         }
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
     bool operator <=(const T& value) const
     {
         // Reuse > operator
         return operator>(value) == false;
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
     bool operator >=(const T& value) const
     {
         // Reuse < operator
         return operator<(value) == false;
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
-    JsonNew& operator +=(const T& value)
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
+    Json& operator +=(const T& value)
     {
         check_create_json_value();
-        T current_value = ((JsonValueNew*)m_value)->operator T();
+        T current_value = ((JsonValue*)m_value)->operator T();
         current_value += value;
-        ((JsonValueNew*)m_value)->operator=(current_value);
+        ((JsonValue*)m_value)->operator=(current_value);
         return *this;
     }
 
-    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, JsonNew>::value, int> = 0>
-    JsonNew& operator -=(const T& value)
+    template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
+    Json& operator -=(const T& value)
     {
         operator+=(-value); // Reuse += operator
         return *this;
     }
 
-    void for_each(std::function<void(JsonNew&)> loop_func);
-    void for_each_with_key(std::function<void(const std::string&,JsonNew&)> loop_func);
-    void for_each_with_index(std::function<void(size_t,JsonNew&)> loop_func);
+    void for_each(std::function<void(Json&)> loop_func);
+    void for_each_with_key(std::function<void(const std::string&,Json&)> loop_func);
+    void for_each_with_index(std::function<void(size_t,Json&)> loop_func);
 
-    using iterator = std::unordered_map<std::string, JsonNew>::iterator;
-    using const_iterator = std::unordered_map<std::string, JsonNew>::const_iterator;
+    using iterator = std::unordered_map<std::string, Json>::iterator;
+    using const_iterator = std::unordered_map<std::string, Json>::const_iterator;
     iterator begin();
     iterator end();
     const_iterator begin() const;
@@ -221,7 +221,7 @@ public:
     {
         if (m_value)
         {
-            ((JsonValueNew*)m_value)->set_is_string_format(val);
+            ((JsonValue*)m_value)->set_is_string_format(val);
         }
     }
 
@@ -230,7 +230,7 @@ public:
         return m_value == nullptr ?
             false :
             m_value->is_json_value() ?
-                ((JsonValueNew*)m_value)->is_string() :
+                ((JsonValue*)m_value)->is_string() :
                 false;
     }
 
@@ -242,12 +242,12 @@ public:
     int size() const;
     int capacity() const;
     void reverse();
-    void sort(std::function<bool(JsonNew&, JsonNew&)> compare_func);
-    void push_back(const JsonNew& value);
+    void sort(std::function<bool(Json&, Json&)> compare_func);
+    void push_back(const Json& value);
 
-    JsonNew deep_clone()
+    Json deep_clone()
     {
-        JsonNew res;
+        Json res;
         res.m_value = m_value ? m_value->get_deep_clone() : nullptr;
         return res;
     }
@@ -258,7 +258,7 @@ public:
         return is_null();
     }
 
-    ~JsonNew()
+    ~Json()
     {
         if (m_value != nullptr)
         {
@@ -297,10 +297,10 @@ private:
 };
 
 template <>
-struct fmt::formatter<JsonNew> : fmt::formatter<std::string>
+struct fmt::formatter<Json> : fmt::formatter<std::string>
 {
     template <typename FormatContext>
-    auto format(const JsonNew& json, FormatContext& ctx)
+    auto format(const Json& json, FormatContext& ctx)
     {
         return fmt::formatter<std::string>::format(json.get_string_value(), ctx);
     }

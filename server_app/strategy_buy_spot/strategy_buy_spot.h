@@ -10,7 +10,7 @@ class StrategyBuySpot : public StrategyBase<StrategyBuySpotConfig, EventBaseID::
 private:
     std::shared_ptr<Gateway> m_gateway;
 
-    JsonNew get_profit();
+    Json get_profit();
 
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
@@ -18,5 +18,5 @@ protected:
     virtual void on_config_change(StrategyBuySpotConfig new_config) override;
 
 public:
-    virtual JsonNew get_info(JsonNew& params) override;
+    virtual Json get_info(Json& params) override;
 };

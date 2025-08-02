@@ -353,9 +353,9 @@ TaskVoid StrategyBuySpotStateRun::update(StrategyUpdateData data)
     co_return;
 }
 
-// JsonNew StrategyBuySpotStateRun::get_open_orders()
+// Json StrategyBuySpotStateRun::get_open_orders()
 // {
-//     JsonNew open_orders;
+//     Json open_orders;
 
 //     for (auto& [_, order_info] : m_current_open_orders)
 //     {

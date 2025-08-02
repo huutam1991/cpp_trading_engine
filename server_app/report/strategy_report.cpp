@@ -11,17 +11,17 @@
 //     long today_0h = Utils::instance().get_0h_today_in_utc() * 1000;
 //     long tomorrow_0h = Utils::instance().get_0h_tomorrow_in_utc() * 1000;
 
-//     JsonNew trading_strategy_result = AppUtils::instance().get_trading_strategy_result(user, today_0h, tomorrow_0h);
+//     Json trading_strategy_result = AppUtils::instance().get_trading_strategy_result(user, today_0h, tomorrow_0h);
 //     generate_excel_file(trading_strategy_result);
 // }
 
 // void StrategyReport::export_strategy_report_by_time(User* user, long from, long to)
 // {
-//     JsonNew trading_strategy_result = AppUtils::instance().get_trading_strategy_result(user, from, to);
+//     Json trading_strategy_result = AppUtils::instance().get_trading_strategy_result(user, from, to);
 //     generate_excel_file(trading_strategy_result);
 // }
 
-// void StrategyReport::generate_excel_file(JsonNew& trading_strategy_result)
+// void StrategyReport::generate_excel_file(Json& trading_strategy_result)
 // {
 //     libxl::Book* book = xlCreateBook();
 //     if(book)
@@ -83,7 +83,7 @@
 //                 &status,
 //                 &orderId,
 //                 &line_counter
-//             ] (const std::string& strategy_name, JsonNew& symbol_list)
+//             ] (const std::string& strategy_name, Json& symbol_list)
 //             {
 //                 symbol_list.for_each_with_key([
 //                     &book,
@@ -93,7 +93,7 @@
 //                     format_MS,
 //                     format_MMA,
 //                     &strategy_name
-//                 ](const std::string& symbol_name, JsonNew& trading_result_list)
+//                 ](const std::string& symbol_name, Json& trading_result_list)
 //                 {
 //                     trading_result_list.for_each([
 //                         &book,
@@ -104,7 +104,7 @@
 //                         format_MMA,
 //                         &strategy_name
 //                     ]
-//                     (JsonNew& trading_result)
+//                     (Json& trading_result)
 //                     {
 //                         int row = line_counter++ + 3;
 

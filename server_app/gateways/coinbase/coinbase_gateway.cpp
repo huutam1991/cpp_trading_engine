@@ -8,7 +8,7 @@ CoinbaseGateway::CoinbaseGateway(const std::string& key) :
     m_market_data_spot(COINBASE_ADVANCE_REALNET_WS_URL, COINBASE_ADVANCE_REALNET_WS_PORT)
     // m_market_data_perpetual(COINBASE_FUTURES_WS_URL, COINBASE_FUTURES_WS_PORT)
 {
-    JsonNew account = Account::load_account_by_key(key);
+    Json account = Account::load_account_by_key(key);
     bool is_testnet = account["is_testnet"];
 
     // Update url + port for market data SPOT
@@ -25,12 +25,12 @@ CoinbaseGateway::CoinbaseGateway(const std::string& key) :
     // m_symbols_info["perpetual"] = get_perpetual_symbols_info();
 }
 
-JsonNew CoinbaseGateway::get_spot_symbols_info()
+Json CoinbaseGateway::get_spot_symbols_info()
 {
     return {};
 }
 
-JsonNew CoinbaseGateway::get_perpetual_symbols_info()
+Json CoinbaseGateway::get_perpetual_symbols_info()
 {
     return {};
 }
@@ -55,21 +55,21 @@ std::string CoinbaseGateway::round_string_number(const std::string& str_number, 
 void CoinbaseGateway::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
     // Spot
-    // m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, JsonNew& payload)
+    // m_market_data_spot.subscribe_symbol(symbols, [this](const std::string& symbol, Json& payload)
     // {
     //     this->on_depth_update(symbol, payload);
     // });
     // m_market_data_spot.start();
 
     // Perpetual
-    // m_market_data_perpetual.subscribe_symbol(symbol, [this](const std::string& symbol, JsonNew& payload)
+    // m_market_data_perpetual.subscribe_symbol(symbol, [this](const std::string& symbol, Json& payload)
     // {
     //     this->on_depth_update(symbol, payload);
     // });
     // m_market_data_perpetual.start();
 }
 
-void CoinbaseGateway::on_depth_update(const std::string& symbol, JsonNew& payload)
+void CoinbaseGateway::on_depth_update(const std::string& symbol, Json& payload)
 {
     double best_bid = payload["bids"][0][0];
     double best_ask = payload["asks"][0][0];
@@ -85,12 +85,12 @@ Task<std::unordered_set<OrderId>> CoinbaseGateway::get_open_orders_on_exchange(s
     std::unordered_set<OrderId> res;
 
     // Currently, only implement for SPOT
-    JsonNew open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
+    Json open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
 
     // Add order_id to [res]
     if (open_orders.is_array() == true)
     {
-        open_orders.for_each([&res](JsonNew& order)
+        open_orders.for_each([&res](Json& order)
         {
             if (order.has_field("clientOrderId"))
             {
@@ -116,20 +116,20 @@ TaskVoid CoinbaseGateway::cancel_all_on_exchange(std::string symbol)
     co_return;
 }
 
-Task<JsonNew> CoinbaseGateway::cancel_on_exchange(Order order)
+Task<Json> CoinbaseGateway::cancel_on_exchange(Order order)
 {
     // Currently, only implement for SPOT
     co_return co_await m_quoter_spot.cancel(std::move(order));
 }
 
-Task<JsonNew> CoinbaseGateway::place_on_exchange(Order order)
+Task<Json> CoinbaseGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
     CoinbaseQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
         (CoinbaseQuoter*)&m_quoter_spot :
         (CoinbaseQuoter*)&m_quoter_perpetual;
 
-    JsonNew response = co_await quoter->place(order);
+    Json response = co_await quoter->place(order);
 
     // Check if order is rejected
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
@@ -143,11 +143,11 @@ Task<JsonNew> CoinbaseGateway::place_on_exchange(Order order)
     co_return response;
 }
 
-Task<JsonNew> CoinbaseGateway::get_balances()
+Task<Json> CoinbaseGateway::get_balances()
 {
-    JsonNew balances = co_await m_quoter_spot.get_balances();
+    Json balances = co_await m_quoter_spot.get_balances();
 
-    balances["balances"].for_each([](JsonNew& balance)
+    balances["balances"].for_each([](Json& balance)
     {
         balance["available"] = std::stod((std::string)balance["free"]) + std::stod((std::string)balance["locked"]);
 

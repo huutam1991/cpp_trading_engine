@@ -6,9 +6,9 @@
 
 #include <app_constants.h>
 
-#include <c_json/json.h>
-#include <c_json/json_value.h>
-#include <c_json/json_object.h>
+#include <json/json.h>
+#include <json/json_value.h>
+#include <json/json_object.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
@@ -61,10 +61,10 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
             std::string lower_case_symbol = instrument->exchange_symbol;
             STRING_LOWER_CASE(lower_case_symbol);
 
-            JsonNew params;
+            Json params;
             params[0] = lower_case_symbol + "@depth5@500ms";
 
-            JsonNew subcribe;
+            Json subcribe;
             subcribe["method"] = "SUBSCRIBE";
             subcribe["params"] = params;
             subcribe["id"] = stream_id;
@@ -94,7 +94,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
         {
             // MeasureTime t("Handle price update PERPETUAL", MeasureUnit::MICROSECOND);
 
-            JsonNew depth = JsonNew();
+            Json depth = Json();
             if (this->standardize_data(std::move(buffer), depth))
             {
                 // spdlog::debug("Stream depth: {}", depth);
@@ -108,7 +108,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
                 // // Save this none json data for checking error
                 // MongoDB::instance()
                 //     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                //     .insert_one(JsonNew::parse(buffer));
+                //     .insert_one(Json::parse(buffer));
             }
 
             co_return;
@@ -145,16 +145,16 @@ void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, con
     m_port = port;
 }
 
-void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, JsonNew& payload)> call_back)
+void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
 {
     m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
 }
 
-bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& depth)
+bool BinanceMarketDataPerpetual::standardize_data(std::string data, Json& depth)
 {
     MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
-    JsonNew order_book = JsonNew::parse(std::move(data));
+    Json order_book = Json::parse(std::move(data));
     // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
 
     if (order_book.has_field("a") && order_book.has_field("b"))
@@ -165,14 +165,14 @@ bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& dep
         depth["e"] = "depthUpdate";
 
         // update asks
-        JsonNew A;
-        JsonNew asks = order_book["a"];
+        Json A;
+        Json asks = order_book["a"];
         A.set_size(0);
-        asks.for_each([&A](JsonNew& data)
+        asks.for_each([&A](Json& data)
         {
-            JsonNew j;
-            JsonNew a0 = std::stod((std::string)data[0]);
-            JsonNew a1 = std::stod((std::string)data[1]);
+            Json j;
+            Json a0 = std::stod((std::string)data[0]);
+            Json a1 = std::stod((std::string)data[1]);
             j.push_back(a0);
             j.push_back(a1);
             A.push_back(j);
@@ -180,14 +180,14 @@ bool BinanceMarketDataPerpetual::standardize_data(std::string data, JsonNew& dep
         depth["asks"] = A;
 
         // update bids
-        JsonNew B;
-        JsonNew bids = order_book["b"];
+        Json B;
+        Json bids = order_book["b"];
         B.set_size(0);
-        bids.for_each([&B](JsonNew& data)
+        bids.for_each([&B](Json& data)
         {
-            JsonNew j;
-            JsonNew b0 = std::stod((std::string)data[0]);
-            JsonNew b1 = std::stod((std::string)data[1]);
+            Json j;
+            Json b0 = std::stod((std::string)data[0]);
+            Json b1 = std::stod((std::string)data[1]);
             j.push_back(b0);
             j.push_back(b1);
             B.push_back(j);

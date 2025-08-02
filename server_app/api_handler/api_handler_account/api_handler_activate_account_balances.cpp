@@ -16,25 +16,25 @@ Task<HttpResponse> APIHandlerActivateAccountBalances::child_handle()
 {
     // Get [symbols_set] from request
     std::set<std::string> symbols_set;
-    JsonNew symbols = m_request->get_body_param_json("symbols");
-    symbols.for_each([&symbols_set](JsonNew& symbol)
+    Json symbols = m_request->get_body_param_json("symbols");
+    symbols.for_each([&symbols_set](Json& symbol)
     {
         symbols_set.insert(std::string(symbol));
     });
 
     // Get activate account's balances
-    JsonNew activate_accounts = MongoDB::instance()
+    Json activate_accounts = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts")
         .find_many();
     std::string exchange = activate_accounts[0]["exchange"];
 
     // Use coroutine
-    JsonNew balances = co_await GatewayManager::instance().get_gateway(exchange)->get_balances();
+    Json balances = co_await GatewayManager::instance().get_gateway(exchange)->get_balances();
     // spdlog::debug("balances: {}", balances);
 
     // Form response data from [balances] + [symbols_set]
-    JsonNew data;
-    balances.for_each([&symbols_set, &data](JsonNew& balance)
+    Json data;
+    balances.for_each([&symbols_set, &data](Json& balance)
     {
         std::string asset = balance["asset"];
 
@@ -45,7 +45,7 @@ Task<HttpResponse> APIHandlerActivateAccountBalances::child_handle()
     });
 
     // Response
-    JsonNew response;
+    Json response;
     response["data"] = data;
     response["msg"] = "activate account of exchange [" + exchange + "] balances";
     response["status_code"] = OK_200;
