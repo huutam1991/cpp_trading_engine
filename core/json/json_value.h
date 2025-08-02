@@ -65,6 +65,10 @@ public:
         {
             m_value = ShareString(std::string(std::forward<T>(value)));
         }
+        else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
+        {
+            m_value = static_cast<bool>(std::forward<T>(value));
+        }
         else if constexpr (std::is_same_v<std::decay_t<T>, double>)
         {
             m_value = static_cast<double>(std::forward<T>(value));
