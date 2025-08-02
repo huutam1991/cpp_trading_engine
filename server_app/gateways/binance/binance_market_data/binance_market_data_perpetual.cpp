@@ -73,6 +73,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
 
             if (auto ws = websocket.lock())
             {
+                // spdlog::debug("BinanceMarketDataPerpetual - subcribe: {}", subcribe);
                 ws->send(subcribe.get_string_value());
 
                 // Set period time to send ping frame at every 30 seconds
