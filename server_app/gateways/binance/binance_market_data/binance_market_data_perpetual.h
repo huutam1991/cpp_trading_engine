@@ -7,6 +7,7 @@
 #include <json/json.h>
 
 #include <instrument/instrument.h>
+#include <gateways/binance/binance_market_data/order_book/order_book.h>
 
 class BinanceMarketDataPerpetual
 {
@@ -29,8 +30,11 @@ private:
 
     EventBase* m_event_base = nullptr;
 
-    std::unordered_map<const Instrument*, std::shared_ptr<WebsocketClientAsync>> m_websockets;
+    std::unordered_map<const Instrument*, std::shared_ptr<OrderBook>> m_orderbooks;
     std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
+
+    TaskVoid init_order_book();
+    TaskVoid check_sync_order_book();
 
     size_t get_stream_id_count();
 };

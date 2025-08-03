@@ -27,111 +27,61 @@ BinanceMarketDataPerpetual::~BinanceMarketDataPerpetual()
 
 void BinanceMarketDataPerpetual::start()
 {
+    TaskVoid task = init_order_book();
+    task.register_on(m_event_base);
+}
+
+TaskVoid BinanceMarketDataPerpetual::init_order_book()
+{
     // Close all remaining websockets
-    for (auto& [_, websocket] : m_websockets)
+    for (auto& [_, order_book] : m_orderbooks)
     {
-        websocket->close();
+        // order_book->close();
     }
-    m_websockets.clear();
+    m_orderbooks.clear();
 
     for (size_t i = 0; i < m_instruments.size(); i++)
     {
         start_websocket(m_instruments[i]);
     }
+
+    static bool start_sync_order_book = false;
+    if (start_sync_order_book == false)
+    {
+        TaskVoid task = check_sync_order_book();
+        task.register_on(m_event_base);
+        start_sync_order_book = true;
+    }
+
+    co_return;
+}
+
+TaskVoid BinanceMarketDataPerpetual::check_sync_order_book()
+{
+    // Loop to send REST request to query orderbook (full) at every 5 seconds, if the orderbook is not synced yet
+    while (true)
+    {
+        for (auto& [_, order_book] : m_orderbooks)
+        {
+            if (order_book->is_not_synced())
+            {
+                co_await order_book->send_request_get_full_order_book();
+            }
+        }
+
+        co_await Timer::sleep_for(5000);
+    }
 }
 
 void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
 {
-    if (m_websockets.find(instrument) != m_websockets.end())
+    if (m_orderbooks.find(instrument) != m_orderbooks.end())
     {
         return; // Already started
     }
 
-    auto websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
-    m_websockets.insert(std::make_pair(instrument, websocket));
-
-    websocket->set_callbacks(
-        // on_connect
-        [this, instrument, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> TaskVoid
-        {
-            spdlog::info("Binance websocket depth connected");
-
-            // Subcribe for depth
-            size_t stream_id = get_stream_id_count();
-            std::string lower_case_symbol = instrument->exchange_symbol;
-            STRING_LOWER_CASE(lower_case_symbol);
-
-            Json params;
-            params[0] = lower_case_symbol + "@depth5@500ms";
-
-            Json subcribe;
-            subcribe["method"] = "SUBSCRIBE";
-            subcribe["params"] = params;
-            subcribe["id"] = stream_id;
-
-            spdlog::info("subcribe = {}", subcribe);
-
-            if (auto ws = websocket.lock())
-            {
-                // spdlog::debug("BinanceMarketDataPerpetual - subcribe: {}", subcribe);
-                ws->send(subcribe.get_string_value());
-
-                // Set period time to send ping frame at every 30 seconds
-                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> TaskVoid
-                {
-                    if (auto ws = websocket.lock())
-                    {
-                        ws->send_ping();
-                    }
-
-                    co_return;
-                }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
-            }
-
-            co_return;
-        },
-        // on_message
-        [this, instrument](std::string buffer) -> TaskVoid
-        {
-            // MeasureTime t("Handle price update PERPETUAL", MeasureUnit::MICROSECOND);
-
-            Json depth = Json();
-            if (this->standardize_data(std::move(buffer), depth))
-            {
-                // spdlog::debug("Stream depth: {}", depth);
-                if (m_on_callback != nullptr)
-                {
-                    m_on_callback(instrument, depth);
-                }
-            }
-            else
-            {
-                // // Save this none json data for checking error
-                // MongoDB::instance()
-                //     .set_db_and_collection(STRATEGY_DB_NAME, "websocket_invalid_market_data")
-                //     .insert_one(Json::parse(buffer));
-            }
-
-            co_return;
-        },
-        // on_disconnect
-        [this, instrument]() -> TaskVoid
-        {
-            // Re-start
-            spdlog::debug("Disconnect, re-start BinanceMarketDataPerpetual");
-            this->start_websocket(instrument);
-
-            co_return;
-        },
-        // on_close
-        []() -> TaskVoid
-        {
-            spdlog::debug("BinanceMarketDataPerpetual close");
-            co_return;
-        }
-    );
-
-    websocket->connect(m_url, m_port, "/ws");
+    auto order_book = std::make_shared<OrderBook>(instrument->exchange_symbol, 5, IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
+    m_orderbooks.insert(std::make_pair(instrument, order_book));
 }
 
 size_t BinanceMarketDataPerpetual::get_stream_id_count()
