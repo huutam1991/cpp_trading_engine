@@ -19,10 +19,10 @@ namespace websocket = beast::websocket;  // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;             // from <boost/asio.hpp>
 using tcp = net::ip::tcp;
 
-class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync> 
+class WebsocketClientAsync : public std::enable_shared_from_this<WebsocketClientAsync>
 {
 public:
-    WebsocketClientAsync(net::io_context& io_context, EventBase* event_base);
+    WebsocketClientAsync(net::io_context& io_context, EventBase* event_base, std::string name = "");
     ~WebsocketClientAsync();
 
     void set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close);
@@ -41,6 +41,7 @@ private:
     beast::flat_buffer m_buffer;
 
     EventBase* m_event_base = nullptr;
+    std::string m_name;
 
     std::string m_host;
     std::string m_path;

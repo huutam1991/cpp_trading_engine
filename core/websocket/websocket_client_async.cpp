@@ -1,12 +1,13 @@
 #include <websocket/websocket_client_async.h>
 #include <utils/util_macros.h>
 
-WebsocketClientAsync::WebsocketClientAsync(net::io_context& io_context, EventBase* event_base) :
+WebsocketClientAsync::WebsocketClientAsync(net::io_context& io_context, EventBase* event_base, std::string name) :
     m_ioc(io_context),
     m_resolver(m_ioc),
     m_ssl_ctx(boost::asio::ssl::context::tlsv12_client),
     m_ws(m_ioc, m_ssl_ctx),
-    m_event_base(event_base)
+    m_event_base(event_base),
+    m_name(std::move(name))
 {
     m_ssl_ctx.set_verify_mode(boost::asio::ssl::verify_peer);
     m_ssl_ctx.set_default_verify_paths();
@@ -14,7 +15,7 @@ WebsocketClientAsync::WebsocketClientAsync(net::io_context& io_context, EventBas
 
 WebsocketClientAsync::~WebsocketClientAsync()
 {
-    spdlog::debug("Close WebsocketClientAsync");
+    spdlog::debug("Close WebsocketClientAsync: [{}]", m_name);
 }
 
 void WebsocketClientAsync::set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close)
@@ -178,7 +179,7 @@ void WebsocketClientAsync::on_ping(beast::error_code ec)
         return fail("on_ping", ec);
     }
 
-    spdlog::debug("WebsocketClientAsync - Ping sent successfully, ec: {}", ec.message());
+    spdlog::debug("WebsocketClientAsync: [{}] - Ping sent successfully, ec: {}", m_name, ec.message());
 }
 
 void WebsocketClientAsync::close()
