@@ -32,13 +32,15 @@ bool OrderBook::is_not_synced()
 
 void OrderBook::OnOrderbookWs(std::string data)
 {
+    MeasureTime t("OrderBook::OnOrderbookWs, handle from websocket", MeasureUnit::MICROSECOND);
     if (DedupeChecker::is_duplicate(data) == true)
     {
-        std::cout << "[WS] data is duplicate: " << data << std::endl;
+        spdlog::debug("[WS] data is duplicate: {}", data);
         return;
     }
 
     Json update = Json::parse(data);
+    // spdlog::debug("[WS] OrderBook update: {}", update);
 
     uint64_t pu = update["pu"];
     uint64_t u  = update["u"];
@@ -46,7 +48,7 @@ void OrderBook::OnOrderbookWs(std::string data)
 
     if (!m_snapshot_loaded)
     {
-        std::cout << "[WS] symbol: [" << m_symbol << "], Snapshot not loaded — skipping update\n";
+        spdlog::debug("[WS] symbol: [{}], Snapshot not loaded — skipping update", m_symbol);
         return;
     }
 
@@ -56,12 +58,11 @@ void OrderBook::OnOrderbookWs(std::string data)
         {
             m_ws_waiting_first_event = false;
             m_ws_last_update_id = u; // Sync from here
-            std::cout << "[WS] symbol: [" << m_symbol << "], First valid event applied: U=" << U << ", u=" << u << "\n";
+            spdlog::debug("[WS] symbol: [{}], First valid event applied: U={}, u={}", m_symbol, U, u);
         }
         else
         {
-            std::cout << "[WS] symbol: [" << m_symbol << "], Waiting for first valid event. Got U=" << U << ", u=" << u
-                      << ", expected to cover lastUpdateId=" << m_ws_last_update_id << "\n";
+            spdlog::debug("[WS] symbol: [{}], Waiting for first valid event. Got U={}, u={}, expected to cover lastUpdateId={}", m_symbol, U, u, m_ws_last_update_id);
             return;
         }
     }
@@ -70,8 +71,7 @@ void OrderBook::OnOrderbookWs(std::string data)
         // Only after sync is started, we enforce pu == lastUpdateId
         if (pu != m_ws_last_update_id)
         {
-            std::cout << "[WS] symbol: [" << m_symbol << "], Update chain broken: pu=" << pu << ", expected=" << m_ws_last_update_id
-                      << " -> triggering snapshot reload\n";
+            spdlog::debug("[WS] symbol: [{}], Update chain broken: pu={}, expected={} -> triggering snapshot reload", m_symbol, pu, m_ws_last_update_id);
             m_snapshot_loaded = false;
             m_ws_waiting_first_event = true;
             return;
@@ -83,6 +83,7 @@ void OrderBook::OnOrderbookWs(std::string data)
     // Apply asks
     update["a"].for_each([this](Json& level)
     {
+        // MeasureTime t("OrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
         if (quantity == 0.0)
@@ -98,8 +99,10 @@ void OrderBook::OnOrderbookWs(std::string data)
     // Apply bids
     update["b"].for_each([this](Json& level)
     {
+        // MeasureTime t("OrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
+        // spdlog::debug("[WS] OrderBook price: {}, quantity: {}", price, quantity);
         if (quantity == 0.0)
         {
             m_bids.erase(price);
@@ -110,14 +113,14 @@ void OrderBook::OnOrderbookWs(std::string data)
         }
     });
 
-    std::cout << "[WS] symbol: [" << m_symbol << "], Update applied successfully: u=" << u << "\n";
+    // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
 }
 
 void OrderBook::OnOrderbookRest(std::string data)
 {
     if (DedupeChecker::is_duplicate(data) == true)
     {
-        std::cout << "[Rest] data is duplicate: " << data << std::endl;
+        spdlog::debug("[Rest] data is duplicate: {}", data);
         return;
     }
 
@@ -163,17 +166,16 @@ void OrderBook::apply_snapshot(Json& snapshsot)
 
 void OrderBook::print_order_book()
 {
-    std::cout << "[Rest] OrderBook update snapshot for symbol: " << m_symbol << std::endl;
-    std::cout << "[Rest] asks: " << std::endl;
+    spdlog::debug("[Rest] OrderBook update snapshot for symbol: {}", m_symbol);
+    spdlog::debug("[Rest] asks: ");
     for (auto& [price, quantity] : m_asks)
     {
-        std::cout << std::setprecision(15) << "[Rest] [" << price << " - " << quantity << "], " << std::endl;
+        spdlog::debug("[Rest] [{} - {}], ", price, quantity);
     }
 
-    std::cout << "[Rest] bids: " << std::endl;
+    spdlog::debug("[Rest] bids: ");
     for (auto& [price, quantity] : m_bids)
     {
-        std::cout << std::setprecision(15) << "[Rest] [" << price << " - " << quantity << "], " << std::endl;
+        spdlog::debug("[Rest] [{} - {}], ", price, quantity);
     }
-    std::cout << std::endl;
 }

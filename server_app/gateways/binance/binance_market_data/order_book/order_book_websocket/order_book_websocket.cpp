@@ -2,6 +2,7 @@
 #include <json/json.h>
 #include <time/timer.h>
 #include <time/measure_time.h>
+#include <app_constants.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
@@ -10,15 +11,14 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
 {
     STRING_LOWER_CASE(m_symbol);
     std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level);
-
-    std::cout << "ws path: " << ws_path << std::endl;
+    spdlog::debug("OrderBookWebsocket: ws path: {}", ws_path);
 
     m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_order_book_ws");
     m_websocket->set_callbacks(
         // on_connect
         [this, ws_path, websocket = m_websocket->weak_from_this()]() -> TaskVoid
         {
-            std::cout << "Websocket [ws_path] is connected: " << std::endl;
+            spdlog::info("Websocket [{}] is connected", ws_path);
             if (auto ws = websocket.lock())
             {
                 // Set period time to send ping frame at every 30 seconds
@@ -38,7 +38,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
         // on_message
         [this, symbol](std::string buffer) -> TaskVoid
         {
-            MeasureTime t("Depth data handle from websocket", MeasureUnit::MICROSECOND);
+            // MeasureTime t("Depth data handle from websocket", MeasureUnit::MICROSECOND);
             m_on_order_book_ws(std::move(buffer));
 
             co_return;
@@ -60,5 +60,5 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
         }
     );
 
-    m_websocket->connect("fstream.binance.com", "443", ws_path);
+    m_websocket->connect(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT, ws_path);
 }
