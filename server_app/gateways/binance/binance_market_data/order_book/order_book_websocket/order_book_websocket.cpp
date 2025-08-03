@@ -13,7 +13,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
 
     std::cout << "ws path: " << ws_path << std::endl;
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base);
+    m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_order_book_ws");
     m_websocket->set_callbacks(
         // on_connect
         [this, ws_path, websocket = m_websocket->weak_from_this()]() -> TaskVoid
