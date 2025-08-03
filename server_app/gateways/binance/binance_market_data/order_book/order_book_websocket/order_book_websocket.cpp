@@ -10,7 +10,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
     : m_symbol{symbol}, m_depth_level{depth_level}, m_ioc{ioc}, m_event_base{event_base}, m_on_order_book_ws{on_order_book_ws}
 {
     STRING_LOWER_CASE(m_symbol);
-    std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level);
+    std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level) + "@100ms";
     spdlog::debug("OrderBookWebsocket: ws path: {}", ws_path);
 
     m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_order_book_ws");
