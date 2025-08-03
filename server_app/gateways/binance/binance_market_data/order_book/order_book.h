@@ -14,6 +14,7 @@ public:
     TaskVoid send_request_get_full_order_book();
 
     bool is_not_synced();
+    void print_order_book();
 
 private:
     std::string m_symbol;
@@ -35,5 +36,4 @@ private:
     void OnOrderbookRest(std::string data);
 
     void apply_snapshot(Json& snapshsot);
-    void print_order_book();
 };

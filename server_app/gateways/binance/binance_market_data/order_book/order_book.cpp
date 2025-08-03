@@ -40,7 +40,7 @@ void OrderBook::OnOrderbookWs(std::string data)
     }
 
     Json update = Json::parse(data);
-    // spdlog::debug("[WS] OrderBook update: {}", update);
+    // spdlog::debug("[WS] symbol: [{}], update: {}", m_symbol, update);
 
     uint64_t pu = update["pu"];
     uint64_t u  = update["u"];
@@ -80,6 +80,9 @@ void OrderBook::OnOrderbookWs(std::string data)
         m_ws_last_update_id = u;
     }
 
+    m_asks.clear();
+    m_bids.clear();
+
     // Apply asks
     update["a"].for_each([this](Json& level)
     {
@@ -102,7 +105,6 @@ void OrderBook::OnOrderbookWs(std::string data)
         // MeasureTime t("OrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
-        // spdlog::debug("[WS] OrderBook price: {}, quantity: {}", price, quantity);
         if (quantity == 0.0)
         {
             m_bids.erase(price);
