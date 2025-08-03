@@ -49,6 +49,11 @@ struct Task
         destroy(false);
     }
 
+    bool operator==(std::nullptr_t null) const
+    {
+        return handle == nullptr;
+    }
+
     Task& operator=(const Task& copy) = delete;
 
     Task& operator=(Task&& copy)

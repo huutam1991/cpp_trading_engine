@@ -44,6 +44,11 @@ struct TaskVoid
         destroy(false);
     }
 
+    bool operator==(std::nullptr_t null) const
+    {
+        return handle == nullptr;
+    }
+
     TaskVoid& operator=(const TaskVoid& copy) = delete;
 
     TaskVoid& operator=(TaskVoid&& copy)
