@@ -28,7 +28,7 @@ BinanceMarketDataPerpetual::~BinanceMarketDataPerpetual()
 void BinanceMarketDataPerpetual::start()
 {
     TaskVoid task = init_order_book();
-    task.register_on(m_event_base);
+    task.start_running_on(m_event_base);
 }
 
 TaskVoid BinanceMarketDataPerpetual::init_order_book()
@@ -49,7 +49,7 @@ TaskVoid BinanceMarketDataPerpetual::init_order_book()
     if (start_sync_order_book == false)
     {
         TaskVoid task = check_sync_order_book();
-        task.register_on(m_event_base);
+        task.start_running_on(m_event_base);
         start_sync_order_book = true;
     }
 
