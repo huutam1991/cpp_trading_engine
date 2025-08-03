@@ -67,6 +67,11 @@ TaskVoid BinanceMarketDataPerpetual::check_sync_order_book()
             {
                 co_await order_book->send_request_get_full_order_book();
             }
+            else
+            {
+                // If synced, print order book
+                // order_book->print_order_book();
+            }
         }
 
         co_await Timer::sleep_for(5000);
@@ -80,14 +85,8 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
         return; // Already started
     }
 
-    auto order_book = std::make_shared<OrderBook>(instrument->exchange_symbol, 5, IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
+    auto order_book = std::make_shared<OrderBook>(instrument->exchange_symbol, 10, IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
     m_orderbooks.insert(std::make_pair(instrument, order_book));
-}
-
-size_t BinanceMarketDataPerpetual::get_stream_id_count()
-{
-    static int stream_id_count = 0;
-    return ++stream_id_count;
 }
 
 void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, const std::string& port)
@@ -100,53 +99,4 @@ void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrum
 {
     m_instruments = std::move(instruments);
     m_on_callback = std::move(call_back);
-}
-
-bool BinanceMarketDataPerpetual::standardize_data(std::string data, Json& depth)
-{
-    MeasureTime t("Standardize data PERPETUAL", MeasureUnit::MICROSECOND);
-    Json order_book = Json::parse(std::move(data));
-    // spdlog::debug("BinanceMarketDataPerpetual - orderbook: {}", order_book);
-
-    if (order_book.has_field("a") && order_book.has_field("b"))
-    {
-        // symbol
-        depth["s"] = "m_symbol";
-        // event name
-        depth["e"] = "depthUpdate";
-
-        // update asks
-        Json A;
-        Json asks = order_book["a"];
-        A.set_size(0);
-        asks.for_each([&A](Json& data)
-        {
-            Json j;
-            Json a0 = std::stod((std::string)data[0]);
-            Json a1 = std::stod((std::string)data[1]);
-            j.push_back(a0);
-            j.push_back(a1);
-            A.push_back(j);
-        });
-        depth["asks"] = A;
-
-        // update bids
-        Json B;
-        Json bids = order_book["b"];
-        B.set_size(0);
-        bids.for_each([&B](Json& data)
-        {
-            Json j;
-            Json b0 = std::stod((std::string)data[0]);
-            Json b1 = std::stod((std::string)data[1]);
-            j.push_back(b0);
-            j.push_back(b1);
-            B.push_back(j);
-        });
-        depth["bids"] = B;
-
-        return true;
-    }
-
-    return false;
 }

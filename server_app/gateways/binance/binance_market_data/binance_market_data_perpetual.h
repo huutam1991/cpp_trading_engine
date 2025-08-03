@@ -20,9 +20,6 @@ public:
     void start_websocket(const Instrument* instrument);
     void subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back);
 
-protected:
-    virtual bool standardize_data(std::string buffer, Json& data);
-
 private:
     std::string m_url;
     std::string m_port;
@@ -35,6 +32,4 @@ private:
 
     TaskVoid init_order_book();
     TaskVoid check_sync_order_book();
-
-    size_t get_stream_id_count();
 };
