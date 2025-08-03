@@ -8,6 +8,7 @@
 OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_level, net::io_context& ioc, EventBase* event_base, std::function<void(std::string)> on_order_book_ws)
     : m_symbol{symbol}, m_depth_level{depth_level}, m_ioc{ioc}, m_event_base{event_base}, m_on_order_book_ws{on_order_book_ws}
 {
+    STRING_LOWER_CASE(m_symbol);
     std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level);
 
     std::cout << "ws path: " << ws_path << std::endl;
