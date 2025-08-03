@@ -20,7 +20,4 @@ private:
     std::function<void(std::string)> m_on_order_book_ws;
 
     std::shared_ptr<WebsocketClientAsync> m_websocket;
-
-    TaskVoid keep_websocket_alive();
-    
 };

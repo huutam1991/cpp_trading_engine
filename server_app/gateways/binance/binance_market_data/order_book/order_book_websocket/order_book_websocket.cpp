@@ -61,18 +61,4 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
     );
 
     m_websocket->connect("fstream.binance.com", "443", ws_path);
-
-    // Start task to keep websocket alive
-    keep_websocket_alive().start_running_on(m_event_base);
-}
-
-TaskVoid OrderBookWebsocket::keep_websocket_alive()
-{
-    // Send ping at every 30 second to keep websocket alive
-    while (true)
-    {
-        co_await Timer::sleep_for(30000);
-        m_websocket->send_ping();
-    }
-
 }
