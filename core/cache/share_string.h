@@ -53,6 +53,20 @@ public:
         return std::string(data());
     }
 
+    inline operator std::string() const
+    {
+        return std::string(data());
+    }
+
+    inline bool operator==(const ShareString& other) const
+    {
+        if (!m_string_reference || !other.m_string_reference)
+        {
+            return false; // If either is null, they are not equal
+        }
+        return data() == other.data();
+    }
+
 private:
     inline std::string_view substr(size_t start_index, size_t length) const
     {
