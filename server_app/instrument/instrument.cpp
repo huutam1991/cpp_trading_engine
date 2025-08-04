@@ -5,8 +5,8 @@ Json Instrument::to_json() const
     return {
         {"exchange_id", enum_reflect::enum_name(exchange_id)},
         {"instrument_type", enum_reflect::enum_name(instrument_type)},
-        {"symbol", (std::string)symbol},
-        {"exchange_symbol", (std::string)exchange_symbol},
+        {"symbol", symbol},
+        {"exchange_symbol", exchange_symbol},
         {"lot_size", lot_size},
         {"tick_size", tick_size}
     };
@@ -17,8 +17,8 @@ Instrument Instrument::from_json(Json& data)
     return Instrument {
         enum_reflect::enum_value<ExchangeId>((std::string)data["exchange_id"]),
         enum_reflect::enum_value<InstrumentType>((std::string)data["instrument_type"]),
-        Symbol((std::string)data["symbol"]),
-        Symbol((std::string)data["exchange_symbol"]),
+        data["symbol"],
+        data["exchange_symbol"],
         (size_t)data["lot_size"],
         (double)data["tick_size"]
     };

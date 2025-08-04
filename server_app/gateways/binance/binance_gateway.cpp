@@ -72,8 +72,8 @@ void BinanceGateway::get_spot_symbols_info()
         m_instruments.push_back(Instrument {
             ExchangeId::BINANCE,
             InstrumentType::SPOT,
-            Symbol(symbol_name),
-            Symbol(exchange_symbol),
+            symbol_name,
+            exchange_symbol,
             get_rounded_number(data["filters"][1]["stepSize"]),
             std::stod((std::string&&)data["filters"][0]["tickSize"])
         });
@@ -107,8 +107,8 @@ void BinanceGateway::get_perpetual_symbols_info()
         m_instruments.push_back(Instrument {
             ExchangeId::BINANCE,
             InstrumentType::PERPETUAL,
-            Symbol(symbol_name),
-            Symbol(exchange_symbol),
+            symbol_name,
+            exchange_symbol,
             get_rounded_number(data["filters"][1]["stepSize"]),
             std::stod((std::string&&)data["filters"][0]["tickSize"])
         });

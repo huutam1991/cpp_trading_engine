@@ -8,6 +8,7 @@
 #include <utils/spin_lock.h>
 #include <enum_reflect/enum_reflect.h>
 #include <data_model/savable_object.h>
+#include <cache/share_string.h>
 #include <app_constants.h>
 
 enum ExchangeId
@@ -29,8 +30,8 @@ class Instrument
 public:
     ExchangeId exchange_id;
     InstrumentType instrument_type;
-    Symbol symbol;
-    Symbol exchange_symbol;
+    ShareString symbol;
+    ShareString exchange_symbol;
     size_t lot_size;
     double tick_size;
 
