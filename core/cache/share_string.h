@@ -48,6 +48,11 @@ public:
         return std::string_view(m_string_reference->data).substr(m_start_index, m_length);
     }
 
+    inline std::string to_string() const
+    {
+        return std::string(data());
+    }
+
 private:
     inline std::string_view substr(size_t start_index, size_t length) const
     {
