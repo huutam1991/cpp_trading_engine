@@ -4,7 +4,6 @@
 #include <mutex>
 
 #include <json/json.h>
-#include <symbol/symbol.h>
 #include <utils/spin_lock.h>
 #include <enum_reflect/enum_reflect.h>
 #include <data_model/savable_object.h>
