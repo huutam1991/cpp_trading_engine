@@ -21,6 +21,8 @@ struct Task : public BaseTask<T>
             this->promise_value.set_value(v);
             this->value = v;
         }
+
+        T value;
     };
 
     Task(promise_type* promise) : BaseTask<T>(promise) {}
@@ -29,4 +31,10 @@ struct Task : public BaseTask<T>
     Task(Task&&) = default;
     Task& operator=(const Task&) = delete;
     Task& operator=(Task&&) = default;
+
+    T await_resume()
+    {
+        auto& promise = this->handle.promise();
+        return ((promise_type*)&promise)->value;
+    }
 };

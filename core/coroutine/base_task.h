@@ -24,15 +24,7 @@ struct BaseTask
 
             return {};
         }
-        // void return_value(T v)
-        // {
-        //     promise_value.set_value(v);
-        //     value = v;
-        // }
         void unhandled_exception() { std::terminate(); }
-
-        // Main value
-        std::enable_if_t<!std::is_void_v<T>, T> value;
 
         // Promise value
         std::promise<T> promise_value;
@@ -95,10 +87,10 @@ struct BaseTask
         }
     }
 
-    T value()
-    {
-        return handle.promise().value;
-    }
+    // T value()
+    // {
+    //     return handle.promise().value;
+    // }
 
     // Get BasePromiseType of current coroutine
     BasePromiseType* get_base_promise_type()
@@ -145,10 +137,5 @@ struct BaseTask
 
         // Running this task on EventBase
         register_on(suspend_base_pt->m_event_base);
-    }
-
-    T await_resume()
-    {
-        return handle.promise().value;
     }
 };
