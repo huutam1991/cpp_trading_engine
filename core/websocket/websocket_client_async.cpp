@@ -215,7 +215,7 @@ void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<Task<void
         }
         else
         {
-            spdlog::debug("WebsocketClientAsync has been destroyed, cannot run keep alive logic");
+            spdlog::warn("WebsocketClientAsync has been destroyed, cannot run keep alive logic");
         }
     }, m_ioc, tick_in_milliseconds);
 }
