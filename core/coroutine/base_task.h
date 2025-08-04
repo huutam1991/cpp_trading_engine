@@ -1,7 +1,6 @@
 #pragma once
 
 #include <future>
-#include "task_void.h"
 #include "base_promise_type.h"
 
 template<class T>
