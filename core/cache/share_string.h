@@ -6,7 +6,7 @@
 
 #include <cache/cache_pool.h>
 
-#define MAX_STRING_NUM 10000
+#define MAX_STRING_NUM 100000
 
 struct StringReference
 {
