@@ -57,13 +57,13 @@ public:
         {
             m_value = ShareString(std::forward<T>(value));
         }
-        else if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
-        {
-            m_value = ShareString(std::forward<T>(value));
-        }
         else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
         {
             m_value = ShareString(std::string(std::forward<T>(value)));
+        }
+        else if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
+        {
+            m_value = ShareString(std::string(value));
         }
         else if constexpr (std::is_same_v<std::decay_t<T>, bool>)
         {
