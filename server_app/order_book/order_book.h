@@ -5,10 +5,10 @@
 #include <coroutine/task_void.h>
 #include <json/json.h>
 
-class OrderBook
+class Orderbook
 {
 public:
-    OrderBook(const std::string& symbol, EventBase* event_base);
+    Orderbook(const std::string& symbol, EventBase* event_base);
     TaskVoid send_request_get_full_order_book();
 
     bool is_not_synced();
