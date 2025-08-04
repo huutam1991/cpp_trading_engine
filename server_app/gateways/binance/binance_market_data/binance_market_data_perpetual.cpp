@@ -34,10 +34,6 @@ void BinanceMarketDataPerpetual::start()
 Task<void> BinanceMarketDataPerpetual::init_order_book()
 {
     // Close all remaining websockets
-    for (auto& [_, order_book] : m_orderbooks)
-    {
-        // order_book->close();
-    }
     m_orderbooks.clear();
 
     for (size_t i = 0; i < m_instruments.size(); i++)

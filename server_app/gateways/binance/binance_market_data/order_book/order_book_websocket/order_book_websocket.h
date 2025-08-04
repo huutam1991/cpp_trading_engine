@@ -11,6 +11,10 @@ class OrderBookWebsocket
 {
 public:
     OrderBookWebsocket(const std::string& symbol, size_t depth_level, net::io_context& ioc, EventBase* event_base, std::function<void(std::string)> on_order_book_ws);
+    ~OrderBookWebsocket()
+    {
+        m_websocket->close();
+    }
 
 private:
     std::string m_symbol;
