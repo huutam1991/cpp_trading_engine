@@ -38,7 +38,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
 
     websocket->set_callbacks(
         // on_connect
-        [this, instrument, websocket]() -> TaskVoid
+        [this, instrument, websocket]() -> Task<void>
         {
             // Subcribe for depth
             size_t stream_id = get_stream_id_count();
@@ -58,7 +58,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_message
-        [this, instrument](std::string buffer) -> TaskVoid
+        [this, instrument](std::string buffer) -> Task<void>
         {
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
@@ -79,7 +79,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_disconnect
-        [this, instrument]() -> TaskVoid
+        [this, instrument]() -> Task<void>
         {
             // Re-start
             this->start_websocket(instrument);
@@ -87,7 +87,7 @@ void CoinbaseMarketData::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_close
-        []() -> TaskVoid
+        []() -> Task<void>
         {
             co_return;
         }

@@ -259,7 +259,7 @@ void StrategyBuySpotStateRun::update_sell_orders()
     }
 }
 
-TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
+Task<void> StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
 {
     m_current_price = price_update.price;
     spdlog::debug("StrategyBuySpotStateRun - m_current_price: {}", m_current_price);
@@ -278,7 +278,7 @@ TaskVoid StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
     co_return;
 }
 
-TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
+Task<void> StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
     MeasureTime a("StrategyBuySpotStateRun - handle_order_update", MeasureUnit::MICROSECOND);
 
@@ -336,7 +336,7 @@ TaskVoid StrategyBuySpotStateRun::handle_order_update(Order& order)
     co_return;
 }
 
-TaskVoid StrategyBuySpotStateRun::update(StrategyUpdateData data)
+Task<void> StrategyBuySpotStateRun::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))

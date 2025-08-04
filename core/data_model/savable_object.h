@@ -2,7 +2,7 @@
 
 #include <data_model/data_model.h>
 #include <coroutine/event_base.h>
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 
 class DBHelper
 {
@@ -87,20 +87,20 @@ public:
         remove_data_model(m_data_model).start_running_on(DBHelper::get_even_base());
     }
 
-    static TaskVoid init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
+    static Task<void> init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
     {
         DataModel dm(db, collection);
         *data_model = dm;
         co_return;
     }
 
-    static TaskVoid update_data_model(std::shared_ptr<DataModel> data_model, T object)
+    static Task<void> update_data_model(std::shared_ptr<DataModel> data_model, T object)
     {
         *data_model = object.to_json();
         co_return;
     }
 
-    static TaskVoid remove_data_model(std::shared_ptr<DataModel> data_model)
+    static Task<void> remove_data_model(std::shared_ptr<DataModel> data_model)
     {
         data_model->remove();
         co_return;

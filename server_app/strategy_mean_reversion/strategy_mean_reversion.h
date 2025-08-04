@@ -32,7 +32,7 @@ private:
     static std::unordered_map<std::string, StrategyMeanReversionState*>* get_strategy_states();
 
     // Data update
-    TaskVoid m_update_task;
+    Task<void> m_update_task;
     bool m_is_run_update = false;
     std::queue<StrategyMeanReversionData> m_state_data_queue;
     Future<bool>::FutureValue m_has_data_update;
@@ -44,7 +44,7 @@ private:
 public:
     void init();
     void on_config_change();
-    TaskVoid update();
+    Task<void> update();
 
     Json get_orders_chain();
     Json get_open_orders();

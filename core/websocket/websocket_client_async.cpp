@@ -18,7 +18,7 @@ WebsocketClientAsync::~WebsocketClientAsync()
     spdlog::debug("Close WebsocketClientAsync: [{}]", m_name);
 }
 
-void WebsocketClientAsync::set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close)
+void WebsocketClientAsync::set_callbacks(std::function<Task<void>()> on_connect, std::function<Task<void>(std::string)> on_message, std::function<Task<void>()> on_disconnect, std::function<Task<void>()> on_close)
 {
     m_on_connect = std::move(on_connect);
     m_on_message = std::move(on_message);
@@ -205,7 +205,7 @@ void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
     spdlog::debug("WebsocketClientAsync - Error in {}: ", where, ec.message());
 }
 
-void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds)
+void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds)
 {
     Timer::add_schedule_task_on_ioc([weak_ptr = weak_from_this(), kal = std::move(keep_alive_logic), tick = tick_in_milliseconds]() mutable
     {
@@ -220,7 +220,7 @@ void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<TaskVoid(
     }, m_ioc, tick_in_milliseconds);
 }
 
-void WebsocketClientAsync::on_keep_websocket_alive(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds)
+void WebsocketClientAsync::on_keep_websocket_alive(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds)
 {
     if (keep_alive_logic != nullptr && m_event_base != nullptr)
     {

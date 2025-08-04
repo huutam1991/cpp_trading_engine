@@ -7,7 +7,7 @@ Orderbook::Orderbook(const std::string& symbol, EventBase* event_base)
         m_event_base{event_base}
 {}
 
-TaskVoid Orderbook::apply_snapshot(Json& snapshot)
+Task<void> Orderbook::apply_snapshot(Json& snapshot)
 {
     // Update Ask
     m_asks.clear();
@@ -33,7 +33,7 @@ TaskVoid Orderbook::apply_snapshot(Json& snapshot)
     co_return;
 }
 
-TaskVoid Orderbook::apply_book_levels(Json& levels)
+Task<void> Orderbook::apply_book_levels(Json& levels)
 {
     // Apply asks
     levels["a"].for_each([this](Json& level)

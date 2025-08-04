@@ -33,7 +33,7 @@ public:
 
     virtual Json get_trade_result_from_response(Json& response) override;
     virtual Task<Json> get_open_orders(std::string symbol) override;
-    virtual TaskVoid cancel_all(std::string symbol) override;
+    virtual Task<void> cancel_all(std::string symbol) override;
     virtual Task<Json> cancel(Order order) override;
     virtual Task<Json> place(Order order) override;
 };

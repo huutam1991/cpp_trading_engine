@@ -61,7 +61,7 @@ void OrderManager::set_cancel_order(OrderId order_id)
 
 void OrderManager::update_order(Order order)
 {
-    TaskVoid task = handle_update_order(order);
+    Task<void> task = handle_update_order(order);
     task.start_running_on(m_order_event_base);
 }
 
@@ -77,7 +77,7 @@ SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
     return it->second;
 }
 
-TaskVoid OrderManager::handle_update_order(Order order)
+Task<void> OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
     SavableObject<Order>& current_order_data = get_order_by_id(order.order_id);

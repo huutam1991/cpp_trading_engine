@@ -108,7 +108,7 @@ Task<std::unordered_set<OrderId>> CoinbaseGateway::get_open_orders_on_exchange(s
     co_return res;
 }
 
-TaskVoid CoinbaseGateway::cancel_all_on_exchange(std::string symbol)
+Task<void> CoinbaseGateway::cancel_all_on_exchange(std::string symbol)
 {
     // Currently, only implement for SPOT
     co_await m_quoter_spot.cancel_all(std::move(symbol));

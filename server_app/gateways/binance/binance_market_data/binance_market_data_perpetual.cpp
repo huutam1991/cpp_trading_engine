@@ -27,11 +27,11 @@ BinanceMarketDataPerpetual::~BinanceMarketDataPerpetual()
 
 void BinanceMarketDataPerpetual::start()
 {
-    TaskVoid task = init_order_book();
+    Task<void> task = init_order_book();
     task.start_running_on(m_event_base);
 }
 
-TaskVoid BinanceMarketDataPerpetual::init_order_book()
+Task<void> BinanceMarketDataPerpetual::init_order_book()
 {
     // Close all remaining websockets
     for (auto& [_, order_book] : m_orderbooks)
@@ -48,7 +48,7 @@ TaskVoid BinanceMarketDataPerpetual::init_order_book()
     static bool start_sync_order_book = false;
     if (start_sync_order_book == false)
     {
-        TaskVoid task = check_sync_order_book();
+        Task<void> task = check_sync_order_book();
         task.start_running_on(m_event_base);
         start_sync_order_book = true;
     }
@@ -56,7 +56,7 @@ TaskVoid BinanceMarketDataPerpetual::init_order_book()
     co_return;
 }
 
-TaskVoid BinanceMarketDataPerpetual::check_sync_order_book()
+Task<void> BinanceMarketDataPerpetual::check_sync_order_book()
 {
     // Loop to send REST request to query orderbook (full) at every 5 seconds, if the orderbook is not synced yet
     while (true)

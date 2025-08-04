@@ -45,7 +45,7 @@ void StrategyMeanReversionState::end()
     spdlog::info("StrategyMeanReversionState - end");
 }
 
-TaskVoid StrategyMeanReversionState::run(StrategyMeanReversionData data)
+Task<void> StrategyMeanReversionState::run(StrategyMeanReversionData data)
 {
     spdlog::info("StrategyMeanReversionState - run");
 

@@ -2,7 +2,7 @@
 
 #include <variant>
 
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 #include <coroutine/event_base_manager.h>
 #include <order/order.h>
 
@@ -21,8 +21,8 @@ public:
 public:
     StrategyAbstract(EventBase* v_event_base) : event_base{v_event_base} {}
 
-    virtual TaskVoid init() = 0;
-    virtual TaskVoid update(StrategyUpdateData data) = 0;
+    virtual Task<void> init() = 0;
+    virtual Task<void> update(StrategyUpdateData data) = 0;
 
     // For API requests
     virtual std::string get_name() = 0;

@@ -8,7 +8,7 @@
 #include <https_server/route/route_controller.h>
 #include <utils/util_macros.h>
 #include <coroutine/event_base.h>
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 
 class HttpServer
 {
@@ -28,7 +28,7 @@ public:
 
     void init_socket();
     void start();
-    TaskVoid execute_request(HttpRequest* request, int client_fd);
+    Task<void> execute_request(HttpRequest* request, int client_fd);
 
     virtual int accept_new_connection();
     virtual int read_buffer(int client_fd, char* const buffer);

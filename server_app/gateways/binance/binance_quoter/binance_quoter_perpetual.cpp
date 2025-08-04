@@ -50,12 +50,12 @@ void BinanceQuoterPerpetual::init_websocket()
     m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), event_base);
     m_websocket->set_callbacks(
         // on_connect
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             spdlog::info("BinanceQuoterPerpetual websocket connected");
 
             // Set period time to re-active m_listen_key at every 30 seconds
-            m_websocket->add_keep_websocket_alive_task([this]() -> TaskVoid
+            m_websocket->add_keep_websocket_alive_task([this]() -> Task<void>
             {
                 return keep_listen_key();
             }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
@@ -63,7 +63,7 @@ void BinanceQuoterPerpetual::init_websocket()
             co_return;
         },
         // on_message
-        [this](std::string buffer) -> TaskVoid
+        [this](std::string buffer) -> Task<void>
         {
             Json json = Json::parse(buffer);
 
@@ -127,7 +127,7 @@ void BinanceQuoterPerpetual::init_websocket()
             co_return;
         },
         // on_disconnect
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             // Re-start
             spdlog::info("BinanceQuoterPerpetual - disconnect, re-starting");
@@ -136,7 +136,7 @@ void BinanceQuoterPerpetual::init_websocket()
             co_return;
         },
         // on_close
-        []() -> TaskVoid
+        []() -> Task<void>
         {
             spdlog::info("BinanceQuoterPerpetual - close");
             co_return;
@@ -166,7 +166,7 @@ Task<std::string> BinanceQuoterPerpetual::get_listen_key()
     co_return data["listenKey"];
 }
 
-TaskVoid BinanceQuoterPerpetual::keep_listen_key()
+Task<void> BinanceQuoterPerpetual::keep_listen_key()
 {
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
     client->add_header("X-MBX-APIKEY", m_api_key);
@@ -185,7 +185,7 @@ Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
     co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol);
 }
 
-TaskVoid BinanceQuoterPerpetual::cancel_all(std::string symbol)
+Task<void> BinanceQuoterPerpetual::cancel_all(std::string symbol)
 {
     co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol);
     co_return;

@@ -112,7 +112,7 @@ void StrategyMeanReversionStateRun::check_cancel_order_at_price(double price)
     }
 }
 
-TaskVoid StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_update)
+Task<void> StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_update)
 {
     m_current_price = price_update.price;
 
@@ -122,7 +122,7 @@ TaskVoid StrategyMeanReversionStateRun::handle_price_update(MRPriceUpdate price_
     co_return;
 }
 
-TaskVoid StrategyMeanReversionStateRun::handle_order_update(Order& order)
+Task<void> StrategyMeanReversionStateRun::handle_order_update(Order& order)
 {
     // NEW - do nothing
     if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)
@@ -169,7 +169,7 @@ TaskVoid StrategyMeanReversionStateRun::handle_order_update(Order& order)
     co_return;
 }
 
-TaskVoid StrategyMeanReversionStateRun::run(StrategyMeanReversionData data)
+Task<void> StrategyMeanReversionStateRun::run(StrategyMeanReversionData data)
 {
     MRPriceUpdate price_update;
     if (std::holds_alternative<MRPriceUpdate>(data))

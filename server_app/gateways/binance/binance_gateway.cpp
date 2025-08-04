@@ -200,7 +200,7 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
     co_return res;
 }
 
-TaskVoid BinanceGateway::cancel_all_on_exchange(std::string symbol)
+Task<void> BinanceGateway::cancel_all_on_exchange(std::string symbol)
 {
     co_await m_quoter_spot.cancel_all(symbol);
     co_await m_quoter_perpetual.cancel_all(symbol);

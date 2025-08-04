@@ -1,6 +1,6 @@
 #pragma once
 
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 #include <enum_reflect/enum_reflect.h>
 #include <strategy/strategy_abstract.h>
 
@@ -40,5 +40,5 @@ class StrategyStateBase
 public:
     virtual void begin() = 0;
     virtual void end() = 0;
-    virtual TaskVoid update(StrategyUpdateData data) = 0;
+    virtual Task<void> update(StrategyUpdateData data) = 0;
 };

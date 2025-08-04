@@ -15,7 +15,7 @@ void StrategyMeanReversionStateStop::end()
     spdlog::info("StrategyMeanReversionStateStop - end");
 }
 
-TaskVoid StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
+Task<void> StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
 {
     MRPriceUpdate price_update;
     if (std::holds_alternative<MRPriceUpdate>(data))

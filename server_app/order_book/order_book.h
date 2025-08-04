@@ -2,14 +2,14 @@
 
 #include <map>
 
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 #include <json/json.h>
 
 class Orderbook
 {
 public:
     Orderbook(const std::string& symbol, EventBase* event_base);
-    TaskVoid send_request_get_full_order_book();
+    Task<void> send_request_get_full_order_book();
 
     bool is_not_synced();
     void print_order_book();
@@ -23,6 +23,6 @@ private:
     std::map<double, double, std::greater<double>> m_bids;
     std::map<double, double, std::less<double>> m_asks;
 
-    TaskVoid apply_snapshot(Json& snapshot);
-    TaskVoid apply_book_levels(Json& levels);
+    Task<void> apply_snapshot(Json& snapshot);
+    Task<void> apply_book_levels(Json& levels);
 };

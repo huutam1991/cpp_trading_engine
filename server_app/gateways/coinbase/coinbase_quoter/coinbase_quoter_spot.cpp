@@ -50,12 +50,12 @@ void CoinbaseQuoterSpot::init_websocket()
     m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_event_base);
     m_websocket->set_callbacks(
         // on_connect
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             co_return;
         },
         // on_message
-        [this](std::string buffer) -> TaskVoid
+        [this](std::string buffer) -> Task<void>
         {
             Json json = Json::parse(buffer);
 
@@ -116,7 +116,7 @@ void CoinbaseQuoterSpot::init_websocket()
             co_return;
         },
         // on_disconnect
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             // Save when websocket spot disconnect
             auto now = std::chrono::system_clock::now();
@@ -136,7 +136,7 @@ void CoinbaseQuoterSpot::init_websocket()
             co_return;
         },
         // on_close
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             // Save when websocket spot close
             auto now = std::chrono::system_clock::now();
@@ -168,7 +168,7 @@ Task<std::string> CoinbaseQuoterSpot::get_listen_key()
     co_return "listenKey";
 }
 
-TaskVoid CoinbaseQuoterSpot::keep_listen_key()
+Task<void> CoinbaseQuoterSpot::keep_listen_key()
 {
     // RequestFuture coinbase_request(m_url, m_port, "/api/v3/userDataStream?listenKey=" + m_listen_key, RequestMethod::PUT);
     // coinbase_request.add_header("X-MBX-APIKEY", m_api_key);
@@ -237,7 +237,7 @@ Task<Json> CoinbaseQuoterSpot::get_open_orders(std::string symbol)
     co_return co_await send_coinbase_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);
 }
 
-TaskVoid CoinbaseQuoterSpot::cancel_all(std::string symbol)
+Task<void> CoinbaseQuoterSpot::cancel_all(std::string symbol)
 {
     co_await send_coinbase_request(RequestMethod::DELETE, "/api/v3/openOrders", "symbol=" + symbol);
 

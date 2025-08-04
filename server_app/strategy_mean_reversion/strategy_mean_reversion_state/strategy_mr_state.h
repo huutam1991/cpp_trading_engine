@@ -31,7 +31,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StrategyMeanReversionData data);
+    virtual Task<void> run(StrategyMeanReversionData data);
 
     virtual Json get_open_orders() = 0;
 

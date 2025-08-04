@@ -13,7 +13,7 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual TaskVoid run(StrategyMeanReversionData data);
+    virtual Task<void> run(StrategyMeanReversionData data);
 
     virtual Json get_open_orders() override;
 
@@ -37,6 +37,6 @@ private:
     void remove_open_order_by_price(double price);
     void check_place_order_at_price(double price);
     void check_cancel_order_at_price(double price);
-    TaskVoid handle_price_update(MRPriceUpdate price);
-    TaskVoid handle_order_update(Order& order);
+    Task<void> handle_price_update(MRPriceUpdate price);
+    Task<void> handle_order_update(Order& order);
 };

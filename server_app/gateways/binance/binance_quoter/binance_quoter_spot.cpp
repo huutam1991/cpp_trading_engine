@@ -53,12 +53,12 @@ void BinanceQuoterSpot::init_websocket()
     m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_event_base);
     m_websocket->set_callbacks(
         // on_connect
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             spdlog::info("BinanceQuoterSpot websocket connected");
 
             // Set period time to re-active m_listen_key at every 30 seconds
-            m_websocket->add_keep_websocket_alive_task([this]() -> TaskVoid
+            m_websocket->add_keep_websocket_alive_task([this]() -> Task<void>
             {
                 return keep_listen_key();
             }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
@@ -66,7 +66,7 @@ void BinanceQuoterSpot::init_websocket()
             co_return;
         },
         // on_message
-        [this](std::string buffer) -> TaskVoid
+        [this](std::string buffer) -> Task<void>
         {
             // MeasureTime a("Handle order data", MeasureUnit::MICROSECOND);
             Json json = Json::parse(buffer);
@@ -130,7 +130,7 @@ void BinanceQuoterSpot::init_websocket()
             co_return;
         },
         // on_disconnect
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             // Save when websocket spot disconnect
             auto now = std::chrono::system_clock::now();
@@ -151,7 +151,7 @@ void BinanceQuoterSpot::init_websocket()
             co_return;
         },
         // on_close
-        [this]() -> TaskVoid
+        [this]() -> Task<void>
         {
             spdlog::info("BinanceQuoterSpot close");
 
@@ -194,7 +194,7 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
     co_return data["listenKey"];
 }
 
-TaskVoid BinanceQuoterSpot::keep_listen_key()
+Task<void> BinanceQuoterSpot::keep_listen_key()
 {
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
     client->add_header("X-MBX-APIKEY", m_api_key);
@@ -213,7 +213,7 @@ Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)
     co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);
 }
 
-TaskVoid BinanceQuoterSpot::cancel_all(std::string symbol)
+Task<void> BinanceQuoterSpot::cancel_all(std::string symbol)
 {
     co_await send_binance_request(RequestMethod::DELETE, "/api/v3/openOrders", "symbol=" + symbol);
 

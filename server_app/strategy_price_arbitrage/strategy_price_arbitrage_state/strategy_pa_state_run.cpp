@@ -143,7 +143,7 @@ void StrategyPriceArbitrageStateRun::update_orders_at_price(double price)
     check_place_order_at_price(price - m_config.buy_at_lower_price);
 }
 
-TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
+Task<void> StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
 {
     if (price_update.instrument == m_instrument_2)
     {
@@ -178,7 +178,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_u
     co_return;
 }
 
-TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
+Task<void> StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
 {
     // NEW - do nothing
     if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)
@@ -234,7 +234,7 @@ TaskVoid StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     co_return;
 }
 
-TaskVoid StrategyPriceArbitrageStateRun::update(StrategyUpdateData data)
+Task<void> StrategyPriceArbitrageStateRun::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))

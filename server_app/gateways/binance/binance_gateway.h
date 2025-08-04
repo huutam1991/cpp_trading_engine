@@ -22,7 +22,7 @@ protected:
     virtual ExchangeId get_exchange() override;
     virtual std::vector<Instrument> fetch_instruments() override;
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
-    virtual TaskVoid cancel_all_on_exchange(std::string symbol) override;
+    virtual Task<void> cancel_all_on_exchange(std::string symbol) override;
     virtual Task<Json> cancel_on_exchange(Order order) override;
     virtual Task<Json> place_on_exchange(Order order) override;
 

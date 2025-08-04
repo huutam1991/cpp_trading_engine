@@ -14,7 +14,7 @@ void StrategyPriceArbitrageStateStop::end()
     spdlog::info("StrategyPriceArbitrageStateStop - end");
 }
 
-TaskVoid StrategyPriceArbitrageStateStop::update(StrategyUpdateData data)
+Task<void> StrategyPriceArbitrageStateStop::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))

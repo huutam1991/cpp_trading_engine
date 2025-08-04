@@ -25,7 +25,7 @@ public:
         m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name, "state")}
     {}
 
-    TaskVoid init() override
+    Task<void> init() override
     {
         m_states = init_states();
         m_previous_state = StrategyState::UNKNOWN;
@@ -36,7 +36,7 @@ public:
         co_return;
     }
 
-    TaskVoid update(StrategyUpdateData data) override final
+    Task<void> update(StrategyUpdateData data) override final
     {
         StrategyState current_state = m_current_state.object.state;
 
@@ -69,7 +69,7 @@ public:
         return m_config;
     }
 
-    TaskVoid apply_config(StrategyConfig new_config)
+    Task<void> apply_config(StrategyConfig new_config)
     {
         m_config = new_config;
         on_config_change(std::move(new_config));

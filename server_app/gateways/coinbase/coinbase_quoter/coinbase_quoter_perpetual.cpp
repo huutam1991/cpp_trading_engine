@@ -81,7 +81,7 @@ Task<Json> CoinbaseQuoterPerpetual::get_open_orders(std::string symbol)
     co_return co_await send_coinbase_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol);
 }
 
-TaskVoid CoinbaseQuoterPerpetual::cancel_all(std::string symbol)
+Task<void> CoinbaseQuoterPerpetual::cancel_all(std::string symbol)
 {
     co_await send_coinbase_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol);
     co_return;

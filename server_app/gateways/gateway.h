@@ -24,7 +24,7 @@ protected:
     Gateway();
     virtual std::vector<Instrument> fetch_instruments();
     virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) = 0;
-    virtual TaskVoid cancel_all_on_exchange(std::string symbol) = 0;
+    virtual Task<void> cancel_all_on_exchange(std::string symbol) = 0;
     virtual Task<Json> cancel_on_exchange(Order order) = 0;
     virtual Task<Json> place_on_exchange(Order order) = 0;
 

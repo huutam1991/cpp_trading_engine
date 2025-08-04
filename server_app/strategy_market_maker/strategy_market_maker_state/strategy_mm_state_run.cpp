@@ -116,7 +116,7 @@ Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quan
     );
 }
 
-TaskVoid StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
+Task<void> StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_price_update");
 
@@ -140,7 +140,7 @@ TaskVoid StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_upda
     co_return;
 }
 
-TaskVoid StrategyMarketMakerStateRun::handle_order_update(Order& order)
+Task<void> StrategyMarketMakerStateRun::handle_order_update(Order& order)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_order_update");
 
@@ -171,7 +171,7 @@ TaskVoid StrategyMarketMakerStateRun::handle_order_update(Order& order)
     co_return;
 }
 
-TaskVoid StrategyMarketMakerStateRun::update(StrategyUpdateData data)
+Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))

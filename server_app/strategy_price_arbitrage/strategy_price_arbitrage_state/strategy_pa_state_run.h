@@ -18,7 +18,7 @@ public:
 
     virtual void begin() override;
     virtual void end() override;
-    virtual TaskVoid update(StrategyUpdateData data) override;
+    virtual Task<void> update(StrategyUpdateData data) override;
 
     // virtual Json get_open_orders() override;
 
@@ -50,6 +50,6 @@ private:
     void check_place_order_at_price(double price);
     void check_cancel_order_at_price(double price);
     void update_orders_at_price(double price);
-    TaskVoid handle_price_update(PriceUpdate price);
-    TaskVoid handle_order_update(Order& order);
+    Task<void> handle_price_update(PriceUpdate price);
+    Task<void> handle_order_update(Order& order);
 };

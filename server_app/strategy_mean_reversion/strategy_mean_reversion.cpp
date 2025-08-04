@@ -136,7 +136,7 @@ void StrategyMeanReversion::stop()
     StrategyMeanReversionState::set_state_status("STOP");
 }
 
-TaskVoid StrategyMeanReversion::update()
+Task<void> StrategyMeanReversion::update()
 {
     std::unordered_map<std::string, StrategyMeanReversionState*>* strategy_states = get_strategy_states();
     std::string current_status = "";

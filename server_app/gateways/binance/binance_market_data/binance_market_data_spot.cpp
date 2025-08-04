@@ -49,7 +49,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
 
     websocket->set_callbacks(
         // on_connect
-        [this, instrument, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> TaskVoid
+        [this, instrument, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> Task<void>
         {
             spdlog::info("Binance websocket depth connected");
 
@@ -73,7 +73,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
                 ws->send(subcribe.get_string_value());
 
                 // Set period time to send ping frame at every 30 seconds
-                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> TaskVoid
+                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> Task<void>
                 {
                     if (auto ws = websocket.lock())
                     {
@@ -87,7 +87,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_message
-        [this, instrument](std::string buffer) -> TaskVoid
+        [this, instrument](std::string buffer) -> Task<void>
         {
             // MeasureTime t("Handle price update", MeasureUnit::MICROSECOND);
 
@@ -111,7 +111,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_disconnect
-        [this, instrument]() -> TaskVoid
+        [this, instrument]() -> Task<void>
         {
             // Re-start
             spdlog::debug("Disconnect, re-start BinanceMarketDataSpot");
@@ -120,7 +120,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             co_return;
         },
         // on_close
-        []() -> TaskVoid
+        []() -> Task<void>
         {
             spdlog::debug("BinanceMarketDataSpot close");
             co_return;

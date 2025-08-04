@@ -16,13 +16,13 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
     m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_order_book_ws");
     m_websocket->set_callbacks(
         // on_connect
-        [this, ws_path, websocket = m_websocket->weak_from_this()]() -> TaskVoid
+        [this, ws_path, websocket = m_websocket->weak_from_this()]() -> Task<void>
         {
             spdlog::info("Websocket [{}] is connected", ws_path);
             if (auto ws = websocket.lock())
             {
                 // Set period time to send ping frame at every 30 seconds
-                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> TaskVoid
+                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> Task<void>
                 {
                     if (auto ws = websocket.lock())
                     {
@@ -36,7 +36,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
             co_return;
         },
         // on_message
-        [this, symbol](std::string buffer) -> TaskVoid
+        [this, symbol](std::string buffer) -> Task<void>
         {
             // MeasureTime t("Depth data handle from websocket", MeasureUnit::MICROSECOND);
             m_on_order_book_ws(std::move(buffer));
@@ -44,7 +44,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
             co_return;
         },
         // on_disconnect
-        [this, symbol]() -> TaskVoid
+        [this, symbol]() -> Task<void>
         {
             // Re-start
             // ADD_LOG("Disconnect, re-start BinanceMarketData");
@@ -53,7 +53,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
             co_return;
         },
         // on_close
-        []() -> TaskVoid
+        []() -> Task<void>
         {
             // ADD_LOG("BinanceMarketData close");
             co_return;

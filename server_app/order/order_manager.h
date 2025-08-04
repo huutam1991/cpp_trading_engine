@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 
 #include <utils/util_macros.h>
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 #include <coroutine/future.h>
 
 #include <order/order.h>
@@ -32,7 +32,7 @@ private:
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
-    TaskVoid handle_update_order(Order order);
+    Task<void> handle_update_order(Order order);
 
 public:
     // Helper method

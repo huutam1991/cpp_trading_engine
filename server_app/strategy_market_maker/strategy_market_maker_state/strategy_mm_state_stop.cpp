@@ -14,7 +14,7 @@ void StrategyMarketMakerStateStop::end()
     spdlog::info("StrategyMarketMakerStateStop - end");
 }
 
-TaskVoid StrategyMarketMakerStateStop::update(StrategyUpdateData data)
+Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
 {
     PriceUpdate price_update;
     if (std::holds_alternative<PriceUpdate>(data))

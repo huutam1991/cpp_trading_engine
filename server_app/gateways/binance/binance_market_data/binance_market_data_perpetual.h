@@ -30,6 +30,6 @@ private:
     std::unordered_map<const Instrument*, std::shared_ptr<OrderBook>> m_orderbooks;
     std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
 
-    TaskVoid init_order_book();
-    TaskVoid check_sync_order_book();
+    Task<void> init_order_book();
+    Task<void> check_sync_order_book();
 };

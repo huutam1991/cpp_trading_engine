@@ -11,7 +11,7 @@
 #include <functional>
 
 #include <coroutine/event_base.h>
-#include <coroutine/task_void.h>
+#include <coroutine/task.h>
 #include <time/timer.h>
 
 namespace beast = boost::beast;          // from <boost/beast.hpp>
@@ -25,13 +25,13 @@ public:
     WebsocketClientAsync(net::io_context& io_context, EventBase* event_base, std::string name = "");
     ~WebsocketClientAsync();
 
-    void set_callbacks(std::function<TaskVoid()> on_connect, std::function<TaskVoid(std::string)> on_message, std::function<TaskVoid()> on_disconnect, std::function<TaskVoid()> on_close);
+    void set_callbacks(std::function<Task<void>()> on_connect, std::function<Task<void>(std::string)> on_message, std::function<Task<void>()> on_disconnect, std::function<Task<void>()> on_close);
     void connect(const std::string& host, const std::string& port, const std::string& path = "/");
     void send(const std::string& msg);
     void send_ping();
     void close();
 
-    void add_keep_websocket_alive_task(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds);
+    void add_keep_websocket_alive_task(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds);
 
 private:
     net::io_context& m_ioc;
@@ -47,10 +47,10 @@ private:
     std::string m_path;
 
     // Callbacks
-    std::function<TaskVoid()> m_on_connect = nullptr;
-    std::function<TaskVoid(std::string)> m_on_message = nullptr;
-    std::function<TaskVoid()> m_on_disconnect = nullptr;
-    std::function<TaskVoid()> m_on_close = nullptr;
+    std::function<Task<void>()> m_on_connect = nullptr;
+    std::function<Task<void>(std::string)> m_on_message = nullptr;
+    std::function<Task<void>()> m_on_disconnect = nullptr;
+    std::function<Task<void>()> m_on_close = nullptr;
 
     // Write queue
     std::deque<std::string> m_write_queue;
@@ -68,7 +68,7 @@ private:
     void on_close(beast::error_code ec);
     void do_write();
     void fail(const std::string& where, beast::error_code ec);
-    void on_keep_websocket_alive(std::function<TaskVoid()> keep_alive_logic, size_t tick_in_milliseconds);
+    void on_keep_websocket_alive(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds);
 
     // Common method for invoking callbacks
     template<class T, class... Args>
