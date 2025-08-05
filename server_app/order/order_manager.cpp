@@ -122,7 +122,10 @@ Task<void> OrderManager::handle_update_order(Order order)
         order.status == Order::Status::FILLED)
     {
         // Invoke callback
-        m_order_update_callback(order);
+        if (m_order_update_callback != nullptr)
+        {
+            m_order_update_callback(order);
+        }
     }
 
     // If order is canceled or rejected, remove it from [m_order_list]
