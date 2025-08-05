@@ -88,7 +88,7 @@ void CoinbaseQuoterSpot::init_websocket()
                     order.status = Order::Status::FILLED;
                     order.filled_quantity = std::stod((std::string)json["l"]);
                     order.filled_price = std::stod((std::string)json["L"]);
-                    order.commission_amount = std::stod((std::string)json["n"]);
+                    order.fee = std::stod((std::string)json["n"]);
                     order.commission_asset = (std::string)json["N"];
                 }
                 else if (json["X"] == "PARTIALLY_FILLED")
@@ -97,7 +97,7 @@ void CoinbaseQuoterSpot::init_websocket()
                     order.status = Order::Status::PARTIALLY_FILLED;
                     order.filled_quantity = std::stod((std::string)json["l"]);
                     order.filled_price = std::stod((std::string)json["L"]);
-                    order.commission_amount = std::stod((std::string)json["n"]);
+                    order.fee = std::stod((std::string)json["n"]);
                     order.commission_asset = (std::string)json["N"];
                 }
                 else if (json["X"] == "CANCELED")

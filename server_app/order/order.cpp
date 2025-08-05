@@ -28,7 +28,7 @@ Json Order::to_json()
         {"output_quantity", output_quantity},
         {"volumn_in_quote_currency", volumn_in_quote_currency},
         {"output_asset", commission_asset},
-        {"commission_amount", commission_amount},
+        {"fee", fee},
         {"commission_asset", commission_asset},
     };
 }
@@ -56,7 +56,7 @@ Order Order::from_json(Json& data)
     res.quantity = (double)data["quantity"];
     res.filled_quantity = (double)data["filled_quantity"];
     res.filled_price = 0.0;
-    res.commission_amount = (double)data["commission_amount"];
+    res.fee = (double)data["fee"];
     res.output_quantity = (double)data["output_quantity"];
     res.volumn_in_quote_currency = (double)data["volumn_in_quote_currency"];
     res.commission_asset = data["commission_asset"];

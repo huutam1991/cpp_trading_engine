@@ -87,21 +87,21 @@ Task<void> OrderManager::handle_update_order(Order order)
         if (order.side == Order::Side::BUY)
         {
             // Buy order's [output_quantity] is from [filled_quantity]
-            order.output_quantity = order.filled_quantity - order.commission_amount;
-            // Buy order's [volumn_in_quote_currency] is from [filled_quantity] * [filled_price] (without minus [commission_amount])
+            order.output_quantity = order.filled_quantity - order.fee;
+            // Buy order's [volumn_in_quote_currency] is from [filled_quantity] * [filled_price] (without minus [fee])
             order.volumn_in_quote_currency = order.filled_quantity * order.filled_price;
         }
         else
         {
             // Sell order's [output_quantity] is from [filled_quantity] * [filled_price]
-            order.output_quantity = order.filled_quantity * order.filled_price - order.commission_amount;
+            order.output_quantity = order.filled_quantity * order.filled_price - order.fee;
             // Sell order's [output_quantity] is from [output_quantity]
             order.volumn_in_quote_currency = order.output_quantity;
         }
 
         // Update order's output data
         order.filled_quantity += current_order_data.object.filled_quantity;
-        order.commission_amount += current_order_data.object.commission_amount;
+        order.fee += current_order_data.object.fee;
         order.output_quantity += current_order_data.object.output_quantity;
         order.volumn_in_quote_currency += current_order_data.object.volumn_in_quote_currency;
 

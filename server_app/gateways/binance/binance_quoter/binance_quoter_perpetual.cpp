@@ -97,7 +97,7 @@ void BinanceQuoterPerpetual::init_websocket()
                     order.status = Order::Status::FILLED;
                     order.filled_quantity = std::stod((std::string)o["l"]);
                     order.filled_price = std::stod((std::string)o["L"]);
-                    order.commission_amount = std::stod((std::string)o["n"]);
+                    order.fee = std::stod((std::string)o["n"]);
                     order.commission_asset = (std::string)o["N"];
                 }
                 else if (o["X"] == "PARTIALLY_FILLED")
@@ -106,7 +106,7 @@ void BinanceQuoterPerpetual::init_websocket()
                     order.status = Order::Status::PARTIALLY_FILLED;
                     order.filled_quantity = std::stod((std::string)o["l"]);
                     order.filled_price = std::stod((std::string)o["L"]);
-                    order.commission_amount = std::stod((std::string)o["n"]);
+                    order.fee = std::stod((std::string)o["n"]);
                     order.commission_asset = (std::string)o["N"];
                 }
                 else if (o["X"] == "CANCELED")

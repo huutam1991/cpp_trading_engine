@@ -52,7 +52,7 @@ public:
     // Output data
     double filled_quantity = 0.0; // Always for base currency
     double filled_price = 0.0;
-    double commission_amount = 0.0; // Can be either base currency or quote currency
+    double fee = 0.0; // Can be either base currency or quote currency
     double output_quantity = 0.0; // Can be either base currency or quote currency
     double volumn_in_quote_currency = 0.0; // Volumn of the order in quote currency
     ShareString commission_asset;
