@@ -113,7 +113,7 @@ void StrategyPriceArbitrageStateRun::check_place_order_at_price(double price)
     if (m_current_open_orders.find(price) == m_current_open_orders.end())
     {
         Order order = get_limit_buy_spot_order_by_price(price);
-        m_gateway->place_none_wait(order);
+        m_gateway->place(order);
 
         // Insert to [m_current_open_orders]
         m_current_open_orders.insert(std::make_pair(price, OrderInfo{std::move(order), true}));
@@ -204,7 +204,7 @@ Task<void> StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             // Buy symbol 2 from symbol 1
             double quantity = order.output_quantity / m_symbol_2_price;
             Order order_2 = get_market_buy_spot_order_by_symbol_and_quantity(m_instrument_2, quantity);
-            m_gateway->place_none_wait(order_2);
+            m_gateway->place(order_2);
 
             remove_open_order_by_price(order.price);
 
@@ -217,7 +217,7 @@ Task<void> StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
             // Sell symbol 3 from symbol 2
             double quantity = order.output_quantity;
             Order order_3 = get_market_sell_spot_order_by_symbol_and_quantity(m_instrument_3, quantity);
-            m_gateway->place_none_wait(order_3);
+            m_gateway->place(order_3);
         }
         // 3rd order (MARKET)
         else if (order.type == Order::OrderType::MARKET && order.instrument->exchange_symbol == m_instrument_3->exchange_symbol)

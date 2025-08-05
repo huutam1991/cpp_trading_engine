@@ -80,7 +80,7 @@ void StrategyMeanReversionStateRun::check_place_order_at_price(double price)
     if (m_current_open_orders.find(price) == m_current_open_orders.end())
     {
         Order order = get_limit_buy_spot_order_by_price(price);
-        m_gateway->place_none_wait(order);
+        m_gateway->place(order);
 
         // Insert to [m_current_open_orders]
         m_current_open_orders.insert(std::make_pair(price, OrderInfo{std::move(order), true}));
@@ -149,7 +149,7 @@ Task<void> StrategyMeanReversionStateRun::handle_order_update(Order& order)
             double quantity = order.output_quantity;
             double price = order.price + m_config.sell_at_higher_price;
             Order order_2 = get_limit_sell_spot_order_by_price_and_quantity(price, quantity);
-            m_gateway->place_none_wait(order_2);
+            m_gateway->place(order_2);
 
             remove_open_order_by_price(order.price);
             is_taking_profit = true;

@@ -174,7 +174,7 @@ void StrategyBuySpotStateRun::update_buy_orders()
         if (buy_point_data.status == BuyPoint::Status::AVAILABLE)
         {
             Order order = get_limit_buy_spot_order_by_price(price);
-            m_gateway->place_none_wait(order);
+            m_gateway->place(order);
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::PLACING;
@@ -240,7 +240,7 @@ void StrategyBuySpotStateRun::update_sell_orders()
         {
             Order order = get_limit_sell_spot_order(buy_point_data.price + m_config.take_profit, buy_point_data.quantity);
             order.side = Order::Side::SELL;
-            m_gateway->place_none_wait(order);
+            m_gateway->place(order);
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::PLACING;

@@ -34,7 +34,7 @@ public:
     void register_price_update(std::function<void(const Instrument*,double)> price_update_callback);
     void check_remove_canceled_orders(std::string symbol);
     void cancel_all(std::string symbol);
-    void place_none_wait(Order order);
+    void place(Order order);
     void cancel(Order order);
 
     void init();

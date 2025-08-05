@@ -133,8 +133,8 @@ Task<void> StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_up
         m_current_order_buy = get_limit_buy_spot_order(buy_price, quantity);
         m_current_order_sell = get_limit_sell_spot_order(sell_price, quantity);
 
-        m_gateway->place_none_wait(m_current_order_buy);
-        m_gateway->place_none_wait(m_current_order_sell);
+        m_gateway->place(m_current_order_buy);
+        m_gateway->place(m_current_order_sell);
     }
 
     co_return;

@@ -269,7 +269,7 @@ void add_app_route()
 
         Order order(
             OrderManager::generate_order_id(),
-            InstrumentType::SPOT,
+            InstrumentType::PERPETUAL,
             Order::Status::NOT_AVAILABLE,
             Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, InstrumentType::SPOT, symbol),
             enum_reflect::enum_value<Order::Side>(side),
@@ -280,7 +280,7 @@ void add_app_route()
 
         GatewayManager::instance()
             .get_gateway(ExchangeId::BINANCE)
-            ->place_none_wait(order);
+            ->place(order);
 
         co_return HttpResponse(OK_200, Json());
     };
