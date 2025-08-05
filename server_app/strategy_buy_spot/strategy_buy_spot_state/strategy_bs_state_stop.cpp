@@ -20,9 +20,8 @@ Task<void> StrategyBuySpotStateStop::update(StrategyUpdateData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
+        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
     }
-
-    spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
 
     co_return;
 }
