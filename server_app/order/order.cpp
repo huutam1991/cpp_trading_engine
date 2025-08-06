@@ -2,9 +2,8 @@
 
 Order::Order() {}
 
-Order::Order(OrderId order_id_i, InstrumentType exchange_type_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
+Order::Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
     order_id{order_id_i},
-    instrument_type{exchange_type_i},
     status{status_i},
     instrument{instrument_i},
     side{side_i},
@@ -17,7 +16,6 @@ Json Order::to_json()
 {
     return {
         {"order_id", order_id},
-        {"instrument_type", enum_reflect::enum_name(instrument_type)},
         {"status", enum_reflect::enum_name(status)},
         {"instrument", instrument->to_json()},
         {"side", enum_reflect::enum_name(side)},
@@ -47,7 +45,6 @@ Order Order::from_json(Json& data)
 
     Order res;
     res.order_id = (OrderId)data["order_id"];
-    res.instrument_type = instrument_type;
     res.status = enum_reflect::enum_value<Status>(std::string(data["status"]));
     res.instrument = instrument_ptr;
     res.side = enum_reflect::enum_value<Side>(std::string(data["side"]));

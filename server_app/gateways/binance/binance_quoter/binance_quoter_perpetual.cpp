@@ -77,7 +77,6 @@ void BinanceQuoterPerpetual::init_websocket()
                 Order order
                 {
                     0,                                   // Order Id
-                    InstrumentType::PERPETUAL,                // Instrument Type
                     Order::Status::NEW,                  // Status
                     instrument,                          // Instrument
                     enum_reflect::enum_value<Order::Side>((std::string)o["S"]), // Side

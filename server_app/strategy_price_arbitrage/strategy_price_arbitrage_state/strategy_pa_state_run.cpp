@@ -52,7 +52,6 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         m_instrument_1,
         Order::Side::BUY,
@@ -68,7 +67,6 @@ Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_qu
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         instrument,
         Order::Side::BUY,
@@ -84,7 +82,6 @@ Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_q
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         instrument,
         Order::Side::SELL,

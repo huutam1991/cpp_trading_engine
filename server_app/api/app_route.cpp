@@ -269,7 +269,6 @@ void add_app_route()
 
         Order order(
             OrderManager::generate_order_id(),
-            InstrumentType::PERPETUAL,
             Order::Status::NOT_AVAILABLE,
             Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol),
             enum_reflect::enum_value<Order::Side>(side),

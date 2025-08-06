@@ -76,7 +76,6 @@ Order StrategyBuySpotStateRun::get_limit_buy_spot_order_by_price(double price)
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        m_config.instrument_type,
         Order::Status::NOT_AVAILABLE,
         m_instrument,
         Order::Side::BUY,
@@ -90,7 +89,6 @@ Order StrategyBuySpotStateRun::get_limit_sell_spot_order(double price, double qu
 {
     return Order(
         OrderManager::instance().generate_order_id(),
-        m_config.instrument_type,
         Order::Status::NOT_AVAILABLE,
         m_instrument,
         Order::Side::SELL,
@@ -104,7 +102,6 @@ Order StrategyBuySpotStateRun::get_cancel_order(OrderId order_id)
 {
     return Order(
         order_id,
-        m_config.instrument_type,
         Order::Status::NOT_AVAILABLE,
         m_instrument,
         Order::Side::BUY,

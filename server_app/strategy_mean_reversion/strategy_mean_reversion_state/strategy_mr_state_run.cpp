@@ -33,7 +33,6 @@ Order StrategyMeanReversionStateRun::get_limit_buy_spot_order_by_price(double pr
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         instrument,
         Order::Side::BUY,
@@ -51,7 +50,6 @@ Order StrategyMeanReversionStateRun::get_limit_sell_spot_order_by_price_and_quan
 
     return Order(
         OrderManager::instance().generate_order_id(),
-        InstrumentType::SPOT,
         Order::Status::NOT_AVAILABLE,
         instrument,
         Order::Side::SELL,

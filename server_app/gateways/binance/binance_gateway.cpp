@@ -211,7 +211,7 @@ Task<void> BinanceGateway::cancel_all_on_exchange(std::string symbol)
 Task<Json> BinanceGateway::cancel_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    BinanceQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
+    BinanceQuoter* quoter = order.instrument->instrument_type == InstrumentType::SPOT ?
         (BinanceQuoter*)&m_quoter_spot :
         (BinanceQuoter*)&m_quoter_perpetual;
 
@@ -221,7 +221,7 @@ Task<Json> BinanceGateway::cancel_on_exchange(Order order)
 Task<Json> BinanceGateway::place_on_exchange(Order order)
 {
     // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    BinanceQuoter* quoter = order.instrument_type == InstrumentType::SPOT ?
+    BinanceQuoter* quoter = order.instrument->instrument_type == InstrumentType::SPOT ?
         (BinanceQuoter*)&m_quoter_spot :
         (BinanceQuoter*)&m_quoter_perpetual;
 

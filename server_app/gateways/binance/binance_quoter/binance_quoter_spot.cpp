@@ -79,7 +79,6 @@ void BinanceQuoterSpot::init_websocket()
                 Order order
                 {
                     0,                                   // Order Id
-                    InstrumentType::SPOT,                // Instrument Type
                     Order::Status::NEW,                  // Status
                     instrument,                          // Instrument
                     enum_reflect::enum_value<Order::Side>((std::string)json["S"]), // Side
