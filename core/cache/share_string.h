@@ -16,7 +16,7 @@ struct StringReference
 
     inline void retain()
     {
-        count.fetch_add(1, std::memory_order_acq_rel);
+        count.fetch_add(1, std::memory_order_relaxed);
     }
 
     inline uint32_t release()
