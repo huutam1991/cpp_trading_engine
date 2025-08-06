@@ -32,14 +32,14 @@ bool OrderBook::is_not_synced()
 
 void OrderBook::OnOrderbookWs(std::string data)
 {
-    // MeasureTime t("OrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
+    MeasureTime t("OrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
     if (DedupeChecker::is_duplicate(data) == true)
     {
         spdlog::debug("[WS] data is duplicate: {}", data);
         return;
     }
 
-    Json update = Json::parse(data);
+    Json update = Json::parse(std::move(data));
     // spdlog::debug("[WS] symbol: [{}], update: {}", m_symbol, update);
 
     uint64_t pu = update["pu"];
