@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <atomic>
 #include <fmt/core.h>
 #include <fmt/format.h>
 
@@ -11,7 +12,17 @@
 struct StringReference
 {
     std::string data;
-    uint32_t count;
+    std::atomic<uint32_t> count;
+
+    inline void retain()
+    {
+        count.fetch_add(1, std::memory_order_acq_rel);
+    }
+
+    inline uint32_t release()
+    {
+        return count.fetch_sub(1, std::memory_order_acq_rel);
+    }
 
     static std::string name()
     {

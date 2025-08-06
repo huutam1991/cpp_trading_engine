@@ -36,7 +36,7 @@ ShareString::ShareString(const ShareString& copy) :
     m_start_index{copy.m_start_index},
     m_length{copy.m_length}
 {
-    m_string_reference->count++;
+    m_string_reference->retain();
 }
 
 ShareString::ShareString(ShareString&& copy):
@@ -44,7 +44,7 @@ ShareString::ShareString(ShareString&& copy):
     m_start_index{copy.m_start_index},
     m_length{copy.m_length}
 {
-    m_string_reference->count++;
+    m_string_reference->retain();
 }
 
 ShareString& ShareString::operator=(const ShareString& copy)
@@ -53,7 +53,7 @@ ShareString& ShareString::operator=(const ShareString& copy)
     check_release_current_data();
 
     m_string_reference = copy.m_string_reference;
-    m_string_reference->count++;
+    m_string_reference->retain();
     m_start_index = copy.m_start_index;
     m_length = copy.m_length;
 
@@ -66,7 +66,7 @@ ShareString& ShareString::operator=(ShareString&& copy)
     check_release_current_data();
 
     m_string_reference = copy.m_string_reference;
-    m_string_reference->count++;
+    m_string_reference->retain();
     m_start_index = copy.m_start_index;
     m_length = copy.m_length;
 
@@ -112,8 +112,7 @@ void ShareString::check_release_current_data()
 {
     if (m_string_reference != nullptr)
     {
-        m_string_reference->count--;
-        if (m_string_reference->count == 0)
+        if (m_string_reference->release() == 1)
         {
             StringPool::release(m_string_reference);
         }
