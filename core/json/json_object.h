@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <atomic>
 
 #include <json/json_type_base.h>
 #include <json/json.h>
@@ -12,7 +13,7 @@ using JsonObjectPool = CachePool<JsonObject, 100000>;
 
 class JsonObject : public JsonTypeBase
 {
-    uint32_t reference_count = 0; // Reference count for shared ownership
+    std::atomic<uint32_t> reference_count = 0; // Reference count for shared ownership
     bool m_is_array = false; // Flag to indicate if this is an array
     std::unordered_map<std::string, Json> m_object; // Key-value pairs for JSON object
     std::vector<Json> m_array; // Array for JSON object
@@ -140,7 +141,7 @@ public:
 
     virtual JsonTypeBase* get_copy() override
     {
-        reference_count++;
+        reference_count.fetch_add(1, std::memory_order_acq_rel);
         return this;
     }
 
@@ -148,8 +149,7 @@ public:
 
     virtual void release() override
     {
-        reference_count--;
-        if (reference_count == 0)
+        if (reference_count.fetch_sub(1, std::memory_order_acq_rel) == 1)
         {
             JsonObjectPool::release(this);
         }
