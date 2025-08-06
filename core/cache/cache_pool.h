@@ -88,21 +88,20 @@ class CachePool
 
         FORCE_INLINE size_t move_tail()
         {
-            size_t expected = tail.load(std::memory_order_relaxed);
+            size_t current = tail.load(std::memory_order_relaxed);
+            size_t next = (current + 1 >= Size) ? 0 : current + 1;
 
-            while (true)
+            while (!tail.compare_exchange_weak(current, next,
+                                            std::memory_order_acq_rel,
+                                            std::memory_order_relaxed))
             {
-                size_t desired = (expected + 1) % Size;
-                if (tail.compare_exchange_weak(expected, desired, std::memory_order_acq_rel))
-                {
-                    break;
-                }
+                next = (current + 1 >= Size) ? 0 : current + 1;
             }
 
             // Increase size only after successfully moving tail
             size.fetch_add(1, std::memory_order_acq_rel);
 
-            return expected;
+            return next;
         }
     };
 
