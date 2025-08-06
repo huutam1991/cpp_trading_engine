@@ -4,9 +4,9 @@
 #include <cstddef>
 #include <string>
 #include <array>
+#include <atomic>
 
 #include <utils/util_macros.h>
-#include <utils/spin_lock.h>
 #include <time/measure_time.h>
 
 template <typename T>
@@ -56,9 +56,9 @@ class CachePool
     {
         std::array<T*, Size> available_items;
         std::array<T, Size> data;
-        size_t head = 0;
-        size_t tail = Size - 1;
-        size_t size = Size;
+        std::atomic<size_t> head = 0;
+        std::atomic<size_t> tail = Size - 1;
+        std::atomic<size_t> size = Size;
 
         PoolBuffer()
         {
@@ -68,22 +68,40 @@ class CachePool
             }
         }
 
-        FORCE_INLINE void move_head()
+        FORCE_INLINE size_t get_current_value_then_move_head()
         {
-            head++;
-            if (head >= Size)
+            size_t expected = head.load(std::memory_order_relaxed);
+
+            while (true)
             {
-                head = 0; // cycle the head index
+                size_t desired = (expected + 1) % Size;
+                if (head.compare_exchange_weak(expected, desired, std::memory_order_acq_rel))
+                {
+                    break;
+                }
             }
+            // Decrease size only after successfully moving head
+            size.fetch_sub(1, std::memory_order_acq_rel);
+
+            return expected;
         }
 
-        FORCE_INLINE void move_tail()
+        FORCE_INLINE size_t move_tail()
         {
-            tail++;
-            if (tail >= Size)
+            size_t expected = tail.load(std::memory_order_relaxed);
+
+            while (true)
             {
-                tail = 0; // cycle the tail index
+                size_t desired = (expected + 1) % Size;
+                if (tail.compare_exchange_weak(expected, desired, std::memory_order_acq_rel))
+                {
+                    break;
+                }
             }
+            // Increase size only after successfully moving tail
+            size.fetch_add(1, std::memory_order_acq_rel);
+
+            return expected;
         }
     };
 
@@ -91,12 +109,6 @@ class CachePool
     {
         static PoolBuffer* pool_buffer = new PoolBuffer();
         return *pool_buffer;
-    }
-
-    FORCE_INLINE static SpinLock& get_spin_lock()
-    {
-        static SpinLock spin_lock;
-        return spin_lock;
     }
 
 public:
@@ -113,13 +125,9 @@ public:
 
         T* item;
         {
-            // Lock the spin lock to ensure thread safety
-            std::lock_guard<SpinLock> guard(get_spin_lock());
-
             // Get the item from the pool
-            item = pool_buffer.available_items[pool_buffer.head];
-            pool_buffer.move_head();
-            pool_buffer.size--;
+            size_t head_index = pool_buffer.get_current_value_then_move_head();
+            item = pool_buffer.available_items[head_index];
         }
 
         // Check if the item has init method and call it
@@ -145,14 +153,10 @@ public:
             }
 
             {
-                // Lock the spin lock to ensure thread safety
-                std::lock_guard<SpinLock> guard(get_spin_lock());
-
                 // Add item back to the pool
                 PoolBuffer& pool_buffer = get_pool_buffer();
-                pool_buffer.move_tail();
-                pool_buffer.available_items[pool_buffer.tail] = item;
-                pool_buffer.size++;
+                size_t tail_index = pool_buffer.move_tail();
+                pool_buffer.available_items[tail_index] = item;
             }
         }
         else
@@ -163,7 +167,6 @@ public:
 
     FORCE_INLINE static size_t size()
     {
-        std::lock_guard<SpinLock> guard(get_spin_lock());
-        return get_pool_buffer().size;
+        return get_pool_buffer().size.load(std::memory_order_relaxed);
     }
 };
