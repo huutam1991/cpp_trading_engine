@@ -63,7 +63,7 @@ public:
             break;
         }
 
-        spdlog::info("Execute time - {}: {} {}", m_logs, execute_time, unit);
+        spdlog::debug("Execute time - {}: {} {}", m_logs, execute_time, unit);
     }
 
     void stop_counting()

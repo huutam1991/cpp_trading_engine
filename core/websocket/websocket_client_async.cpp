@@ -15,7 +15,7 @@ WebsocketClientAsync::WebsocketClientAsync(net::io_context& io_context, EventBas
 
 WebsocketClientAsync::~WebsocketClientAsync()
 {
-    spdlog::debug("Close WebsocketClientAsync: [{}]", m_name);
+    spdlog::info("Close WebsocketClientAsync: [{}]", m_name);
 }
 
 void WebsocketClientAsync::set_callbacks(std::function<Task<void>()> on_connect, std::function<Task<void>(std::string)> on_message, std::function<Task<void>()> on_disconnect, std::function<Task<void>()> on_close)
@@ -85,7 +85,7 @@ void WebsocketClientAsync::on_read(beast::error_code ec, std::size_t bytes_trans
 
     if (ec)
     {
-        spdlog::debug("WebsocketClientAsync - on_read error: {}", ec.message());
+        spdlog::info("WebsocketClientAsync - on_read error: {}", ec.message());
 
         if (
             ec == websocket::error::closed ||                     // WebSocket close
@@ -179,7 +179,7 @@ void WebsocketClientAsync::on_ping(beast::error_code ec)
         return fail("on_ping", ec);
     }
 
-    spdlog::debug("WebsocketClientAsync: [{}] - Ping sent successfully, ec: {}", m_name, ec.message());
+    spdlog::info("WebsocketClientAsync: [{}] - Ping sent successfully, ec: {}", m_name, ec.message());
 }
 
 void WebsocketClientAsync::close()
@@ -193,7 +193,7 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
 {
     if (ec)
     {
-        spdlog::debug("WebsocketClientAsync - Close error: {}", ec.message());
+        spdlog::info("WebsocketClientAsync - Close error: {}", ec.message());
     }
 
     // Invoke [m_on_close]
@@ -202,7 +202,7 @@ void WebsocketClientAsync::on_close(beast::error_code ec)
 
 void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
 {
-    spdlog::debug("WebsocketClientAsync - Error in {}: ", where, ec.message());
+    spdlog::info("WebsocketClientAsync - Error in {}: ", where, ec.message());
 }
 
 void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds)
