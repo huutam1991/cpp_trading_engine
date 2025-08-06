@@ -70,20 +70,20 @@ class CachePool
 
         FORCE_INLINE size_t get_current_value_then_move_head()
         {
-            size_t expected = head.load(std::memory_order_relaxed);
+            size_t current = head.load(std::memory_order_relaxed);
+            size_t next = (current + 1 >= Size) ? 0 : current + 1;
 
-            while (true)
+            while (!head.compare_exchange_weak(current, next,
+                                            std::memory_order_acq_rel,
+                                            std::memory_order_relaxed))
             {
-                size_t desired = (expected + 1) % Size;
-                if (head.compare_exchange_weak(expected, desired, std::memory_order_acq_rel))
-                {
-                    break;
-                }
+                next = (current + 1 >= Size) ? 0 : current + 1;
             }
+
             // Decrease size only after successfully moving head
             size.fetch_sub(1, std::memory_order_acq_rel);
 
-            return expected;
+            return current;
         }
 
         FORCE_INLINE size_t move_tail()
@@ -98,6 +98,7 @@ class CachePool
                     break;
                 }
             }
+
             // Increase size only after successfully moving tail
             size.fetch_add(1, std::memory_order_acq_rel);
 
@@ -118,7 +119,7 @@ public:
         // MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
 
         PoolBuffer& pool_buffer = get_pool_buffer();
-        if (pool_buffer.size == 0)
+        if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
         {
             throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
         }
