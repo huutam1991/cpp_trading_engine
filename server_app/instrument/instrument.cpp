@@ -116,8 +116,12 @@ void Instrument::add_instrument_to_list(ExchangeId exchange_id, const Instrument
     ins_by_exchange_symbol.emplace(instrument.exchange_symbol, &instrument);
 }
 
-const Instrument* Instrument::get_instrument_by_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol)
+const Instrument* Instrument::get_instrument_by_symbol(ExchangeId exchange_id, const std::string& symbol)
 {
+    InstrumentType instrument_type = symbol.find("-PERPETUAL") != std::string::npos ?
+        InstrumentType::PERPETUAL :
+        InstrumentType::SPOT;
+
     std::unordered_map<std::string, const Instrument*>& instruments = get_instrument_list(exchange_id, instrument_type, StoreType::BY_SYMBOL);
     auto it = instruments.find(symbol);
     if (it != instruments.end())

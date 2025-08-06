@@ -40,7 +40,7 @@ void StrategyBuySpotStateRun::on_config_change()
     m_current_price = 0.0;
 
     // Get new instruments
-    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.instrument_type, m_config.symbol);
+    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
     spdlog::debug("StrategyBuySpotStateRun, instrument: {}", m_instrument->to_json());
 }
 

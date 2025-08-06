@@ -13,7 +13,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMarketMaker::init_
 
     // For now, only use Binance
     std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(gateway->get_exchange(), InstrumentType::SPOT, m_config.object.symbol);
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(gateway->get_exchange(), m_config.object.symbol);
     gateway->subscribe_instruments({instrument});
 
     strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(gateway, get_config_reference());

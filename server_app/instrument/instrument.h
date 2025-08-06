@@ -45,7 +45,7 @@ public:
 
     static CacheInstruments& load_cache_instruments(ExchangeId exchange_id);
     static void add_instrument_to_cache(ExchangeId exchange_id, const Instrument& instrument);
-    static const Instrument* get_instrument_by_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol);
+    static const Instrument* get_instrument_by_symbol(ExchangeId exchange_id, const std::string& symbol);
     static const Instrument* get_instrument_by_exchange_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol);
 
 private:
