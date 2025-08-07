@@ -160,6 +160,16 @@ public:
         }
     }
 
+    FORCE_INLINE static size_t head()
+    {
+        return get_pool_buffer().head.load(std::memory_order_relaxed);
+    }
+
+    FORCE_INLINE static size_t tail()
+    {
+        return get_pool_buffer().tail.load(std::memory_order_relaxed);
+    }
+
     FORCE_INLINE static size_t size()
     {
         return get_pool_buffer().size.load(std::memory_order_relaxed);
