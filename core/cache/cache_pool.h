@@ -57,7 +57,7 @@ class CachePool
         std::array<T*, Size> available_items;
         std::array<T, Size> data;
         std::atomic<size_t> head = 0;
-        std::atomic<size_t> tail = Size;
+        std::atomic<size_t> tail = 0;
         std::atomic<size_t> size = Size;
 
         PoolBuffer()
@@ -68,16 +68,16 @@ class CachePool
             }
         }
 
-        FORCE_INLINE size_t get_current_value_then_move_head()
+        FORCE_INLINE size_t get_current_head()
         {
             size_t current = head.load(std::memory_order_relaxed);
-            size_t next = (current + 1 >= Size) ? 0 : current + 1;
+            size_t next = (current + 1) % Size;
 
             while (!head.compare_exchange_weak(current, next,
                                             std::memory_order_acq_rel,
                                             std::memory_order_relaxed))
             {
-                next = (current + 1 >= Size) ? 0 : current + 1;
+                next = (current + 1) % Size;
             }
 
             // Decrease size only after successfully moving head
@@ -86,22 +86,22 @@ class CachePool
             return current;
         }
 
-        FORCE_INLINE size_t move_tail()
+        FORCE_INLINE size_t get_current_tail()
         {
-            size_t current = tail.load(std::memory_order_relaxed);
-            size_t next = (current + 1 >= Size) ? 0 : current + 1;
+            size_t current = head.load(std::memory_order_relaxed);
+            size_t next = (current + 1) % Size;
 
-            while (!tail.compare_exchange_weak(current, next,
+            while (!head.compare_exchange_weak(current, next,
                                             std::memory_order_acq_rel,
                                             std::memory_order_relaxed))
             {
-                next = (current + 1 >= Size) ? 0 : current + 1;
+                next = (current + 1) % Size;
             }
 
-            // Increase size only after successfully moving tail
-            size.fetch_add(1, std::memory_order_acq_rel);
+            // Decrease size only after successfully moving head
+            size.fetch_sub(1, std::memory_order_acq_rel);
 
-            return next;
+            return current;
         }
     };
 
@@ -123,12 +123,9 @@ public:
             throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
         }
 
-        T* item;
-        {
-            // Get the item from the pool
-            size_t head_index = pool_buffer.get_current_value_then_move_head();
-            item = pool_buffer.available_items[head_index];
-        }
+        // Get the item from the pool
+        size_t head_index = pool_buffer.get_current_head();
+        T* item = pool_buffer.available_items[head_index];
 
         // Check if the item has init method and call it
         if constexpr (has_init<T>)
@@ -152,12 +149,10 @@ public:
                 item->clear();
             }
 
-            {
-                // Add item back to the pool
-                PoolBuffer& pool_buffer = get_pool_buffer();
-                size_t tail_index = pool_buffer.move_tail();
-                pool_buffer.available_items[tail_index] = item;
-            }
+            // Add item back to the pool
+            PoolBuffer& pool_buffer = get_pool_buffer();
+            size_t tail_index = pool_buffer.get_current_tail();
+            pool_buffer.available_items[tail_index] = item;
         }
         else
         {
