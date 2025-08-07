@@ -174,4 +174,10 @@ public:
     {
         return get_pool_buffer().size.load(std::memory_order_relaxed);
     }
+
+    FORCE_INLINE static size_t total_released_items()
+    {
+        size_t size = get_pool_buffer().size.load(std::memory_order_acquire);
+        return Size - size;
+    }
 };
