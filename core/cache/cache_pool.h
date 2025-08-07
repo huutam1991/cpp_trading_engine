@@ -56,9 +56,9 @@ class CachePool
     {
         std::array<T*, Size> available_items;
         std::array<T, Size> data;
-        std::atomic<size_t> head = 0;
-        std::atomic<size_t> tail = 0;
-        std::atomic<size_t> size = Size;
+        alignas(64) std::atomic<size_t> head = 0;
+        alignas(64) std::atomic<size_t> tail = 0;
+        alignas(64) std::atomic<size_t> size = Size;
 
         PoolBuffer()
         {
