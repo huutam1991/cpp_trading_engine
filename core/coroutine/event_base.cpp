@@ -4,7 +4,6 @@
 
 void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-
     TaskInfo* task_info = TaskInfoPool::acquire();
     task_info->handle = handle;
     task_info->base_promise_type_address = base_promise_type_address;
