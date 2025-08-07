@@ -98,7 +98,7 @@ class CachePool
                 next = (current + 1) % Size;
             }
 
-            // Decrease size only after successfully moving head
+            // Increase size only after successfully moving tail
             size.fetch_add(1, std::memory_order_acq_rel);
 
             return current;
