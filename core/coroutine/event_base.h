@@ -5,48 +5,42 @@
 #include <coroutine>
 #include <thread>
 #include <iostream>
-
-#include <cache/cache_pool.h>
 #include <utils/util_macros.h>
 #include <utils/spin_lock.h>
 
-#define MAX_TASK_INFO 2000
-
-struct TaskInfo
-{
-    std::coroutine_handle<> handle = nullptr;
-    void* base_promise_type_address = nullptr;
-
-    void clear()
-    {
-        if (handle != nullptr)
-        {
-            handle.destroy();
-        }
-        handle = nullptr;
-        base_promise_type_address = nullptr;
-    }
-};
-
-using TaskInfoPool = CachePool<TaskInfo, MAX_TASK_INFO>;
-
 class EventBase
 {
+    struct TaskInfo
+    {
+        std::coroutine_handle<> handle = nullptr;
+        void* base_promise_type_address = nullptr;
+    };
+
 public:
     EventBase() {}
     EventBase(size_t id) : m_event_base_id {id} {}
 
     size_t m_event_base_id = 0;
     uint64_t m_event_id = 1;
-    std::queue<TaskInfo*> m_ready_tasks;
+    std::unordered_map<uint64_t, TaskInfo> m_task_list;
+    std::queue<uint64_t> m_ready_tasks;
 
     // Spin lock for fast locking
     SpinLock m_spin_lock;
 
-    void* add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address);
-    void remove_from_event_base(void* id);
-    void set_ready_task(void* task_info);
-    TaskInfo* get_ready_task();
-    void check_to_remove_task(TaskInfo* task_info);
+    uint64_t get_event_id()
+    {
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+        return static_cast<uint64_t>(nanos);
+    }
+
+    uint64_t add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address);
+    void remove_from_event_base(uint64_t id);
+    void set_ready_task(uint64_t task_id);
+    TaskInfo get_ready_task();
+    void check_to_remove_task(TaskInfo task_info);
     void loop();
 };

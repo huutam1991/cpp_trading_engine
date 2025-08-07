@@ -8,12 +8,12 @@ struct BasePromiseType
     BasePromiseType* m_suspending_promise = nullptr;
     EventBase* m_event_base = nullptr;
     bool is_task_release = false;
-    void* task_ptr = nullptr;
+    uint64_t task_id = 0;
 
     void register_on(EventBase* event_base, std::coroutine_handle<> handle)
     {
         m_event_base = event_base;
-        task_ptr = event_base->add_to_event_base(handle, this);
+        task_id = event_base->add_to_event_base(handle, this);
         set_waiting(false); // Need to run this task at the beginning
     }
 
@@ -23,7 +23,7 @@ struct BasePromiseType
 
         if (m_is_waiting == false)
         {
-            m_event_base->set_ready_task(task_ptr);
+            m_event_base->set_ready_task(task_id);
         }
     }
 

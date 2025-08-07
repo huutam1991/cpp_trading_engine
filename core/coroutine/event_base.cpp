@@ -1,54 +1,58 @@
 #include <coroutine/event_base.h>
 #include <coroutine/base_promise_type.h>
 #include <spdlog/spdlog.h>
-#include <time/measure_time.h>
 
-void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
+uint64_t EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-    // MeasureTime measure_time("EventBase::add_to_event_base");
+    SpinLockGuard spin_lock_guard(m_spin_lock);
 
-    TaskInfo* task_info = TaskInfoPool::acquire();
-    task_info->handle = handle;
-    task_info->base_promise_type_address = base_promise_type_address;
+    uint64_t id = get_event_id();
+    m_task_list.emplace(id, TaskInfo {handle, base_promise_type_address});
 
     // spdlog::info("EventBase: {}, Total task list remaining - add: {} ", m_event_base_id, m_task_list.size());
 
-    return task_info;
+    return id;
 }
 
-void EventBase::remove_from_event_base(void* id)
-{
-    // MeasureTime measure_time("EventBase::remove_from_event_base");
-    TaskInfoPool::release(static_cast<TaskInfo*>(id));
-
-    // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, TaskInfoPool::total_released_items());
-}
-
-void EventBase::set_ready_task(void* task_info)
-{
-    SpinLockGuard spin_lock_guard(m_spin_lock);
-    m_ready_tasks.push(static_cast<TaskInfo*>(task_info));
-}
-
-TaskInfo* EventBase::get_ready_task()
+void EventBase::remove_from_event_base(uint64_t id)
 {
     SpinLockGuard spin_lock_guard(m_spin_lock);
 
-    if (m_ready_tasks.empty()) return nullptr;
+    if (m_task_list.find(id) != m_task_list.end())
+    {
+        m_task_list.erase(id);
+    }
 
-    TaskInfo* task_info = m_ready_tasks.front();
+    // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_task_list.size());
+}
+
+
+void EventBase::set_ready_task(uint64_t task_id)
+{
+    SpinLockGuard spin_lock_guard(m_spin_lock);
+    m_ready_tasks.push(task_id);
+}
+
+EventBase::TaskInfo EventBase::get_ready_task()
+{
+    SpinLockGuard spin_lock_guard(m_spin_lock);
+
+    if (m_ready_tasks.empty()) return TaskInfo{};
+
+    uint64_t task_id = m_ready_tasks.front();
     m_ready_tasks.pop();
 
-    return task_info;
+    return m_task_list[task_id];
 }
 
-void EventBase::check_to_remove_task(TaskInfo* task_info)
+void EventBase::check_to_remove_task(TaskInfo task_info)
 {
     // Check if this task is already release, then destroy it's coroutine frame and remove from queue
-    BasePromiseType* base_promise = static_cast<BasePromiseType*>(task_info->base_promise_type_address);
+    BasePromiseType* base_promise = static_cast<BasePromiseType*>(task_info.base_promise_type_address);
     if (base_promise->is_task_release == true)
     {
-        remove_from_event_base(task_info);
+        remove_from_event_base(base_promise->task_id);
+        task_info.handle.destroy();
     }
 }
 
@@ -57,14 +61,14 @@ void EventBase::loop()
     while (true)
     {
         // Check if there's any task ready to process
-        TaskInfo* task_info = get_ready_task();
+        TaskInfo task_info = get_ready_task();
 
         // Continue process this task
-        if (task_info != nullptr && task_info->handle != nullptr && task_info->handle.done() == false)
+        if (task_info.handle != nullptr && task_info.handle.done() == false)
         {
-            task_info->handle.resume();
+            task_info.handle.resume();
 
-            if (task_info->handle.done() == true)
+            if (task_info.handle.done() == true)
             {
                 check_to_remove_task(task_info);
             }
