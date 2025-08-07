@@ -1,11 +1,9 @@
 #include <coroutine/event_base.h>
 #include <coroutine/base_promise_type.h>
 #include <spdlog/spdlog.h>
-#include <time/measure_time.h>
 
 void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-    // MeasureTime measure_time("EventBase::add_to_event_base");
 
     TaskInfo* task_info = TaskInfoPool::acquire();
     task_info->handle = handle;
@@ -18,7 +16,6 @@ void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_pr
 
 void EventBase::remove_from_event_base(void* id)
 {
-    // MeasureTime measure_time("EventBase::remove_from_event_base");
     TaskInfoPool::release(static_cast<TaskInfo*>(id));
 
     // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, TaskInfoPool::total_released_items());
