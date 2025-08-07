@@ -67,11 +67,10 @@ TEST(CachePoolTest, SingleProducerSingleConsumerBasic)
 
 TEST(CachePoolTest, MultiProducerMultiConsumer)
 {
-    constexpr int NUM_CLIENTS = 50;
-
     size_t pool_size_before = StringPool::size();
 
     // Client threads
+    constexpr int NUM_CLIENTS = 50;
     std::vector<std::thread> clients;
     for (int c = 0; c < NUM_CLIENTS; ++c)
     {
@@ -96,4 +95,9 @@ TEST(CachePoolTest, MultiProducerMultiConsumer)
 
     size_t pool_size_after = StringPool::size();
     ASSERT_EQ(pool_size_before, pool_size_after);
+
+    size_t head_after = StringPool::head();
+    size_t tail_after = StringPool::tail();
+
+    ASSERT_EQ(head_after, tail_after);
 }
