@@ -88,10 +88,10 @@ class CachePool
 
         FORCE_INLINE size_t get_current_tail()
         {
-            size_t current = head.load(std::memory_order_relaxed);
+            size_t current = tail.load(std::memory_order_relaxed);
             size_t next = (current + 1) % Size;
 
-            while (!head.compare_exchange_weak(current, next,
+            while (!tail.compare_exchange_weak(current, next,
                                             std::memory_order_acq_rel,
                                             std::memory_order_relaxed))
             {
@@ -99,7 +99,7 @@ class CachePool
             }
 
             // Decrease size only after successfully moving head
-            size.fetch_sub(1, std::memory_order_acq_rel);
+            size.fetch_add(1, std::memory_order_acq_rel);
 
             return current;
         }
