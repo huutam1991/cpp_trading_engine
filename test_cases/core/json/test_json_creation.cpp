@@ -491,4 +491,18 @@ TEST(JsonTestCreation, JsonParse_PoolCountStable)
     ASSERT_EQ(obj_count_before, obj_count_after);
     ASSERT_EQ(val_count_before, val_count_after);
     ASSERT_EQ(str_count_before, str_count_after);
+
+    // -------------------------------
+    // Assert: Pool head/tail consistency
+    // -------------------------------
+    int head_pool_after = JsonObjectPool::head();
+    int tail_pool_after = JsonObjectPool::tail();
+    int head_value_after = JsonValuePool::head();
+    int tail_value_after = JsonValuePool::tail();
+    int head_string_after = StringPool::head();
+    int tail_string_after = StringPool::tail();
+
+    ASSERT_EQ(head_pool_after, tail_pool_after);
+    ASSERT_EQ(head_value_after, tail_value_after);
+    ASSERT_EQ(head_string_after, tail_string_after);
 }
