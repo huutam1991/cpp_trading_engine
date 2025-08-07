@@ -65,5 +65,9 @@ void EventBase::loop()
                 check_to_remove_task(task_info);
             }
         }
+        else
+        {
+            std::this_thread::yield();
+        }
     }
 }
