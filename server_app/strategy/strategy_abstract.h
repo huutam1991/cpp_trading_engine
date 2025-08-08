@@ -5,6 +5,7 @@
 #include <coroutine/task.h>
 #include <coroutine/event_base_manager.h>
 #include <order/order.h>
+#include <order_book_snapshot/order_book_snapshot.h>
 
 struct PriceUpdate
 {
@@ -12,12 +13,7 @@ struct PriceUpdate
     double price;
 };
 
-struct OrderBookUpdate
-{
-    const Instrument* instrument;
-};
-
-using StrategyUpdateData = std::variant<PriceUpdate, Order>;
+using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot>;
 
 class StrategyAbstract
 {
