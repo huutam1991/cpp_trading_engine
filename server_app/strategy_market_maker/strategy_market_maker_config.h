@@ -5,7 +5,7 @@
 
 struct StrategyMarketMakerConfig
 {
-    std::string symbol = "BTCUSDT";
+    std::string symbol = "BTC-USDT";
     double buy_volumn = 100.0;
     double spread = 10.0;
     bool is_running = false;
