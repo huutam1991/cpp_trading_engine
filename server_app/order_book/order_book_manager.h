@@ -1,5 +1,7 @@
 #include <functional>
 
+#include <coroutine/task.h>
+#include <coroutine/event_base_manager.h>
 #include <utils/util_macros.h>
 #include <order_book/order_book_snapshot.h>
 
@@ -7,6 +9,7 @@ class OrderBookManager
 {
     Singleton(OrderBookManager);
 
+    EventBase* m_event_base = nullptr;
     std::function<void(OrderBookSnapShot*)> m_update_callback = nullptr;
 
 public:
