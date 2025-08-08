@@ -4,6 +4,7 @@
 
 OrderBook::OrderBook(const std::string& symbol, size_t depth_level, net::io_context& ioc, EventBase* event_base)
     :   m_symbol{symbol},
+        m_instrument{Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol)},
         m_depth_level{depth_level},
         m_order_book_websocket{
             symbol,
@@ -164,6 +165,23 @@ void OrderBook::apply_snapshot(Json& snapshsot)
 
     // Print logs
     print_order_book();
+}
+
+void OrderBook::export_snapshot()
+{
+    OrderBookSnapShot* snapshot = OrderBookSnapShotPool::acquire();
+    snapshot->update_instrument(m_instrument);
+
+    for (const auto& [price, quantity] : m_bids)
+    {
+        snapshot->add_bid(price, quantity);
+    }
+    for (const auto& [price, quantity] : m_asks)
+    {
+        snapshot->add_ask(price, quantity);
+    }
+
+    OrderBookManager::instance().publish_order_book_snapshot(snapshot);
 }
 
 void OrderBook::print_order_book()

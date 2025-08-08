@@ -7,6 +7,7 @@
 #include <json/json.h>
 
 #include <order_book/order_book_snapshot.h>
+#include <order_book/order_book_manager.h>
 #include <gateways/binance/binance_market_data/order_book/order_book_websocket/order_book_websocket.h>
 #include <gateways/binance/binance_market_data/order_book/order_book_rest/order_book_rest.h>
 
@@ -21,6 +22,7 @@ public:
 
 private:
     std::string m_symbol;
+    const Instrument* m_instrument = nullptr;
     size_t m_depth_level;
     OrderBookWebsocket m_order_book_websocket;
     OrderBookRest m_order_book_rest;
@@ -39,4 +41,5 @@ private:
     void OnOrderbookRest(std::string data);
 
     void apply_snapshot(Json& snapshsot);
+    void export_snapshot();
 };
