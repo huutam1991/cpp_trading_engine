@@ -29,7 +29,7 @@ Task<void> StrategyBuySpotStateStop::update(StrategyUpdateData data)
         double ask_quantity = snapshot->get_best_ask_quantity();
         double bid_quantity = snapshot->get_best_bid_quantity();
         spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, mid_price: {}", snapshot->instrument->symbol, mid_price);
-        spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, ask_quantity: {}, bid_quantity: {}", snapshot->instrument->symbol, ask_quantity, bid_quantity);
+        spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
 
         // Release the snapshot back to the pool
         OrderBookSnapShotPool::release(snapshot);
