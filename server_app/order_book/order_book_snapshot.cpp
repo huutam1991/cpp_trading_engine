@@ -11,12 +11,22 @@ void OrderBookSnapShot::clear()
     asks.clear();
 }
 
-double OrderBookSnapShot::get_max_bid()
+double OrderBookSnapShot::get_best_bid()
 {
     return bids[0].price;
 }
 
-double OrderBookSnapShot::get_max_ask()
+double OrderBookSnapShot::get_best_ask()
 {
     return asks[0].price;
+}
+
+double OrderBookSnapShot::get_best_bid_quantity()
+{
+    return bids[0].quantity;
+}
+
+double OrderBookSnapShot::get_best_ask_quantity()
+{
+    return asks[0].quantity;
 }

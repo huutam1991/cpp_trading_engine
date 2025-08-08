@@ -41,8 +41,10 @@ public:
         asks.emplace_back(price, quantity);
     }
 
-    double get_max_bid();
-    double get_max_ask();
+    double get_best_bid();
+    double get_best_ask();
+    double get_best_bid_quantity();
+    double get_best_ask_quantity();
 };
 
 using OrderBookSnapShotPool = CachePool<OrderBookSnapShot, 1000>;
