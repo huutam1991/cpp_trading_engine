@@ -20,7 +20,7 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
-        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
+        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
     }
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
@@ -30,8 +30,8 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         double ask_quantity = snapshot->get_best_ask_quantity();
         double bid_quantity = snapshot->get_best_bid_quantity();
 
-        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
-        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
+        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
+        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
 
         // Release the snapshot back to the pool
         OrderBookSnapShotPool::release(snapshot);
