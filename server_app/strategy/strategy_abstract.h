@@ -11,6 +11,12 @@ struct PriceUpdate
     const Instrument* instrument;
     double price;
 };
+
+struct OrderBookUpdate
+{
+    const Instrument* instrument;
+};
+
 using StrategyUpdateData = std::variant<PriceUpdate, Order>;
 
 class StrategyAbstract
