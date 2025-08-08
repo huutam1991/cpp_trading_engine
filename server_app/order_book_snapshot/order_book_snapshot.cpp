@@ -5,7 +5,7 @@ void OrderBookSnapShot::update_instrument(const Instrument* instr)
     instrument = instr;
 }
 
-void OrderBookSnapShot::reset()
+void OrderBookSnapShot::clear()
 {
     bids.clear();
     asks.clear();

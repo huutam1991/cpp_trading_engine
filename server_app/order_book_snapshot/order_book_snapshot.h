@@ -29,9 +29,9 @@ public:
     }
 
     inline void update_instrument(const Instrument* instr);
-    inline void reset();
     inline void add_bid(double price, double quantity);
     inline void add_ask(double price, double quantity);
+    inline void clear();
 
     inline double get_max_bid();
     inline double get_max_ask();
