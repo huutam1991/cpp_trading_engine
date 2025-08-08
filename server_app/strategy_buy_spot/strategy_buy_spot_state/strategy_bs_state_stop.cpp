@@ -25,10 +25,12 @@ Task<void> StrategyBuySpotStateStop::update(StrategyUpdateData data)
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
         OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        double mid_price = (snapshot->get_best_bid() + snapshot->get_best_ask()) / 2;
+        double bid_price = snapshot->get_best_bid();
+        double ask_price = snapshot->get_best_ask();
         double ask_quantity = snapshot->get_best_ask_quantity();
         double bid_quantity = snapshot->get_best_bid_quantity();
-        spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, mid_price: {}", snapshot->instrument->symbol, mid_price);
+
+        spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
         spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
 
         // Release the snapshot back to the pool
