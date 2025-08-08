@@ -12,6 +12,8 @@ class OrderBookManager
     EventBase* m_event_base = nullptr;
     std::function<void(OrderBookSnapShot*)> m_update_callback = nullptr;
 
+    Task<void> run_update_order_book_snapshot(OrderBookSnapShot* snapshot);
+
 public:
     void register_update(std::function<void(OrderBookSnapShot*)>);
     void publish_order_book_snapshot(OrderBookSnapShot* snapshot);
