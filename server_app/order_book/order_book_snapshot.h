@@ -29,9 +29,17 @@ public:
     }
 
     void update_instrument(const Instrument* instr);
-    void add_bid(double price, double quantity);
-    void add_ask(double price, double quantity);
     void clear();
+
+    inline void add_bid(double price, double quantity)
+    {
+        bids.emplace_back(price, quantity);
+    }
+
+    inline void add_ask(double price, double quantity)
+    {
+        asks.emplace_back(price, quantity);
+    }
 
     double get_max_bid();
     double get_max_ask();
