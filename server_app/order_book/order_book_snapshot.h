@@ -28,13 +28,13 @@ public:
         bids.reserve(100);
     }
 
-    inline void update_instrument(const Instrument* instr);
-    inline void add_bid(double price, double quantity);
-    inline void add_ask(double price, double quantity);
-    inline void clear();
+    void update_instrument(const Instrument* instr);
+    void add_bid(double price, double quantity);
+    void add_ask(double price, double quantity);
+    void clear();
 
-    inline double get_max_bid();
-    inline double get_max_ask();
+    double get_max_bid();
+    double get_max_ask();
 };
 
 using OrderBookSnapShotPool = CachePool<OrderBookSnapShot, 1000>;
