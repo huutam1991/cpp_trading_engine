@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     StrategyManager::instance().init();
 
     // Server
-    HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::APP));
+    HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
     server.start();
 
     spdlog::info("Main exit");

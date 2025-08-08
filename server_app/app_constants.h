@@ -198,12 +198,12 @@ enum IOCId
 {
     TIMER,
     MARKET_DATA,
-    ORDER_ENTRY, 
+    ORDER_ENTRY,
 };
 
 enum EventBaseID
 {
-    APP,
+    APP,                      // App (currently not used)
     ORDER,                    // OrderManager
     DB_HELPER,                // Help to data to MongoDB
     GATEWAY,                  // Gateway
