@@ -15,9 +15,9 @@ struct OrderBookLevel
 
 class OrderBookSnapShot
 {
+public:
     const Instrument* instrument = nullptr;
 
-public:
     // Bid, Ask
     std::vector<OrderBookLevel> bids;
     std::vector<OrderBookLevel> asks;
