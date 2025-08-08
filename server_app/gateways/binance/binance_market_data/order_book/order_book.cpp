@@ -116,6 +116,8 @@ void OrderBook::OnOrderbookWs(std::string data)
         }
     });
 
+    export_snapshot();
+
     // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
 }
 
