@@ -22,6 +22,12 @@ Task<void> StrategyBuySpotStateStop::update(StrategyUpdateData data)
         price_update = std::get<PriceUpdate>(data);
         spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
     }
+    else if (std::holds_alternative<OrderBookSnapShot*>(data))
+    {
+        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
+        double mid_price = (snapshot->get_max_bid() + snapshot->get_max_ask()) / 2;
+        spdlog::info("StrategyBuySpotStateStop: do nothing, snapshot for symbol: {}, mid_price: {}", snapshot->instrument->symbol, mid_price);
+    }
 
     co_return;
 }
