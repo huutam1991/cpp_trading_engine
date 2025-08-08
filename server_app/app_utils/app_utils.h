@@ -19,13 +19,9 @@ private:
     std::mutex m_AppUtils_mutex;
     std::mutex m_app_pool_mutex;
 
-    EventBase* m_event_base = nullptr;
-
 public:
     bool is_long_number(const std::string& number_str);
     bool is_all_digit(const std::string& str);
     OrderId parse_order_id(const std::string& str);
     static double round_up_quantity_by_instrument(Instrument* instrument, double quantity);
-
-    EventBase* get_app_event_base();
 };
