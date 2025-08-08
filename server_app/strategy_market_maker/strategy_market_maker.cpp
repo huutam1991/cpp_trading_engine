@@ -1,7 +1,6 @@
 
 
 #include <strategy_market_maker/strategy_market_maker.h>
-#include <gateways/gateway_manager.h>
 
 // StrategyState
 #include <strategy_market_maker/strategy_market_maker_state/strategy_mm_state_run.h>
@@ -12,11 +11,11 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMarketMaker::init_
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
     // For now, only use Binance
-    std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(gateway->get_exchange(), m_config.object.symbol);
-    gateway->subscribe_instruments({instrument});
+    m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    m_gateway->subscribe_instruments({instrument});
 
-    strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(gateway, get_config_reference());
+    strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(m_gateway, get_config_reference());
     strategy_states[StrategyState::STOP] = new StrategyMarketMakerStateStop();
 
     return strategy_states;
@@ -38,6 +37,10 @@ void StrategyMarketMaker::on_config_change(StrategyMarketMakerConfig new_config)
     {
         m_current_state = StrategyStateData{StrategyState::STOP};
     }
+
+    // Re-subscribe symbols
+    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    m_gateway->subscribe_instruments({instrument});
 }
 
 Json StrategyMarketMaker::get_info(Json& params)
