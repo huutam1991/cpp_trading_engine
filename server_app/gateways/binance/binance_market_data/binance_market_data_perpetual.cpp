@@ -70,7 +70,7 @@ Task<void> BinanceMarketDataPerpetual::check_sync_order_book()
             }
         }
 
-        co_await Timer::sleep_for(5000);
+        co_await Timer::sleep_for(2000);
     }
 }
 
