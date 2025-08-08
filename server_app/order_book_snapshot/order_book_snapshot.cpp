@@ -1,12 +1,32 @@
 #include <order_book_snapshot/order_book_snapshot.h>
 
-
-double OrderbookSnapShot::get_max_bid()
+void OrderBookSnapShot::update_instrument(const Instrument* instr)
 {
-    return m_bids[0].price;
+    instrument = instr;
 }
 
-double OrderbookSnapShot::get_max_ask()
+void OrderBookSnapShot::reset()
 {
-    return m_asks[0].price;
+    bids.clear();
+    asks.clear();
+}
+
+void OrderBookSnapShot::add_bid(double price, double quantity)
+{
+    bids.emplace_back(price, quantity);
+}
+
+void OrderBookSnapShot::add_ask(double price, double quantity)
+{
+    asks.emplace_back(price, quantity);
+}
+
+double OrderBookSnapShot::get_max_bid()
+{
+    return bids[0].price;
+}
+
+double OrderBookSnapShot::get_max_ask()
+{
+    return asks[0].price;
 }

@@ -13,21 +13,28 @@ struct OrderBookLevel
     OrderBookLevel(double p, double q) : price(p), quantity(q) {}
 };
 
-class OrderbookSnapShot
+class OrderBookSnapShot
 {
-    // Bid, Ask
-    std::vector<OrderBookLevel> m_bids;
-    std::vector<OrderBookLevel> m_asks;
+    const Instrument* instrument = nullptr;
 
 public:
-    OrderbookSnapShot()
+    // Bid, Ask
+    std::vector<OrderBookLevel> bids;
+    std::vector<OrderBookLevel> asks;
+
+    OrderBookSnapShot()
     {
-        m_asks.reserve(100);
-        m_bids.reserve(100);
+        asks.reserve(100);
+        bids.reserve(100);
     }
 
-    double get_max_bid();
-    double get_max_ask();
+    inline void update_instrument(const Instrument* instr);
+    inline void reset();
+    inline void add_bid(double price, double quantity);
+    inline void add_ask(double price, double quantity);
+
+    inline double get_max_bid();
+    inline double get_max_ask();
 };
 
-using OrderbookSnapshotPool = CachePool<OrderbookSnapShot, 1000>;
+using OrderBookSnapShotPool = CachePool<OrderBookSnapShot, 1000>;
