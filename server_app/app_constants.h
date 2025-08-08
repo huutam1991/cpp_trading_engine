@@ -207,8 +207,9 @@ enum EventBaseID
     ORDER,                    // OrderManager
     DB_HELPER,                // Help to data to MongoDB
     GATEWAY,                  // Gateway
-    MEAN_REVERSION_STRATEGY,  // Mean Reversion Strategy
+
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
+    MEAN_REVERSION_STRATEGY,  // Mean Reversion Strategy
     PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
     MARKET_MAKER_STRATEGY     // Strategy - Market Maker
 };
