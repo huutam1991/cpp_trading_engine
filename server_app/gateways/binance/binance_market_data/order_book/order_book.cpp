@@ -84,39 +84,49 @@ void OrderBook::OnOrderbookWs(std::string data)
     m_asks.clear();
     m_bids.clear();
 
+    // Get a snapshot
+    OrderBookSnapShot* snapshot = OrderBookSnapShotPool::acquire();
+    snapshot->update_instrument(m_instrument);
+
     // Apply asks
-    update["a"].for_each([this](Json& level)
+    update["a"].for_each([this, snapshot](Json& level)
     {
         // MeasureTime t("OrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
-        if (quantity == 0.0)
-        {
-            m_asks.erase(price);
-        }
-        else
-        {
-            m_asks[price] = quantity;
-        }
+
+        snapshot->add_ask(price, quantity);
+
+        // if (quantity == 0.0)
+        // {
+        //     m_asks.erase(price);
+        // }
+        // else
+        // {
+        //     m_asks[price] = quantity;
+        // }
     });
 
     // Apply bids
-    update["b"].for_each([this](Json& level)
+    update["b"].for_each([this, snapshot](Json& level)
     {
         // MeasureTime t("OrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
-        if (quantity == 0.0)
-        {
-            m_bids.erase(price);
-        }
-        else
-        {
-            m_bids[price] = quantity;
-        }
+
+        snapshot->add_bid(price, quantity);
+
+        // if (quantity == 0.0)
+        // {
+        //     m_bids.erase(price);
+        // }
+        // else
+        // {
+        //     m_bids[price] = quantity;
+        // }
     });
 
-    export_snapshot();
+    OrderBookManager::instance().publish_order_book_snapshot(snapshot);
 
     // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
 }
