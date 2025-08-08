@@ -7,6 +7,7 @@
 #include <strategy/strategy_abstract.h>
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
+#include <order_book/order_book_manager.h>
 
 class StrategyManager
 {

@@ -41,6 +41,15 @@ void StrategyManager::subscribe_data_update()
             strategy->update(order).start_running_on(strategy->event_base);
         }
     });
+
+    // Subscribe order book update from OrderBookManager
+    OrderBookManager::instance().register_update([this](OrderBookSnapShot* snapshot)
+    {
+        for (auto& strategy : m_strategy_list)
+        {
+            strategy->update(snapshot).start_running_on(strategy->event_base);
+        }
+    });
 }
 
 Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)

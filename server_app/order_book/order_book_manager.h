@@ -7,9 +7,9 @@ class OrderBookManager
 {
     Singleton(OrderBookManager);
 
-    std::function<void(OrderBookSnapShot*)> m_order_update_callback = nullptr;
+    std::function<void(OrderBookSnapShot*)> m_update_callback = nullptr;
 
 public:
-    void register_order_update(std::function<void(OrderBookSnapShot*)>);
+    void register_update(std::function<void(OrderBookSnapShot*)>);
     void publish_order_book_snapshot(OrderBookSnapShot* snapshot);
 };

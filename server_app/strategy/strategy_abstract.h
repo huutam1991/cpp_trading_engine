@@ -13,7 +13,7 @@ struct PriceUpdate
     double price;
 };
 
-using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot>;
+using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot*>;
 
 class StrategyAbstract
 {
