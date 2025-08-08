@@ -9,7 +9,7 @@ class OrderBookManager
 {
     Singleton(OrderBookManager);
 
-    EventBase* m_event_base = nullptr;
+    EventBase* m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
     std::function<void(OrderBookSnapShot*)> m_update_callback = nullptr;
 
     Task<void> run_update_order_book_snapshot(OrderBookSnapShot* snapshot);
