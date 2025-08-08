@@ -5,6 +5,8 @@
 #include <coroutine/task.h>
 #include <coroutine/task.h>
 #include <json/json.h>
+
+#include <order_book/order_book_snapshot.h>
 #include <gateways/binance/binance_market_data/order_book/order_book_websocket/order_book_websocket.h>
 #include <gateways/binance/binance_market_data/order_book/order_book_rest/order_book_rest.h>
 
