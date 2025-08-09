@@ -12,6 +12,7 @@ class StrategyMarketMakerStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMarketMakerConfig& m_config;
+    const Instrument* m_instrument = nullptr;
 
 public:
     StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config);
@@ -37,11 +38,12 @@ private:
     double local_round_up_quantity(double quantity);
 
     // Generate order
-    Order get_limit_buy_spot_order(double price, double quantity);
-    Order get_limit_sell_spot_order(double price, double quantity);
+    Order get_buy_limit_order(double price, double quantity);
+    Order get_sell_limit_order(double price, double quantity);
     Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
     Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
 
-    Task<void> handle_price_update(PriceUpdate price);
-    Task<void> handle_order_update(Order& order);
+    void handle_price_update(PriceUpdate price);
+    void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
+    void handle_order_update(Order& order);
 };

@@ -27,8 +27,7 @@ void StrategyMarketMakerStateRun::on_config_change()
 {
     m_current_price = 0.0;
     update_lot_size();
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
-    m_gateway->subscribe_instruments({instrument});
+    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
 }
 
 void StrategyMarketMakerStateRun::update_lot_size()
@@ -44,9 +43,9 @@ double StrategyMarketMakerStateRun::local_round_up_quantity(double quantity)
     return std::stod(round_str_number);
 }
 
-Order StrategyMarketMakerStateRun::get_limit_buy_spot_order(double price, double quantity)
+Order StrategyMarketMakerStateRun::get_buy_limit_order(double price, double quantity)
 {
-    // MeasureTime t("get_limit_buy_spot_order");
+    // MeasureTime t("get_buy_limit_order");
     // Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
     Instrument* instrument = nullptr;
 
@@ -61,16 +60,13 @@ Order StrategyMarketMakerStateRun::get_limit_buy_spot_order(double price, double
     );
 }
 
-Order StrategyMarketMakerStateRun::get_limit_sell_spot_order(double price, double quantity)
+Order StrategyMarketMakerStateRun::get_sell_limit_order(double price, double quantity)
 {
-    // MeasureTime t("get_limit_sell_spot_order");
-    // Instrument* instrument = m_gateway->get_instrument_by_symbol(m_config.symbol);
-    Instrument* instrument = nullptr;
-
+    // MeasureTime t("get_sell_limit_order");
     return Order(
         OrderManager::instance().generate_order_id(),
         Order::Status::NOT_AVAILABLE,
-        instrument,
+        m_instrument,
         Order::Side::SELL,
         Order::OrderType::LIMIT,
         price,
@@ -112,7 +108,7 @@ Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quan
     );
 }
 
-Task<void> StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
+void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_price_update");
 
@@ -126,17 +122,36 @@ Task<void> StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_up
         double sell_price = m_current_price + m_config.spread / 2;
         double quantity = local_round_up_quantity(m_config.buy_volumn / buy_price);
 
-        m_current_order_buy = get_limit_buy_spot_order(buy_price, quantity);
-        m_current_order_sell = get_limit_sell_spot_order(sell_price, quantity);
+        m_current_order_buy = get_buy_limit_order(buy_price, quantity);
+        m_current_order_sell = get_sell_limit_order(sell_price, quantity);
 
         m_gateway->place(m_current_order_buy);
         m_gateway->place(m_current_order_sell);
     }
-
-    co_return;
 }
 
-Task<void> StrategyMarketMakerStateRun::handle_order_update(Order& order)
+void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+    MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot");
+
+    double best_bid = snapshot->get_best_bid();
+    double best_ask = snapshot->get_best_ask();
+
+    spdlog::debug("StrategyMarketMakerStateRun - is_placing: {}, best_bid: {}, best_ask: {}", m_is_placing, best_bid, best_ask);
+
+    if (m_is_placing == false)
+    {
+        Order buy_order = get_buy_limit_order(best_bid, m_config.buy_volumn);
+        Order sell_order = get_sell_limit_order(best_ask, m_config.buy_volumn);
+
+        m_gateway->place(buy_order);
+        m_gateway->place(sell_order);
+
+        m_is_placing = true;
+    }
+}
+
+void StrategyMarketMakerStateRun::handle_order_update(Order& order)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_order_update");
 
@@ -163,8 +178,6 @@ Task<void> StrategyMarketMakerStateRun::handle_order_update(Order& order)
     {
         m_is_placing = false;
     }
-
-    co_return;
 }
 
 Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
@@ -173,12 +186,19 @@ Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
-        co_await handle_price_update(price_update);
+        handle_price_update(price_update);
+    }
+    else if (std::holds_alternative<OrderBookSnapShot*>(data))
+    {
+        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
+        handle_order_book_snapshot(snapshot);
+
+        OrderBookSnapShotPool::release(snapshot);
     }
     else
     {
         Order order = std::get<Order>(data);
-        co_await handle_order_update(order);
+        handle_order_update(order);
     }
 
     co_return;
