@@ -35,7 +35,6 @@ private:
 
     // Helper methods
     void update_lot_size();
-    double local_round_up_quantity(double quantity);
 
     // Generate order
     Order get_buy_limit_order(double price, double quantity);
