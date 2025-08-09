@@ -160,9 +160,9 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
     // Check if both orders get FILLED
     if (m_current_order_buy.status == Order::Status::FILLED && m_current_order_sell.status == Order::Status::FILLED)
     {
-        // Reset orders
-        m_current_order_buy = Order();
-        m_current_order_sell = Order();
+        // Reset orders status
+        m_current_order_buy.status = Order::Status::NOT_AVAILABLE;
+        m_current_order_sell.status = Order::Status::NOT_AVAILABLE;
 
         m_is_placing = false;
     }
