@@ -10,15 +10,19 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
     : m_symbol{symbol}, m_depth_level{depth_level}, m_ioc{ioc}, m_event_base{event_base}, m_on_order_book_ws{on_order_book_ws}
 {
     STRING_LOWER_CASE(m_symbol);
+    start();
+}
+
+void OrderBookWebsocket::start()
+{
     std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level) + "@100ms";
-    spdlog::debug("OrderBookWebsocket: ws path: {}", ws_path);
 
     m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_order_book_ws");
     m_websocket->set_callbacks(
         // on_connect
         [this, ws_path, websocket = m_websocket->weak_from_this()]() -> Task<void>
         {
-            spdlog::info("Websocket [{}] is connected", ws_path);
+            spdlog::info("OrderBookWebsocket [{}] is connected", ws_path);
             if (auto ws = websocket.lock())
             {
                 // Set period time to send ping frame at every 30 seconds
@@ -36,7 +40,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
             co_return;
         },
         // on_message
-        [this, symbol](std::string buffer) -> Task<void>
+        [this](std::string buffer) -> Task<void>
         {
             // MeasureTime t("Depth data handle from websocket", MeasureUnit::MICROSECOND);
             m_on_order_book_ws(std::move(buffer));
@@ -44,18 +48,18 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
             co_return;
         },
         // on_disconnect
-        [this, symbol]() -> Task<void>
+        [this, symbol = m_symbol]() -> Task<void>
         {
             // Re-start
-            // ADD_LOG("Disconnect, re-start BinanceMarketData");
-            // this->start_websocket(symbol);
+            spdlog::debug("OrderBookWebsocket [{}] disconnected, re-starting...", symbol);
+            this->start();
 
             co_return;
         },
         // on_close
-        []() -> Task<void>
+        [symbol = m_symbol]() -> Task<void>
         {
-            // ADD_LOG("BinanceMarketData close");
+            spdlog::debug("OrderBookWebsocket [{}] closed", symbol);
             co_return;
         }
     );
