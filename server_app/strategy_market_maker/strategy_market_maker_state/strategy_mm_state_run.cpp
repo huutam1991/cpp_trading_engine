@@ -20,7 +20,7 @@ void StrategyMarketMakerStateRun::end()
     m_is_placing = false;
 
     // Send cancel all of placed order
-    m_gateway->cancel_all(m_config.symbol);
+    m_gateway->cancel_all(m_instrument->exchange_symbol);
 }
 
 void StrategyMarketMakerStateRun::on_config_change()
@@ -116,7 +116,7 @@ void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
 
 void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot");
+    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
 
     double best_bid = snapshot->get_best_bid();
     double best_ask = snapshot->get_best_ask();
@@ -125,13 +125,13 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
 
     if (m_is_placing == false)
     {
+        m_is_placing = true;
+
         Order buy_order = get_buy_limit_order(best_bid, m_config.buy_volumn);
         Order sell_order = get_sell_limit_order(best_ask, m_config.buy_volumn);
 
         m_gateway->place(buy_order);
         m_gateway->place(sell_order);
-
-        m_is_placing = true;
     }
 }
 
@@ -160,6 +160,10 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
     // Check if both orders get FILLED
     if (m_current_order_buy.status == Order::Status::FILLED && m_current_order_sell.status == Order::Status::FILLED)
     {
+        // Reset orders
+        m_current_order_buy = Order();
+        m_current_order_sell = Order();
+
         m_is_placing = false;
     }
 }
