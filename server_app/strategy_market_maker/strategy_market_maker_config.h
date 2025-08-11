@@ -8,6 +8,8 @@ struct StrategyMarketMakerConfig
     std::string symbol = "BTC-USDC";
     double buy_volumn = 0.1;
     double price_gap = 20.0;
+    double price_step_between_blocks = 100.0;
+    int orders_each_side_per_block = 5;
     double inventory_skew_ratio = 3.0;
     bool is_running = false;
 
@@ -17,6 +19,9 @@ struct StrategyMarketMakerConfig
             {"symbol", symbol},
             {"buy_volumn", buy_volumn},
             {"price_gap", price_gap},
+            {"price_step_between_blocks", price_step_between_blocks},
+            {"orders_each_side_per_block", orders_each_side_per_block},
+            {"inventory_skew_ratio", inventory_skew_ratio},
             {"is_running", is_running},
         };
     }
@@ -31,6 +36,9 @@ struct StrategyMarketMakerConfig
             res.symbol = (std::string)data["symbol"];
             res.buy_volumn = (double)data["buy_volumn"];
             res.price_gap = (double)data["price_gap"];
+            res.price_step_between_blocks = (double)data["price_step_between_blocks"];
+            res.orders_each_side_per_block = (int)data["orders_each_side_per_block"];
+            res.inventory_skew_ratio = (double)data["inventory_skew_ratio"];
             res.is_running = (bool)data["is_running"];
         }
 

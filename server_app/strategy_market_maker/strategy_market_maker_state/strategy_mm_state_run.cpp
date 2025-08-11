@@ -23,7 +23,6 @@ void StrategyMarketMakerStateRun::end()
 
 void StrategyMarketMakerStateRun::on_config_change()
 {
-    m_current_price = 0.0;
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
 }
 
@@ -83,11 +82,33 @@ Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quan
     );
 }
 
+void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
+{
+    MeasureTime t("StrategyMarketMakerStateRun - quote_block");
+
+    // Calculate the price for buy and sell orders
+    double bid_price_gap = m_config.price_gap;
+    double ask_price_gap = m_config.price_gap;
+    double inventory_in_blocks = std::abs(m_inventory / m_config.orders_each_side_per_block);
+
+    if (inventory_in_blocks >= m_config.inventory_skew_ratio)
+    {
+        if (m_inventory > 0)
+        {
+            // If inventory is positive, we need to sell more
+            bid_price_gap *= inventory_in_blocks;
+        }
+        else
+        {
+            // If inventory is negative, we need to buy more
+            ask_price_gap *= inventory_in_blocks;
+        }
+    }
+}
+
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_price_update");
-
-    m_current_price = price_update.price;
 }
 
 void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -96,8 +117,14 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
 
     double best_bid = snapshot->get_best_bid();
     double best_ask = snapshot->get_best_ask();
+    double mid = (best_bid + best_ask) / 2.0;
+    spdlog::debug("StrategyMarketMakerStateRun - best_bid: {}, best_ask: {}, mid: {}", best_bid, best_ask, mid);
 
-    spdlog::debug("StrategyMarketMakerStateRun - best_bid: {}, best_ask: {}", best_bid, best_ask);
+    if (std::abs(mid - m_last_quote_price) > m_config.price_gap)
+    {
+        quote_block_orders_at_price(mid);
+        m_last_quote_price = mid;
+    }
 }
 
 void StrategyMarketMakerStateRun::handle_order_update(Order& order)
@@ -114,9 +141,11 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         // 1st order (LIMIT)
         if (order.side == Order::Side::BUY)
         {
+            m_inventory += 1;
         }
         else if (order.side == Order::Side::SELL)
         {
+            m_inventory -= 1;
         }
     }
 }

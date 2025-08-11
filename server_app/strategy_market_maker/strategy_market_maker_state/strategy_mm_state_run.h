@@ -25,13 +25,16 @@ public:
     void on_config_change();
 
 private:
-    double m_current_price = 0.0;
+    double m_last_quote_price = 0.0;
+    double m_inventory = 0.0;
 
     // Generate order
     Order get_buy_limit_order(double price, double quantity);
     Order get_sell_limit_order(double price, double quantity);
     Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
     Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
+
+    void quote_block_orders_at_price(double price);
 
     void handle_price_update(PriceUpdate price);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
