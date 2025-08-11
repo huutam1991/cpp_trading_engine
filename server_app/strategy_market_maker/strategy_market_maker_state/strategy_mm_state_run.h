@@ -25,16 +25,7 @@ public:
     void on_config_change();
 
 private:
-    size_t m_lot_size = 1;
     double m_current_price = 0.0;
-    bool m_is_placing = false;
-
-    // Current orders
-    Order m_current_order_buy;
-    Order m_current_order_sell;
-
-    // Helper methods
-    void update_lot_size();
 
     // Generate order
     Order get_buy_limit_order(double price, double quantity);
