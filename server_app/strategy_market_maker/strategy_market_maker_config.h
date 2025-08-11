@@ -5,7 +5,7 @@
 
 struct StrategyMarketMakerConfig
 {
-    std::string symbol = "BTC-USDC";
+    std::string symbol = "BTC-USDC-PERPETUAL";
     double volumn = 0.1;
     double price_gap = 20.0;
     double price_step_between_blocks = 100.0;
