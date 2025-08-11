@@ -161,6 +161,9 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     {
         quote_block_orders_at_price(mid);
         m_last_quote_price = mid;
+
+        // Check close far orders
+        close_far_orders();
     }
 }
 
