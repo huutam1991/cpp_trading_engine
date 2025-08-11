@@ -5,9 +5,10 @@
 
 struct StrategyMarketMakerConfig
 {
-    std::string symbol = "BTC-USDT";
-    double buy_volumn = 100.0;
-    double spread = 10.0;
+    std::string symbol = "BTC-USDC";
+    double buy_volumn = 0.1;
+    double price_gap = 20.0;
+    double inventory_skew_ratio = 3.0;
     bool is_running = false;
 
     Json to_json()
@@ -15,7 +16,7 @@ struct StrategyMarketMakerConfig
         return {
             {"symbol", symbol},
             {"buy_volumn", buy_volumn},
-            {"spread", spread},
+            {"price_gap", price_gap},
             {"is_running", is_running},
         };
     }
@@ -29,7 +30,7 @@ struct StrategyMarketMakerConfig
         {
             res.symbol = (std::string)data["symbol"];
             res.buy_volumn = (double)data["buy_volumn"];
-            res.spread = (double)data["spread"];
+            res.price_gap = (double)data["price_gap"];
             res.is_running = (bool)data["is_running"];
         }
 
