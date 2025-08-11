@@ -122,7 +122,7 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
         bid_price_gap = m_config.price_gap * widen;
         ask_price_gap = m_config.price_gap * tighten;
     }
-    else
+    else if (m_inventory < 0)
     {
         // Inventory is negative, widen the ask price
         bid_price_gap = m_config.price_gap * tighten;
