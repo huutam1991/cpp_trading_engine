@@ -75,7 +75,7 @@ void BinanceGateway::get_spot_symbols_info()
             symbol_name,
             exchange_symbol,
             get_rounded_number(data["filters"][1]["stepSize"]),
-            std::stod((std::string&&)data["filters"][0]["tickSize"])
+            get_rounded_number(data["filters"][0]["tickSize"])
         });
     });
 }
@@ -110,7 +110,7 @@ void BinanceGateway::get_perpetual_symbols_info()
             symbol_name,
             exchange_symbol,
             get_rounded_number(data["filters"][1]["stepSize"]),
-            std::stod((std::string&&)data["filters"][0]["tickSize"])
+            get_rounded_number(data["filters"][0]["tickSize"])
         });
     });
 }
