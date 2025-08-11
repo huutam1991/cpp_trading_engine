@@ -20,7 +20,7 @@ Instrument Instrument::from_json(Json& data)
         data["symbol"],
         data["exchange_symbol"],
         (size_t)data["lot_size"],
-        (double)data["tick_size"]
+        (size_t)data["tick_size"]
     };
 };
 
