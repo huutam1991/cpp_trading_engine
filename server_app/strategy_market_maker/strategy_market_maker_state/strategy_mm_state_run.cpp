@@ -111,8 +111,8 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     double inventory_in_blocks = std::abs(m_inventory / m_config.orders_each_side_per_block);
 
     double alpha = inventory_in_blocks >= m_config.inventory_skew_ratio ? 1.0 : 0.0;
-    double widen = 1.0 + m_config.widen * alpha;
-    double tighten = 1.0 - m_config.tight * alpha;
+    double widen = 1.0 + (m_config.widen - 1.0) * alpha;
+    double tighten = 1.0 - (1.0 - m_config.tight) * alpha;
 
     double bid_price_gap;
     double ask_price_gap;
