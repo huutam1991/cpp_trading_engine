@@ -86,14 +86,14 @@ void StrategyMarketMakerStateRun::close_far_orders()
 {
     auto task = [this]() -> Task<void>
     {
-        for (auto& [price, order] : m_open_orders)
+        for (auto& [order_id, order] : m_open_orders)
         {
-            double price_distance = std::abs(price - m_last_quote_price);
+            double price_distance = std::abs(order.price - m_last_quote_price);
             if (price_distance > m_config.price_step_between_blocks)
             {
-                spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", price, price_distance);
+                spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", order.price, price_distance);
                 m_gateway->cancel(order);
-                m_open_orders.erase(price);
+                m_open_orders.erase(order_id);
             }
         }
 
@@ -174,7 +174,7 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
     // NEW - add to [m_open_orders]
     if (order.status == Order::Status::NEW)
     {
-        m_open_orders.emplace(order.price, order);
+        m_open_orders.emplace(order.order_id, order);
     }
     // FILLED - update [m_inventory] and remove order from [m_open_orders]
     else if (order.status == Order::Status::FILLED)
@@ -189,7 +189,7 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
             m_inventory -= 1;
         }
 
-        m_open_orders.erase(order.price);
+        m_open_orders.erase(order.order_id);
     }
 }
 

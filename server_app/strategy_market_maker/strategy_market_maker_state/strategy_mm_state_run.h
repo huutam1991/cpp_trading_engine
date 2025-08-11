@@ -28,7 +28,7 @@ public:
 private:
     double m_last_quote_price = 0.0;
     double m_inventory = 0.0;
-    std::unordered_map<double, Order> m_open_orders;
+    std::unordered_map<OrderId, Order> m_open_orders;
 
     // Generate order
     Order get_buy_limit_order(double price, double quantity);
