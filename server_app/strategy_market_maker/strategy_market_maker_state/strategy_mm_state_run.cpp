@@ -108,22 +108,25 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     MeasureTime t("StrategyMarketMakerStateRun - quote_block");
 
     // Calculate the price for buy and sell orders
-    double bid_price_gap = m_config.price_gap;
-    double ask_price_gap = m_config.price_gap;
     double inventory_in_blocks = std::abs(m_inventory / m_config.orders_each_side_per_block);
 
-    if (inventory_in_blocks >= m_config.inventory_skew_ratio)
+    double alpha = inventory_in_blocks >= m_config.inventory_skew_ratio ? 1.0 : 0.0;
+    double widen = 1.0 + m_config.widen * alpha;    //  k_widen ~ 0.5–1.5
+    double tighten = 1.0 - m_config.tight * alpha;
+
+    double bid_price_gap;
+    double ask_price_gap;
+    if (m_inventory > 0)
     {
-        if (m_inventory > 0)
-        {
-            // If inventory is positive, we need to sell more
-            bid_price_gap *= inventory_in_blocks;
-        }
-        else
-        {
-            // If inventory is negative, we need to buy more
-            ask_price_gap *= inventory_in_blocks;
-        }
+        // Inventory is positive, widen the bid price
+        bid_price_gap = m_config.price_gap * widen;
+        ask_price_gap = m_config.price_gap * tighten;
+    }
+    else
+    {
+        // Inventory is negative, widen the ask price
+        bid_price_gap = m_config.price_gap * tighten;
+        ask_price_gap = m_config.price_gap * widen;
     }
 
     for (size_t i = 1; i <= m_config.orders_each_side_per_block; i++)
