@@ -105,7 +105,7 @@ void StrategyMarketMakerStateRun::close_far_orders()
 
 void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
 {
-    MeasureTime t("StrategyMarketMakerStateRun - quote_block");
+    MeasureTime t("StrategyMarketMakerStateRun - quote_block", MeasureUnit::MICROSECOND);
 
     // Calculate the price for buy and sell orders
     double inventory_in_blocks = std::abs(m_inventory / m_config.orders_each_side_per_block);
