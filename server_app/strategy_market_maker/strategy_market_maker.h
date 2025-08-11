@@ -17,5 +17,5 @@ public:
     virtual Json get_info(Json& params) override;
 
 private:
-    Json get_orders_chain();
+    Json get_info();
 };

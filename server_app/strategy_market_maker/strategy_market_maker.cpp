@@ -45,77 +45,10 @@ void StrategyMarketMaker::on_config_change(StrategyMarketMakerConfig new_config)
 
 Json StrategyMarketMaker::get_info(Json& params)
 {
-    if ((std::string)params["type"] == "orders_chain")
-    {
-        return get_orders_chain();
-    }
+    auto state_run = (StrategyMarketMakerStateRun*)m_states[StrategyState::RUN];
 
-    return {};
+    return {
+        {"inventory", state_run->get_inventory()}
+    };
 }
 
-Json StrategyMarketMaker::get_orders_chain()
-{
-    Json orders;
-
-    Json filled_orders = MongoDB::instance()
-        .set_db_and_collection("order", "order_list")
-        .find_many();
-
-    filled_orders.for_each([&orders](Json& order)
-    {
-        if (order["status"] == "FILLED")
-        {
-            order.remove_field("_id");
-            orders.push_back(order);
-        }
-    });
-
-    orders.sort([](Json& a, Json& b)
-    {
-        return (OrderId)a["order_id"] < (OrderId)b["order_id"];
-    });
-
-    Json res;
-    size_t i = 0;
-    while (i < orders.size())
-    {
-        // Find triangle orders
-        if ((std::string)orders[i]["symbol"] == "BTCUSDT" &&
-            (std::string)orders[i + 1]["symbol"] == "ETHBTC" &&
-            (std::string)orders[i + 2]["symbol"] == "ETHUSDT")
-        {
-            double input = (double)orders[i]["volumn_in_quote_currency"];
-            double output = (double)orders[i+2]["output_quantity"];
-
-            Json triangle;
-            triangle["input"] = input;
-            triangle["output"] = output;
-            triangle["profit"] = output - input;
-            triangle["orders"] = {
-                {"BTCUSDT", orders[i]["order_id"]},
-                {"ETHBTC", orders[i + 1]["order_id"]},
-                {"ETHUSDT", orders[i + 2]["order_id"]}
-            };
-
-            res.push_back(triangle);
-        }
-
-        i++;
-    }
-
-    return res;
-}
-
-// Json StrategyMarketMaker::get_open_orders()
-// {
-//     std::unordered_map<PAState, StrategyMarketMakerState*>* strategy_states = get_strategy_states();
-//     PAState state = m_current_state.object.state;
-
-//     // Run get_open_orders() method of new state
-//     if ((*strategy_states).find(state) != (*strategy_states).end())
-//     {
-//         return (*strategy_states)[state]->get_open_orders();
-//     }
-
-//     return Json::create_array();
-// }

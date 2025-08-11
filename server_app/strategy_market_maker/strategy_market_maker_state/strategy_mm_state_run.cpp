@@ -26,6 +26,11 @@ void StrategyMarketMakerStateRun::on_config_change()
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
 }
 
+double StrategyMarketMakerStateRun::get_inventory()
+{
+    return m_inventory;
+}
+
 Order StrategyMarketMakerStateRun::get_buy_limit_order(double price, double quantity)
 {
     return Order(
