@@ -6,7 +6,7 @@
 struct StrategyMarketMakerConfig
 {
     std::string symbol = "BTC-USDC";
-    double buy_volumn = 0.1;
+    double volumn = 0.1;
     double price_gap = 20.0;
     double price_step_between_blocks = 100.0;
     int orders_each_side_per_block = 5;
@@ -17,7 +17,7 @@ struct StrategyMarketMakerConfig
     {
         return {
             {"symbol", symbol},
-            {"buy_volumn", buy_volumn},
+            {"volumn", volumn},
             {"price_gap", price_gap},
             {"price_step_between_blocks", price_step_between_blocks},
             {"orders_each_side_per_block", orders_each_side_per_block},
@@ -34,7 +34,7 @@ struct StrategyMarketMakerConfig
         if (data.has_field("symbol"))
         {
             res.symbol = (std::string)data["symbol"];
-            res.buy_volumn = (double)data["buy_volumn"];
+            res.volumn = (double)data["volumn"];
             res.price_gap = (double)data["price_gap"];
             res.price_step_between_blocks = (double)data["price_step_between_blocks"];
             res.orders_each_side_per_block = (int)data["orders_each_side_per_block"];

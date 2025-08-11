@@ -104,6 +104,19 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
             ask_price_gap *= inventory_in_blocks;
         }
     }
+
+    for (size_t i = 1; i <= m_config.orders_each_side_per_block; i++)
+    {
+        // Buy orders
+        double buy_price = price - (i * bid_price_gap);
+        Order buy_order = get_buy_limit_order(buy_price, m_config.volumn);
+        m_gateway->place(buy_order);
+
+        // Sell orders
+        double sell_price = price + (i * ask_price_gap);
+        Order sell_order = get_sell_limit_order(sell_price, m_config.volumn);
+        m_gateway->place(sell_order);
+    }
 }
 
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
@@ -120,7 +133,7 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     double mid = (best_bid + best_ask) / 2.0;
     spdlog::debug("StrategyMarketMakerStateRun - best_bid: {}, best_ask: {}, mid: {}", best_bid, best_ask, mid);
 
-    if (std::abs(mid - m_last_quote_price) > m_config.price_gap)
+    if (std::abs(mid - m_last_quote_price) > m_config.price_step_between_blocks)
     {
         quote_block_orders_at_price(mid);
         m_last_quote_price = mid;
