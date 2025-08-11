@@ -93,7 +93,6 @@ void StrategyMarketMakerStateRun::close_far_orders()
             {
                 spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", order.price, price_distance);
                 m_gateway->cancel(order);
-                m_open_orders.erase(order_id);
             }
         }
 
@@ -189,6 +188,11 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
             m_inventory -= 1;
         }
 
+        m_open_orders.erase(order.order_id);
+    }
+    // CANCELED or REJECTED - remove from [m_open_orders]
+    else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
+    {
         m_open_orders.erase(order.order_id);
     }
 }
