@@ -40,6 +40,7 @@ public:
     // Helper method
     std::string round_string_number(const std::string& str_number, size_t precision) const;
     double get_round_up_quantity(double quantity) const;
+    double get_round_up_price(double price) const;
 
     using CacheInstruments = std::unordered_map<std::string, SavableObject<Instrument>>;
 

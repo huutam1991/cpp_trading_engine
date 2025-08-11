@@ -41,6 +41,12 @@ double Instrument::get_round_up_quantity(double quantity) const
     return std::stod(round_str_number);
 }
 
+double Instrument::get_round_up_price(double price) const
+{
+    std::string round_str_number = round_string_number(std::to_string(price), tick_size);
+    return std::stod(round_str_number);
+}
+
 Instrument::CacheInstruments& Instrument::get_cache_instruments(ExchangeId exchange_id)
 {
     static std::unordered_map<ExchangeId, CacheInstruments> cache_instruments_by_exchange;
