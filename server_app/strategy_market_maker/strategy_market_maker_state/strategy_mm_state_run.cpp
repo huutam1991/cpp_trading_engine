@@ -82,24 +82,27 @@ Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quan
     );
 }
 
-void StrategyMarketMakerStateRun::close_far_orders()
+void StrategyMarketMakerStateRun::close_far_orders(double price)
 {
-    auto task = [this]() -> Task<void>
-    {
-        for (auto& [order_id, order] : m_open_orders)
-        {
-            double price_distance = std::abs(order.price - m_last_quote_price);
-            if (price_distance > m_config.price_step_between_blocks)
-            {
-                spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", order.price, price_distance);
-                m_gateway->cancel(order);
-            }
-        }
-
-        co_return;
-    }();
-
+    auto task = task_close_far_orders(price);
     task.start_running_on(m_event_base);
+}
+
+Task<void> StrategyMarketMakerStateRun::task_close_far_orders(double price)
+{
+    spdlog::warn("m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
+    for (auto& [order_id, order] : m_open_orders)
+    {
+        spdlog::warn("order: {}", order.to_json());
+        double price_distance = std::abs(order.price - price);
+        if (price_distance > m_config.price_step_between_blocks)
+        {
+            spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", order.price, price_distance);
+            m_gateway->cancel(order);
+        }
+    }
+
+    co_return;
 }
 
 void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
@@ -112,8 +115,6 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     double alpha = inventory_in_blocks >= m_config.inventory_skew_ratio ? 1.0 : 0.0;
     double widen = 1.0 + (m_config.widen - 1.0) * alpha;
     double tighten = 1.0 - (1.0 - m_config.tight) * alpha;
-
-    spdlog::warn("alpha: {}, widen: {}, tighten: {}", alpha, widen, tighten);
 
     double bid_price_gap = m_config.price_gap;
     double ask_price_gap = m_config.price_gap;
@@ -161,10 +162,9 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     if (std::abs(mid - m_last_quote_price) > m_config.price_step_between_blocks)
     {
         quote_block_orders_at_price(mid);
-        m_last_quote_price = mid;
+        close_far_orders(mid);
 
-        // Check close far orders
-        close_far_orders();
+        m_last_quote_price = mid;
     }
 }
 
