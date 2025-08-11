@@ -10,7 +10,7 @@
 #include <utils/util_macros.h>
 #include <utils/spin_lock.h>
 
-#define MAX_TASK_INFO 2000
+#define MAX_TASK_INFO 20000
 
 struct TaskInfo
 {
