@@ -34,7 +34,7 @@ Order StrategyMarketMakerStateRun::get_buy_limit_order(double price, double quan
         m_instrument,
         Order::Side::BUY,
         Order::OrderType::LIMIT,
-        price,
+        m_instrument->get_round_up_price(price),
         quantity
     );
 }
@@ -47,7 +47,7 @@ Order StrategyMarketMakerStateRun::get_sell_limit_order(double price, double qua
         m_instrument,
         Order::Side::SELL,
         Order::OrderType::LIMIT,
-        price,
+        m_instrument->get_round_up_price(price),
         quantity
     );
 }
@@ -113,8 +113,10 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     double widen = 1.0 + (m_config.widen - 1.0) * alpha;
     double tighten = 1.0 - (1.0 - m_config.tight) * alpha;
 
-    double bid_price_gap;
-    double ask_price_gap;
+    spdlog::warn("alpha: {}, widen: {}, tighten: {}", alpha, widen, tighten);
+
+    double bid_price_gap = m_config.price_gap;
+    double ask_price_gap = m_config.price_gap;
     if (m_inventory > 0)
     {
         // Inventory is positive, widen the bid price
