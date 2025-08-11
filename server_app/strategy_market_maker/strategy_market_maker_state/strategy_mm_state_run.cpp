@@ -3,7 +3,7 @@
 #include <utils/utils.h>
 
 StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config)
-    : m_gateway{gateway}, m_config{config}
+    : m_gateway{gateway}, m_config{config}, m_event_base{EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY)}
 {
 }
 
@@ -82,6 +82,27 @@ Order StrategyMarketMakerStateRun::get_market_sell_spot_order_by_symbol_and_quan
     );
 }
 
+void StrategyMarketMakerStateRun::close_far_orders()
+{
+    auto task = [this]() -> Task<void>
+    {
+        for (auto& [price, order] : m_open_orders)
+        {
+            double price_distance = std::abs(price - m_last_quote_price);
+            if (price_distance > m_config.price_step_between_blocks)
+            {
+                spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", price, price_distance);
+                m_gateway->cancel(order);
+                m_open_orders.erase(price);
+            }
+        }
+
+        co_return;
+    }();
+
+    task.start_running_on(m_event_base);
+}
+
 void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
 {
     MeasureTime t("StrategyMarketMakerStateRun - quote_block");
@@ -144,11 +165,12 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_order_update");
 
-    // NEW - do nothing
+    // NEW - add to [m_open_orders]
     if (order.status == Order::Status::NEW)
     {
+        m_open_orders.emplace(order.price, order);
     }
-    // FILLED - update order
+    // FILLED - update [m_inventory] and remove order from [m_open_orders]
     else if (order.status == Order::Status::FILLED)
     {
         // 1st order (LIMIT)
@@ -160,6 +182,8 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         {
             m_inventory -= 1;
         }
+
+        m_open_orders.erase(order.price);
     }
 }
 

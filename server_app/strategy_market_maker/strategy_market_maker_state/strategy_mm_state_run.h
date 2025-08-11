@@ -13,6 +13,7 @@ class StrategyMarketMakerStateRun : public StrategyStateBase
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMarketMakerConfig& m_config;
     const Instrument* m_instrument = nullptr;
+    EventBase* m_event_base = nullptr;
 
 public:
     StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config);
@@ -36,6 +37,7 @@ private:
     Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
 
     void quote_block_orders_at_price(double price);
+    void close_far_orders();
 
     void handle_price_update(PriceUpdate price);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
