@@ -72,6 +72,8 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
         MongoDB::instance()
             .set_db_and_collection(STRATEGY_DB_NAME, "error")
             .insert_one(error_new);
+
+        spdlog::error("BinanceQuoter - Error: {}", error_new);
     }
     else
     {
