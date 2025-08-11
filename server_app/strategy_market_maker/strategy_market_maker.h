@@ -17,5 +17,4 @@ public:
     virtual Json get_info(Json& params) override;
 
 private:
-    Json get_info();
 };
