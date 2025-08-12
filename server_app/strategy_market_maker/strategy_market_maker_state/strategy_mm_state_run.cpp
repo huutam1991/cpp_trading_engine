@@ -30,7 +30,8 @@ Json StrategyMarketMakerStateRun::get_info()
 {
     return {
         {"inventory", m_inventory},
-        {"last_quote_price", m_last_quote_price}
+        {"last_quote_price", m_last_quote_price},
+        {"open_orders", m_open_orders.size()}
     };
 }
 
