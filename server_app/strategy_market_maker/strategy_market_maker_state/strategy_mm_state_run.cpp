@@ -1,6 +1,7 @@
 #include "strategy_mm_state_run.h"
 #include <time/measure_time.h>
 #include <utils/utils.h>
+#include <enum_reflect/enum_reflect.h>
 
 StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config)
     : m_gateway{gateway}, m_config{config}, m_event_base{EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY)}
@@ -127,7 +128,7 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders(double price)
 
 void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
 {
-    MeasureTime t("StrategyMarketMakerStateRun - quote_block", MeasureUnit::MICROSECOND);
+    // MeasureTime t("StrategyMarketMakerStateRun - quote_block", MeasureUnit::MICROSECOND);
 
     // If PAUSE: do not place new orders (keep existing far orders)
     if (m_mode == Mode::PAUSE)
@@ -160,9 +161,13 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     if (m_mode == Mode::REDUCE)
     {
         double mom_mult = (m_config.mom_widen_mult > 1.0) ? m_config.mom_widen_mult : 1.6;
+        spdlog::info("StrategyMarketMakerStateRun - quote_block_orders_at_price: applying momentum multiplier: {}", mom_mult);
         bid_price_gap *= mom_mult;
         ask_price_gap *= mom_mult;
     }
+
+    spdlog::info("StrategyMarketMakerStateRun - quote_block_orders_at_price: price: {}, bid_gap: {}, ask_gap: {}, inventory: {}, mode: {}",
+                price, bid_price_gap, ask_price_gap, m_inventory, enum_reflect::enum_name(m_mode));
 
     // Place orders (respect the max distance per block as you currently do)
     for (size_t i = 1; i <= m_config.orders_each_side_per_block; i++)
@@ -171,14 +176,16 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
         if (std::abs(buy_price - price) <= m_config.price_step_between_blocks)
         {
             Order buy_order = get_buy_limit_order(buy_price, m_config.volumn);
-            m_gateway->place(buy_order);
+            // m_gateway->place(buy_order);
+            spdlog::info("Placing buy order: {}", buy_order.to_json());
         }
 
         double sell_price = price + (i * ask_price_gap);
         if (std::abs(sell_price - price) <= m_config.price_step_between_blocks)
         {
             Order sell_order = get_sell_limit_order(sell_price, m_config.volumn);
-            m_gateway->place(sell_order);
+            // m_gateway->place(sell_order);
+            spdlog::info("Placing sell order: {}", sell_order.to_json());
         }
     }
 }
@@ -218,6 +225,9 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
         if (std::abs(z) >= z_pause)        m_mode = Mode::PAUSE;
         else if (std::abs(z) >= z_reduce)  m_mode = Mode::REDUCE;
         else                               m_mode = Mode::NORMAL;
+
+        spdlog::info("StrategyMarketMakerStateRun - handle_order_book_snapshot: mid: {}, r: {}, z: {}, mode: {}",
+                    mid, r, z, enum_reflect::enum_name(m_mode));
     }
 
     m_last_mid = mid;
