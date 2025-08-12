@@ -11,6 +11,22 @@ void OrderBookSnapShot::clear()
     asks.clear();
 }
 
+void OrderBookSnapShot::print_order_book()
+{
+    spdlog::debug("[Rest] OrderBook update snapshot for symbol: {}", instrument->symbol);
+    spdlog::debug("[Rest] asks: ");
+    for (auto& order_book_level : asks)
+    {
+        spdlog::debug("[Rest] [{} - {}], ", order_book_level.price, order_book_level.quantity);
+    }
+
+    spdlog::debug("[Rest] bids: ");
+    for (auto& order_book_level : bids)
+    {
+        spdlog::debug("[Rest] [{} - {}], ", order_book_level.price, order_book_level.quantity);
+    }
+}
+
 double OrderBookSnapShot::get_best_bid()
 {
     return bids[0].price;

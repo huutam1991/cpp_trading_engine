@@ -30,6 +30,7 @@ public:
 
     void update_instrument(const Instrument* instr);
     void clear();
+    void print_order_book();
 
     inline void add_bid(double price, double quantity)
     {
