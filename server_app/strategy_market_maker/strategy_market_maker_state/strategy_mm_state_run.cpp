@@ -28,10 +28,21 @@ void StrategyMarketMakerStateRun::on_config_change()
 
 Json StrategyMarketMakerStateRun::get_info()
 {
+    Json open_orders;
+
+    for (const auto& [order_id, order] : m_open_orders)
+    {
+        Json data = order.to_json();
+        double distance = std::abs(order.price - m_last_quote_price);
+        data["distance"] = distance;
+        data["is_far_order"] = (distance > m_config.price_step_between_blocks);
+        open_orders.push_back(data);
+    }
+
     return {
         {"inventory", m_inventory},
         {"last_quote_price", m_last_quote_price},
-        {"open_orders", m_open_orders.size()}
+        {"open_orders", open_orders}
     };
 }
 
