@@ -117,7 +117,7 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders(double price)
         double price_distance = std::abs(order.price - price);
         if (price_distance > m_config.price_step_between_blocks)
         {
-            spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}", order.price, price_distance);
+            spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, price);
             m_gateway->cancel(order);
         }
     }
