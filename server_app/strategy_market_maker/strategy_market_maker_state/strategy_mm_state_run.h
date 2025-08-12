@@ -22,7 +22,7 @@ public:
     virtual void end() override;
     virtual Task<void> update(StrategyUpdateData data) override;
 
-    double get_inventory();
+    Json get_info();
     void on_config_change();
 
 private:

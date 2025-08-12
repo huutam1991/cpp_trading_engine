@@ -46,9 +46,6 @@ void StrategyMarketMaker::on_config_change(StrategyMarketMakerConfig new_config)
 Json StrategyMarketMaker::get_info(Json& params)
 {
     auto state_run = (StrategyMarketMakerStateRun*)m_states[StrategyState::RUN];
-
-    return {
-        {"inventory", state_run->get_inventory()}
-    };
+    return state_run->get_info();
 }
 
