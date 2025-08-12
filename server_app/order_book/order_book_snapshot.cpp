@@ -13,17 +13,16 @@ void OrderBookSnapShot::clear()
 
 void OrderBookSnapShot::print_order_book()
 {
-    spdlog::info("[Rest] OrderBook update snapshot for symbol: {}", instrument->symbol);
-    spdlog::info("[Rest] asks: ");
+    spdlog::info("[{}] asks: ", instrument->symbol);
     for (auto& order_book_level : asks)
     {
-        spdlog::info("[Rest] [{} - {}], ", order_book_level.price, order_book_level.quantity);
+        spdlog::info("[{}] [{} - {}], ", instrument->symbol, order_book_level.price, order_book_level.quantity);
     }
 
-    spdlog::info("[Rest] bids: ");
+    spdlog::info("[{}] bids: ", instrument->symbol);
     for (auto& order_book_level : bids)
     {
-        spdlog::info("[Rest] [{} - {}], ", order_book_level.price, order_book_level.quantity);
+        spdlog::info("[{}] [{} - {}], ", instrument->symbol, order_book_level.price, order_book_level.quantity);
     }
 }
 
