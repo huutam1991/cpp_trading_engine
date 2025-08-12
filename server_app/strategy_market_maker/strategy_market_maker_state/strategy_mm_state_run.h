@@ -30,6 +30,14 @@ private:
     double m_inventory = 0.0;
     std::unordered_map<OrderId, Order> m_open_orders;
 
+    enum class Mode { NORMAL, REDUCE, PAUSE };
+    Mode m_mode = Mode::NORMAL;
+
+    bool   m_has_last_mid = false;
+    double m_last_mid = 0.0;
+    double m_r_mean = 0.0;   // EMA mean of returns
+    double m_r_var  = 0.0;   // EMA var  of returns
+
     // Generate order
     Order get_buy_limit_order(double price, double quantity);
     Order get_sell_limit_order(double price, double quantity);
