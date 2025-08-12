@@ -170,14 +170,16 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     //             price, bid_price_gap, ask_price_gap, m_inventory, enum_reflect::enum_name(m_mode));
 
     // Place orders (respect the max distance per block as you currently do)
+    double num_of_limit_orders = m_config.inventory_skew_ratio * m_config.orders_each_side_per_block;
     for (size_t i = 1; i <= m_config.orders_each_side_per_block; i++)
     {
         double buy_price  = price - (i * m_config.price_gap);
         if (std::abs(buy_price - price) <= m_config.price_step_between_blocks)
         {
             // Stop quoting bid if inventory skew ratio is exceeded
-            if (m_inventory > 0 && m_inventory + i > m_config.inventory_skew_ratio)
+            if (m_inventory > 0 && m_inventory + i > num_of_limit_orders)
             {
+                spdlog::info("StrategyMarketMakerStateRun - stop quoting buy orders at price: {}, m_inventory + i: {}, num_of_limit_orders: {}", buy_price, m_inventory + i, num_of_limit_orders);
                 break;
             }
 
@@ -193,8 +195,9 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
         if (std::abs(sell_price - price) <= m_config.price_step_between_blocks)
         {
             // Stop quoting ask if inventory skew ratio is exceeded
-            if (m_inventory < 0 && -m_inventory + i > m_config.inventory_skew_ratio)
+            if (m_inventory < 0 && -m_inventory + i > num_of_limit_orders)
             {
+                spdlog::info("StrategyMarketMakerStateRun - stop quoting sell orders at price: {}, -m_inventory + i: {}, num_of_limit_orders: {}", sell_price, -m_inventory + i, num_of_limit_orders);
                 break;
             }
 
