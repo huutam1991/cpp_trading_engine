@@ -113,8 +113,8 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders(double price)
     spdlog::warn("m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
     for (auto& [order_id, order] : m_open_orders)
     {
-        spdlog::warn("order: {}", order.to_json());
         double price_distance = std::abs(order.price - price);
+        spdlog::warn("order: {}, price_distance: {}, price_step_between_blocks: {}", order.to_json(), price_distance, m_config.price_step_between_blocks);
         if (price_distance > m_config.price_step_between_blocks)
         {
             spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, price);
