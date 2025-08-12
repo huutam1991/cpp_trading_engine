@@ -140,13 +140,19 @@ void StrategyMarketMakerStateRun::quote_block_orders_at_price(double price)
     {
         // Buy orders
         double buy_price = price - (i * bid_price_gap);
-        Order buy_order = get_buy_limit_order(buy_price, m_config.volumn);
-        m_gateway->place(buy_order);
+        if (std::abs(buy_price - price) <= m_config.price_step_between_blocks)
+        {
+            Order buy_order = get_buy_limit_order(buy_price, m_config.volumn);
+            m_gateway->place(buy_order);
+        }
 
         // Sell orders
         double sell_price = price + (i * ask_price_gap);
-        Order sell_order = get_sell_limit_order(sell_price, m_config.volumn);
-        m_gateway->place(sell_order);
+        if (std::abs(sell_price - price) <= m_config.price_step_between_blocks)
+        {
+            Order sell_order = get_sell_limit_order(sell_price, m_config.volumn);
+            m_gateway->place(sell_order);
+        }
     }
 }
 
