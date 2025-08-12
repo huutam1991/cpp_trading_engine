@@ -60,6 +60,6 @@ public:
     Order();
     Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
-    Json to_json();
+    Json to_json() const;
     static Order from_json(Json& data);
 };

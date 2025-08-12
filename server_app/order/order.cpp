@@ -12,7 +12,7 @@ Order::Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i
     quantity{quantity_i}
 {}
 
-Json Order::to_json()
+Json Order::to_json() const
 {
     return {
         {"order_id", order_id},
