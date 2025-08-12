@@ -33,6 +33,8 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
         spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
 
+        snapshot->print_order_book();
+
         // Release the snapshot back to the pool
         OrderBookSnapShotPool::release(snapshot);
     }
