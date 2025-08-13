@@ -52,19 +52,23 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
         spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
 
-        OrderGap gap;
-        gap.bid = bid_price;
-        gap.ask = ask_price;
-        gap.gap = ask_price - bid_price;
-        gap.bid_quantity = bid_quantity;
-        gap.ask_quantity = ask_quantity;
-        gap.time = OrderManager::instance().generate_order_id(); // Order Id is current time in nanoseconds
-
-        SavableObject<OrderGap> object(m_db_name, "order_gap", gap);
-        m_order_gap_list.insert(std::make_pair(gap.time, object));
-
         // Release the snapshot back to the pool
         OrderBookSnapShotPool::release(snapshot);
+
+        // Check to save gap price
+        if (ask_price - bid_price > 5.0)
+        {
+            OrderGap gap;
+            gap.bid = bid_price;
+            gap.ask = ask_price;
+            gap.gap = ask_price - bid_price;
+            gap.bid_quantity = bid_quantity;
+            gap.ask_quantity = ask_quantity;
+            gap.time = OrderManager::instance().generate_order_id(); // Order Id is current time in nanoseconds
+
+            SavableObject<OrderGap> object(m_db_name, "order_gap", gap);
+            m_order_gap_list.insert(std::make_pair(gap.time, object));
+        }
     }
     co_return;
 }
