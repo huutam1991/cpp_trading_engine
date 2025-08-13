@@ -46,6 +46,8 @@ public:
     double get_best_ask();
     double get_best_bid_quantity();
     double get_best_ask_quantity();
+    double get_bid_volume();
+    double get_ask_volume();
 };
 
 using OrderBookSnapShotPool = CachePool<OrderBookSnapShot, 1000>;

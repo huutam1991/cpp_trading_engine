@@ -45,3 +45,23 @@ double OrderBookSnapShot::get_best_ask_quantity()
 {
     return asks[0].quantity;
 }
+
+double OrderBookSnapShot::get_bid_volume()
+{
+    double volume = 0.0;
+    for (const auto& level : bids)
+    {
+        volume += level.quantity;
+    }
+    return volume;
+}
+
+double OrderBookSnapShot::get_ask_volume()
+{
+    double volume = 0.0;
+    for (const auto& level : asks)
+    {
+        volume += level.quantity;
+    }
+    return volume;
+}
