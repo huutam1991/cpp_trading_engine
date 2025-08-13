@@ -4,7 +4,7 @@
 #include <enum_reflect/enum_reflect.h>
 
 StrategyTrendFollowStateRun::StrategyTrendFollowStateRun(std::shared_ptr<Gateway> gateway, const StrategyTrendFollowConfig& config)
-    : m_gateway{gateway}, m_config{config}, m_event_base{EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY)}
+    : m_gateway{gateway}, m_config{config}, m_event_base{EventBaseManager::get_event_base_by_id(EventBaseID::TREND_FOLLOW_STRATEGY)}
 {
 }
 
@@ -69,7 +69,6 @@ void StrategyTrendFollowStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     double best_ask = snapshot->get_best_ask();
     double mid = (best_bid + best_ask) / 2.0;
 }
-
 
 void StrategyTrendFollowStateRun::handle_order_update(Order& order)
 {

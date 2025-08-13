@@ -32,11 +32,11 @@ Task<void> StrategyTrendFollowStateStop::update(StrategyUpdateData data)
         OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
         double bid_price = snapshot->get_best_bid();
         double ask_price = snapshot->get_best_ask();
-        double ask_quantity = snapshot->get_best_ask_quantity();
-        double bid_quantity = snapshot->get_best_bid_quantity();
+        double ask_volume = snapshot->get_ask_volume();
+        double bid_volume = snapshot->get_bid_volume();
 
         spdlog::info("StrategyTrendFollowStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
-        spdlog::info("StrategyTrendFollowStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
+        spdlog::info("StrategyTrendFollowStateStop: do nothing, symbol: {}, bid_volume: {}, ask_volume: {}", snapshot->instrument->symbol, bid_volume, ask_volume);
 
         // Release the snapshot back to the pool
         OrderBookSnapShotPool::release(snapshot);
