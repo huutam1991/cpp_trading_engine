@@ -216,7 +216,7 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
 
     if (order.type == Order::OrderType::LIMIT)
     {
-        query_str += "&timeInForce=GTC";
+        query_str += "&timeInForce=GTX";
         query_str += "&price=" + std::to_string(order.price);
     }
 
