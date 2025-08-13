@@ -111,7 +111,7 @@ public:
         return object;
     }
 
-    Json to_json()
+    Json to_json() const
     {
         return object.to_json();
     }
