@@ -27,7 +27,7 @@ Json StrategyMarketMakerStateStop::get_info()
 
     gap_list.sort([](Json& a, Json& b) -> bool
     {
-        return (size_t)a["time"] < (size_t)b["time"];
+        return (size_t)a["time"] > (size_t)b["time"];
     });
 
     return gap_list;
