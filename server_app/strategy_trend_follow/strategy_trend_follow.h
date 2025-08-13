@@ -5,7 +5,7 @@
 #include <strategy/strategy_base.h>
 #include <strategy_trend_follow/strategy_trend_follow_config.h>
 
-class StrategyTrendFollow : public StrategyBase<StrategyTrendFollowConfig, EventBaseID::MARKET_MAKER_STRATEGY>
+class StrategyTrendFollow : public StrategyBase<StrategyTrendFollowConfig, EventBaseID::TREND_FOLLOW_STRATEGY>
 {
     std::shared_ptr<Gateway> m_gateway;
 
