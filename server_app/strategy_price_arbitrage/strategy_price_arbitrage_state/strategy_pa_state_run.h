@@ -19,6 +19,7 @@ public:
     virtual void begin() override;
     virtual void end() override;
     virtual Task<void> update(StrategyUpdateData data) override;
+    virtual Json get_info() override { return {}; }
 
     // virtual Json get_open_orders() override;
 

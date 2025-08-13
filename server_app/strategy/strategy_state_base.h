@@ -16,7 +16,7 @@ struct StrategyStateData
 {
     StrategyState state = StrategyState::STOP;
 
-    Json to_json()
+    Json to_json() const
     {
         return {
             {"state", enum_reflect::enum_name(state)}

@@ -28,7 +28,7 @@ public:
 
     // For API requests
     virtual std::string get_name() = 0;
-    virtual Json get_config() = 0;
+    virtual Json get_config() const = 0;
     virtual void update_config(Json& data) = 0;
     virtual Json get_info(Json& params) = 0;
 };

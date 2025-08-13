@@ -83,7 +83,7 @@ public:
         return m_strategy_name;
     }
 
-    Json get_config()
+    Json get_config() const
     {
         return m_config.to_json();
     }

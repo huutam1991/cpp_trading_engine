@@ -19,7 +19,7 @@ struct StrategyMarketMakerConfig
     double mom_widen_mult   = 1.6;
     bool is_running = false;
 
-    Json to_json()
+    Json to_json() const
     {
         return {
             {"symbol", symbol},

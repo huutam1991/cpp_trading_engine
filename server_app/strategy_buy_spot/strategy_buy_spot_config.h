@@ -14,7 +14,7 @@ struct StrategyBuySpotConfig
     size_t max_open_orders = 3;
     bool is_running;
 
-    Json to_json()
+    Json to_json() const
     {
         return {
             {"symbol", symbol},

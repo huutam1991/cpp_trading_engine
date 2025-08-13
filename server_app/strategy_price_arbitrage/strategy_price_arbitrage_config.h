@@ -15,7 +15,7 @@ struct StrategyPriceArbitrageConfig
     double too_high_price_delta = 15.0;
     bool is_running = false;
 
-    Json to_json()
+    Json to_json() const
     {
         return {
             {"symbol_1", symbol_1},

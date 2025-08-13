@@ -24,7 +24,7 @@ struct BuyPoint
     OrderId current_order_id = 0;
     Status status = Status::AVAILABLE;
 
-    Json to_json()
+    Json to_json() const
     {
         return {
             {"price", price},

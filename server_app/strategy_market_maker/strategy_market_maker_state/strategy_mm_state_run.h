@@ -21,8 +21,8 @@ public:
     virtual void begin() override;
     virtual void end() override;
     virtual Task<void> update(StrategyUpdateData data) override;
+    virtual Json get_info() override;
 
-    Json get_info();
     void on_config_change();
 
 private:
