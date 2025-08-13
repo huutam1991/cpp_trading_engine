@@ -41,4 +41,5 @@ public:
     virtual void begin() = 0;
     virtual void end() = 0;
     virtual Task<void> update(StrategyUpdateData data) = 0;
+    virtual Json get_info() = 0;
 };
