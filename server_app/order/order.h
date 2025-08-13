@@ -36,6 +36,7 @@ public:
         TAKE_PROFIT_LIMIT,
         STOP_LOSS_LIMIT,
         TRAILING_STOP_MARKET,
+        POST_ONLY,
         TOTAL_ORDER_TYPES
     };
 
