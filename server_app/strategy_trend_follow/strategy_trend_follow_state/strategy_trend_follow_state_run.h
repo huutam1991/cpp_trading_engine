@@ -26,12 +26,12 @@ public:
     void on_config_change();
 
 private:
-    std::unordered_map<OrderId, Order> m_open_bid_orders;
-    std::unordered_map<OrderId, Order> m_open_ask_orders;
+    double m_last_price = 0.0;
+    double m_price_gap = 0.0;
+    bool m_is_pump = false;
 
     // Generate order
-    Order get_buy_limit_order(double price, double quantity);
-    Order get_sell_limit_order(double price, double quantity);
+    Order get_limit_order(Order::Side side, double price, double quantity);
 
     void handle_price_update(PriceUpdate price);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);

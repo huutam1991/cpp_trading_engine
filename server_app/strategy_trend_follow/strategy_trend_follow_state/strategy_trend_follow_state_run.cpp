@@ -32,26 +32,13 @@ Json StrategyTrendFollowStateRun::get_info()
     return {};
 }
 
-Order StrategyTrendFollowStateRun::get_buy_limit_order(double price, double quantity)
+Order StrategyTrendFollowStateRun::get_limit_order(Order::Side side, double price, double quantity)
 {
     return Order(
         OrderManager::instance().generate_order_id(),
         Order::Status::NOT_AVAILABLE,
         m_instrument,
-        Order::Side::BUY,
-        Order::OrderType::LIMIT,
-        m_instrument->get_round_up_price(price),
-        quantity
-    );
-}
-
-Order StrategyTrendFollowStateRun::get_sell_limit_order(double price, double quantity)
-{
-    return Order(
-        OrderManager::instance().generate_order_id(),
-        Order::Status::NOT_AVAILABLE,
-        m_instrument,
-        Order::Side::SELL,
+        side,
         Order::OrderType::LIMIT,
         m_instrument->get_round_up_price(price),
         quantity
@@ -68,6 +55,25 @@ void StrategyTrendFollowStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     double best_bid = snapshot->get_best_bid();
     double best_ask = snapshot->get_best_ask();
     double mid = (best_bid + best_ask) / 2.0;
+
+    m_price_gap = best_ask - best_bid;
+    if (m_price_gap >= m_config.price_gap)
+    {
+        Order::Side side = (mid > m_last_price) ? Order::Side::BUY : Order::Side::SELL;
+        m_is_pump = (side == Order::Side::BUY);
+
+        // Spam orders between the price gap, hope it will get filled
+        double price = best_bid + m_config.price_step;
+        while (price < best_ask)
+        {
+            Order order = get_limit_order(side, price, m_config.volumn);
+            m_gateway->place(order);
+
+            price += m_config.price_step;
+        }
+    }
+
+    m_last_price = mid;
 }
 
 void StrategyTrendFollowStateRun::handle_order_update(Order& order)
@@ -77,38 +83,24 @@ void StrategyTrendFollowStateRun::handle_order_update(Order& order)
     // NEW - add to [m_open_orders]
     if (order.status == Order::Status::NEW)
     {
-        if (order.side == Order::Side::BUY)
-        {
-            m_open_bid_orders.emplace(order.order_id, order);
-        }
-        else if (order.side == Order::Side::SELL)
-        {
-            m_open_ask_orders.emplace(order.order_id, order);
-        }
     }
     // FILLED - update [m_open_bid_orders] or [m_open_ask_orders]
     else if (order.status == Order::Status::FILLED)
     {
-        if (order.side == Order::Side::BUY)
+        if (order.side == Order::Side::BUY && m_is_pump == true)
         {
-            m_open_bid_orders[order.order_id].status = order.status;
+            Order order = get_limit_order(Order::Side::SELL, order.price + m_config.take_profit, order.quantity);
+            m_gateway->place(order);
         }
-        else if (order.side == Order::Side::SELL)
+        else if (order.side == Order::Side::SELL && m_is_pump == false)
         {
-            m_open_ask_orders[order.order_id].status = order.status;
+            Order order = get_limit_order(Order::Side::BUY, order.price - m_config.take_profit, order.quantity);
+            m_gateway->place(order);
         }
     }
-    // CANCELED or REJECTED - remove from [m_open_orders]
+    // CANCELED or REJECTED - do nothing
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
-        if (order.side == Order::Side::BUY)
-        {
-            m_open_bid_orders.erase(order.order_id);
-        }
-        else if (order.side == Order::Side::SELL)
-        {
-            m_open_ask_orders.erase(order.order_id);
-        }
     }
 }
 
