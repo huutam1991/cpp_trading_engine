@@ -59,6 +59,7 @@ void StrategyTrendFollowStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     m_price_gap = best_ask - best_bid;
     if (m_price_gap >= m_config.price_gap)
     {
+        spdlog::info("StrategyTrendFollowStateRun - Price gap {} is larger than configured {}, spamming orders", m_price_gap, m_config.price_gap);
         Order::Side side = (mid > m_last_price) ? Order::Side::BUY : Order::Side::SELL;
         m_is_pump = (side == Order::Side::BUY);
 
@@ -68,6 +69,8 @@ void StrategyTrendFollowStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
         {
             Order order = get_limit_order(side, price, m_config.volumn);
             m_gateway->place(order);
+
+            spdlog::info("StrategyTrendFollowStateRun - Spamming order: side={}, price={}, quantity={}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
 
             price += m_config.price_step;
         }
@@ -91,11 +94,13 @@ void StrategyTrendFollowStateRun::handle_order_update(Order& order)
         {
             Order order = get_limit_order(Order::Side::SELL, order.price + m_config.take_profit, order.quantity);
             m_gateway->place(order);
+            spdlog::info("StrategyTrendFollowStateRun - Placing take profit SELL order, side: {}, price: {}, quantity: {}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
         }
         else if (order.side == Order::Side::SELL && m_is_pump == false)
         {
             Order order = get_limit_order(Order::Side::BUY, order.price - m_config.take_profit, order.quantity);
             m_gateway->place(order);
+            spdlog::info("StrategyTrendFollowStateRun - Placing take profit BUY order, side: {}, price: {}, quantity: {}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
         }
     }
     // CANCELED or REJECTED - do nothing
