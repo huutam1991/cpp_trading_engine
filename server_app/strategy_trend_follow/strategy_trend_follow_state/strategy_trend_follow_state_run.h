@@ -28,7 +28,7 @@ public:
 private:
     double m_last_price = 0.0;
     double m_price_gap = 0.0;
-    bool m_is_pump = false;
+    double m_inventory = 0.0;
 
     // Generate order
     Order get_limit_order(Order::Side side, double price, double quantity);

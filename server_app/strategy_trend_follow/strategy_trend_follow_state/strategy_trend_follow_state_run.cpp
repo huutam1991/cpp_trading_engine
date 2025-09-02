@@ -25,6 +25,7 @@ void StrategyTrendFollowStateRun::end()
 void StrategyTrendFollowStateRun::on_config_change()
 {
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
+    m_inventory = 0.0;
 }
 
 Json StrategyTrendFollowStateRun::get_info()
@@ -52,31 +53,21 @@ void StrategyTrendFollowStateRun::handle_price_update(PriceUpdate price_update)
 
 void StrategyTrendFollowStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    double best_bid = snapshot->get_best_bid();
-    double best_ask = snapshot->get_best_ask();
-    double mid = (best_bid + best_ask) / 2.0;
+    double best_bid_price = snapshot->get_best_bid();
+    double best_ask_price = snapshot->get_best_ask();
+    double best_bid_quantity = snapshot->get_best_bid_quantity();
+    double best_ask_quantity = snapshot->get_best_ask_quantity();
 
-    m_price_gap = best_ask - best_bid;
-    if (m_price_gap >= m_config.price_gap)
+    if (best_bid_quantity / best_ask_quantity > m_config.ratio)
     {
-        spdlog::info("StrategyTrendFollowStateRun - Price gap {} is larger than configured {}, spamming orders", m_price_gap, m_config.price_gap);
-        Order::Side side = (mid > m_last_price) ? Order::Side::BUY : Order::Side::SELL;
-        m_is_pump = (side == Order::Side::BUY);
-
-        // Spam orders between the price gap, hope it will get filled
-        double price = best_bid + m_config.price_step;
-        while (price < best_ask)
-        {
-            Order order = get_limit_order(side, price, m_config.volumn);
-            m_gateway->place(order);
-
-            spdlog::info("StrategyTrendFollowStateRun - Spamming order: side={}, price={}, quantity={}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
-
-            price += m_config.price_step;
-        }
+        Order order = get_limit_order(Order::Side::BUY, best_bid_price + m_config.price_step, m_config.volume);
+        m_gateway->place(order);
     }
-
-    m_last_price = mid;
+    else if (best_ask_quantity / best_bid_quantity > m_config.ratio)
+    {
+        Order order = get_limit_order(Order::Side::SELL, best_ask_price - m_config.price_step, m_config.volume);
+        m_gateway->place(order);
+    }
 }
 
 void StrategyTrendFollowStateRun::handle_order_update(Order& order)
@@ -90,13 +81,15 @@ void StrategyTrendFollowStateRun::handle_order_update(Order& order)
     // FILLED - update [m_open_bid_orders] or [m_open_ask_orders]
     else if (order.status == Order::Status::FILLED)
     {
-        if (order.side == Order::Side::BUY && m_is_pump == true)
+        m_inventory += order.side == Order::Side::BUY ? 1 : -1;
+
+        if (order.side == Order::Side::BUY && m_inventory > 0)
         {
             Order order = get_limit_order(Order::Side::SELL, order.price + m_config.take_profit, order.quantity);
             m_gateway->place(order);
             spdlog::info("StrategyTrendFollowStateRun - Placing take profit SELL order, side: {}, price: {}, quantity: {}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
         }
-        else if (order.side == Order::Side::SELL && m_is_pump == false)
+        else if (order.side == Order::Side::SELL && m_inventory < 0)
         {
             Order order = get_limit_order(Order::Side::BUY, order.price - m_config.take_profit, order.quantity);
             m_gateway->place(order);
