@@ -86,14 +86,14 @@ void StrategyTrendFollowStateRun::handle_order_update(Order& order)
         if (order.side == Order::Side::BUY && m_inventory > 0)
         {
             Order order = get_limit_order(Order::Side::SELL, order.price + m_config.take_profit, order.quantity);
-            m_gateway->place(order);
             spdlog::info("StrategyTrendFollowStateRun - Placing take profit SELL order, side: {}, price: {}, quantity: {}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
+            m_gateway->place(order);
         }
         else if (order.side == Order::Side::SELL && m_inventory < 0)
         {
             Order order = get_limit_order(Order::Side::BUY, order.price - m_config.take_profit, order.quantity);
-            m_gateway->place(order);
             spdlog::info("StrategyTrendFollowStateRun - Placing take profit BUY order, side: {}, price: {}, quantity: {}", enum_reflect::enum_name<Order::Side>(order.side), order.price, order.quantity);
+            m_gateway->place(order);
         }
     }
     // CANCELED or REJECTED - do nothing
