@@ -33,8 +33,14 @@ void BinanceMarketDataPerpetual::start()
 
 Task<void> BinanceMarketDataPerpetual::init_order_book()
 {
-    // Close all remaining websockets
-    m_orderbooks.clear();
+    // Remove order books for instruments that are no longer subscribed
+    for (const auto& [instrument, order_book] : m_orderbooks)
+    {
+        if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
+        {
+            m_orderbooks.erase(instrument);
+        }
+    }
 
     for (size_t i = 0; i < m_instruments.size(); i++)
     {
