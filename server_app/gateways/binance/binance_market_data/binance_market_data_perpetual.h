@@ -31,5 +31,6 @@ private:
     std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
 
     Task<void> init_order_book();
+    Task<void> remove_unsubscribed_instruments();
     Task<void> check_sync_order_book();
 };

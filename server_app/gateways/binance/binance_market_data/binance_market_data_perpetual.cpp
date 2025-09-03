@@ -34,18 +34,7 @@ void BinanceMarketDataPerpetual::start()
 Task<void> BinanceMarketDataPerpetual::init_order_book()
 {
     // Remove order books for instruments that are no longer subscribed
-    std::vector<const Instrument*> removed_instruments;
-    for (const auto& [instrument, order_book] : m_orderbooks)
-    {
-        if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
-        {
-            removed_instruments.push_back(instrument);
-        }
-    }
-    for (const auto& instrument : removed_instruments)
-    {
-        m_orderbooks.erase(instrument);
-    }
+    co_await remove_unsubscribed_instruments();
 
     // Start WebSocket connections
     for (size_t i = 0; i < m_instruments.size(); i++)
@@ -59,6 +48,25 @@ Task<void> BinanceMarketDataPerpetual::init_order_book()
         Task<void> task = check_sync_order_book();
         task.start_running_on(m_event_base);
         start_sync_order_book = true;
+    }
+
+    co_return;
+}
+
+Task<void> BinanceMarketDataPerpetual::remove_unsubscribed_instruments()
+{
+    std::vector<const Instrument*> removed_instruments;
+    for (const auto& [instrument, order_book] : m_orderbooks)
+    {
+        if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
+        {
+            removed_instruments.push_back(instrument);
+        }
+    }
+
+    for (const auto& instrument : removed_instruments)
+    {
+        m_orderbooks.erase(instrument);
     }
 
     co_return;
