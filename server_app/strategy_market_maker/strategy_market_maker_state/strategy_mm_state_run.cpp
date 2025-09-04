@@ -21,6 +21,7 @@ void StrategyMarketMakerStateRun::end()
 
     m_inventory = 0.0;
     m_current_price = 0.0;
+    m_last_quoted_price = 0.0;
     m_place_initial_orders = false;
     m_open_orders.clear();
 
@@ -104,6 +105,12 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 {
     MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
 
+    if (m_last_quoted_price != 0 && std::abs(price - m_last_quoted_price) < m_config.price_gap)
+    {
+        spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, skip quoting orders, last quoted price: {}", price, m_last_quoted_price);
+        return;
+    }
+
     double buy_price = price - m_config.price_gap - m_inventory * m_config.price_step;
     double sell_price = price + m_config.price_gap - m_inventory * m_config.price_step;
 
@@ -115,6 +122,8 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 
     m_gateway->place(buy_order);
     m_gateway->place(sell_order);
+
+    m_last_quoted_price = price;
 
     spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
         price,

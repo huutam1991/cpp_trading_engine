@@ -28,6 +28,7 @@ public:
 private:
     double m_inventory = 0.0;
     double m_current_price = 0.0;
+    double m_last_quoted_price = 0.0;
     bool   m_place_initial_orders = false;
     bool   m_is_closing_far_orders = false;
     std::unordered_map<OrderId, Order> m_open_orders;
