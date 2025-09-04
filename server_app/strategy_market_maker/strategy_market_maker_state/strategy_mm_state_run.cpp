@@ -78,20 +78,20 @@ void StrategyMarketMakerStateRun::start_close_far_orders()
 
 Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 {
-    spdlog::warn("m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
+    spdlog::warn("task_close_far_orders, m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
     for (auto& [order_id, order] : m_open_orders)
     {
         double price_distance = std::abs(order.price - m_current_price);
-        spdlog::warn("order: {}, price_distance: {}, clear_orders_gap: {}", order.to_json(), price_distance, m_config.clear_orders_gap);
+        spdlog::warn("task_close_far_orders, order: {}, price_distance: {}, clear_orders_gap: {}", order.to_json(), price_distance, m_config.clear_orders_gap);
         if (price_distance > m_config.clear_orders_gap)
         {
-            spdlog::info("StrategyMarketMakerStateRun - clear_orders_gap: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, m_current_price);
+            spdlog::info("task_close_far_orders, clear_orders_gap: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, m_current_price);
             m_gateway->cancel(order);
         }
     }
 
     // Check every 10 seconds
-    co_await Timer::sleep_for(60000);
+    co_await Timer::sleep_for(10000);
     start_close_far_orders();
 
     co_return;
