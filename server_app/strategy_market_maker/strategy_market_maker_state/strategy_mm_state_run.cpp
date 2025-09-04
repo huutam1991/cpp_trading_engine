@@ -69,7 +69,7 @@ Order StrategyMarketMakerStateRun::get_limit_order(Order::Side side, double pric
 
 void StrategyMarketMakerStateRun::start_close_far_orders()
 {
-    if (m_config.is_running == true)
+    if (m_is_closing_far_orders == false && m_config.is_running == true)
     {
         auto task = task_close_far_orders();
         task.start_running_on(m_event_base);
@@ -79,6 +79,8 @@ void StrategyMarketMakerStateRun::start_close_far_orders()
 Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 {
     spdlog::warn("task_close_far_orders, m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
+    m_is_closing_far_orders = true;
+
     for (auto& [order_id, order] : m_open_orders)
     {
         double price_distance = std::abs(order.price - m_current_price);
@@ -91,7 +93,8 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
     }
 
     // Check every 10 seconds
-    co_await Timer::sleep_for(10000);
+    co_await Timer::sleep_for(5000);
+    m_is_closing_far_orders = false;
     start_close_far_orders();
 
     co_return;
@@ -99,26 +102,26 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 
 void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 {
-    MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
+    // MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
 
-    double buy_price = price - m_config.price_gap - m_inventory * m_config.price_step;
-    double sell_price = price + m_config.price_gap - m_inventory * m_config.price_step;
+    // double buy_price = price - m_config.price_gap - m_inventory * m_config.price_step;
+    // double sell_price = price + m_config.price_gap - m_inventory * m_config.price_step;
 
-    buy_price = std::min(buy_price, price - 1.0);
-    sell_price = std::max(sell_price, price + 1.0);
+    // buy_price = std::min(buy_price, price - 1.0);
+    // sell_price = std::max(sell_price, price + 1.0);
 
-    Order buy_order  = get_limit_order(Order::Side::BUY, buy_price, m_config.volumn);
-    Order sell_order = get_limit_order(Order::Side::SELL, sell_price, m_config.volumn);
+    // Order buy_order  = get_limit_order(Order::Side::BUY, buy_price, m_config.volumn);
+    // Order sell_order = get_limit_order(Order::Side::SELL, sell_price, m_config.volumn);
 
-    m_gateway->place(buy_order);
-    m_gateway->place(sell_order);
+    // m_gateway->place(buy_order);
+    // m_gateway->place(sell_order);
 
-    spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
-        price,
-        buy_price,
-        sell_price,
-        m_inventory
-    );
+    // spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
+    //     price,
+    //     buy_price,
+    //     sell_price,
+    //     m_inventory
+    // );
 }
 
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
