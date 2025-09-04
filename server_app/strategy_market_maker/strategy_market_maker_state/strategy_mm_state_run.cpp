@@ -100,10 +100,15 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     Order buy_order  = get_limit_order(Order::Side::BUY, buy_price, m_config.volumn);
     Order sell_order = get_limit_order(Order::Side::SELL, sell_price, m_config.volumn);
 
-    spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}", price,buy_price, sell_price);
-
     m_gateway->place(buy_order);
     m_gateway->place(sell_order);
+
+    spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
+        price,
+        buy_price,
+        sell_price,
+        m_inventory
+    );
 }
 
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
