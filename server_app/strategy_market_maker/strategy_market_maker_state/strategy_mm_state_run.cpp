@@ -152,6 +152,10 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
         quote_orders_at_price(mid);
         m_place_initial_orders = true;
     }
+    else if (m_inventory == 0 && std::abs(mid - m_last_quoted_price) >= (m_config.price_gap - 3.0))
+    {
+        quote_orders_at_price(mid);
+    }
 }
 
 void StrategyMarketMakerStateRun::handle_order_update(Order& order)
