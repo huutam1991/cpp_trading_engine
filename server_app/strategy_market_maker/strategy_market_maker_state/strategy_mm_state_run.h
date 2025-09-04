@@ -26,25 +26,15 @@ public:
     void on_config_change();
 
 private:
-    double m_last_quote_price = 0.0;
     double m_inventory = 0.0;
+    double m_current_price = 0.0;
+    bool   m_place_initial_orders = false;
     std::unordered_map<OrderId, Order> m_open_orders;
 
-    enum class Mode { NORMAL, REDUCE, PAUSE };
-    Mode m_mode = Mode::NORMAL;
-
-    bool   m_has_last_mid = false;
-    double m_last_mid = 0.0;
-    double m_r_mean = 0.0;   // EMA mean of returns
-    double m_r_var  = 0.0;   // EMA var  of returns
-
     // Generate order
-    Order get_buy_limit_order(double price, double quantity);
-    Order get_sell_limit_order(double price, double quantity);
-    Order get_market_buy_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
-    Order get_market_sell_spot_order_by_symbol_and_quantity(const std::string& symbol, double quantity);
+    Order get_limit_order(Order::Side side, double price, double quantity);
 
-    void quote_block_orders_at_price(double price);
+    void quote_orders_at_price(double price);
     void close_far_orders(double price);
     Task<void> task_close_far_orders(double price);
 
