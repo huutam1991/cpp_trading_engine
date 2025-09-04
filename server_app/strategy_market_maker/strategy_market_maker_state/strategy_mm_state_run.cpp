@@ -102,26 +102,26 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 
 void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 {
-    // MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
+    MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
 
-    // double buy_price = price - m_config.price_gap - m_inventory * m_config.price_step;
-    // double sell_price = price + m_config.price_gap - m_inventory * m_config.price_step;
+    double buy_price = price - m_config.price_gap - m_inventory * m_config.price_step;
+    double sell_price = price + m_config.price_gap - m_inventory * m_config.price_step;
 
-    // buy_price = std::min(buy_price, price - 1.0);
-    // sell_price = std::max(sell_price, price + 1.0);
+    buy_price = std::min(buy_price, price - 1.0);
+    sell_price = std::max(sell_price, price + 1.0);
 
-    // Order buy_order  = get_limit_order(Order::Side::BUY, buy_price, m_config.volumn);
-    // Order sell_order = get_limit_order(Order::Side::SELL, sell_price, m_config.volumn);
+    Order buy_order  = get_limit_order(Order::Side::BUY, buy_price, m_config.volumn);
+    Order sell_order = get_limit_order(Order::Side::SELL, sell_price, m_config.volumn);
 
-    // m_gateway->place(buy_order);
-    // m_gateway->place(sell_order);
+    m_gateway->place(buy_order);
+    m_gateway->place(sell_order);
 
-    // spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
-    //     price,
-    //     buy_price,
-    //     sell_price,
-    //     m_inventory
-    // );
+    spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
+        price,
+        buy_price,
+        sell_price,
+        m_inventory
+    );
 }
 
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
@@ -169,7 +169,7 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
 
         m_open_orders.erase(order.order_id);
 
-        quote_orders_at_price(m_current_price);
+        quote_orders_at_price(order.price);
     }
     // CANCELED or REJECTED - remove from [m_open_orders]
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
