@@ -93,8 +93,8 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
         }
     }
 
-    // Check every 30 seconds
-    co_await Timer::sleep_for(30000);
+    // Check every 10 seconds
+    co_await Timer::sleep_for(10000);
     m_is_closing_far_orders = false;
     start_close_far_orders();
 
