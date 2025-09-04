@@ -1,5 +1,6 @@
 #include "strategy_mm_state_run.h"
 #include <time/measure_time.h>
+#include <time/timer.h>
 #include <utils/utils.h>
 #include <enum_reflect/enum_reflect.h>
 
@@ -29,6 +30,8 @@ void StrategyMarketMakerStateRun::on_config_change()
     m_current_price = 0.0;
     m_place_initial_orders = false;
     m_open_orders.clear();
+
+    start_close_far_orders();
 }
 
 Json StrategyMarketMakerStateRun::get_info()
@@ -64,25 +67,32 @@ Order StrategyMarketMakerStateRun::get_limit_order(Order::Side side, double pric
     );
 }
 
-void StrategyMarketMakerStateRun::close_far_orders(double price)
+void StrategyMarketMakerStateRun::start_close_far_orders()
 {
-    auto task = task_close_far_orders(price);
-    task.start_running_on(m_event_base);
+    if (m_config.is_running == true)
+    {
+        auto task = task_close_far_orders();
+        task.start_running_on(m_event_base);
+    }
 }
 
-Task<void> StrategyMarketMakerStateRun::task_close_far_orders(double price)
+Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 {
     spdlog::warn("m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
-    // for (auto& [order_id, order] : m_open_orders)
-    // {
-    //     double price_distance = std::abs(order.price - price);
-    //     spdlog::warn("order: {}, price_distance: {}, price_step_between_blocks: {}", order.to_json(), price_distance, m_config.price_step_between_blocks);
-    //     if (price_distance > m_config.price_step_between_blocks)
-    //     {
-    //         spdlog::info("StrategyMarketMakerStateRun - close_far_orders: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, price);
-    //         m_gateway->cancel(order);
-    //     }
-    // }
+    for (auto& [order_id, order] : m_open_orders)
+    {
+        double price_distance = std::abs(order.price - m_current_price);
+        spdlog::warn("order: {}, price_distance: {}, clear_orders_gap: {}", order.to_json(), price_distance, m_config.clear_orders_gap);
+        if (price_distance > m_config.clear_orders_gap)
+        {
+            spdlog::info("StrategyMarketMakerStateRun - clear_orders_gap: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, m_current_price);
+            m_gateway->cancel(order);
+        }
+    }
+
+    // Check every 10 seconds
+    co_await Timer::sleep_for(60000);
+    start_close_far_orders();
 
     co_return;
 }

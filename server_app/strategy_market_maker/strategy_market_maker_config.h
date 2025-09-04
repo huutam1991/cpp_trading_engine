@@ -9,7 +9,7 @@ struct StrategyMarketMakerConfig
     double volumn = 0.1;
     double price_gap = 35.0;
     double price_step = 3.0;
-    double clear_orders_gap = 400.0;
+    double clear_orders_gap = 600.0;
     bool is_running = false;
 
     Json to_json() const

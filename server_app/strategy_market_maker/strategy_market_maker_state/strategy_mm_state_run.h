@@ -35,8 +35,8 @@ private:
     Order get_limit_order(Order::Side side, double price, double quantity);
 
     void quote_orders_at_price(double price);
-    void close_far_orders(double price);
-    Task<void> task_close_far_orders(double price);
+    void start_close_far_orders();
+    Task<void> task_close_far_orders();
 
     void handle_price_update(PriceUpdate price);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
