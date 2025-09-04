@@ -7,7 +7,7 @@ struct StrategyMarketMakerConfig
 {
     std::string symbol = "BTC-USDC-PERPETUAL";
     double volumn = 0.1;
-    double price_gap = 30.0;
+    double price_gap = 35.0;
     double price_step = 3.0;
     double clear_orders_gap = 400.0;
     bool is_running = false;
