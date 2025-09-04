@@ -19,6 +19,11 @@ void StrategyMarketMakerStateRun::end()
 {
     spdlog::info("StrategyMarketMakerStateRun - end");
 
+    m_inventory = 0.0;
+    m_current_price = 0.0;
+    m_place_initial_orders = false;
+    m_open_orders.clear();
+
     // Send cancel all of placed order
     m_gateway->cancel_all(m_instrument->exchange_symbol);
 }
@@ -26,11 +31,6 @@ void StrategyMarketMakerStateRun::end()
 void StrategyMarketMakerStateRun::on_config_change()
 {
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
-    m_inventory = 0.0;
-    m_current_price = 0.0;
-    m_place_initial_orders = false;
-    m_open_orders.clear();
-
     start_close_far_orders();
 }
 
