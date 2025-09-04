@@ -107,7 +107,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 
     if (m_last_quoted_price != 0 && std::abs(price - m_last_quoted_price) < (m_config.price_gap - 3.0))
     {
-        spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, skip quoting orders, last quoted price: {}", price, m_last_quoted_price);
+        spdlog::warn("StrategyMarketMakerStateRun - quote_orders_at_price: {}, skip quoting orders, last quoted price: {}", price, m_last_quoted_price);
         return;
     }
 
