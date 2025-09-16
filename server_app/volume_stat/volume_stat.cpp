@@ -49,7 +49,7 @@ Json VolumeStat::get_data()
         auto& trade_volume_at_price = m_trade_volumes[i];
 
         data.push_back({
-            {"price", trade_volume_at_price.price},
+            {"price", i},
             {"buy", trade_volume_at_price.total_buy_volume},
             {"sell", trade_volume_at_price.total_sell_volume},
         });
