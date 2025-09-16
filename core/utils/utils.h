@@ -19,7 +19,9 @@ class Utils
     Singleton(Utils);
 
 public:
+    size_t get_time_now_in_utc_seconds();
     size_t get_time_now_in_utc_milliseconds();
+    size_t get_time_now_in_utc_nanoseconds();
     size_t get_time_now_in_utc();
     size_t get_0h_today_in_utc();
     size_t get_0h_tomorrow_in_utc();
