@@ -13,7 +13,7 @@ class BinanceTradeData
     void start();
 
 public:
-    BinanceTradeData(const std::string& symbol, net::io_context& ioc, EventBase* event_base, std::function<void(std::string)> on_order_book_ws);
+    BinanceTradeData(const std::string& symbol, net::io_context& ioc, EventBase* event_base);
     ~BinanceTradeData()
     {
         m_websocket->close();

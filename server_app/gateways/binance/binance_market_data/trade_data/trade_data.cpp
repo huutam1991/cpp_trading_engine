@@ -3,11 +3,11 @@
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
-BinanceTradeData::BinanceTradeData(const std::string& symbol, net::io_context& ioc, EventBase* event_base, std::function<void(std::string)> on_order_book_ws)
+BinanceTradeData::BinanceTradeData(const std::string& symbol, net::io_context& ioc, EventBase* event_base)
     : m_symbol{symbol}, m_ioc{ioc}, m_event_base{event_base}
 {
     STRING_LOWER_CASE(m_symbol);
-    this->start();
+    start();
 }
 
 void BinanceTradeData::start()
@@ -41,6 +41,8 @@ void BinanceTradeData::start()
         {
             // MeasureTime t("Depth data handle from websocket", MeasureUnit::MICROSECOND);
             // m_on_order_book_ws(std::move(buffer));
+
+            spdlog::debug("Trade data: {}", buffer);
 
             co_return;
         },

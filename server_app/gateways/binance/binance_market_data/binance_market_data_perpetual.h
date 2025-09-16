@@ -8,6 +8,7 @@
 
 #include <instrument/instrument.h>
 #include <gateways/binance/binance_market_data/order_book/order_book.h>
+#include <gateways/binance/binance_market_data/trade_data/trade_data.h>
 
 class BinanceMarketDataPerpetual
 {
@@ -27,7 +28,13 @@ private:
 
     EventBase* m_event_base = nullptr;
 
-    std::unordered_map<const Instrument*, std::shared_ptr<OrderBook>> m_orderbooks;
+    struct MarketData
+    {
+        std::shared_ptr<OrderBook> orderbook = nullptr;
+        std::shared_ptr<BinanceTradeData> trade_data = nullptr;
+    };
+
+    std::unordered_map<const Instrument*, std::shared_ptr<MarketData>> m_market_data;
     std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
 
     Task<void> init_order_book();

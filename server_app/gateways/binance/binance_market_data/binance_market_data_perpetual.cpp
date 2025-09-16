@@ -56,7 +56,7 @@ Task<void> BinanceMarketDataPerpetual::init_order_book()
 Task<void> BinanceMarketDataPerpetual::remove_unsubscribed_instruments()
 {
     std::vector<const Instrument*> removed_instruments;
-    for (const auto& [instrument, order_book] : m_orderbooks)
+    for (const auto& [instrument, order_book] : m_market_data)
     {
         if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
         {
@@ -66,7 +66,7 @@ Task<void> BinanceMarketDataPerpetual::remove_unsubscribed_instruments()
 
     for (const auto& instrument : removed_instruments)
     {
-        m_orderbooks.erase(instrument);
+        m_market_data.erase(instrument);
     }
 
     co_return;
@@ -77,11 +77,11 @@ Task<void> BinanceMarketDataPerpetual::check_sync_order_book()
     // Loop to send REST request to query orderbook (full) at every 5 seconds, if the orderbook is not synced yet
     while (true)
     {
-        for (auto& [_, order_book] : m_orderbooks)
+        for (auto& [_, market_data] : m_market_data)
         {
-            if (order_book->is_not_synced())
+            if (market_data->orderbook->is_not_synced())
             {
-                co_await order_book->send_request_get_full_order_book();
+                co_await market_data->orderbook->send_request_get_full_order_book();
             }
             else
             {
@@ -96,13 +96,15 @@ Task<void> BinanceMarketDataPerpetual::check_sync_order_book()
 
 void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
 {
-    if (m_orderbooks.find(instrument) != m_orderbooks.end())
+    if (m_market_data.find(instrument) != m_market_data.end())
     {
         return; // Already started
     }
 
-    auto order_book = std::make_shared<OrderBook>(instrument->exchange_symbol, 10, IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
-    m_orderbooks.insert(std::make_pair(instrument, order_book));
+    auto market_data = std::make_shared<MarketData>();
+    market_data->orderbook = std::make_shared<OrderBook>(instrument->exchange_symbol, 10, IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
+    market_data->trade_data = std::make_shared<BinanceTradeData>(instrument->exchange_symbol, IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
+    m_market_data.insert(std::make_pair(instrument, market_data));
 }
 
 void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, const std::string& port)
