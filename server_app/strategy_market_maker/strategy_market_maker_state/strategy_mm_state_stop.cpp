@@ -42,8 +42,8 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         double ask_quantity = snapshot->get_best_ask_quantity();
         double bid_quantity = snapshot->get_best_bid_quantity();
 
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
+        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
+        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
     }
 
     co_return;
