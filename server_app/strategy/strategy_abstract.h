@@ -20,7 +20,7 @@ struct TradeUpdate
     double quantity;
     bool is_buy;
     size_t trade_id;
-    size_t timestamp; // In milliseconds
+    size_t timestamp; // In nanoseconds
 };
 
 using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot*, TradeUpdate>;

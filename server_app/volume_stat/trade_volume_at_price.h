@@ -3,6 +3,7 @@
 #include <queue>
 #include <chrono>
 #include <strategy/strategy_abstract.h>
+#include <utils/utils.h>
 
 struct TradeVolumeAtPrice
 {
@@ -25,9 +26,15 @@ struct TradeVolumeAtPrice
         trades.push(trade);
     }
 
-    void remove_old_trades(size_t duration)
+    void remove_old_trades(size_t duration_in_seconds)
     {
-        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+        if (trades.empty())
+        {
+            return;
+        }
+
+        auto duration = duration_in_seconds * 1000000000; // Convert to nanoseconds
+        auto now = Utils::get_time_now_in_utc_nanoseconds();
 
         while (trades.empty() == false)
         {
