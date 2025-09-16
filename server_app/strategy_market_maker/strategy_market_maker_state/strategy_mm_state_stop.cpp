@@ -16,8 +16,7 @@ void StrategyMarketMakerStateStop::end()
 
 Json StrategyMarketMakerStateStop::get_info()
 {
-    Json gap_list;
-    return gap_list;
+    return m_volume_stat.get_data();
 }
 
 Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
@@ -33,6 +32,8 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         TradeUpdate trade = std::get<TradeUpdate>(data);
         spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, trade_id: {}, price: {}, quantity: {}",
             trade.instrument->symbol, trade.trade_id, trade.price, trade.quantity);
+
+        m_volume_stat.add_trade_volume(trade);
     }
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
