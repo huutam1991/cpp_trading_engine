@@ -7,6 +7,7 @@ BinanceTradeData::BinanceTradeData(const std::string& symbol, net::io_context& i
     : m_symbol{symbol}, m_ioc{ioc}, m_event_base{event_base}
 {
     STRING_LOWER_CASE(m_symbol);
+    this->start();
 }
 
 void BinanceTradeData::start()
