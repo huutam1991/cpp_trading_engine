@@ -13,7 +13,17 @@ struct PriceUpdate
     double price;
 };
 
-using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot*>;
+struct TradeUpdate
+{
+    const Instrument* instrument;
+    double price;
+    double quantity;
+    bool is_buy;
+    size_t trade_id;
+    size_t timestamp; // In milliseconds
+};
+
+using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot*, TradeUpdate>;
 
 class StrategyAbstract
 {
