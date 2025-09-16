@@ -42,18 +42,32 @@ void VolumeStat::remove_old_volumes(size_t duration_in_seconds)
 
 Json VolumeStat::get_data()
 {
-    Json data;
+    Json trades;
+    double total_buy_volume = 0.0;
+    double total_sell_volume = 0.0;
 
     for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
     {
         auto& trade_volume_at_price = m_trade_volumes[i];
 
-        data.push_back({
+        if (trade_volume_at_price.total_buy_volume == 0.0 && trade_volume_at_price.total_sell_volume == 0.0)
+        {
+            continue;
+        }
+
+        total_buy_volume += trade_volume_at_price.total_buy_volume;
+        total_sell_volume += trade_volume_at_price.total_sell_volume;
+
+        trades.push_back({
             {"price", i},
             {"buy", trade_volume_at_price.total_buy_volume},
             {"sell", trade_volume_at_price.total_sell_volume},
         });
     }
 
-    return data;
+    return {
+        {"trades", trades},
+        {"total_buy_volume", total_buy_volume},
+        {"total_sell_volume", total_sell_volume}
+    };
 }
