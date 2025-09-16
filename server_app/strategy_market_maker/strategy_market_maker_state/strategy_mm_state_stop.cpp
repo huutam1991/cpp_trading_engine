@@ -32,7 +32,8 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
     else if (std::holds_alternative<TradeUpdate>(data))
     {
         TradeUpdate trade = std::get<TradeUpdate>(data);
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, trade_id: {}, price: {}, quantity: {}", trade.instrument->symbol, trade.trade_id, trade.price, trade.quantity);
+        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, trade_id: {}, price: {}, quantity: {}",
+            trade.instrument->symbol, trade.trade_id, trade.price, trade.quantity);
     }
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
