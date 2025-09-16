@@ -1,9 +1,8 @@
 #include "strategy_mm_state_stop.h"
 #include <chrono>
 
-StrategyMarketMakerStateStop::StrategyMarketMakerStateStop()
-{
-}
+StrategyMarketMakerStateStop::StrategyMarketMakerStateStop(VolumeStat& volume_stat) : m_volume_stat{volume_stat}
+{}
 
 void StrategyMarketMakerStateStop::begin()
 {

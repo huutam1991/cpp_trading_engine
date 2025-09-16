@@ -2,12 +2,14 @@
 
 #include <app_constants.h>
 #include <gateways/gateway_manager.h>
+#include <volume_stat/volume_stat.h>
 #include <strategy/strategy_base.h>
 #include <strategy_market_maker/strategy_market_maker_config.h>
 
 class StrategyMarketMaker : public StrategyBase<StrategyMarketMakerConfig, EventBaseID::MARKET_MAKER_STRATEGY>
 {
     std::shared_ptr<Gateway> m_gateway;
+    VolumeStat m_volume_stat;
 
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;

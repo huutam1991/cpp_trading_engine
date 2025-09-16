@@ -5,12 +5,14 @@
 #include <strategy/strategy_state_base.h>
 #include <gateways/gateway.h>
 #include <order/order_manager.h>
+#include <volume_stat/volume_stat.h>
 
 class StrategyMarketMakerStateStop : public StrategyStateBase
 {
+    VolumeStat& m_volume_stat;
 
 public:
-    StrategyMarketMakerStateStop();
+    StrategyMarketMakerStateStop(VolumeStat& volume_stat);
 
     virtual void begin() override;
     virtual void end() override;
