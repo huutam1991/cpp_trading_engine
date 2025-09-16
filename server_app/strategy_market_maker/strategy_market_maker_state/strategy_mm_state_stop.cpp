@@ -30,8 +30,10 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
     else if (std::holds_alternative<TradeUpdate>(data))
     {
         TradeUpdate trade = std::get<TradeUpdate>(data);
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, trade_id: {}, price: {}, quantity: {}",
-            trade.instrument->symbol, trade.trade_id, trade.price, trade.quantity);
+        std::string side = trade.is_buy ? "BUY" : "SELL";
+
+        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
+            trade.instrument->symbol, side, trade.price, trade.quantity);
 
         m_volume_stat.add_trade_volume(trade);
     }
@@ -45,6 +47,8 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
 
         // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
         // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
+
+        OrderBookSnapShotPool::release(snapshot);
     }
 
     co_return;
