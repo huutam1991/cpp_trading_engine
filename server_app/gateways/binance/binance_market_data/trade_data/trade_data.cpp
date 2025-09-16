@@ -1,5 +1,8 @@
 #include "trade_data.h"
 #include <app_constants.h>
+#include <json/json.h>
+
+#include <strategy/strategy_manager.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
@@ -7,6 +10,7 @@ BinanceTradeData::BinanceTradeData(const std::string& symbol, net::io_context& i
     : m_symbol{symbol}, m_ioc{ioc}, m_event_base{event_base}
 {
     STRING_LOWER_CASE(m_symbol);
+    m_instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol);
     start();
 }
 
@@ -39,10 +43,23 @@ void BinanceTradeData::start()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            // MeasureTime t("Depth data handle from websocket", MeasureUnit::MICROSECOND);
-            // m_on_order_book_ws(std::move(buffer));
+            MeasureTime t("Binance Trade data handle from websocket", MeasureUnit::MICROSECOND);
+            Json data = Json::parse(buffer);
 
-            spdlog::debug("Trade data: {}", buffer);
+            if (data.has_field("e") && data["e"] == "aggTrade")
+            {
+                TradeUpdate update;
+                update.instrument = m_instrument;
+                update.price = data["p"];
+                update.trade_id = data["f"];
+                update.timestamp = data["T"];
+                update.is_buy = data["m"] == false; // If m is false, then the buyer is the market maker
+
+                StrategyUpdateData data{update};
+
+                // Public data to strategies
+                StrategyManager::instance().public_data(data);
+            }
 
             co_return;
         },
