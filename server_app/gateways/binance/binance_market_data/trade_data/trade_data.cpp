@@ -50,8 +50,9 @@ void BinanceTradeData::start()
             {
                 TradeUpdate update;
                 update.instrument = m_instrument;
-                update.price = data["p"];
-                update.trade_id = data["f"];
+                update.price = std::stod((std::string)data["p"]);
+                update.quantity = std::stod((std::string)data["q"]);
+                update.trade_id = data["a"];
                 update.timestamp = data["T"];
                 update.is_buy = data["m"] == false; // If m is false, then the buyer is the market maker
 
