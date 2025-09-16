@@ -56,7 +56,7 @@ Task<void> BinanceMarketDataPerpetual::init_order_book()
 Task<void> BinanceMarketDataPerpetual::remove_unsubscribed_instruments()
 {
     std::vector<const Instrument*> removed_instruments;
-    for (const auto& [instrument, order_book] : m_market_data)
+    for (const auto& [instrument, _] : m_market_data)
     {
         if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
         {
