@@ -103,7 +103,7 @@ void HttpRequest::deserialize_header_params(const std::string& content)
     size_t start_of_header = content.find_first_of("\r\n", 0) + 2;
     size_t end_of_header = content.find("\r\n\r\n", 0);
 
-    std::vector<std::string> header_list = Utils::instance().split_string(
+    std::vector<std::string> header_list = Utils::split_string(
         content.substr(start_of_header, end_of_header - start_of_header),
         "\r\n"
     );
@@ -111,7 +111,7 @@ void HttpRequest::deserialize_header_params(const std::string& content)
     std::vector<std::string> header;
     for (int i = 0; i < header_list.size(); i++)
     {
-        header = Utils::instance().split_string(header_list[i], ": ");
+        header = Utils::split_string(header_list[i], ": ");
         if (header.size() == 2)
         {
             m_header_params.insert(std::make_pair(header[0], header[1]));

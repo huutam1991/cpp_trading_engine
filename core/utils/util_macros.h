@@ -142,5 +142,5 @@ collection.replace_one(document{} << search_key << search_value << finalize, dat
 #define DELETE_ONE(collection, key, value, result) \
 bsoncxx::stdx::optional<mongocxx::result::delete_result> result = collection.delete_one(document{} << key << value << finalize);
 
-#define TO_STRING Utils::instance().to_string_with_precision
-#define IS_EQUAL Utils::instance().is_equal
+#define TO_STRING Utils::to_string_with_precision
+#define IS_EQUAL Utils::is_equal

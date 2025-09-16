@@ -56,10 +56,10 @@ void HttpRequestPost::deserialize_body_raw_data()
     if (m_body_json == nullptr)
     {
         std::vector<std::string> param_arr;
-        std::vector<std::string> body_arr = Utils::instance().split_string(m_body, "&");
+        std::vector<std::string> body_arr = Utils::split_string(m_body, "&");
         for (int i = 0; i < body_arr.size(); i++)
         {
-            param_arr = Utils::instance().split_string(body_arr[i], "=");
+            param_arr = Utils::split_string(body_arr[i], "=");
             if (param_arr.size() >= 2)
             {
                 m_body_json[param_arr[0]] = param_arr[1];

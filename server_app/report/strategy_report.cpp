@@ -8,8 +8,8 @@
 
 // void StrategyReport::export_24h_strategy_report(User* user)
 // {
-//     long today_0h = Utils::instance().get_0h_today_in_utc() * 1000;
-//     long tomorrow_0h = Utils::instance().get_0h_tomorrow_in_utc() * 1000;
+//     long today_0h = Utils::get_0h_today_in_utc() * 1000;
+//     long tomorrow_0h = Utils::get_0h_tomorrow_in_utc() * 1000;
 
 //     Json trading_strategy_result = AppUtils::instance().get_trading_strategy_result(user, today_0h, tomorrow_0h);
 //     generate_excel_file(trading_strategy_result);

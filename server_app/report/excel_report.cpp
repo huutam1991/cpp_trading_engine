@@ -103,10 +103,10 @@
 
 //                     json["user_id"].set_is_string_format(false);
 //                     json["symbol"].set_is_string_format(false);
-//                     std::string date_time = Utils::instance().get_string_time_YMD(((long long)json["transactTime"] / 1000));
-//                     std::string on_tick_time = Utils::instance().get_string_time_YMD_with_millisecond((long long)json["on_tick_time"]);
-//                     std::string finish_calculation_time = Utils::instance().get_string_time_YMD_with_millisecond((long long)json["finish_calculation_time"]);
-//                     std::string finish_place_order_time = Utils::instance().get_string_time_YMD_with_millisecond((long long)json["finish_place_order_time"]);
+//                     std::string date_time = Utils::get_string_time_YMD(((long long)json["transactTime"] / 1000));
+//                     std::string on_tick_time = Utils::get_string_time_YMD_with_millisecond((long long)json["on_tick_time"]);
+//                     std::string finish_calculation_time = Utils::get_string_time_YMD_with_millisecond((long long)json["finish_calculation_time"]);
+//                     std::string finish_place_order_time = Utils::get_string_time_YMD_with_millisecond((long long)json["finish_place_order_time"]);
 
 //                     int row = line_counter++ + 3;
 

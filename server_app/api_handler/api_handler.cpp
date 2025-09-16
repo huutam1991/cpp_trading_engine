@@ -32,7 +32,7 @@ std::string APIHandler::check_authentication()
                 return "Missing token";
             }
 
-            std::vector<std::string> token_list = Utils::instance().split_string(token, "=");
+            std::vector<std::string> token_list = Utils::split_string(token, "=");
             token = token_list[1];
         }
     }
