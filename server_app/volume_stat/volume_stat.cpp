@@ -12,7 +12,13 @@ VolumeStat::VolumeStat(size_t size)
 
 void VolumeStat::add_trade_volume(double price, double buy_volume, bool is_buy)
 {
-    m_trade_volumes[(size_t)price].add_volume(buy_volume, is_buy);
+    size_t price_index = (size_t)price;
+    if (price_index >= m_trade_volumes.size())
+    {
+        m_trade_volumes.resize(price_index + 1);
+    }
+
+    m_trade_volumes[price_index].add_volume(buy_volume, is_buy);
 }
 
 void VolumeStat::remove_old_volumes(std::chrono::seconds duration)
