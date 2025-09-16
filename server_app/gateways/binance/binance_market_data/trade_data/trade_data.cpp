@@ -43,7 +43,7 @@ void BinanceTradeData::start()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            MeasureTime t("Binance Trade data handle from websocket", MeasureUnit::MICROSECOND);
+            // MeasureTime t("Binance Trade data handle from websocket", MeasureUnit::MICROSECOND);
             Json data = Json::parse(buffer);
 
             if (data.has_field("e") && data["e"] == "aggTrade")
