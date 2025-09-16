@@ -54,6 +54,14 @@ void StrategyManager::subscribe_data_update()
     });
 }
 
+void StrategyManager::public_data(StrategyUpdateData& data)
+{
+    for (auto& strategy : m_strategy_list)
+    {
+        strategy->update(data).start_running_on(strategy->event_base);
+    }
+}
+
 Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
 {
     for (auto& strategy : m_strategy_list)
