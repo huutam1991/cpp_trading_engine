@@ -14,6 +14,6 @@ public:
     VolumeStat();
     VolumeStat(size_t size);
 
-    void add_trade_volume(double price, double buy_volume, bool is_buy);
-    void remove_old_volumes(std::chrono::seconds duration);
+    void add_trade_volume(const TradeUpdate& trade);
+    void remove_old_volumes(size_t duration_in_seconds);
 };

@@ -2,13 +2,7 @@
 
 #include <queue>
 #include <chrono>
-
-struct TradeVolumeByTime
-{
-    double buy_volume = 0.0;
-    double sell_volume = 0.0;
-    std::chrono::time_point<std::chrono::steady_clock> time;
-};
+#include <strategy/strategy_abstract.h>
 
 struct TradeVolumeAtPrice
 {
@@ -16,47 +10,41 @@ struct TradeVolumeAtPrice
     double total_buy_volume = 0.0;
     double total_sell_volume = 0.0;
 
-    std::queue<TradeVolumeByTime> volumes;
+    std::queue<TradeUpdate> trades;
 
-    void add_volume(double buy_volume, bool is_buy)
+    void add_volume(const TradeUpdate& trade)
     {
-        auto now = std::chrono::steady_clock::now();
-
-        TradeVolumeByTime volume_by_time;
-        volume_by_time.time = now;
-        if (is_buy)
+        if (trade.is_buy)
         {
-            volume_by_time.buy_volume = buy_volume;
-            total_buy_volume += buy_volume;
+            total_buy_volume += trade.quantity;
         }
         else
         {
-            volume_by_time.sell_volume = buy_volume;
-            total_sell_volume += buy_volume;
+            total_sell_volume += trade.quantity;
         }
-        volumes.push(volume_by_time);
+        trades.push(trade);
     }
 
-    void remove_old_volumes(std::chrono::seconds duration)
+    void remove_old_trades(size_t duration)
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = std::chrono::steady_clock::now().time_since_epoch().count();
 
-        while (volumes.empty() == false)
+        while (trades.empty() == false)
         {
-            auto& volume_by_time = volumes.front();
-            auto time_diff = now - volume_by_time.time;
+            auto& trade = trades.front();
+            auto time_diff = now - trade.timestamp;
             if (time_diff > duration)
             {
-                // Remove old volume
-                if (volume_by_time.buy_volume > 0)
+                // Remove old trade
+                if (trade.is_buy)
                 {
-                    total_buy_volume -= volume_by_time.buy_volume;
+                    total_buy_volume -= trade.quantity;
                 }
-                if (volume_by_time.sell_volume > 0)
+                else
                 {
-                    total_sell_volume -= volume_by_time.sell_volume;
+                    total_sell_volume -= trade.quantity;
                 }
-                volumes.pop();
+                trades.pop();
             }
             else
             {
