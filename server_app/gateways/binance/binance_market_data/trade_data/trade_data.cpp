@@ -54,7 +54,7 @@ void BinanceTradeData::start()
                 update.quantity = std::stod((std::string)data["q"]);
                 update.trade_id = data["a"];
                 update.timestamp = (size_t)data["T"] * 1000000; // Convert milliseconds to nanoseconds
-                update.is_buy = data["m"] == false; // If m is false, then the buyer is the market maker
+                update.is_buy = data["m"] == true; // If m is true, then the buyer is the market maker
 
                 StrategyUpdateData data{update};
 
