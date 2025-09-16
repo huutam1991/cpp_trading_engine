@@ -9,6 +9,10 @@
 class VolumeStat
 {
     std::vector<TradeVolumeAtPrice> m_trade_volumes;
+    size_t m_max_price_index = 0;
+    size_t m_min_price_index = MAX_VOLUME_STAT_SIZE - 1;
+
+    void update_max_min_price_index(size_t price_index);
 
 public:
     VolumeStat();

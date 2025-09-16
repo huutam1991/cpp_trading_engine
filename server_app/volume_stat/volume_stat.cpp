@@ -3,11 +3,21 @@
 VolumeStat::VolumeStat()
 {
     m_trade_volumes.reserve(MAX_VOLUME_STAT_SIZE);
+    m_max_price_index = 0;
+    m_min_price_index = m_trade_volumes.size() - 1;
 }
 
 VolumeStat::VolumeStat(size_t size)
 {
     m_trade_volumes.reserve(size);
+    m_max_price_index = 0;
+    m_min_price_index = m_trade_volumes.size() - 1;
+}
+
+void VolumeStat::update_max_min_price_index(size_t price_index)
+{
+    m_max_price_index = std::max(m_max_price_index, price_index);
+    m_min_price_index = std::min(m_min_price_index, price_index);
 }
 
 void VolumeStat::add_trade_volume(const TradeUpdate& trade)
@@ -19,6 +29,7 @@ void VolumeStat::add_trade_volume(const TradeUpdate& trade)
     }
 
     m_trade_volumes[price_index].add_volume(trade);
+    update_max_min_price_index(price_index);
 }
 
 void VolumeStat::remove_old_volumes(size_t duration_in_seconds)
