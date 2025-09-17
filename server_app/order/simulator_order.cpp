@@ -70,7 +70,7 @@ void SimulatorOrder::price_update(PriceUpdate data)
 Task<void> SimulatorOrder::execute_place(Order order)
 {
     order.status = Order::Status::NEW;
-    auto order_list = get_order_list();
+    auto& order_list = get_order_list();
     order_list[order.instrument].insert(std::make_pair(order.order_id, order));
 
     OrderManager::instance().update_order(order);
@@ -81,7 +81,7 @@ Task<void> SimulatorOrder::execute_place(Order order)
 Task<void> SimulatorOrder::execute_cancel(Order order)
 {
     order.status = Order::Status::CANCELED;
-    auto order_list = get_order_list();
+    auto& order_list = get_order_list();
     order_list[order.instrument].erase(order.order_id);
     OrderManager::instance().update_order(order);
 
@@ -96,7 +96,7 @@ Task<void> SimulatorOrder::execute_cancel_all(std::string symbol)
 
 Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
 {
-    auto order_list = get_order_list();
+    auto& order_list = get_order_list();
     if (order_list.find(data.instrument) == order_list.end())
     {
         co_return;
@@ -108,7 +108,6 @@ Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
     {
         if (order.type == Order::LIMIT)
         {
-            spdlog::debug("LIMIT order: {}", order.to_json());
             if ((order.side == Order::BUY && data.price <= order.price) ||
                 (order.side == Order::SELL && data.price >= order.price))
             {
