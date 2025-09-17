@@ -27,7 +27,7 @@ void SimulatorOrder::init()
 void SimulatorOrder::set_active(bool active)
 {
     SimulatorConfig config = get_config().object;
-    config.state = active ? SimulatorState::ACTIVE : SimulatorState::NONE;
+    config.state = active ? SimulatorState::ACTIVE : SimulatorState::INACTIVE;
 
     auto new_config = get_config();
     new_config = config;
