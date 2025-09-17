@@ -199,6 +199,16 @@ Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
         price_update = std::get<PriceUpdate>(data);
         handle_price_update(price_update);
     }
+    else if (std::holds_alternative<TradeUpdate>(data))
+    {
+        TradeUpdate trade = std::get<TradeUpdate>(data);
+        std::string side = trade.is_buy ? "BUY" : "SELL";
+
+        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
+            trade.instrument->symbol, side, trade.price, trade.quantity);
+
+        m_volume_stat.add_trade_volume(trade);
+    }
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
         OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
