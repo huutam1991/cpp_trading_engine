@@ -17,7 +17,7 @@ public:
     enum SimulatorState
     {
         SIMULATOR_ACTIVE,
-        REAL_TRADE,
+        REAL_TRADING,
     };
 
     struct SimulatorConfig
