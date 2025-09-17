@@ -38,6 +38,14 @@ void StrategyManager::subscribe_data_update()
     // Subscribe order book update from OrderBookManager
     OrderBookManager::instance().register_update([this](OrderBookSnapShot* snapshot)
     {
+        if (SimulatorOrder::get_active())
+        {
+            SimulatorOrder::price_update(PriceUpdate{
+                snapshot->instrument,
+                snapshot->get_mid_price()
+            });
+        }
+
         for (auto& strategy : m_strategy_list)
         {
             strategy->update(snapshot).start_running_on(strategy->event_base);
