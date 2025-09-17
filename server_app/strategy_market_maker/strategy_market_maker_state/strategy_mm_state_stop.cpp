@@ -25,15 +25,15 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
+        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
     }
     else if (std::holds_alternative<TradeUpdate>(data))
     {
         TradeUpdate trade = std::get<TradeUpdate>(data);
         std::string side = trade.is_buy ? "BUY" : "SELL";
 
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
-            trade.instrument->symbol, side, trade.price, trade.quantity);
+        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
+        //     trade.instrument->symbol, side, trade.price, trade.quantity);
 
         m_volume_stat.add_trade_volume(trade);
     }

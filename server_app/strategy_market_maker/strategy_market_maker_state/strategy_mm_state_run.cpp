@@ -204,7 +204,7 @@ Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
         TradeUpdate trade = std::get<TradeUpdate>(data);
         std::string side = trade.is_buy ? "BUY" : "SELL";
 
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
+        spdlog::info("StrategyMarketMakerStateRun: trade update, symbol: {}, side: {}, price: {}, quantity: {}",
             trade.instrument->symbol, side, trade.price, trade.quantity);
 
         m_volume_stat.add_trade_volume(trade);

@@ -108,6 +108,7 @@ Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
     {
         if (order.type == Order::LIMIT)
         {
+            spdlog::debug("LIMIT order: {}", order.to_json());
             if ((order.side == Order::BUY && data.price <= order.price) ||
                 (order.side == Order::SELL && data.price >= order.price))
             {
