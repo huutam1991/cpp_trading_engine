@@ -12,6 +12,9 @@
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 
+// Simulator Order
+#include <api_handler/api_handler_simulator_order/api_handler_simulator_order.h>
+
 // Strategy
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <api_handler/api_handler_strategy/api_handler_strategy_current_info.h>
@@ -314,6 +317,18 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
     {
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
+    };
+
+    // Simulator order - GET
+    ADD_ROUTE(RequestMethod::GET, "/simulator_order")
+    {
+        co_return co_await APIHandlerSimulatorOrder(request).handle();
+    };
+
+    // Simulator order - POST
+    ADD_ROUTE(RequestMethod::POST, "/simulator_order")
+    {
+        co_return co_await APIHandlerSimulatorOrder(request).handle();
     };
 
     // Update strategy's config
