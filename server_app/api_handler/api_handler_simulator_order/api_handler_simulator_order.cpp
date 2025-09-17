@@ -29,7 +29,7 @@ Task<HttpResponse> APIHandlerSimulatorOrder::child_handle()
         bool active = config_data.has_field("active") ? (bool)config_data["active"] : false;
         SimulatorOrder::set_active(active);
 
-        response["data"] = SimulatorOrder::get_info();
+        response["data"] = "";
         response["msg"] = "update simulator order config successfully";
         response["status_code"] = OK_200;
         response["error"] = false;
