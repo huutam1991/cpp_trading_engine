@@ -3,6 +3,7 @@
 #include <strategy_buy_spot/strategy_buy_spot.h>
 #include <strategy_market_maker/strategy_market_maker.h>
 #include <strategy_trend_follow/strategy_trend_follow.h>
+#include <order/simulator_order.h>
 
 void StrategyManager::init()
 {
@@ -46,6 +47,15 @@ void StrategyManager::subscribe_data_update()
 
 void StrategyManager::public_data(StrategyUpdateData& data)
 {
+    if (SimulatorOrder::get_active())
+    {
+        if (std::holds_alternative<PriceUpdate>(data) == false)
+        {
+            return;
+        }
+        SimulatorOrder::price_update(std::get<PriceUpdate>(data));
+    }
+
     for (auto& strategy : m_strategy_list)
     {
         strategy->update(data).start_running_on(strategy->event_base);

@@ -1,6 +1,8 @@
-#include <gateways/gateway.h>
 #include <coroutine/event_base_manager.h>
 #include <enum_reflect/enum_reflect.h>
+
+#include <gateways/gateway.h>
+#include <order/simulator_order.h>
 
 Gateway::Gateway() : m_event_base {
     EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
@@ -64,15 +66,33 @@ void Gateway::check_remove_canceled_orders(std::string symbol)
 
 void Gateway::cancel_all(std::string symbol)
 {
+    if (SimulatorOrder::get_active())
+    {
+        SimulatorOrder::cancel_all(std::move(symbol));
+        return;
+    }
+
    cancel_all_on_exchange(std::move(symbol)).start_running_on(m_event_base);
 }
 
 void Gateway::place(Order order)
 {
+    if (SimulatorOrder::get_active())
+    {
+        SimulatorOrder::place(std::move(order));
+        return;
+    }
+
     place_on_exchange(std::move(order)).start_running_on(m_event_base);
 }
 
 void Gateway::cancel(Order order)
 {
+    if (SimulatorOrder::get_active())
+    {
+        SimulatorOrder::cancel(std::move(order));
+        return;
+    }
+
     cancel_on_exchange(std::move(order)).start_running_on(m_event_base);
 }
