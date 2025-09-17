@@ -47,6 +47,7 @@ public:
     static void init();
     static void set_active(bool active);
     static bool get_active();
+    static Json get_info();
 
     static void place(Order order);
     static void cancel(Order order);

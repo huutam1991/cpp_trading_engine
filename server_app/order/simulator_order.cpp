@@ -38,6 +38,11 @@ bool SimulatorOrder::get_active()
     return get_config().object.state == SimulatorState::ACTIVE;
 }
 
+Json SimulatorOrder::get_info()
+{
+    return get_config().to_json();
+}
+
 void SimulatorOrder::place(Order order)
 {
     auto task = execute_place(std::move(order));
