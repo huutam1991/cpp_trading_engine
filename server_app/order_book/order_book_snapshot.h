@@ -42,6 +42,7 @@ public:
         asks.emplace_back(price, quantity);
     }
 
+    double get_mid_price();
     double get_best_bid();
     double get_best_ask();
     double get_best_bid_quantity();

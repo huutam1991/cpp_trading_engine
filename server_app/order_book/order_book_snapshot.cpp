@@ -26,6 +26,11 @@ void OrderBookSnapShot::print_order_book()
     }
 }
 
+double OrderBookSnapShot::get_mid_price()
+{
+    return (get_best_bid() + get_best_ask()) / 2.0;
+}
+
 double OrderBookSnapShot::get_best_bid()
 {
     return bids[0].price;
