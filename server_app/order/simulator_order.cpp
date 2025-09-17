@@ -24,6 +24,11 @@ void SimulatorOrder::init()
     spdlog::info("SimulatorOrder initialized");
 }
 
+bool SimulatorOrder::is_active()
+{
+    return get_config().object.state == SimulatorState::ACTIVE;
+}
+
 void SimulatorOrder::place(Order order)
 {
     auto task = execute_place(std::move(order));
