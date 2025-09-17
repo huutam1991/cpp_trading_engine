@@ -49,11 +49,10 @@ void StrategyManager::public_data(StrategyUpdateData& data)
 {
     if (SimulatorOrder::get_active())
     {
-        if (std::holds_alternative<PriceUpdate>(data) == false)
+        if (std::holds_alternative<PriceUpdate>(data) == true)
         {
-            return;
+            SimulatorOrder::price_update(std::get<PriceUpdate>(data));
         }
-        SimulatorOrder::price_update(std::get<PriceUpdate>(data));
     }
 
     for (auto& strategy : m_strategy_list)
