@@ -42,6 +42,12 @@ void SimulatorOrder::cancel_all(std::string symbol)
     task.start_running_on(get_event_base());
 }
 
+void SimulatorOrder::price_update(PriceUpdate data)
+{
+    auto task = execute_price_update(data);
+    task.start_running_on(get_event_base());
+}
+
 Task<void> SimulatorOrder::execute_place(Order order)
 {
     order.status = Order::Status::NEW;
@@ -66,5 +72,47 @@ Task<void> SimulatorOrder::execute_cancel(Order order)
 Task<void> SimulatorOrder::execute_cancel_all(std::string symbol)
 {
     // TBD
+    co_return;
+}
+
+Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
+{
+    auto order_list = get_order_list();
+    if (order_list.find(data.instrument) == order_list.end())
+    {
+        co_return;
+    }
+
+    std::vector<OrderId> filled_orders;
+    auto current_orders = order_list[data.instrument];
+    for (auto& [order_id, order] : current_orders)
+    {
+        if (order.type == Order::LIMIT)
+        {
+            if ((order.side == Order::BUY && data.price <= order.price) ||
+                (order.side == Order::SELL && data.price >= order.price))
+            {
+                filled_orders.push_back(order_id);
+            }
+        }
+        else if (order.type == Order::MARKET)
+        {
+            filled_orders.push_back(order_id);
+        }
+    }
+
+    for (OrderId order_id : filled_orders)
+    {
+        Order order = current_orders[order_id];
+        order_list[data.instrument].erase(order_id);
+
+        order.status = Order::FILLED;
+        order.filled_price = data.price;
+        order.filled_quantity = order.quantity;
+        order.fee = 0.0; // No fee in simulator
+
+        OrderManager::instance().update_order(order);
+    }
+
     co_return;
 }

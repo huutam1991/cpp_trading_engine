@@ -8,6 +8,7 @@
 #include <coroutine/event_base_manager.h>
 #include <coroutine/task.h>
 #include <order/order_manager.h>
+#include <strategy/strategy_abstract.h>
 
 class SimulatorOrder
 {
@@ -47,7 +48,9 @@ public:
     static void place(Order order);
     static void cancel(Order order);
     static void cancel_all(std::string symbol);
+    static void price_update(PriceUpdate data);
     static Task<void> execute_place(Order order);
     static Task<void> execute_cancel(Order order);
     static Task<void> execute_cancel_all(std::string symbol);
+    static Task<void> execute_price_update(PriceUpdate data);
 };
