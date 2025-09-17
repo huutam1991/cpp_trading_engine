@@ -3,6 +3,7 @@
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 #include <time/measure_time.h>
+#include <strategy/strategy_manager.h>
 
 #include <app_constants.h>
 
@@ -94,11 +95,12 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
             {
-                // spdlog::debug("Stream depth: {}", depth);
-                if (m_on_callback != nullptr)
-                {
-                    m_on_callback(instrument, depth);
-                }
+                double best_bid = depth["bids"][0][0];
+                double best_ask = depth["asks"][0][0];
+                double mid = (best_bid + best_ask) / 2.0;
+
+                StrategyUpdateData price{PriceUpdate{instrument, mid}};
+                StrategyManager::instance().public_data(price);
             }
             else
             {
