@@ -79,7 +79,7 @@ void StrategyMarketMakerStateRun::start_close_far_orders()
 
 Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 {
-    spdlog::warn("task_close_far_orders, m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
+    // spdlog::warn("task_close_far_orders, m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
     m_is_closing_far_orders = true;
 
     for (auto& [order_id, order] : m_open_orders)
