@@ -6,7 +6,6 @@
 APIHandlerSimulatorOrder::APIHandlerSimulatorOrder(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
-    add_mandatory_params({"strategy_name"});
 }
 
 Task<HttpResponse> APIHandlerSimulatorOrder::child_handle()
