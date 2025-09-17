@@ -5,24 +5,6 @@
 
 #include <utils/utils.h>
 
-size_t Utils::get_time_now_in_utc_seconds()
-{
-    auto now = std::chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-}
-
-size_t Utils::get_time_now_in_utc_milliseconds()
-{
-    auto now = std::chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
-}
-
-size_t Utils::get_time_now_in_utc_nanoseconds()
-{
-    auto now = std::chrono::steady_clock::now();
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-}
-
 size_t Utils::get_time_now_in_utc()
 {
     time_t rawtime;

@@ -16,9 +16,24 @@ typedef unsigned char BYTE;
 class Utils
 {
 public:
-    static size_t get_time_now_in_utc_seconds();
-    static size_t get_time_now_in_utc_milliseconds();
-    static size_t get_time_now_in_utc_nanoseconds();
+    static inline size_t get_time_now_in_utc_seconds()
+    {
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+    }
+
+    static inline size_t get_time_now_in_utc_milliseconds()
+    {
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    }
+
+    static inline size_t get_time_now_in_utc_nanoseconds()
+    {
+        auto now = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+    }
+
     static size_t get_time_now_in_utc();
     static size_t get_0h_today_in_utc();
     static size_t get_0h_tomorrow_in_utc();
