@@ -24,7 +24,16 @@ void SimulatorOrder::init()
     spdlog::info("SimulatorOrder initialized");
 }
 
-bool SimulatorOrder::is_active()
+void SimulatorOrder::set_active(bool active)
+{
+    SimulatorConfig config = get_config().object;
+    config.state = active ? SimulatorState::ACTIVE : SimulatorState::NONE;
+
+    auto new_config = get_config();
+    new_config = config;
+}
+
+bool SimulatorOrder::get_active()
 {
     return get_config().object.state == SimulatorState::ACTIVE;
 }

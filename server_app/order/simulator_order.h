@@ -45,7 +45,8 @@ public:
 
 public:
     static void init();
-    static bool is_active();
+    static void set_active(bool active);
+    static bool get_active();
 
     static void place(Order order);
     static void cancel(Order order);
