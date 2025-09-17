@@ -103,7 +103,7 @@ Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
     }
 
     std::vector<OrderId> filled_orders;
-    auto current_orders = order_list[data.instrument];
+    auto& current_orders = order_list[data.instrument];
     for (auto& [order_id, order] : current_orders)
     {
         if (order.type == Order::LIMIT)
