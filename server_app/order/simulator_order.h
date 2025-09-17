@@ -2,8 +2,12 @@
 
 // This is a simulator for order placement and cancellation. It does not interact with any real exchange.
 
+#include <unordered_map>
+
 #include <data_model/savable_object.h>
-#include <order/order.h>
+#include <coroutine/event_base_manager.h>
+#include <coroutine/task.h>
+#include <order/order_manager.h>
 
 class SimulatorOrder
 {
@@ -35,7 +39,15 @@ public:
     };
 
     static SavableObject<SimulatorConfig>& get_config();
+    static EventBase* get_event_base();
+    static std::unordered_map<const Instrument*, std::unordered_map<OrderId, Order>>& get_order_list();
 
 public:
     static void init();
+    static void place(Order order);
+    static void cancel(Order order);
+    static void cancel_all(std::string symbol);
+    static Task<void> execute_place(Order order);
+    static Task<void> execute_cancel(Order order);
+    static Task<void> execute_cancel_all(std::string symbol);
 };
