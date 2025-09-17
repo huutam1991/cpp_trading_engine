@@ -85,10 +85,10 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
     for (auto& [order_id, order] : m_open_orders)
     {
         double price_distance = std::abs(order.price - m_current_price);
-        spdlog::warn("task_close_far_orders, order: {}, price_distance: {}, clear_orders_gap: {}", order.to_json(), price_distance, m_config.clear_orders_gap);
+        // spdlog::warn("task_close_far_orders, order: {}, price_distance: {}, clear_orders_gap: {}", order.to_json(), price_distance, m_config.clear_orders_gap);
         if (price_distance > m_config.clear_orders_gap)
         {
-            spdlog::info("task_close_far_orders, clear_orders_gap: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, m_current_price);
+            // spdlog::info("task_close_far_orders, clear_orders_gap: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, m_current_price);
             m_gateway->cancel(order);
         }
     }
