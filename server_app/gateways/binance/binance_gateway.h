@@ -35,7 +35,6 @@ public:
 private:
     Task<Json> get_exchange_info();
     Task<Json> get_exchange_info_perpetual();
-    void on_depth_update(const Instrument* instrument, Json& payload);
 
     void get_spot_symbols_info();
     void get_perpetual_symbols_info();

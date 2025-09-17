@@ -144,10 +144,9 @@ void BinanceMarketDataSpot::update_url_and_port(const std::string& url, const st
     m_port = port;
 }
 
-void BinanceMarketDataSpot::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
+void BinanceMarketDataSpot::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
     m_instruments = std::move(instruments);
-    m_on_callback = std::move(call_back);
 }
 
 bool BinanceMarketDataSpot::standardize_data(const std::string& data, Json& depth)

@@ -27,13 +27,6 @@ void StrategyManager::subscribe_data_update()
 {
     // Add price callback + subscribe to symbol
     auto gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    gateway->register_price_update([this](const Instrument* instrument, double price)
-    {
-        for (auto& strategy : m_strategy_list)
-        {
-            strategy->update(PriceUpdate{instrument, price}).start_running_on(strategy->event_base);
-        }
-    });
 
     // Subscribe order update from OrderManager
     OrderManager::instance().register_order_update([this](Order& order)

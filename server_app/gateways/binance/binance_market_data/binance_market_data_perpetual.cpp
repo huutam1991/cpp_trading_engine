@@ -113,8 +113,7 @@ void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, con
     m_port = port;
 }
 
-void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back)
+void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
     m_instruments = std::move(instruments);
-    m_on_callback = std::move(call_back);
 }

@@ -18,7 +18,6 @@ class Gateway
 {
 protected:
     ExchangeId m_exchange_id;
-    std::function<void(const Instrument*,double)> m_price_update_callback;
     EventBase* m_event_base = nullptr;
 
     Gateway();
@@ -31,7 +30,6 @@ protected:
 public:
     virtual ExchangeId get_exchange() = 0;
     std::string get_name();
-    void register_price_update(std::function<void(const Instrument*,double)> price_update_callback);
     void check_remove_canceled_orders(std::string symbol);
     void cancel_all(std::string symbol);
     void place(Order order);

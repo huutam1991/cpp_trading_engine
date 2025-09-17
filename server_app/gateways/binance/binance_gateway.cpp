@@ -150,26 +150,12 @@ void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instru
     }
 
     // Spot
-    m_market_data_spot.subscribe_instruments(spot_instruments, [this](const Instrument* instrument, Json& payload)
-    {
-        this->on_depth_update(instrument, payload);
-    });
+    m_market_data_spot.subscribe_instruments(spot_instruments);
     m_market_data_spot.start();
 
     // Perpetual
-    m_market_data_perpetual.subscribe_instruments(perpetual_instruments, [this](const Instrument* instrument, Json& payload)
-    {
-        this->on_depth_update(instrument, payload);
-    });
+    m_market_data_perpetual.subscribe_instruments(perpetual_instruments);
     m_market_data_perpetual.start();
-}
-
-void BinanceGateway::on_depth_update(const Instrument* instrument, Json& payload)
-{
-    double best_bid = payload["bids"][0][0];
-    double best_ask = payload["asks"][0][0];
-
-    m_price_update_callback(instrument, best_ask);
 }
 
 Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(std::string symbol)

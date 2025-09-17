@@ -19,7 +19,7 @@ public:
     void update_url_and_port(const std::string& url, const std::string& port);
     virtual void start();
     void start_websocket(const Instrument* instrument);
-    void subscribe_instruments(std::vector<const Instrument*> instruments, std::function<void(const Instrument* symbol, Json& payload)> call_back);
+    void subscribe_instruments(std::vector<const Instrument*> instruments);
 
 private:
     std::string m_url;
@@ -35,7 +35,6 @@ private:
     };
 
     std::unordered_map<const Instrument*, std::shared_ptr<MarketData>> m_market_data;
-    std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
 
     Task<void> init_order_book();
     Task<void> remove_unsubscribed_instruments();
