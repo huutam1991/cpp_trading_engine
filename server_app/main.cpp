@@ -23,6 +23,7 @@
 #include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
 #include <order/order_manager.h>
+#include <order/simulator_order.h>
 #include <strategy/strategy_manager.h>
 
 extern void add_app_route();
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
 
     GatewayManager::instance().init();
     OrderManager::instance().init();
+    SimulatorOrder::init();
 
     // Strategy
     StrategyManager::instance().init();
