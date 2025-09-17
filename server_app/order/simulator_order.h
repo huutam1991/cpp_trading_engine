@@ -16,8 +16,8 @@ class SimulatorOrder
 public:
     enum SimulatorState
     {
-        INACTIVE,
-        ACTIVE,
+        SIMULATOR_ACTIVE,
+        REAL_TRADE,
     };
 
     struct SimulatorConfig
@@ -27,7 +27,7 @@ public:
         SimulatorConfig static from_json(Json& data)
         {
             SimulatorConfig config;
-            config.state = data.has_field("state") ? enum_reflect::enum_value<SimulatorState>((std::string)data["state"]) : SimulatorState::INACTIVE;
+            config.state = data.has_field("state") ? enum_reflect::enum_value<SimulatorState>((std::string)data["state"]) : SimulatorState::SIMULATOR_ACTIVE;
             return config;
         }
 

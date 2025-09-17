@@ -27,7 +27,7 @@ void SimulatorOrder::init()
 void SimulatorOrder::set_active(bool active)
 {
     SimulatorConfig config = get_config().object;
-    config.state = active ? SimulatorState::ACTIVE : SimulatorState::INACTIVE;
+    config.state = active ? SimulatorState::SIMULATOR_ACTIVE : SimulatorState::REAL_TRADE;
 
     SavableObject<SimulatorConfig>& new_config = get_config();
     new_config = config;
@@ -35,7 +35,7 @@ void SimulatorOrder::set_active(bool active)
 
 bool SimulatorOrder::get_active()
 {
-    return get_config().object.state == SimulatorState::ACTIVE;
+    return get_config().object.state == SimulatorState::SIMULATOR_ACTIVE;
 }
 
 Json SimulatorOrder::get_info()
