@@ -16,7 +16,7 @@ void PnL::update_trade(double price, double volume, double fee)
         avg_price = 0.0;
         unrealized = 0.0;
     }
-    else if (this->volume * volume > 0.0)
+    else if (this->volume * volume > 0.0 || std::abs(volume) < 1e-12)
     {
         // Increase position
         double total_cost = this->avg_price * this->volume + price * volume + fee;
