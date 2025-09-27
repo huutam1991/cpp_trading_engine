@@ -26,15 +26,20 @@ include_directories(${LIBBSONCXX_INCLUDE_DIR})
 file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/*.h
     ${PROJECT_ROOT}/core/*.hpp
+    ${PROJECT_ROOT}/server_app/pnl/*.h
+    ${PROJECT_ROOT}/server_app/pnl/*.hpp
 )
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/*.c
     ${PROJECT_ROOT}/core/*.cpp
+    ${PROJECT_ROOT}/server_app/pnl/*.c
+    ${PROJECT_ROOT}/server_app/pnl/*.cpp
 )
 
 # Test sources
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/core/**/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/server_app/*.cpp
 )
 
 enable_testing()
@@ -49,6 +54,7 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PRIVATE
     ${PROJECT_ROOT}/core
+    ${PROJECT_ROOT}/server_app
 )
 
 target_link_libraries(${PROJECT_NAME})
