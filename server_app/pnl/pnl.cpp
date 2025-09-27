@@ -37,7 +37,7 @@ void PnL::update_trade(double price, double volume, double fee)
         {
             // Close part of position
             double sign = (this->volume > 0.0) ? 1.0 : -1.0;
-            realized += sign * volume * (price - avg_price) - fee;
+            realized += sign * std::abs(volume) * (price - avg_price) - fee;
             this->volume += volume;
         }
     }
