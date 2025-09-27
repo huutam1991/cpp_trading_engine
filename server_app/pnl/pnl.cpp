@@ -8,7 +8,7 @@ void PnL::update_current_price(double price)
 
 void PnL::update_trade(double price, double volume, double fee)
 {
-    if (this->volume + volume == 0.0)
+    if (std::abs(this->volume + volume) < 1e-12)
     {
         // Close all position
         realized += this->volume * (price - avg_price) - fee;
@@ -36,7 +36,8 @@ void PnL::update_trade(double price, double volume, double fee)
         else
         {
             // Close part of position
-            realized += volume * (price - avg_price) - fee;
+            double sign = (this->volume > 0.0) ? 1.0 : -1.0;
+            realized += sign * volume * (price - avg_price) - fee;
             this->volume += volume;
         }
     }
