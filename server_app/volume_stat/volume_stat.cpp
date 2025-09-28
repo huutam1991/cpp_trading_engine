@@ -59,7 +59,7 @@ Json VolumeStat::get_data()
     {
         auto& trade_volume_at_price = m_trade_volumes[i];
 
-        if (trade_volume_at_price.total_buy_volume == 0.0 && trade_volume_at_price.total_sell_volume == 0.0)
+        if (trade_volume_at_price.total_buy_volume <= 1e-12 && trade_volume_at_price.total_sell_volume <= 1e-12)
         {
             continue;
         }
