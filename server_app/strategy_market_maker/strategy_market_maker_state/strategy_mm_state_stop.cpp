@@ -16,7 +16,10 @@ void StrategyMarketMakerStateStop::end()
 
 Json StrategyMarketMakerStateStop::get_info()
 {
-    return m_volume_stat.get_data();
+    return {
+        {"pnl", m_pnl.get_data()},
+        {"volume_stat", m_volume_stat.get_data()}
+    };
 }
 
 Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
@@ -25,6 +28,7 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
     if (std::holds_alternative<PriceUpdate>(data))
     {
         price_update = std::get<PriceUpdate>(data);
+        m_pnl.update_current_price(price_update.price);
         // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
     }
     else if (std::holds_alternative<TradeUpdate>(data))
@@ -44,6 +48,7 @@ Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
         double ask_price = snapshot->get_best_ask();
         double ask_quantity = snapshot->get_best_ask_quantity();
         double bid_quantity = snapshot->get_best_bid_quantity();
+        m_pnl.update_current_price((bid_price + ask_price) / 2.0);
 
         // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
         // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
