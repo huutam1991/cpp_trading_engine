@@ -44,6 +44,11 @@ const TradeVolumeAtPrice* VolumeStat::get_max_buy_volume_in_range(double min_pri
 {
     const TradeVolumeAtPrice* max_trade = nullptr;
 
+    if (m_max_price_index <= min_price || m_min_price_index >= max_price)
+    {
+        return nullptr;
+    }
+
     for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
     {
         auto& trade_volume_at_price = m_trade_volumes[i];
@@ -64,6 +69,11 @@ const TradeVolumeAtPrice* VolumeStat::get_max_buy_volume_in_range(double min_pri
 const TradeVolumeAtPrice* VolumeStat::get_max_sell_volume_in_range(double min_price, double max_price)
 {
     const TradeVolumeAtPrice* max_trade = nullptr;
+
+    if (m_max_price_index <= min_price || m_min_price_index >= max_price)
+    {
+        return nullptr;
+    }
 
     for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
     {
