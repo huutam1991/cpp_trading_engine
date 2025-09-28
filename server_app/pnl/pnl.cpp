@@ -1,5 +1,10 @@
 #include <pnl/pnl.h>
 
+void PnL::update_instrument(const Instrument* ins)
+{
+    instrument = ins;
+}
+
 void PnL::update_current_price(double price)
 {
     current_price = price;
