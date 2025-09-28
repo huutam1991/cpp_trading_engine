@@ -118,7 +118,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     const TradeVolumeAtPrice* buy_volume = nullptr;
     const TradeVolumeAtPrice* sell_volume = nullptr;
 
-    for (double p = price; p >= price - m_config.price_gap; p -= 1.0)
+    for (double p = price - 2.0; p >= price - m_config.price_gap; p -= 1.0)
     {
         buy_volume = m_volume_stat.get_trade_volume_at_price(p);
         if (buy_volume != nullptr && buy_volume->total_buy_volume >= m_config.min_trade_volume)
@@ -131,7 +131,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         }
     }
 
-    for (double p = price; p <= price + m_config.price_gap; p += 1.0)
+    for (double p = price + 2.0; p <= price + m_config.price_gap; p += 1.0)
     {
         sell_volume = m_volume_stat.get_trade_volume_at_price(p);
         if (sell_volume != nullptr && sell_volume->total_sell_volume >= m_config.min_trade_volume)
@@ -214,8 +214,6 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         }
 
         m_open_orders.erase(order.order_id);
-
-        quote_orders_at_price(order.price);
     }
     // CANCELED or REJECTED - remove from [m_open_orders]
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
