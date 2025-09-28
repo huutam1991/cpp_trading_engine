@@ -22,7 +22,6 @@ void StrategyMarketMakerStateRun::end()
     m_inventory = 0.0;
     m_current_price = 0.0;
     m_last_quoted_price = 0.0;
-    m_place_initial_orders = false;
     m_open_orders.clear();
 
     // Send cancel all of placed order
@@ -107,32 +106,26 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 {
     MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
 
-    if (m_last_quoted_price != 0 && std::abs(price - m_last_quoted_price) < (m_config.price_gap - 3.0))
+    const TradeVolumeAtPrice* max_buy_volume = m_volume_stat.get_max_buy_volume_in_range(price - m_config.price_gap, price);
+    const TradeVolumeAtPrice* max_sell_volume = m_volume_stat.get_max_sell_volume_in_range(price, price + m_config.price_gap);
+
+    if (max_buy_volume == nullptr || max_sell_volume == nullptr)
     {
-        spdlog::warn("StrategyMarketMakerStateRun - quote_orders_at_price: {}, skip quoting orders, last quoted price: {}", price, m_last_quoted_price);
+        spdlog::warn("quote_orders_at_price, cannot find max buy/sell volume in range, skip quoting orders");
         return;
     }
 
-    double buy_price = price - m_config.price_gap - m_inventory * m_config.price_step;
-    double sell_price = price + m_config.price_gap - m_inventory * m_config.price_step;
+    spdlog::info("quote_orders_at_price, current_price: {}", price);
+    spdlog::info("quote_orders_at_price, max_buy_volume: price: {}, total_buy_volume: {}", max_buy_volume->price, max_buy_volume->total_buy_volume);
+    spdlog::info("quote_orders_at_price, max_sell_volume: price: {}, total_sell_volume: {}", max_sell_volume->price, max_sell_volume->total_sell_volume);
 
-    buy_price = std::min(buy_price, price - 1.0);
-    sell_price = std::max(sell_price, price + 1.0);
-
-    Order buy_order  = get_limit_order(Order::Side::BUY, buy_price, m_config.volumn);
-    Order sell_order = get_limit_order(Order::Side::SELL, sell_price, m_config.volumn);
+    Order buy_order  = get_limit_order(Order::Side::BUY, max_buy_volume->price, m_config.volumn);
+    Order sell_order = get_limit_order(Order::Side::SELL, max_sell_volume->price, m_config.volumn);
 
     m_gateway->place(buy_order);
     m_gateway->place(sell_order);
 
     m_last_quoted_price = price;
-
-    spdlog::info("StrategyMarketMakerStateRun - quote_orders_at_price: {}, place buy order at price: {}, sell order at price: {}, inventory: {}",
-        price,
-        buy_price,
-        sell_price,
-        m_inventory
-    );
 }
 
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
@@ -151,12 +144,9 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     m_pnl.update_current_price(mid);
 
     // If there's no open orders, quote new orders
-    if (m_open_orders.size() == 0 && m_place_initial_orders == false)
-    {
-        quote_orders_at_price(mid);
-        m_place_initial_orders = true;
-    }
-    else if (std::abs(mid - m_last_quoted_price) >= (m_config.price_gap * (std::abs(m_inventory) + 1) - 3.0))
+    if (m_last_quoted_price == 0.0 ||
+        m_open_orders.size() == 0 ||
+        std::abs(mid - m_last_quoted_price) >= m_config.price_gap)
     {
         quote_orders_at_price(mid);
     }

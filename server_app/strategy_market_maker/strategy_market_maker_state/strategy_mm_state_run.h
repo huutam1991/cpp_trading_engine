@@ -14,8 +14,6 @@ class StrategyMarketMakerStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMarketMakerConfig& m_config;
-
-// public:
     const Instrument* m_instrument = nullptr;
     EventBase* m_event_base = nullptr;
     VolumeStat& m_volume_stat;
@@ -35,7 +33,6 @@ private:
     double m_inventory = 0.0;
     double m_current_price = 0.0;
     double m_last_quoted_price = 0.0;
-    bool   m_place_initial_orders = false;
     bool   m_is_closing_far_orders = false;
     std::unordered_map<OrderId, Order> m_open_orders;
 
