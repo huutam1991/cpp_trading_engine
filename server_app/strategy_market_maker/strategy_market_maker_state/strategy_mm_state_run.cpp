@@ -49,7 +49,7 @@ Json StrategyMarketMakerStateRun::get_info()
     }
 
     return {
-        {"open_orders", open_orders},
+        {"volume_stat", m_volume_stat.get_data()},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
         {"pnl", m_pnl.get_data()}
