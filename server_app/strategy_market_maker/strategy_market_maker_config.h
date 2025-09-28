@@ -9,6 +9,7 @@ struct StrategyMarketMakerConfig
     double volumn = 0.1;
     double price_gap = 35.0;
     double min_trade_volume = 2.0;
+    size_t trade_volume_duration = 300; // In seconds
     double clear_orders_gap = 800.0;
     bool is_running = false;
 
@@ -19,6 +20,7 @@ struct StrategyMarketMakerConfig
             {"volumn", volumn},
             {"price_gap", price_gap},
             {"min_trade_volume", min_trade_volume},
+            {"trade_volume_duration", trade_volume_duration},
             {"clear_orders_gap", clear_orders_gap},
             {"is_running", is_running},
         };
@@ -35,6 +37,7 @@ struct StrategyMarketMakerConfig
             res.volumn = (double)data["volumn"];
             res.price_gap = (double)data["price_gap"];
             res.min_trade_volume = (double)data["min_trade_volume"];
+            res.trade_volume_duration = (size_t)data["trade_volume_duration"];
             res.clear_orders_gap = (double)data["clear_orders_gap"];
             res.is_running = (bool)data["is_running"];
         }

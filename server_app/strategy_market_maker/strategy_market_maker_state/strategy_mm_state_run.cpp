@@ -75,6 +75,9 @@ void StrategyMarketMakerStateRun::start_close_far_orders()
     {
         auto task = task_close_far_orders();
         task.start_running_on(m_event_base);
+
+        auto remove_old_trades_task = remove_old_trades();
+        remove_old_trades_task.start_running_on(m_event_base);
     }
 }
 
@@ -99,6 +102,12 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
     m_is_closing_far_orders = false;
     start_close_far_orders();
 
+    co_return;
+}
+
+Task<void> StrategyMarketMakerStateRun::remove_old_trades()
+{
+    m_volume_stat.remove_old_volumes(m_config.trade_volume_duration);
     co_return;
 }
 

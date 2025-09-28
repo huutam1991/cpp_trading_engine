@@ -42,6 +42,7 @@ private:
     void quote_orders_at_price(double price);
     void start_close_far_orders();
     Task<void> task_close_far_orders();
+    Task<void> remove_old_trades();
 
     void handle_price_update(PriceUpdate price);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
