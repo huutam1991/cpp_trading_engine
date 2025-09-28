@@ -23,7 +23,7 @@ struct TradeVolumeAtPrice
         }
         else
         {
-            total_sell_volume += trade.quantity;
+            total_sell_volume += trade.quantity * -1.0;
         }
         trades.push(trade);
     }
