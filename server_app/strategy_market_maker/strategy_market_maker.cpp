@@ -15,8 +15,8 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMarketMaker::init_
     const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
     m_gateway->subscribe_instruments({instrument});
 
-    strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(m_gateway, get_config_reference(), m_volume_stat);
-    strategy_states[StrategyState::STOP] = new StrategyMarketMakerStateStop(m_volume_stat);
+    strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(m_gateway, get_config_reference(), m_volume_stat, m_pnl);
+    strategy_states[StrategyState::STOP] = new StrategyMarketMakerStateStop(m_volume_stat, m_pnl);
 
     return strategy_states;
 }

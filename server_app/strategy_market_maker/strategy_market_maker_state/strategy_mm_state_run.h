@@ -8,17 +8,21 @@
 #include <strategy/strategy_state_base.h>
 #include <strategy_market_maker/strategy_market_maker_config.h>
 #include <volume_stat/volume_stat.h>
+#include <pnl/pnl.h>
 
 class StrategyMarketMakerStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMarketMakerConfig& m_config;
+
+// public:
     const Instrument* m_instrument = nullptr;
     EventBase* m_event_base = nullptr;
     VolumeStat& m_volume_stat;
+    PnL& m_pnl;
 
 public:
-    StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config, VolumeStat& volume_stat);
+    StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config, VolumeStat& volume_stat, PnL& pnl);
 
     virtual void begin() override;
     virtual void end() override;
