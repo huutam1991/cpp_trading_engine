@@ -18,19 +18,19 @@ class Utils
 public:
     static inline size_t get_time_now_in_utc_seconds()
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = std::chrono::system_clock::now();
         return std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
     }
 
     static inline size_t get_time_now_in_utc_milliseconds()
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = std::chrono::system_clock::now();
         return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
     }
 
     static inline size_t get_time_now_in_utc_nanoseconds()
     {
-        auto now = std::chrono::steady_clock::now();
+        auto now = std::chrono::system_clock::now();
         return std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
     }
 
