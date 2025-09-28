@@ -15,6 +15,8 @@ struct TradeVolumeAtPrice
 
     void add_volume(const TradeUpdate& trade)
     {
+        price = (size_t)trade.price;
+
         if (trade.is_buy)
         {
             total_buy_volume += trade.quantity;

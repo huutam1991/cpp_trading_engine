@@ -22,5 +22,8 @@ public:
     void add_trade_volume(const TradeUpdate& trade);
     void remove_old_volumes(size_t duration_in_seconds);
 
+    const TradeVolumeAtPrice* get_max_buy_volume_in_range(double min_price, double max_price);
+    const TradeVolumeAtPrice* get_max_sell_volume_in_range(double min_price, double max_price);
+
     Json get_data();
 };
