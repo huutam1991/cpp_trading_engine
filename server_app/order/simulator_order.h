@@ -22,12 +22,17 @@ public:
 
     struct SimulatorConfig
     {
-        SimulatorState state;
+        SimulatorState state = SimulatorState::SIMULATOR_ACTIVE;
 
         SimulatorConfig static from_json(Json& data)
         {
             SimulatorConfig config;
-            config.state = data.has_field("state") ? enum_reflect::enum_value<SimulatorState>((std::string)data["state"]) : SimulatorState::SIMULATOR_ACTIVE;
+
+            if (data.has_field("state"))
+            {
+                config.state = enum_reflect::enum_value<SimulatorState>((std::string)data["state"]);
+            }
+
             return config;
         }
 
