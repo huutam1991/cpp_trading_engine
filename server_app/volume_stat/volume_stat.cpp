@@ -40,56 +40,13 @@ void VolumeStat::remove_old_volumes(size_t duration_in_seconds)
     }
 }
 
-const TradeVolumeAtPrice* VolumeStat::get_max_buy_volume_in_range(double min_price, double max_price)
+const TradeVolumeAtPrice* VolumeStat::get_trade_volume_at_price(double price)
 {
-    const TradeVolumeAtPrice* max_trade = nullptr;
+    size_t price_index = (size_t)price;
 
-    if (m_max_price_index <= min_price || m_min_price_index >= max_price)
-    {
-        return nullptr;
-    }
-
-    for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
-    {
-        auto& trade_volume_at_price = m_trade_volumes[i];
-
-        if (trade_volume_at_price.total_buy_volume > 0.0 &&
-            trade_volume_at_price.price >= min_price && trade_volume_at_price.price <= max_price)
-        {
-            if (max_trade == nullptr || trade_volume_at_price.total_buy_volume > max_trade->total_buy_volume)
-            {
-                max_trade = &trade_volume_at_price;
-            }
-        }
-    }
-
-    return max_trade;
-}
-
-const TradeVolumeAtPrice* VolumeStat::get_max_sell_volume_in_range(double min_price, double max_price)
-{
-    const TradeVolumeAtPrice* max_trade = nullptr;
-
-    if (m_max_price_index <= min_price || m_min_price_index >= max_price)
-    {
-        return nullptr;
-    }
-
-    for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
-    {
-        auto& trade_volume_at_price = m_trade_volumes[i];
-
-        if (trade_volume_at_price.total_sell_volume > 0.0 &&
-            trade_volume_at_price.price >= min_price && trade_volume_at_price.price <= max_price)
-        {
-            if (max_trade == nullptr || trade_volume_at_price.total_sell_volume > max_trade->total_sell_volume)
-            {
-                max_trade = &trade_volume_at_price;
-            }
-        }
-    }
-
-    return max_trade;
+    return (price_index <= m_min_price_index || price_index >= m_max_price_index) ?
+        nullptr :
+        &m_trade_volumes[price_index];
 }
 
 Json VolumeStat::get_data()
