@@ -15,6 +15,7 @@ public:
     PnL() = default;
     PnL(const Instrument* ins) : instrument{ins}, volume{0.0}, avg_price{0.0}, current_price{0.0}, realized{0.0}, unrealized{0.0} {}
 
+    Json get_data();
     void update_instrument(const Instrument* ins);
     void update_current_price(double price);
     void update_trade(double price, double volume, double fee);

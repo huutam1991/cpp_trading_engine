@@ -32,6 +32,7 @@ void StrategyMarketMakerStateRun::end()
 void StrategyMarketMakerStateRun::on_config_change()
 {
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
+    m_pnl.update_instrument(m_instrument);
     start_close_far_orders();
 }
 
@@ -52,6 +53,7 @@ Json StrategyMarketMakerStateRun::get_info()
         {"open_orders", open_orders},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
+        {"pnl", m_pnl.get_data()}
     };
 }
 
@@ -136,6 +138,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_price_update");
+    m_pnl.update_current_price(price_update.price);
 }
 
 void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -145,6 +148,7 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
     double mid = (best_bid + best_ask) / 2.0;
 
     m_current_price = mid;
+    m_pnl.update_current_price(mid);
 
     // If there's no open orders, quote new orders
     if (m_open_orders.size() == 0 && m_place_initial_orders == false)
@@ -170,6 +174,10 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
     // FILLED - update [m_inventory] and remove order from [m_open_orders]
     else if (order.status == Order::Status::FILLED)
     {
+        // Update PnL
+        double trade_volume = (order.side == Order::Side::BUY) ? order.filled_quantity : -order.filled_quantity;
+        m_pnl.update_trade(order.filled_price, trade_volume, order.fee);
+
         // 1st order (LIMIT)
         if (order.side == Order::Side::BUY)
         {

@@ -1,5 +1,16 @@
 #include <pnl/pnl.h>
 
+Json PnL::get_data()
+{
+    return {
+        {"volume", volume},
+        {"avg_price", avg_price},
+        {"current_price", current_price},
+        {"realized", realized},
+        {"unrealized", unrealized}
+    };
+}
+
 void PnL::update_instrument(const Instrument* ins)
 {
     instrument = ins;
