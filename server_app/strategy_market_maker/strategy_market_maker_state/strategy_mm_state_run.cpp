@@ -106,21 +106,47 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 {
     MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
 
-    const TradeVolumeAtPrice* max_buy_volume = m_volume_stat.get_max_buy_volume_in_range(price - m_config.price_gap, price);
-    const TradeVolumeAtPrice* max_sell_volume = m_volume_stat.get_max_sell_volume_in_range(price, price + m_config.price_gap);
+    const TradeVolumeAtPrice* buy_volume = nullptr;
+    const TradeVolumeAtPrice* sell_volume = nullptr;
 
-    if (max_buy_volume == nullptr || max_sell_volume == nullptr)
+    for (double p = price; p >= price - m_config.price_gap; p -= 1.0)
+    {
+        buy_volume = m_volume_stat.get_trade_volume_at_price(p);
+        if (buy_volume != nullptr && buy_volume->total_buy_volume >= m_config.min_trade_volume)
+        {
+            break;
+        }
+        else
+        {
+            buy_volume = nullptr;
+        }
+    }
+
+    for (double p = price; p <= price + m_config.price_gap; p += 1.0)
+    {
+        sell_volume = m_volume_stat.get_trade_volume_at_price(p);
+        if (sell_volume != nullptr && sell_volume->total_sell_volume >= m_config.min_trade_volume)
+        {
+            break;
+        }
+        else
+        {
+            sell_volume = nullptr;
+        }
+    }
+
+    if (buy_volume == nullptr || sell_volume == nullptr)
     {
         spdlog::warn("quote_orders_at_price, cannot find max buy/sell volume in range, skip quoting orders");
         return;
     }
 
     spdlog::info("quote_orders_at_price, current_price: {}", price);
-    spdlog::info("quote_orders_at_price, max_buy_volume: price: {}, total_buy_volume: {}", max_buy_volume->price, max_buy_volume->total_buy_volume);
-    spdlog::info("quote_orders_at_price, max_sell_volume: price: {}, total_sell_volume: {}", max_sell_volume->price, max_sell_volume->total_sell_volume);
+    spdlog::info("quote_orders_at_price, max_buy_volume: price: {}, total_buy_volume: {}", buy_volume->price, buy_volume->total_buy_volume);
+    spdlog::info("quote_orders_at_price, max_sell_volume: price: {}, total_sell_volume: {}", sell_volume->price, sell_volume->total_sell_volume);
 
-    Order buy_order  = get_limit_order(Order::Side::BUY, max_buy_volume->price, m_config.volumn);
-    Order sell_order = get_limit_order(Order::Side::SELL, max_sell_volume->price, m_config.volumn);
+    Order buy_order  = get_limit_order(Order::Side::BUY, buy_volume->price, m_config.volumn);
+    Order sell_order = get_limit_order(Order::Side::SELL, sell_volume->price, m_config.volumn);
 
     m_gateway->place(buy_order);
     m_gateway->place(sell_order);
