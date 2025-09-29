@@ -22,6 +22,7 @@ void StrategyMarketMakerStateRun::end()
     m_inventory = 0.0;
     m_current_price = 0.0;
     m_last_quoted_price = 0.0;
+    m_min_trade_volume = 0.0;
     m_open_orders.clear();
     m_pnl.reset();
 
@@ -33,6 +34,7 @@ void StrategyMarketMakerStateRun::on_config_change()
 {
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
     m_pnl.update_instrument(m_instrument);
+    m_min_trade_volume = m_config.min_trade_volume;
     start_close_far_orders();
 }
 
@@ -53,6 +55,7 @@ Json StrategyMarketMakerStateRun::get_info()
         {"volume_stat", m_volume_stat.get_data()},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
+        {"min_trade_volume", m_min_trade_volume},
         {"pnl", m_pnl.get_data()}
     };
 }
@@ -109,6 +112,24 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 Task<void> StrategyMarketMakerStateRun::remove_old_trades()
 {
     m_volume_stat.remove_old_volumes(m_config.trade_volume_duration);
+
+    // Check update [m_min_trade_volume]
+    Json volume_stat_data = m_volume_stat.get_data();
+    double total_buy_volume = volume_stat_data["total_buy_volume"];
+    double total_sell_volume = volume_stat_data["total_sell_volume"];
+
+    for (double v = 500.0; v >= 0.0; v -= 50.0)
+    {
+        if (total_buy_volume >= v && total_sell_volume >= v)
+        {
+            m_min_trade_volume = (v + 50.0) / 100.0;
+            break;
+        }
+    }
+
+    spdlog::info("remove_old_trades, total_buy_volume: {}, total_sell_volume: {}, set m_min_trade_volume: {}",
+        total_buy_volume, total_sell_volume, m_min_trade_volume);
+
     co_return;
 }
 
@@ -122,7 +143,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     for (double p = price - 2.0; p >= price - m_config.price_gap; p -= 1.0)
     {
         buy_volume = m_volume_stat.get_trade_volume_at_price(p);
-        if (buy_volume != nullptr && buy_volume->total_buy_volume >= m_config.min_trade_volume)
+        if (buy_volume != nullptr && buy_volume->total_buy_volume >= m_min_trade_volume)
         {
             break;
         }
@@ -135,7 +156,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     for (double p = price + 2.0; p <= price + m_config.price_gap; p += 1.0)
     {
         sell_volume = m_volume_stat.get_trade_volume_at_price(p);
-        if (sell_volume != nullptr && sell_volume->total_sell_volume >= m_config.min_trade_volume)
+        if (sell_volume != nullptr && sell_volume->total_sell_volume >= m_min_trade_volume)
         {
             break;
         }

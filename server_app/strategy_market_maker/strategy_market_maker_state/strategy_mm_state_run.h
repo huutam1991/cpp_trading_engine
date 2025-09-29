@@ -33,6 +33,7 @@ private:
     double m_inventory = 0.0;
     double m_current_price = 0.0;
     double m_last_quoted_price = 0.0;
+    double m_min_trade_volume = 0.0;
     bool   m_is_closing_far_orders = false;
     std::unordered_map<OrderId, Order> m_open_orders;
 
