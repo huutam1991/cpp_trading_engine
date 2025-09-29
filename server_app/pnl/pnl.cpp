@@ -11,6 +11,15 @@ Json PnL::get_data()
     };
 }
 
+void PnL::reset()
+{
+    volume = 0.0;
+    avg_price = 0.0;
+    current_price = 0.0;
+    realized = 0.0;
+    unrealized = 0.0;
+}
+
 void PnL::update_instrument(const Instrument* ins)
 {
     instrument = ins;
