@@ -52,7 +52,7 @@ Json StrategyMarketMakerStateRun::get_info()
     }
 
     return {
-        {"volume_stat", m_volume_stat.get_data()},
+        {"volume_stat", m_volume_stat.get_data(m_min_trade_volume)},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
         {"min_trade_volume", m_min_trade_volume},
