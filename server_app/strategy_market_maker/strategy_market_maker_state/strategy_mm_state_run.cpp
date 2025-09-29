@@ -23,6 +23,7 @@ void StrategyMarketMakerStateRun::end()
     m_current_price = 0.0;
     m_last_quoted_price = 0.0;
     m_open_orders.clear();
+    m_pnl.reset();
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_instrument->exchange_symbol);
