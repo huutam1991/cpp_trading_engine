@@ -21,8 +21,6 @@ public:
 
     void add_trade_volume(const TradeUpdate& trade);
     void remove_old_volumes(size_t duration_in_seconds);
-
     const TradeVolumeAtPrice* get_trade_volume_at_price(double price);
-
-    Json get_data();
+    Json get_data(double min_volume = 1e-12);
 };

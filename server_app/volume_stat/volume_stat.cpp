@@ -49,7 +49,7 @@ const TradeVolumeAtPrice* VolumeStat::get_trade_volume_at_price(double price)
         &m_trade_volumes[price_index];
 }
 
-Json VolumeStat::get_data()
+Json VolumeStat::get_data(double min_volume)
 {
     Json trades;
     double total_buy_volume = 0.0;
@@ -59,7 +59,7 @@ Json VolumeStat::get_data()
     {
         auto& trade_volume_at_price = m_trade_volumes[i];
 
-        if (trade_volume_at_price.total_buy_volume <= 1e-12 && trade_volume_at_price.total_sell_volume <= 1e-12)
+        if (trade_volume_at_price.total_buy_volume <= min_volume && trade_volume_at_price.total_sell_volume <= min_volume)
         {
             continue;
         }
