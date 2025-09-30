@@ -34,7 +34,7 @@ void StrategyMarketMakerStateRun::on_config_change()
 {
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
     m_pnl.update_instrument(m_instrument);
-    m_min_trade_volume = m_config.min_trade_volume;
+    m_min_trade_volume = m_config.min_trade_volume_step;
     start_close_far_orders();
 }
 
@@ -122,7 +122,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     {
         if (total_buy_volume >= v || total_sell_volume >= v)
         {
-            m_min_trade_volume = (v + 200.0) / 100.0;
+            m_min_trade_volume = (v / 100.0) * m_config.min_trade_volume_step;
         }
         else
         {
