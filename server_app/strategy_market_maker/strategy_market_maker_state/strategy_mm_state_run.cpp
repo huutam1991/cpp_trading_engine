@@ -44,15 +44,27 @@ Json StrategyMarketMakerStateRun::get_info()
 
     for (const auto& [order_id, order] : m_open_orders)
     {
-        Json data = order.to_json();
-        double distance = std::abs(order.price - m_current_price);
-        data["distance"] = distance;
-        data["is_far_order"] = (distance > m_config.clear_orders_gap);
+        Json data = {
+            {"side", enum_reflect::enum_name(order.side)},
+            {"price", order.price},
+        };
+
+        // // price distance
+        // double distance = std::abs(order.price - m_current_price);
+        // data["distance"] = distance;
+        // data["is_far_order"] = (distance > m_config.clear_orders_gap);
+
         open_orders.push_back(data);
     }
 
+    open_orders.sort([](Json& a, Json& b) -> bool
+    {
+        return (double)a["price"] > (double)b["price"];
+    });
+
     return {
         {"volume_stat", m_volume_stat.get_data(m_min_trade_volume)},
+        {"open_orders", open_orders},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
         {"min_trade_volume", m_min_trade_volume},
