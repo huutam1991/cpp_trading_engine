@@ -56,7 +56,7 @@ Json VolumeStat::get_data(double min_volume)
     double total_buy_volume = 0.0;
     double total_sell_volume = 0.0;
 
-    for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
+    for (size_t i = m_max_price_index; i >= m_min_price_index; i--)
     {
         auto& trade_volume_at_price = m_trade_volumes[i];
 
@@ -69,7 +69,7 @@ Json VolumeStat::get_data(double min_volume)
         total_sell_volume += trade_volume_at_price.total_sell_volume;
 
         trades.push_back({
-            {"price", i},
+            {"price", (double)i},
             {"buy", trade_volume_at_price.total_buy_volume},
             {"sell", trade_volume_at_price.total_sell_volume},
         });
