@@ -34,8 +34,9 @@ void VolumeStat::add_trade_volume(const TradeUpdate& trade)
 
 void VolumeStat::remove_old_volumes(size_t duration_in_seconds)
 {
-    for (auto& trade_volume_at_price : m_trade_volumes)
+    for (size_t i = m_min_price_index; i <= m_max_price_index; i++)
     {
+        auto& trade_volume_at_price = m_trade_volumes[i];
         trade_volume_at_price.remove_old_trades(duration_in_seconds);
     }
 }
