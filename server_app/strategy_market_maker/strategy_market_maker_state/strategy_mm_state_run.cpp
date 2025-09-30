@@ -122,7 +122,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     {
         if (total_buy_volume >= v || total_sell_volume >= v)
         {
-            m_min_trade_volume = (v / 100.0) * m_config.min_trade_volume_step;
+            m_min_trade_volume = ((v + 50.0) / 100.0) * m_config.min_trade_volume_step;
         }
         else
         {
