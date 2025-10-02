@@ -41,7 +41,7 @@ void PnL::update_realized_profit_loss(double value)
     }
     else
     {
-        realized_loss += -value;
+        realized_loss += value;
     }
 
     realized += value;
