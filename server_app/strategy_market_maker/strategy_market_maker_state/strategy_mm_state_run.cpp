@@ -23,6 +23,8 @@ void StrategyMarketMakerStateRun::end()
     m_current_price = 0.0;
     m_last_quoted_price = 0.0;
     m_min_trade_volume = 0.0;
+    m_filled_buy_order_count = 0;
+    m_filled_sell_order_count = 0;
     m_open_orders.clear();
     m_pnl.reset();
 
@@ -65,6 +67,11 @@ Json StrategyMarketMakerStateRun::get_info()
     return {
         {"volume_stat", m_volume_stat.get_data(m_min_trade_volume)},
         {"open_orders", open_orders},
+        {"filled_count", {
+            {"buy", m_filled_buy_order_count},
+            {"sell", m_filled_sell_order_count}
+        }},
+        {"open_order_count", m_open_orders.size()},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
         {"min_trade_volume", m_min_trade_volume},
@@ -130,17 +137,8 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     double total_buy_volume = volume_stat_data["total_buy_volume"];
     double total_sell_volume = volume_stat_data["total_sell_volume"];
 
-    for (double v = 0; v <= 50000.0; v += 50.0)
-    {
-        if (total_buy_volume >= v || total_sell_volume >= v)
-        {
-            m_min_trade_volume = ((v + 50.0) / 100.0) * m_config.min_trade_volume_step;
-        }
-        else
-        {
-            break;
-        }
-    }
+    double volume = std::max(total_buy_volume, total_sell_volume);
+    m_min_trade_volume = (volume / 100.0) * m_config.min_trade_volume_step;
 
     spdlog::info("remove_old_trades, total_buy_volume: {}, total_sell_volume: {}, set m_min_trade_volume: {}",
         total_buy_volume, total_sell_volume, m_min_trade_volume);
@@ -244,10 +242,12 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         if (order.side == Order::Side::BUY)
         {
             m_inventory += 1;
+            m_filled_buy_order_count++;
         }
         else if (order.side == Order::Side::SELL)
         {
             m_inventory -= 1;
+            m_filled_sell_order_count++;
         }
 
         m_open_orders.erase(order.order_id);
