@@ -6,7 +6,11 @@ Json PnL::get_data()
         {"volume", volume},
         {"avg_price", avg_price},
         {"current_price", current_price},
-        {"realized", realized},
+        {"realized_info", {
+            {"realized", realized},
+            {"realized_profit", realized_profit},
+            {"realized_loss", realized_loss}
+        }},
         {"unrealized", unrealized},
         {"price_diff", current_price - avg_price}
     };
@@ -18,6 +22,8 @@ void PnL::reset()
     avg_price = 0.0;
     current_price = 0.0;
     realized = 0.0;
+    realized_profit = 0.0;
+    realized_loss = 0.0;
     unrealized = 0.0;
     price_diff = 0.0;
 }
@@ -25,6 +31,20 @@ void PnL::reset()
 void PnL::update_instrument(const Instrument* ins)
 {
     instrument = ins;
+}
+
+void PnL::update_realized_profit_loss(double value)
+{
+    if (value > 0.0)
+    {
+        realized_profit += value;
+    }
+    else
+    {
+        realized_loss += -value;
+    }
+
+    realized += value;
 }
 
 void PnL::update_current_price(double price)
@@ -43,7 +63,7 @@ void PnL::update_trade(double price, double volume, double fee)
     else if (std::abs(this->volume + volume) < 1e-12)
     {
         // Close all position
-        realized += this->volume * (price - avg_price) - fee;
+        update_realized_profit_loss(this->volume * (price - avg_price) - fee);
         this->volume = 0.0;
         avg_price = 0.0;
         unrealized = 0.0;
@@ -61,7 +81,7 @@ void PnL::update_trade(double price, double volume, double fee)
         if (std::abs(volume) > std::abs(this->volume))
         {
             // Close all position and open new position
-            realized += this->volume * (price - avg_price) - fee;
+            update_realized_profit_loss(this->volume * (price - avg_price) - fee);
             this->avg_price = price;
             this->volume += volume;
         }
@@ -69,7 +89,7 @@ void PnL::update_trade(double price, double volume, double fee)
         {
             // Close part of position
             double sign = (this->volume > 0.0) ? 1.0 : -1.0;
-            realized += sign * std::abs(volume) * (price - avg_price) - fee;
+            update_realized_profit_loss(sign * std::abs(volume) * (price - avg_price) - fee);
             this->volume += volume;
         }
     }
