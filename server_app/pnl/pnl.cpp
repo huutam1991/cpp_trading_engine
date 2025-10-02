@@ -7,7 +7,8 @@ Json PnL::get_data()
         {"avg_price", avg_price},
         {"current_price", current_price},
         {"realized", realized},
-        {"unrealized", unrealized}
+        {"unrealized", unrealized},
+        {"price_diff", current_price - avg_price}
     };
 }
 
@@ -18,6 +19,7 @@ void PnL::reset()
     current_price = 0.0;
     realized = 0.0;
     unrealized = 0.0;
+    price_diff = 0.0;
 }
 
 void PnL::update_instrument(const Instrument* ins)

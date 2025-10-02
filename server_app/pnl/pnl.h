@@ -10,6 +10,7 @@ class PnL
     double current_price = 0.0;
     double realized = 0.0;
     double unrealized = 0.0;
+    double price_diff = 0.0;
 
 public:
     PnL() = default;
