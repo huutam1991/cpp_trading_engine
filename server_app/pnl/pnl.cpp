@@ -8,9 +8,9 @@ Json PnL::get_data()
         {"avg_price", avg_price},
         {"current_price", current_price},
         {"realized_info", {
-            {"realized", realized},
+            {"realized_loss", realized_loss},
             {"realized_profit", realized_profit},
-            {"realized_loss", realized_loss}
+            {"realized", realized}
         }},
         {"unrealized", unrealized}
     };
