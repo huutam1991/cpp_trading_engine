@@ -51,6 +51,7 @@ Json StrategyMarketMakerStateRun::get_info()
         Json data = {
             {"side", enum_reflect::enum_name(order.side)},
             {"price", order.price},
+            {"quantity", order.quantity}
         };
 
         // // price distance
