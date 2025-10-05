@@ -165,7 +165,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     else
     {
         double minus = ((max_volume - 5.0) / 5.0) * 0.01;
-        m_volume = 0.2 - minus;
+        m_volume = 0.1 - minus;
     }
     m_volume *= m_config.volumn;
     m_volume = m_instrument->get_round_up_quantity(std::max(m_volume, 0.01));
