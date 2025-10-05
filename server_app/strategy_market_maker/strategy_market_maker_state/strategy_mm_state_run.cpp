@@ -149,21 +149,21 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     m_min_trade_volume = (max_volume / 100.0) * (volume_ratio * volume_ratio) * m_config.min_trade_volume_step;
 
     // set [m_volume]
-    if (min_volume < 0.5)
+    if (max_volume < 0.5)
     {
         m_volume = 0.3;
     }
-    else if (min_volume < 1.0)
+    else if (max_volume < 1.0)
     {
         m_volume = 0.2;
     }
-    else if (min_volume < 5.0)
+    else if (max_volume < 5.0)
     {
         m_volume = 0.1;
     }
     else
     {
-        double minus = ((min_volume - 5.0) / 5.0) * 0.01;
+        double minus = ((max_volume - 5.0) / 5.0) * 0.01;
         m_volume = 0.1 - minus;
         m_volume = m_instrument->get_round_up_quantity(std::max(m_volume, 0.01));
     }
