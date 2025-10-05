@@ -13,6 +13,7 @@ Json PnL::get_data()
             {"loss", realized_loss},
             {"profit", realized_profit},
         }},
+        {"[total]", realized + unrealized},
         {"[realized]", realized},
         {"[unrealized]", unrealized}
     };
