@@ -23,6 +23,7 @@ void StrategyMarketMakerStateRun::end()
     m_current_price = 0.0;
     m_last_quoted_price = 0.0;
     m_min_trade_volume = 0.0;
+    m_volume = 0.0;
     m_filled_buy_order_count = 0;
     m_filled_sell_order_count = 0;
     m_open_orders.clear();
@@ -37,6 +38,7 @@ void StrategyMarketMakerStateRun::on_config_change()
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
     m_pnl.update_instrument(m_instrument);
     m_min_trade_volume = m_config.min_trade_volume_step;
+    m_volume = m_config.volumn;
     start_close_far_orders();
 }
 
@@ -146,8 +148,28 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
 
     m_min_trade_volume = (max_volume / 100.0) * (volume_ratio * volume_ratio) * m_config.min_trade_volume_step;
 
-    spdlog::info("[total_buy]: {}, [total_sell]: {}, set [m_min_trade_volume]: {}",
-        total_buy_volume, total_sell_volume, m_min_trade_volume);
+    // set [m_volume]
+    if (min_volume < 0.5)
+    {
+        m_volume = 0.3;
+    }
+    else if (min_volume < 1.0)
+    {
+        m_volume = 0.2;
+    }
+    else if (min_volume < 5.0)
+    {
+        m_volume = 1.0;
+    }
+    else
+    {
+        double minus = ((min_volume - 5.0) / 5.0) * 0.01;
+        m_volume = 0.1 - minus;
+        m_volume = std::max(m_volume, 0.01);
+    }
+
+    spdlog::info("[total_buy]: {}, [total_sell]: {}, set [m_volume]: {}, set [m_min_trade_volume]: {}",
+        total_buy_volume, total_sell_volume, m_volume, m_min_trade_volume);
 
     co_return;
 }
@@ -195,8 +217,8 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     spdlog::info("quote_orders_at_price, max_buy_volume: price: {}, total_buy_volume: {}", buy_volume->price, buy_volume->total_buy_volume);
     spdlog::info("quote_orders_at_price, max_sell_volume: price: {}, total_sell_volume: {}", sell_volume->price, sell_volume->total_sell_volume);
 
-    Order buy_order  = get_limit_order(Order::Side::BUY, buy_volume->price, m_config.volumn);
-    Order sell_order = get_limit_order(Order::Side::SELL, sell_volume->price, m_config.volumn);
+    Order buy_order  = get_limit_order(Order::Side::BUY, buy_volume->price, m_volume);
+    Order sell_order = get_limit_order(Order::Side::SELL, sell_volume->price, m_volume);
 
     m_gateway->place(buy_order);
     m_gateway->place(sell_order);

@@ -34,6 +34,7 @@ private:
     double m_current_price = 0.0;
     double m_last_quoted_price = 0.0;
     double m_min_trade_volume = 0.0;
+    double m_volume = 0.0;
     bool   m_is_closing_far_orders = false;
     size_t m_filled_buy_order_count = 0;
     size_t m_filled_sell_order_count = 0;
