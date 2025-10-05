@@ -165,7 +165,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     {
         double minus = ((min_volume - 5.0) / 5.0) * 0.01;
         m_volume = 0.1 - minus;
-        m_volume = std::max(m_volume, 0.01);
+        m_volume = m_instrument->get_round_up_quantity(std::max(m_volume, 0.01));
     }
 
     spdlog::info("[total_buy]: {}, [total_sell]: {}, set [m_volume]: {}, set [m_min_trade_volume]: {}",
