@@ -179,7 +179,7 @@ void WebsocketClientAsync::on_ping(beast::error_code ec)
         return fail("on_ping", ec);
     }
 
-    spdlog::info("WebsocketClientAsync: [{}] - Ping sent successfully, ec: {}", m_name, ec.message());
+    spdlog::debug("WebsocketClientAsync: [{}] - Ping sent successfully, ec: {}", m_name, ec.message());
 }
 
 void WebsocketClientAsync::close()
