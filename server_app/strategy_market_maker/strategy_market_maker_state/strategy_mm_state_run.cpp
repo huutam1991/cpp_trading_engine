@@ -151,22 +151,23 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     // set [m_volume]
     if (max_volume < 0.5)
     {
-        m_volume = 0.3;
+        m_volume = 0.4;
     }
     else if (max_volume < 1.0)
     {
-        m_volume = 0.2;
+        m_volume = 0.3;
     }
     else if (max_volume < 5.0)
     {
-        m_volume = 0.1;
+        m_volume = 0.2;
     }
     else
     {
         double minus = ((max_volume - 5.0) / 5.0) * 0.01;
         m_volume = 0.1 - minus;
-        m_volume = m_instrument->get_round_up_quantity(std::max(m_volume, 0.01));
     }
+    m_volume *= m_config.volumn;
+    m_volume = m_instrument->get_round_up_quantity(std::max(m_volume, 0.01));
 
     spdlog::info("[total_buy]: {}, [total_sell]: {}, set [m_volume]: {}, set [m_min_trade_volume]: {}",
         total_buy_volume, total_sell_volume, m_volume, m_min_trade_volume);
