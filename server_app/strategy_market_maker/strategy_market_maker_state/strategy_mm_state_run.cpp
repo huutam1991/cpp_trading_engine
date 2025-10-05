@@ -142,9 +142,9 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
 
     double max_volume = std::max(total_buy_volume, total_sell_volume);
     double min_volume = std::min(total_buy_volume, total_sell_volume);
+    double volume_ratio = max_volume / min_volume;
 
-    double volume = std::max(total_buy_volume, total_sell_volume);
-    m_min_trade_volume = (volume / 100.0) * (max_volume / min_volume) * m_config.min_trade_volume_step;
+    m_min_trade_volume = (max_volume / 100.0) * (volume_ratio * volume_ratio) * m_config.min_trade_volume_step;
 
     spdlog::info("remove_old_trades, [total_buy_volume]: {}, [total_sell_volume]: {}, set [m_min_trade_volume]: {}",
         total_buy_volume, total_sell_volume, m_min_trade_volume);
