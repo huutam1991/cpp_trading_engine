@@ -67,11 +67,14 @@ Json StrategyMarketMakerStateRun::get_info()
     return {
         {"volume_stat", m_volume_stat.get_data(m_min_trade_volume)},
         {"open_orders", open_orders},
-        {"filled_count", {
-            {"buy", m_filled_buy_order_count},
-            {"sell", m_filled_sell_order_count}
+        {"orders_count", {
+            {"[open_orders_count]", m_open_orders.size()},
+            {"total_orders_placed", m_filled_buy_order_count + m_filled_sell_order_count + m_open_orders.size()},
+            {"filled_count", {
+                {"buy", m_filled_buy_order_count},
+                {"sell", m_filled_sell_order_count},
+            }}
         }},
-        {"open_order_count", m_open_orders.size()},
         {"current_price", m_current_price},
         {"inventory", m_inventory},
         {"min_trade_volume", m_min_trade_volume},
