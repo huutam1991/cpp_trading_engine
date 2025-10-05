@@ -159,7 +159,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     }
     else if (min_volume < 5.0)
     {
-        m_volume = 1.0;
+        m_volume = 0.1;
     }
     else
     {
