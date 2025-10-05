@@ -4,15 +4,17 @@ Json PnL::get_data()
 {
     return {
         {"volume", volume},
-        {"price_diff", current_price - avg_price},
-        {"avg_price", avg_price},
-        {"current_price", current_price},
-        {"realized_info", {
+        {"price_detail", {
+            {"price_diff", current_price - avg_price},
+            {"avg_price", avg_price},
+            {"current_price", current_price}
+        }},
+        {"realized_detail", {
             {"loss", realized_loss},
             {"profit", realized_profit},
-            {"realized", realized}
         }},
-        {"unrealized", unrealized}
+        {"[realized]", realized},
+        {"[unrealized]", unrealized}
     };
 }
 

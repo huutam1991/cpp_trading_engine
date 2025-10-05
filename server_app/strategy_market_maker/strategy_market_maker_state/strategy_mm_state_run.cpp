@@ -140,7 +140,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     double volume = std::max(total_buy_volume, total_sell_volume);
     m_min_trade_volume = (volume / 100.0) * m_config.min_trade_volume_step;
 
-    spdlog::info("remove_old_trades, total_buy_volume: {}, total_sell_volume: {}, set m_min_trade_volume: {}",
+    spdlog::info("remove_old_trades, [total_buy_volume]: {}, [total_sell_volume]: {}, set [m_min_trade_volume]: {}",
         total_buy_volume, total_sell_volume, m_min_trade_volume);
 
     co_return;
@@ -181,7 +181,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 
     if (buy_volume == nullptr || sell_volume == nullptr)
     {
-        spdlog::warn("quote_orders_at_price, cannot find max buy/sell volume in range, skip quoting orders");
+        // spdlog::warn("quote_orders_at_price, cannot find max buy/sell volume in range, skip quoting orders");
         return;
     }
 
@@ -272,8 +272,8 @@ Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
         TradeUpdate trade = std::get<TradeUpdate>(data);
         std::string side = trade.is_buy ? "BUY" : "SELL";
 
-        spdlog::info("StrategyMarketMakerStateRun: trade update, symbol: {}, side: {}, price: {}, quantity: {}",
-            trade.instrument->symbol, side, trade.price, trade.quantity);
+        // spdlog::info("StrategyMarketMakerStateRun: trade update, symbol: {}, side: {}, price: {}, quantity: {}",
+        //     trade.instrument->symbol, side, trade.price, trade.quantity);
 
         m_volume_stat.add_trade_volume(trade);
     }
