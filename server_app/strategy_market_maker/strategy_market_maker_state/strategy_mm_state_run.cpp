@@ -260,6 +260,7 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
             enum_reflect::enum_name(order.side),
             order.filled_price, order.filled_quantity
         );
+        spdlog::info("||| Volume: {}", m_pnl.volume);
 
         // 1st order (LIMIT)
         if (order.side == Order::Side::BUY)
