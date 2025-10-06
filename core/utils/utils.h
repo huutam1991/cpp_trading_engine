@@ -67,4 +67,14 @@ public:
     {
         return std::fabs(value1 - value2) <= std::numeric_limits<T>::epsilon();
     }
+
+    static inline double smooth_curve(double x)
+    {
+        constexpr double base = 0.01;
+        constexpr double scale = 2.0;
+        constexpr double power = 1.0;
+        constexpr double amplitude = 0.39;
+
+        return base + amplitude / (1.0 + std::pow(x / scale, power));
+    }
 };
