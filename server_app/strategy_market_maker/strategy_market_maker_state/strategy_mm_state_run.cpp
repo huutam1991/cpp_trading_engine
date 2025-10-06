@@ -200,9 +200,11 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         return;
     }
 
-    spdlog::info("quote_orders_at_price, current_price: {}", price);
+    spdlog::info("=============================================================================================");
+    spdlog::info("quote_orders_at_price, price: {}", price);
     spdlog::info("quote_orders_at_price, max_buy_volume: price: {}, total_buy_volume: {}", buy_volume->price, buy_volume->total_buy_volume);
     spdlog::info("quote_orders_at_price, max_sell_volume: price: {}, total_sell_volume: {}", sell_volume->price, sell_volume->total_sell_volume);
+    spdlog::info("=============================================================================================");
 
     Order buy_order  = get_limit_order(Order::Side::BUY, buy_volume->price, m_volume);
     Order sell_order = get_limit_order(Order::Side::SELL, sell_volume->price, m_volume);
