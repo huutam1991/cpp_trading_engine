@@ -13,6 +13,7 @@ StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway
 void StrategyMarketMakerStateRun::begin()
 {
     on_config_change();
+    m_start_time = Utils::get_time_now_in_utc_seconds();
     spdlog::info("StrategyMarketMakerStateRun - begin");
 }
 
@@ -27,6 +28,7 @@ void StrategyMarketMakerStateRun::end()
     m_volume = 0.0;
     m_filled_buy_order_count = 0;
     m_filled_sell_order_count = 0;
+    m_start_time = 0;
     m_open_orders.clear();
     m_pnl.reset();
 
@@ -71,6 +73,7 @@ Json StrategyMarketMakerStateRun::get_info()
     return {
         {"volume_stat", m_volume_stat.get_data(m_min_trade_volume)},
         {"open_orders", open_orders},
+        {"time_running_in_hours", (Utils::get_time_now_in_utc_seconds() - m_start_time) / 3600.0},
         {"orders_count", {
             {"[total_orders_placed]", m_filled_buy_order_count + m_filled_sell_order_count + m_open_orders.size()},
             {"open_orders_count", m_open_orders.size()},

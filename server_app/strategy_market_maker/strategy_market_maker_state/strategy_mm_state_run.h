@@ -18,6 +18,7 @@ class StrategyMarketMakerStateRun : public StrategyStateBase
     EventBase* m_event_base = nullptr;
     VolumeStat& m_volume_stat;
     PnL& m_pnl;
+    size_t m_start_time;
 
 public:
     StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config, VolumeStat& volume_stat, PnL& pnl);
