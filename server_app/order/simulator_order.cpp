@@ -126,7 +126,7 @@ Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
         order_list[data.instrument].erase(order_id);
 
         order.status = Order::FILLED;
-        order.filled_price = data.price;
+        order.filled_price = order.price;
         order.filled_quantity = order.quantity;
         order.fee = 0.0; // No fee in simulator
 
