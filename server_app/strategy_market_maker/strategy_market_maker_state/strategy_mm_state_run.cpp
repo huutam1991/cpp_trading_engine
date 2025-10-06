@@ -202,8 +202,8 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 
     spdlog::info("=============================================================================================");
     spdlog::info("quote_orders_at_price, price: {}", price);
-    spdlog::info("quote_orders_at_price, max_buy_volume: price: {}, total_buy_volume: {}", buy_volume->price, buy_volume->total_buy_volume);
-    spdlog::info("quote_orders_at_price, max_sell_volume: price: {}, total_sell_volume: {}", sell_volume->price, sell_volume->total_sell_volume);
+    spdlog::info("quote_orders_at_price, buy  - price: {}, volume: {}", buy_volume->price, m_volume);
+    spdlog::info("quote_orders_at_price, sell - price: {}, volume: {}", sell_volume->price, m_volume);
     spdlog::info("=============================================================================================");
     spdlog::info("");
 
@@ -255,6 +255,11 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         // Update PnL
         double trade_volume = (order.side == Order::Side::BUY) ? order.filled_quantity : -order.filled_quantity;
         m_pnl.update_trade(order.filled_price, trade_volume, order.fee);
+
+        spdlog::info("Order FILLED, side: {}, price: {}, quantity: {}",
+            enum_reflect::enum_name(order.side),
+            order.filled_price, order.filled_quantity
+        );
 
         // 1st order (LIMIT)
         if (order.side == Order::Side::BUY)
