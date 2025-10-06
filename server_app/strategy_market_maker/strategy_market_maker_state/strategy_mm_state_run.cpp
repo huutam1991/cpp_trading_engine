@@ -259,11 +259,11 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         double trade_volume = (order.side == Order::Side::BUY) ? order.filled_quantity : -order.filled_quantity;
         m_pnl.update_trade(order.filled_price, trade_volume, order.fee);
 
-        spdlog::info("||| ORDER FILLED |||, side: {}, price: {}, quantity: {}",
+        spdlog::info("ORDER FILLED - side: {}, price: {}, quantity: {}",
             enum_reflect::enum_name(order.side),
             order.filled_price, order.filled_quantity
         );
-        spdlog::info("||| Volume: {}", m_pnl.volume);
+        spdlog::info("Volume: {}", m_pnl.volume);
 
         // 1st order (LIMIT)
         if (order.side == Order::Side::BUY)
