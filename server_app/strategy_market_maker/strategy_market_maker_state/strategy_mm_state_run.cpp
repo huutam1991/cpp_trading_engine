@@ -130,8 +130,8 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
         }
     }
 
-    // Check every 10 seconds
-    co_await Timer::sleep_for(10000);
+    // Check every 1 seconds
+    co_await Timer::sleep_for(1000);
     m_is_closing_far_orders = false;
     start_close_far_orders();
 
@@ -187,7 +187,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
 
 void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 {
-    MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
+    // MeasureTime t("StrategyMarketMakerStateRun - quote_orders_at_price");
 
     const TradeVolumeAtPrice* buy_volume = nullptr;
     const TradeVolumeAtPrice* sell_volume = nullptr;
