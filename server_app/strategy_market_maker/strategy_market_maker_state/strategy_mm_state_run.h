@@ -106,6 +106,7 @@ private:
     double m_current_price = 0.0;
     double m_last_quoted_price = 0.0;
     double m_min_trade_volume = 0.0;
+    double m_price_gap = 10.0;
     double m_volume = 0.0;
     double m_total_buy_volume = 0.0;
     double m_total_sell_volume = 0.0;
