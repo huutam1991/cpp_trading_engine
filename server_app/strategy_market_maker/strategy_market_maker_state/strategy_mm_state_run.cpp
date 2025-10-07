@@ -26,6 +26,8 @@ void StrategyMarketMakerStateRun::end()
     m_last_quoted_price = 0.0;
     m_min_trade_volume = 0.0;
     m_volume = 0.0;
+    m_total_buy_volume = 0.0;
+    m_total_sell_volume = 0.0;
     m_start_time = 0;
     m_open_orders.clear();
     m_fill_stat.clear();
@@ -151,13 +153,12 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
 
     // Check update [m_min_trade_volume]
     Json volume_stat_data = m_volume_stat.get_data();
-    double total_buy_volume = volume_stat_data["total_buy_volume"];
-    double total_sell_volume = volume_stat_data["total_sell_volume"];
+    m_total_buy_volume = volume_stat_data["total_buy_volume"];
+    m_total_sell_volume = volume_stat_data["total_sell_volume"];
 
-    double max_volume = std::max(total_buy_volume, total_sell_volume);
-    double min_volume = std::min(total_buy_volume, total_sell_volume);
+    double max_volume = std::max(m_total_buy_volume, m_total_sell_volume);
+    double min_volume = std::min(m_total_buy_volume, m_total_sell_volume);
     double volume_ratio = max_volume / min_volume;
-
     m_min_trade_volume = (max_volume / 100.0) * (volume_ratio * volume_ratio) * m_config.min_trade_volume_step;
 
     // set [m_volume]
@@ -179,7 +180,9 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     }
     else
     {
-        m_volume = Utils::smooth_curve(max_volume);
+        // double skew_ratio = ((max_volume - min_volume) / max_volume) * 100.0;
+        // m_volume = skew_ratio < 10.0 ? 1.0 : Utils::smooth_curve(max_volume);
+        m_volume = 1.0;
     }
 
     m_volume *= m_config.volumn;
@@ -187,7 +190,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     m_volume = m_instrument->get_round_up_quantity(m_volume);
 
     spdlog::info("[total_buy]: {}, [total_sell]: {}, set [m_volume]: {}, set [m_min_trade_volume]: {}",
-        total_buy_volume, total_sell_volume, m_volume, m_min_trade_volume);
+        m_total_buy_volume, m_total_sell_volume, m_volume, m_min_trade_volume);
 
     co_return;
 }
@@ -199,7 +202,27 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     const TradeVolumeAtPrice* buy_volume = nullptr;
     const TradeVolumeAtPrice* sell_volume = nullptr;
 
-    for (double p = price - 2.0; p >= price - m_config.price_gap; p -= 1.0)
+    double buy_begin = price - 2.0;
+    double buy_end = price - m_config.price_gap;
+    double sell_begin = price + 2.0;
+    double sell_end = price + m_config.price_gap;
+
+    double skew_ratio = std::abs(m_total_buy_volume - m_total_sell_volume) / std::max(m_total_buy_volume, m_total_sell_volume);
+    if ((skew_ratio * 100) >= 10.0)
+    {
+        if (m_total_buy_volume > m_total_sell_volume)
+        {
+            buy_begin -= (buy_begin - buy_end) * skew_ratio;
+            sell_end -= (sell_end - sell_begin) * skew_ratio;
+        }
+        else
+        {
+            buy_end += (buy_begin - buy_end) * skew_ratio;
+            sell_begin += (sell_end - sell_begin) * skew_ratio;
+        }
+    }
+
+    for (double p = buy_begin; p >= buy_end; p -= 1.0)
     {
         buy_volume = m_volume_stat.get_trade_volume_at_price(p);
         if (buy_volume != nullptr && buy_volume->total_buy_volume >= m_min_trade_volume)
@@ -212,7 +235,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         }
     }
 
-    for (double p = price + 2.0; p <= price + m_config.price_gap; p += 1.0)
+    for (double p = sell_begin; p <= sell_end; p += 1.0)
     {
         sell_volume = m_volume_stat.get_trade_volume_at_price(p);
         if (sell_volume != nullptr && sell_volume->total_sell_volume >= m_min_trade_volume)
@@ -232,7 +255,9 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     }
 
     spdlog::info("=============================================================================================");
-    spdlog::info("quote_orders_at_price, price: {}", price);
+    spdlog::info("quote_orders_at_price, price: {}, skew_ratio: {}", price, skew_ratio * 100.0);
+    spdlog::info("quote_orders_at_price, buy  range: [{} - {}]", buy_end, buy_begin);
+    spdlog::info("quote_orders_at_price, sell range: [{} - {}]", sell_begin, sell_end);
     spdlog::info("quote_orders_at_price, buy  - price: {}, volume: {}", buy_volume->price, m_volume);
     spdlog::info("quote_orders_at_price, sell - price: {}, volume: {}", sell_volume->price, m_volume);
     spdlog::info("=============================================================================================");
