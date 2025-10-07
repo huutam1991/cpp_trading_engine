@@ -108,8 +108,8 @@ Task<void> SimulatorOrder::execute_price_update(PriceUpdate data)
     {
         if (order.type == Order::LIMIT)
         {
-            if ((order.side == Order::BUY && data.price <= order.price) ||
-                (order.side == Order::SELL && data.price >= order.price))
+            if ((order.side == Order::BUY && data.price < order.price) ||
+                (order.side == Order::SELL && data.price > order.price))
             {
                 filled_orders.push_back(order_id);
             }
