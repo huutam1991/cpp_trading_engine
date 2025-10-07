@@ -182,7 +182,7 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     {
         // double skew_ratio = ((max_volume - min_volume) / max_volume) * 100.0;
         // m_volume = skew_ratio < 10.0 ? 1.0 : Utils::smooth_curve(max_volume);
-        m_volume = 1.0;
+        m_volume = 0.1;
     }
 
     m_volume *= m_config.volumn;
