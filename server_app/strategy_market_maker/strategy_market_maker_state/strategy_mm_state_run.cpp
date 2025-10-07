@@ -216,14 +216,14 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         if (m_total_buy_volume > m_total_sell_volume)
         {
             buy_begin -= (buy_begin - buy_end) * skew_ratio;
-            buy_end -= (buy_end - buy_begin) * skew_ratio;
+            buy_end -= m_config.price_gap * skew_ratio;
             sell_end -= (sell_end - sell_begin) * skew_ratio;
         }
         else
         {
             buy_end += (buy_begin - buy_end) * skew_ratio;
             sell_begin += (sell_end - sell_begin) * skew_ratio;
-            sell_end += (sell_end - sell_begin) * skew_ratio;
+            sell_end += m_config.price_gap * skew_ratio;
         }
     }
 
