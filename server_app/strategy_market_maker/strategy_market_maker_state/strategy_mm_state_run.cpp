@@ -163,25 +163,29 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     m_min_trade_volume = (max_volume / 100.0) * (volume_ratio * volume_ratio) * m_config.min_trade_volume_step;
 
     // set [m_price_gap]
-    if (max_volume < 10.0)
+    if (max_volume < 5.0)
     {
         m_price_gap = 10.0;
     }
-    else if (max_volume < 20.0)
+    else if (max_volume < 10.0)
     {
         m_price_gap = 15.0;
     }
-    else if (max_volume < 30.0)
+    else if (max_volume < 20.0)
     {
         m_price_gap = 20.0;
     }
-    else if (max_volume < 40.0)
+    else if (max_volume < 30.0)
     {
         m_price_gap = 25.0;
     }
-    else if (max_volume > 40.0)
+    else if (max_volume < 40.0)
     {
         m_price_gap = 30.0;
+    }
+    else if (max_volume > 40.0)
+    {
+        m_price_gap = 35.0;
     }
     m_price_gap *= m_config.price_gap;
 
