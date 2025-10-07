@@ -74,14 +74,19 @@ private:
                    filled_at_volume_higher_10;
         }
 
+        std::string percent_format(double value)
+        {
+            return std::to_string(std::ceil(value)) + "%";
+        }
+
         Json data_by_percent()
         {
             return {
-                {"<0.5", filled_at_volume_lower_0_5 / total() * 100.0},
-                {"<1", filled_at_volume_lower_1 / total() * 100.0},
-                {"<5", filled_at_volume_lower_5 / total() * 100.0},
-                {"<10", filled_at_volume_lower_10 / total() * 100.0},
-                {">10", filled_at_volume_higher_10 / total() * 100.0},
+                {"<0.5", percent_format(filled_at_volume_lower_0_5 / total() * 100.0)},
+                {"<1", percent_format(filled_at_volume_lower_1 / total() * 100.0)},
+                {"<5", percent_format(filled_at_volume_lower_5 / total() * 100.0)},
+                {"<10", percent_format(filled_at_volume_lower_10 / total() * 100.0)},
+                {">10", percent_format(filled_at_volume_higher_10 / total() * 100.0)},
             };
         }
 
@@ -105,8 +110,6 @@ private:
     bool   m_is_closing_far_orders = false;
     FillStat m_fill_stat;
     std::unordered_map<OrderId, Order> m_open_orders;
-
-
 
     // Generate order
     Order get_limit_order(Order::Side side, double price, double quantity);
