@@ -26,10 +26,9 @@ void StrategyMarketMakerStateRun::end()
     m_last_quoted_price = 0.0;
     m_min_trade_volume = 0.0;
     m_volume = 0.0;
-    m_filled_buy_order_count = 0;
-    m_filled_sell_order_count = 0;
     m_start_time = 0;
     m_open_orders.clear();
+    m_fill_stat.clear();
     m_pnl.reset();
 
     // Send cancel all of placed order
@@ -74,12 +73,20 @@ Json StrategyMarketMakerStateRun::get_info()
         {"volume_stat", m_volume_stat.get_data(m_min_trade_volume)},
         {"open_orders", open_orders},
         {"time_running_in_hours", (Utils::get_time_now_in_utc_seconds() - m_start_time) / 3600.0},
+        {"fill_volume_stat", {
+            {"<0.5", m_fill_stat.filled_at_volume_lower_0_5},
+            {"<1", m_fill_stat.filled_at_volume_lower_1},
+            {"<5", m_fill_stat.filled_at_volume_lower_5},
+            {"<10", m_fill_stat.filled_at_volume_lower_10},
+            {"<20", m_fill_stat.filled_at_volume_lower_20},
+            {">20", m_fill_stat.filled_at_volume_higer_20},
+        }},
         {"orders_count", {
-            {"[total_orders_placed]", m_filled_buy_order_count + m_filled_sell_order_count + m_open_orders.size()},
+            {"[total_orders_placed]", m_fill_stat.filled_buy_order_count + m_fill_stat.filled_sell_order_count + m_open_orders.size()},
             {"open_orders_count", m_open_orders.size()},
             {"filled_count", {
-                {"buy", m_filled_buy_order_count},
-                {"sell", m_filled_sell_order_count},
+                {"buy", m_fill_stat.filled_buy_order_count},
+                {"sell", m_fill_stat.filled_sell_order_count},
             }}
         }},
         {"current_price", m_current_price},
@@ -290,12 +297,14 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
         if (order.side == Order::Side::BUY)
         {
             m_inventory += 1;
-            m_filled_buy_order_count++;
+            m_fill_stat.filled_buy_order_count++;
+            m_fill_stat.update(order.filled_quantity);
         }
         else if (order.side == Order::Side::SELL)
         {
             m_inventory -= 1;
-            m_filled_sell_order_count++;
+            m_fill_stat.filled_sell_order_count++;
+            m_fill_stat.update(order.filled_quantity);
         }
 
         m_open_orders.erase(order.order_id);

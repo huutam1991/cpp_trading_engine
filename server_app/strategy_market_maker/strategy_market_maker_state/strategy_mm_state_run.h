@@ -31,15 +31,68 @@ public:
     void on_config_change();
 
 private:
+    struct FillStat
+    {
+        size_t filled_buy_order_count = 0;
+        size_t filled_sell_order_count = 0;
+        size_t filled_at_volume_lower_0_5 = 0;
+        size_t filled_at_volume_lower_1 = 0;
+        size_t filled_at_volume_lower_5 = 0;
+        size_t filled_at_volume_lower_10 = 0;
+        size_t filled_at_volume_lower_20 = 0;
+        size_t filled_at_volume_higer_20 = 0;
+
+        void update(double filled_volume)
+        {
+            if (filled_volume < 0.5)
+            {
+                filled_at_volume_lower_0_5++;
+            }
+            else if (filled_volume < 1.0)
+            {
+                filled_at_volume_lower_1++;
+            }
+            else if (filled_volume < 5.0)
+            {
+                filled_at_volume_lower_5++;
+            }
+            else if (filled_volume < 10.0)
+            {
+                filled_at_volume_lower_10++;
+            }
+            else if (filled_volume < 20.0)
+            {
+                filled_at_volume_lower_20++;
+            }
+            else
+            {
+                filled_at_volume_higer_20++;
+            }
+        }
+
+        void clear()
+        {
+            filled_buy_order_count = 0;
+            filled_sell_order_count = 0;
+            filled_at_volume_lower_0_5 = 0;
+            filled_at_volume_lower_1 = 0;
+            filled_at_volume_lower_5 = 0;
+            filled_at_volume_lower_10 = 0;
+            filled_at_volume_lower_20 = 0;
+            filled_at_volume_higer_20 = 0;
+        }
+    };
+
     double m_inventory = 0.0;
     double m_current_price = 0.0;
     double m_last_quoted_price = 0.0;
     double m_min_trade_volume = 0.0;
     double m_volume = 0.0;
     bool   m_is_closing_far_orders = false;
-    size_t m_filled_buy_order_count = 0;
-    size_t m_filled_sell_order_count = 0;
+    FillStat m_fill_stat;
     std::unordered_map<OrderId, Order> m_open_orders;
+
+
 
     // Generate order
     Order get_limit_order(Order::Side side, double price, double quantity);
