@@ -39,35 +39,50 @@ private:
         size_t filled_at_volume_lower_1 = 0;
         size_t filled_at_volume_lower_5 = 0;
         size_t filled_at_volume_lower_10 = 0;
-        size_t filled_at_volume_lower_20 = 0;
-        size_t filled_at_volume_higer_20 = 0;
+        size_t filled_at_volume_higher_10 = 0;
 
         void update(double filled_volume)
         {
-            if (filled_volume < 0.5)
+            if (filled_volume == 0.4)
             {
                 filled_at_volume_lower_0_5++;
             }
-            else if (filled_volume < 1.0)
+            else if (filled_volume == 0.3)
             {
                 filled_at_volume_lower_1++;
             }
-            else if (filled_volume < 5.0)
+            else if (filled_volume == 0.2)
             {
                 filled_at_volume_lower_5++;
             }
-            else if (filled_volume < 10.0)
+            else if (filled_volume == 0.15)
             {
                 filled_at_volume_lower_10++;
             }
-            else if (filled_volume < 20.0)
-            {
-                filled_at_volume_lower_20++;
-            }
             else
             {
-                filled_at_volume_higer_20++;
+                filled_at_volume_higher_10++;
             }
+        }
+
+        double total()
+        {
+            return filled_at_volume_lower_0_5 +
+                   filled_at_volume_lower_1 +
+                   filled_at_volume_lower_5 +
+                   filled_at_volume_lower_10 +
+                   filled_at_volume_higher_10;
+        }
+
+        Json data_by_percent()
+        {
+            return {
+                {"<0.5", filled_at_volume_lower_0_5 / total() * 100.0},
+                {"<1", filled_at_volume_lower_1 / total() * 100.0},
+                {"<5", filled_at_volume_lower_5 / total() * 100.0},
+                {"<10", filled_at_volume_lower_10 / total() * 100.0},
+                {">10", filled_at_volume_higher_10 / total() * 100.0},
+            };
         }
 
         void clear()
@@ -78,8 +93,7 @@ private:
             filled_at_volume_lower_1 = 0;
             filled_at_volume_lower_5 = 0;
             filled_at_volume_lower_10 = 0;
-            filled_at_volume_lower_20 = 0;
-            filled_at_volume_higer_20 = 0;
+            filled_at_volume_higher_10 = 0;
         }
     };
 

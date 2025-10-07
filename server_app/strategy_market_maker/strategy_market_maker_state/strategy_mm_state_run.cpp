@@ -78,8 +78,8 @@ Json StrategyMarketMakerStateRun::get_info()
             {"<1", m_fill_stat.filled_at_volume_lower_1},
             {"<5", m_fill_stat.filled_at_volume_lower_5},
             {"<10", m_fill_stat.filled_at_volume_lower_10},
-            {"<20", m_fill_stat.filled_at_volume_lower_20},
-            {">20", m_fill_stat.filled_at_volume_higer_20},
+            {">10", m_fill_stat.filled_at_volume_higher_10},
+            {"by_percent", m_fill_stat.data_by_percent()}
         }},
         {"orders_count", {
             {"[total_orders_placed]", m_fill_stat.filled_buy_order_count + m_fill_stat.filled_sell_order_count + m_open_orders.size()},
