@@ -175,9 +175,13 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     {
         m_price_gap = 20.0;
     }
-    else if (max_volume > 30.0)
+    else if (max_volume < 40.0)
     {
         m_price_gap = 25.0;
+    }
+    else if (max_volume > 40.0)
+    {
+        m_price_gap = 30.0;
     }
     m_price_gap *= m_config.price_gap;
 
