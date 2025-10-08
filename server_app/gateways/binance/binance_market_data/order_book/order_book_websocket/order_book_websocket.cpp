@@ -17,7 +17,7 @@ void OrderBookWebsocket::start()
 {
     std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level) + "@100ms";
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_order_book_ws");
+    m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + " - orderbook websocket - path: " + ws_path);
     m_websocket->set_callbacks(
         // on_connect
         [this, ws_path, websocket = m_websocket->weak_from_this()]() -> Task<void>
@@ -48,10 +48,17 @@ void OrderBookWebsocket::start()
             co_return;
         },
         // on_disconnect
-        [this, symbol = m_symbol]() -> Task<void>
+        [this, symbol = m_symbol, websocket = m_websocket->weak_from_this()]() -> Task<void>
         {
             // Re-start
             spdlog::debug("OrderBookWebsocket [{}] disconnected, re-starting...", symbol);
+
+            // Close current websocket
+            if (auto ws = websocket.lock())
+            {
+                ws->close();
+            }
+
             this->start();
 
             co_return;
