@@ -18,6 +18,7 @@ class StrategyMarketMakerStateRun : public StrategyStateBase
     EventBase* m_event_base = nullptr;
     VolumeStat& m_volume_stat;
     PnL& m_pnl;
+    VolumeStat m_15_mins_volume_stat;
     size_t m_start_time;
 
 public:
@@ -108,6 +109,7 @@ private:
     double m_min_trade_volume = 0.0;
     double m_price_gap = 10.0;
     double m_volume = 0.0;
+    double m_number_of_order_pair_per_quote = 1.0;
     double m_total_buy_volume = 0.0;
     double m_total_sell_volume = 0.0;
     bool   m_is_closing_far_orders = false;
@@ -119,6 +121,7 @@ private:
 
     void quote_orders_at_price(double price);
     void start_close_far_orders();
+    void update_15_mins_volume_stat();
     Task<void> task_close_far_orders();
     Task<void> remove_old_trades();
 

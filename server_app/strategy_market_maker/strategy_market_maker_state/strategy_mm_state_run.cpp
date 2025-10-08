@@ -27,6 +27,7 @@ void StrategyMarketMakerStateRun::end()
     m_min_trade_volume = 0.0;
     m_price_gap = 10.0;
     m_volume = 0.0;
+    m_number_of_order_pair_per_quote = 1.0;
     m_total_buy_volume = 0.0;
     m_total_sell_volume = 0.0;
     m_start_time = 0;
@@ -124,6 +125,39 @@ void StrategyMarketMakerStateRun::start_close_far_orders()
     }
 }
 
+void StrategyMarketMakerStateRun::update_15_mins_volume_stat()
+{
+    m_15_mins_volume_stat.remove_old_volumes(900); // 15 minutes
+
+    if (Utils::get_time_now_in_utc_seconds() - m_start_time < 900)
+    {
+        return;
+    }
+
+    Json data = m_15_mins_volume_stat.get_data();
+    double total_buy_volume = data["total_buy_volume"];
+    double total_sell_volume = data["total_sell_volume"];
+    double total_volume_in_15_mins = std::max(total_buy_volume, total_sell_volume);
+    double total_cash_flow_in_15_mins = total_volume_in_15_mins * m_current_price;
+
+    if (total_cash_flow_in_15_mins < 10000000) // 10 million USDC
+    {
+        m_number_of_order_pair_per_quote = 4.0;
+    }
+    else if (total_cash_flow_in_15_mins < 20000000) // 20 million USDC
+    {
+        m_number_of_order_pair_per_quote = 3.0;
+    }
+    else if (total_cash_flow_in_15_mins < 30000000) // 30 million USDC
+    {
+        m_number_of_order_pair_per_quote = 2.0;
+    }
+    else
+    {
+        m_number_of_order_pair_per_quote = 1.0;
+    }
+}
+
 Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 {
     // spdlog::warn("task_close_far_orders, m_open_orders size: {}", static_cast<uint64_t>(m_open_orders.size()));
@@ -150,6 +184,7 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
 
 Task<void> StrategyMarketMakerStateRun::remove_old_trades()
 {
+    update_15_mins_volume_stat();
     m_volume_stat.remove_old_volumes(m_config.trade_volume_duration);
 
     // Check update [m_min_trade_volume]
@@ -393,6 +428,7 @@ Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
         //     trade.instrument->symbol, side, trade.price, trade.quantity);
 
         m_volume_stat.add_trade_volume(trade);
+        m_15_mins_volume_stat.add_trade_volume(trade);
     }
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
