@@ -294,12 +294,17 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         }
     }
 
+    static std::vector<const TradeVolumeAtPrice*> buy_volumes(10);
+    static std::vector<const TradeVolumeAtPrice*> sell_volumes(10);
+    buy_volumes.resize(0);
+    sell_volumes.resize(0);
+
     for (double p = buy_begin; p >= buy_end; p -= 1.0)
     {
         buy_volume = m_volume_stat.get_trade_volume_at_price(p);
         if (buy_volume != nullptr && buy_volume->total_buy_volume >= m_min_trade_volume)
         {
-            break;
+            buy_volumes.push_back(buy_volume);
         }
         else
         {
@@ -312,7 +317,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         sell_volume = m_volume_stat.get_trade_volume_at_price(p);
         if (sell_volume != nullptr && sell_volume->total_sell_volume >= m_min_trade_volume)
         {
-            break;
+            sell_volumes.push_back(sell_volume);
         }
         else
         {
@@ -320,26 +325,35 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         }
     }
 
-    if (buy_volume == nullptr || sell_volume == nullptr)
+    if (buy_volumes.size() == 0 || sell_volumes.size() == 0)
     {
         // spdlog::warn("quote_orders_at_price, cannot find max buy/sell volume in range, skip quoting orders");
         return;
     }
 
+    spdlog::info("");
     spdlog::info("=============================================================================================");
-    spdlog::info("quote_orders_at_price, price: {}, price_gap: {}, skew_ratio: {}", price, m_price_gap, skew_ratio * 100.0);
-    spdlog::info("quote_orders_at_price, buy  range: [{} - {}]", buy_end, buy_begin);
-    spdlog::info("quote_orders_at_price, sell range: [{} - {}]", sell_begin, sell_end);
-    spdlog::info("quote_orders_at_price, buy  - price: {}, volume: {}", buy_volume->price, m_volume);
-    spdlog::info("quote_orders_at_price, sell - price: {}, volume: {}", sell_volume->price, m_volume);
+    spdlog::info("Quote orders, price: {}, price_gap: {}, skew_ratio: {}", price, m_price_gap, skew_ratio * 100.0);
+    spdlog::info("Quote orders, buy  range: [{} - {}]", buy_end, buy_begin);
+    spdlog::info("Quote orders, sell range: [{} - {}]", sell_begin, sell_end);
+
+    double min_size = std::min(buy_volumes.size(), sell_volumes.size());
+    double number_of_order_pair = std::min(m_number_of_order_pair_per_quote, min_size);
+
+    for (size_t i = 0; i < number_of_order_pair; i++)
+    {
+        spdlog::info("Quote orders, buy  [{}] - price: {}, volume: {}", i + 1, buy_volumes[i]->price, m_volume);
+        spdlog::info("Quote orders, sell [{}] - price: {}, volume: {}", i + 1, sell_volumes[i]->price, m_volume);
+
+        Order buy_order  = get_limit_order(Order::Side::BUY, buy_volumes[i]->price, m_volume);
+        Order sell_order = get_limit_order(Order::Side::SELL, sell_volumes[i]->price, m_volume);
+
+        m_gateway->place(buy_order);
+        m_gateway->place(sell_order);
+    }
+
     spdlog::info("=============================================================================================");
     spdlog::info("");
-
-    Order buy_order  = get_limit_order(Order::Side::BUY, buy_volume->price, m_volume);
-    Order sell_order = get_limit_order(Order::Side::SELL, sell_volume->price, m_volume);
-
-    m_gateway->place(buy_order);
-    m_gateway->place(sell_order);
 
     m_last_quoted_price = price;
 }
