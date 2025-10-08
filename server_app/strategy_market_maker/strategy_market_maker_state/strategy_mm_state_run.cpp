@@ -144,15 +144,17 @@ void StrategyMarketMakerStateRun::update_15_mins_volume_stat()
         return;
     }
 
-    if (m_total_volume_in_usd_in_15_mins < 10000000) // 10 million USDC
+    m_total_volume_in_usd_in_15_mins /= 1000000;
+
+    if (m_total_volume_in_usd_in_15_mins < 10.0) // 10 million USDC
     {
         m_number_of_order_pair_per_quote = 4.0;
     }
-    else if (m_total_volume_in_usd_in_15_mins < 20000000) // 20 million USDC
+    else if (m_total_volume_in_usd_in_15_mins < 20.0) // 20 million USDC
     {
         m_number_of_order_pair_per_quote = 3.0;
     }
-    else if (m_total_volume_in_usd_in_15_mins < 30000000) // 30 million USDC
+    else if (m_total_volume_in_usd_in_15_mins < 30.0) // 30 million USDC
     {
         m_number_of_order_pair_per_quote = 2.0;
     }
@@ -331,14 +333,17 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         return;
     }
 
+    double min_size = std::min(buy_volumes.size(), sell_volumes.size());
+    double number_of_order_pair = std::min(m_number_of_order_pair_per_quote, min_size);
+
     spdlog::info("");
     spdlog::info("=============================================================================================");
     spdlog::info("Quote orders, price: {}, price_gap: {}, skew_ratio: {}", price, m_price_gap, skew_ratio * 100.0);
     spdlog::info("Quote orders, buy  range: [{} - {}]", buy_end, buy_begin);
     spdlog::info("Quote orders, sell range: [{} - {}]", sell_begin, sell_end);
-
-    double min_size = std::min(buy_volumes.size(), sell_volumes.size());
-    double number_of_order_pair = std::min(m_number_of_order_pair_per_quote, min_size);
+    spdlog::info("Quote orders, total volume (USD) in 15 mins: {}, order pairs (by logic): {}", m_total_volume_in_usd_in_15_mins, m_number_of_order_pair_per_quote);
+    spdlog::info("Quote orders, buy size: {}, sell size: {}, order pairs (real): {}", buy_volumes.size(), sell_volumes.size(), number_of_order_pair);
+    spdlog::info("Quote orders, pairs:");
 
     for (size_t i = 0; i < number_of_order_pair; i++)
     {
