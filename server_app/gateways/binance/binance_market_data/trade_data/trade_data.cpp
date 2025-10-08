@@ -16,6 +16,13 @@ BinanceTradeData::BinanceTradeData(const std::string& symbol, net::io_context& i
 
 void BinanceTradeData::start()
 {
+    // Check to close current websocket if any
+    if (m_websocket != nullptr)
+    {
+        m_websocket->close();
+        m_websocket = nullptr;
+    }
+
     std::string ws_path = "/ws/" + m_symbol + "@aggTrade";
 
     m_websocket = std::make_shared<WebsocketClientAsync>(m_ioc, m_event_base, m_symbol + "_trade_data_ws");

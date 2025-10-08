@@ -11,7 +11,7 @@ class BinanceTradeData
     net::io_context& m_ioc;
     EventBase* m_event_base;
     const Instrument* m_instrument = nullptr;
-    std::shared_ptr<WebsocketClientAsync> m_websocket;
+    std::shared_ptr<WebsocketClientAsync> m_websocket = nullptr;
 
     void start();
 
