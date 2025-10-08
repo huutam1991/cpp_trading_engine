@@ -109,6 +109,7 @@ private:
     double m_min_trade_volume = 0.0;
     double m_price_gap = 10.0;
     double m_volume = 0.0;
+    double m_total_volume_in_usd_in_15_mins = 0.0;
     double m_number_of_order_pair_per_quote = 1.0;
     double m_total_buy_volume = 0.0;
     double m_total_sell_volume = 0.0;

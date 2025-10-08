@@ -27,6 +27,7 @@ void StrategyMarketMakerStateRun::end()
     m_min_trade_volume = 0.0;
     m_price_gap = 10.0;
     m_volume = 0.0;
+    m_total_volume_in_usd_in_15_mins = 0.0;
     m_number_of_order_pair_per_quote = 1.0;
     m_total_buy_volume = 0.0;
     m_total_sell_volume = 0.0;
@@ -129,26 +130,29 @@ void StrategyMarketMakerStateRun::update_15_mins_volume_stat()
 {
     m_15_mins_volume_stat.remove_old_volumes(900); // 15 minutes
 
-    if (Utils::get_time_now_in_utc_seconds() - m_start_time < 900)
+    if (Utils::get_time_now_in_utc_seconds() - m_start_time > 900)
+    {
+        Json data = m_15_mins_volume_stat.get_data();
+        double total_buy_volume = data["total_buy_volume"];
+        double total_sell_volume = data["total_sell_volume"];
+        double total_volume_in_15_mins = std::max(total_buy_volume, total_sell_volume);
+        m_total_volume_in_usd_in_15_mins = total_volume_in_15_mins * m_current_price;
+    }
+
+    if (m_total_volume_in_usd_in_15_mins == 0.0)
     {
         return;
     }
 
-    Json data = m_15_mins_volume_stat.get_data();
-    double total_buy_volume = data["total_buy_volume"];
-    double total_sell_volume = data["total_sell_volume"];
-    double total_volume_in_15_mins = std::max(total_buy_volume, total_sell_volume);
-    double total_cash_flow_in_15_mins = total_volume_in_15_mins * m_current_price;
-
-    if (total_cash_flow_in_15_mins < 10000000) // 10 million USDC
+    if (m_total_volume_in_usd_in_15_mins < 10000000) // 10 million USDC
     {
         m_number_of_order_pair_per_quote = 4.0;
     }
-    else if (total_cash_flow_in_15_mins < 20000000) // 20 million USDC
+    else if (m_total_volume_in_usd_in_15_mins < 20000000) // 20 million USDC
     {
         m_number_of_order_pair_per_quote = 3.0;
     }
-    else if (total_cash_flow_in_15_mins < 30000000) // 30 million USDC
+    else if (m_total_volume_in_usd_in_15_mins < 30000000) // 30 million USDC
     {
         m_number_of_order_pair_per_quote = 2.0;
     }
