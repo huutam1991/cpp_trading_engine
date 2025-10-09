@@ -146,15 +146,15 @@ void StrategyMarketMakerStateRun::update_15_mins_volume_stat()
 
     m_total_volume_in_usd_in_15_mins /= 1000000;
 
-    if (m_total_volume_in_usd_in_15_mins < 10.0) // 10 million USDC
+    if (m_total_volume_in_usd_in_15_mins < 15.0) // 10 million USDC
     {
         m_number_of_order_pair_per_quote = 4.0;
     }
-    else if (m_total_volume_in_usd_in_15_mins < 20.0) // 20 million USDC
+    else if (m_total_volume_in_usd_in_15_mins < 25.0) // 20 million USDC
     {
         m_number_of_order_pair_per_quote = 3.0;
     }
-    else if (m_total_volume_in_usd_in_15_mins < 30.0) // 30 million USDC
+    else if (m_total_volume_in_usd_in_15_mins < 35.0) // 30 million USDC
     {
         m_number_of_order_pair_per_quote = 2.0;
     }
@@ -274,25 +274,39 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     const TradeVolumeAtPrice* buy_volume = nullptr;
     const TradeVolumeAtPrice* sell_volume = nullptr;
 
+    double new_price_gap = m_price_gap;
+    if (m_number_of_order_pair_per_quote == 2)
+    {
+        new_price_gap = m_price_gap * 2;
+    }
+    else if (m_number_of_order_pair_per_quote == 3)
+    {
+        new_price_gap = m_price_gap * 3;
+    }
+    else if (m_number_of_order_pair_per_quote == 4)
+    {
+        new_price_gap = m_price_gap * 4;
+    }
+
     double buy_begin = price - 2.0;
-    double buy_end = price - m_price_gap;
+    double buy_end = price - new_price_gap;
     double sell_begin = price + 2.0;
-    double sell_end = price + m_price_gap;
+    double sell_end = price + new_price_gap;
 
     double skew_ratio = std::abs(m_total_buy_volume - m_total_sell_volume) / std::max(m_total_buy_volume, m_total_sell_volume);
     if ((skew_ratio * 100) >= 10.0)
     {
         if (m_total_buy_volume > m_total_sell_volume)
         {
-            buy_begin -= m_price_gap * skew_ratio;
-            buy_end -= m_price_gap * skew_ratio;
+            buy_begin -= new_price_gap * skew_ratio;
+            buy_end -= new_price_gap * skew_ratio;
             sell_end -= (sell_end - sell_begin) * skew_ratio;
         }
         else
         {
             buy_end += (buy_begin - buy_end) * skew_ratio;
-            sell_begin += m_price_gap * skew_ratio;
-            sell_end += m_price_gap * skew_ratio;
+            sell_begin += new_price_gap * skew_ratio;
+            sell_end += new_price_gap * skew_ratio;
         }
     }
 
@@ -338,7 +352,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 
     spdlog::info("");
     spdlog::info("=============================================================================================");
-    spdlog::info("Quote orders, price: {}, price_gap: {}, skew_ratio: {}", price, m_price_gap, skew_ratio * 100.0);
+    spdlog::info("Quote orders, price: {}, price gap: {}, new price gap: {}, skew_ratio: {}", price, m_price_gap, new_price_gap, skew_ratio * 100.0);
     spdlog::info("Quote orders, buy  range: [{} - {}]", buy_end, buy_begin);
     spdlog::info("Quote orders, sell range: [{} - {}]", sell_begin, sell_end);
     spdlog::info("Quote orders, total volume (USD) in 15 mins: {}, order pairs (by logic): {}", m_total_volume_in_usd_in_15_mins, m_number_of_order_pair_per_quote);
