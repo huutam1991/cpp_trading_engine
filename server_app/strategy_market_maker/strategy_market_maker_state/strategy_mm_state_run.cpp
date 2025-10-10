@@ -301,6 +301,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         buy_end -= new_price_gap * skew_ratio;
         sell_end -= (sell_end - sell_begin) * skew_ratio;
 
+        buy_quantity = m_volume * (1.0 - skew_ratio);
         sell_quantity = m_volume * (1.0 + skew_ratio);
     }
     else
@@ -310,6 +311,7 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         sell_end += new_price_gap * skew_ratio;
 
         buy_quantity = m_volume * (1.0 + skew_ratio);
+        sell_quantity = m_volume * (1.0 - skew_ratio);
     }
 
     static std::vector<const TradeVolumeAtPrice*> buy_volumes(10);
