@@ -291,22 +291,25 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     double buy_end = price - new_price_gap;
     double sell_begin = price + 2.0;
     double sell_end = price + new_price_gap;
+    double buy_quantity = m_volume;
+    double sell_quantity = m_volume;
 
     double skew_ratio = std::abs(m_total_buy_volume - m_total_sell_volume) / std::max(m_total_buy_volume, m_total_sell_volume);
-    if ((skew_ratio * 100) >= 10.0)
+    if (m_total_buy_volume > m_total_sell_volume)
     {
-        if (m_total_buy_volume > m_total_sell_volume)
-        {
-            buy_begin -= new_price_gap * skew_ratio;
-            buy_end -= new_price_gap * skew_ratio;
-            sell_end -= (sell_end - sell_begin) * skew_ratio;
-        }
-        else
-        {
-            buy_end += (buy_begin - buy_end) * skew_ratio;
-            sell_begin += new_price_gap * skew_ratio;
-            sell_end += new_price_gap * skew_ratio;
-        }
+        buy_begin -= new_price_gap * skew_ratio;
+        buy_end -= new_price_gap * skew_ratio;
+        sell_end -= (sell_end - sell_begin) * skew_ratio;
+
+        sell_quantity = m_volume * (1.0 + skew_ratio);
+    }
+    else
+    {
+        buy_end += (buy_begin - buy_end) * skew_ratio;
+        sell_begin += new_price_gap * skew_ratio;
+        sell_end += new_price_gap * skew_ratio;
+
+        buy_quantity = m_volume * (1.0 + skew_ratio);
     }
 
     static std::vector<const TradeVolumeAtPrice*> buy_volumes(10);
@@ -360,11 +363,11 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
 
     for (size_t i = 0; i < number_of_order_pair; i++)
     {
-        spdlog::info("Quote orders, buy  [{}] - price: {}, volume: {}", i + 1, buy_volumes[i]->price, m_volume);
-        spdlog::info("Quote orders, sell [{}] - price: {}, volume: {}", i + 1, sell_volumes[i]->price, m_volume);
+        spdlog::info("Quote orders, buy  [{}] - price: {}, quantity: {}", i + 1, buy_volumes[i]->price, buy_quantity);
+        spdlog::info("Quote orders, sell [{}] - price: {}, quantity: {}", i + 1, sell_volumes[i]->price, sell_quantity);
 
-        Order buy_order  = get_limit_order(Order::Side::BUY, buy_volumes[i]->price, m_volume);
-        Order sell_order = get_limit_order(Order::Side::SELL, sell_volumes[i]->price, m_volume);
+        Order buy_order  = get_limit_order(Order::Side::BUY, buy_volumes[i]->price, buy_quantity);
+        Order sell_order = get_limit_order(Order::Side::SELL, sell_volumes[i]->price, sell_quantity);
 
         m_gateway->place(buy_order);
         m_gateway->place(sell_order);
