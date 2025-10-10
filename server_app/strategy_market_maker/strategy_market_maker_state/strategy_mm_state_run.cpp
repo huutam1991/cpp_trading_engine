@@ -245,15 +245,21 @@ Task<void> StrategyMarketMakerStateRun::remove_old_trades()
     }
     else if (max_volume < 10.0)
     {
-        m_volume = 0.15;
+        // m_volume = 0.15;
+        // Hard code
+        m_volume = 0.2;
     }
     else if (max_volume < 15.0)
     {
-        m_volume = 0.1;
+        // m_volume = 0.1;
+        // Hard code
+        m_volume = 0.2;
     }
     else
     {
-        m_volume = Utils::smooth_curve(max_volume);
+        // m_volume = Utils::smooth_curve(max_volume);
+        // Hard code
+        m_volume = 0.2;
     }
 
     m_volume *= m_config.volumn;
