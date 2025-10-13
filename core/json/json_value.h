@@ -8,7 +8,7 @@
 #include <cache/share_string.h>
 
 class JsonValue;
-using JsonValuePool = CachePool<JsonValue, 1000000>;
+using JsonValuePool = CachePool<JsonValue, 10000000>;
 
 class JsonValue : public JsonTypeBase
 {
