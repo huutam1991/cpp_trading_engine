@@ -10,7 +10,7 @@
 #include <time/measure_time.h>
 
 template <typename T>
-std::string demangled_name()
+constexpr std::string demangled_name()
 {
     int status;
     char* realname = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
@@ -22,7 +22,7 @@ std::string demangled_name()
 template <typename T, typename U = void>
 struct TypeName
 {
-    static std::string name()
+    static constexpr std::string name()
     {
         return demangled_name<T>();
     }
@@ -31,7 +31,7 @@ struct TypeName
 template <typename T>
 struct TypeName<T, std::void_t<decltype(T::name())>>
 {
-    static std::string name()
+    static constexpr std::string name()
     {
         return T::name();
     }
@@ -64,8 +64,8 @@ class CachePool
 
     struct PoolBuffer
     {
-        std::array<ObjectPointerWrapper, Size> available_items;
-        std::array<ObjectWrapper, Size> data;
+        alignas(64) std::array<ObjectPointerWrapper, Size> available_items;
+        alignas(64) std::array<ObjectWrapper, Size> data;
         alignas(64) std::atomic<size_t> head = 0;
         alignas(64) std::atomic<size_t> tail = 0;
         alignas(64) std::atomic<size_t> size = Size;
@@ -125,7 +125,7 @@ public:
     // Acquire a cache item
     FORCE_INLINE static T* acquire()
     {
-        MeasureTime measure_time("CachePool::acquire, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("CachePool::acquire, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
 
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
@@ -149,7 +149,7 @@ public:
     // Release a cache item back to the pool
     FORCE_INLINE static void release(T* item)
     {
-        MeasureTime measure_time("CachePool::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("CachePool::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
 
         if (item != nullptr)
         {
