@@ -52,10 +52,20 @@ concept has_clear = requires
 template <class T, size_t Size>
 class CachePool
 {
+    struct alignas(64) ObjectWrapper
+    {
+        T object;
+    };
+
+    struct alignas(64) ObjectPointerWrapper
+    {
+        T* ptr;
+    };
+
     struct PoolBuffer
     {
-        std::array<T*, Size> available_items;
-        std::array<T, Size> data;
+        std::array<ObjectPointerWrapper, Size> available_items;
+        std::array<ObjectWrapper, Size> data;
         alignas(64) std::atomic<size_t> head = 0;
         alignas(64) std::atomic<size_t> tail = 0;
         alignas(64) std::atomic<size_t> size = Size;
@@ -64,7 +74,7 @@ class CachePool
         {
             for (size_t i = 0; i < Size; ++i)
             {
-                available_items[i] = &data[i];
+                available_items[i].ptr = &data[i].object;
             }
         }
 
@@ -115,7 +125,7 @@ public:
     // Acquire a cache item
     FORCE_INLINE static T* acquire()
     {
-        // MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
+        MeasureTime measure_time("CachePool::acquire, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
 
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
@@ -125,7 +135,7 @@ public:
 
         // Get the item from the pool
         size_t head_index = pool_buffer.get_current_head();
-        T* item = pool_buffer.available_items[head_index];
+        T* item = pool_buffer.available_items[head_index].ptr;
 
         // Check if the item has init method and call it
         if constexpr (has_init<T>)
@@ -139,7 +149,7 @@ public:
     // Release a cache item back to the pool
     FORCE_INLINE static void release(T* item)
     {
-        // MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
+        MeasureTime measure_time("CachePool::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
 
         if (item != nullptr)
         {
@@ -152,7 +162,7 @@ public:
             // Add item back to the pool
             PoolBuffer& pool_buffer = get_pool_buffer();
             size_t tail_index = pool_buffer.get_current_tail();
-            pool_buffer.available_items[tail_index] = item;
+            pool_buffer.available_items[tail_index].ptr = item;
         }
         else
         {
