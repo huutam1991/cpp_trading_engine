@@ -10,6 +10,7 @@ struct OrderBookLevel
     double price;
     double quantity;
 
+    OrderBookLevel() : price(0.0), quantity(0.0) {}
     OrderBookLevel(double p, double q) : price(p), quantity(q) {}
 };
 
@@ -21,11 +22,13 @@ public:
     // Bid, Ask
     std::vector<OrderBookLevel> bids;
     std::vector<OrderBookLevel> asks;
+    size_t bids_size = 0;
+    size_t asks_size = 0;
 
     OrderBookSnapShot()
     {
-        asks.reserve(100);
-        bids.reserve(100);
+        asks.resize(20);
+        bids.resize(20);
     }
 
     void update_instrument(const Instrument* instr);
@@ -34,12 +37,14 @@ public:
 
     inline void add_bid(double price, double quantity)
     {
-        bids.emplace_back(price, quantity);
+        bids[bids_size++].price = price;
+        bids[bids_size++].quantity = quantity;
     }
 
     inline void add_ask(double price, double quantity)
     {
-        asks.emplace_back(price, quantity);
+        asks[asks_size++].price = price;
+        asks[asks_size++].quantity = quantity;
     }
 
     double get_mid_price();
