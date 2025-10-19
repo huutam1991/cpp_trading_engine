@@ -125,17 +125,20 @@ public:
     // Acquire a cache item
     FORCE_INLINE static T* acquire()
     {
-        // MeasureTime measure_time("CachePool::acquire, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
-
-        PoolBuffer& pool_buffer = get_pool_buffer();
-        if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
+        T* item;
         {
-            throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
-        }
+            MeasureTime measure_time("CachePool::acquire, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
 
-        // Get the item from the pool
-        size_t head_index = pool_buffer.get_current_head();
-        T* item = pool_buffer.available_items[head_index].ptr;
+            PoolBuffer& pool_buffer = get_pool_buffer();
+            if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
+            {
+                throw std::runtime_error("No available items in cache pool: [" + TypeName<T>::name() + "]");
+            }
+
+            // Get the item from the pool
+            size_t head_index = pool_buffer.get_current_head();
+            item = pool_buffer.available_items[head_index].ptr;
+        }
 
         // Check if the item has init method and call it
         if constexpr (has_init<T>)
@@ -149,20 +152,22 @@ public:
     // Release a cache item back to the pool
     FORCE_INLINE static void release(T* item)
     {
-        // MeasureTime measure_time("CachePool::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
-
         if (item != nullptr)
         {
+            {
+                MeasureTime measure_time("CachePool::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+
+                // Add item back to the pool
+                PoolBuffer& pool_buffer = get_pool_buffer();
+                size_t tail_index = pool_buffer.get_current_tail();
+                pool_buffer.available_items[tail_index].ptr = item;
+            }
+
             // Check if the item has clear method and call it
             if constexpr (has_clear<T>)
             {
                 item->clear();
             }
-
-            // Add item back to the pool
-            PoolBuffer& pool_buffer = get_pool_buffer();
-            size_t tail_index = pool_buffer.get_current_tail();
-            pool_buffer.available_items[tail_index].ptr = item;
         }
         else
         {
