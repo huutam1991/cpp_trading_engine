@@ -6,7 +6,6 @@
 #include <array>
 #include <atomic>
 
-#include <utils/util_macros.h>
 #include <time/measure_time.h>
 
 template <typename T>
@@ -78,7 +77,7 @@ class CachePool
             }
         }
 
-        FORCE_INLINE size_t get_current_head()
+        inline __attribute__((always_inline)) size_t get_current_head()
         {
             size_t current = head.load(std::memory_order_acquire);
             size_t next = (current + 1) % Size;
@@ -96,7 +95,7 @@ class CachePool
             return current;
         }
 
-        FORCE_INLINE size_t get_current_tail()
+        inline __attribute__((always_inline)) size_t get_current_tail()
         {
             size_t current = tail.load(std::memory_order_acquire);
             size_t next = (current + 1) % Size;
@@ -115,7 +114,7 @@ class CachePool
         }
     };
 
-    FORCE_INLINE static PoolBuffer& get_pool_buffer()
+    inline __attribute__((always_inline)) static PoolBuffer& get_pool_buffer()
     {
         static PoolBuffer* pool_buffer = new PoolBuffer();
         return *pool_buffer;
@@ -123,7 +122,7 @@ class CachePool
 
 public:
     // Acquire a cache item
-    FORCE_INLINE static T* acquire()
+    inline __attribute__((always_inline)) static T* acquire()
     {
         T* item;
         {
@@ -150,7 +149,7 @@ public:
     }
 
     // Release a cache item back to the pool
-    FORCE_INLINE static void release(T* item)
+    inline __attribute__((always_inline)) static void release(T* item)
     {
         if (item != nullptr)
         {
@@ -175,22 +174,22 @@ public:
         }
     }
 
-    FORCE_INLINE static size_t head()
+    inline __attribute__((always_inline)) static size_t head()
     {
         return get_pool_buffer().head.load(std::memory_order_relaxed);
     }
 
-    FORCE_INLINE static size_t tail()
+    inline __attribute__((always_inline)) static size_t tail()
     {
         return get_pool_buffer().tail.load(std::memory_order_relaxed);
     }
 
-    FORCE_INLINE static size_t size()
+    inline __attribute__((always_inline)) static size_t size()
     {
         return get_pool_buffer().size.load(std::memory_order_relaxed);
     }
 
-    FORCE_INLINE static size_t total_released_items()
+    inline __attribute__((always_inline)) static size_t total_released_items()
     {
         size_t size = get_pool_buffer().size.load(std::memory_order_acquire);
         return Size - size;
