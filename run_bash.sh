@@ -17,4 +17,5 @@ else
     PORT=8080
 fi
 
+# perf stat -e cycles,instructions,task-clock,context-switches ./http_server_cpp "$PORT" web_data
 ./http_server_cpp "$PORT" web_data
