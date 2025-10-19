@@ -42,10 +42,6 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Fill tracking, status transitions, and live audit
   - Modeled after real exchange behavior
 
-- **Strategy Layer: Triangular Arbitrage Execution** ([`strategy_price_arbitrage/`](server_app/include/strategy_price_arbitrage))
-  - Implements spot-based triangular arbitrage across three trading pairs
-  - Handles full order lifecycle: quote → execute → cross conversion → settle
-
 - **Strategy Layer: Market Maker** ([`strategy_market_maker/`](server_app/strategy_market_maker))
   - Implements a fully autonomous market-making strategy that continuously quotes bid/ask orders based on live order book updates and 15-minute rolling trade volume statistics.
   - Dynamically adjusts quoting depth, price gap, and order sizes according to liquidity imbalance (buy/sell ratio) and market volatility.
