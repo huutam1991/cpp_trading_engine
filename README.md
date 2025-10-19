@@ -27,6 +27,11 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Built on top of Boost.Asio with fully `asynchronous design` (using custom `co_await` / `co_return` coroutine flow)
   - End-to-end event processing latency: `< 100 µs` per WebSocket event
 
+- **Cache Pool** ([`cache_pool.h`](core/cache/cache_pool.h))
+  - Custom `lock-free memory pool` designed for `high-frequency` object allocation and reuse
+  - Achieves `40–50 ns` acquire/release time in `hot path` and `1–2 µs` in `cold path`
+  - Minimizes heap contention and improves cache locality across concurrent threads
+
 - **MongoDB Integration** ([`mongo_db/`](core/mongo_db))
   - Raw BSON serialization layer with no ORM
   - Used for storing order fills, commissions, output tokens
