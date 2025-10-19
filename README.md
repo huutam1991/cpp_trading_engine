@@ -51,10 +51,6 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Dynamically adjusts quoting depth, price gap, and order sizes according to liquidity imbalance (buy/sell ratio) and market volatility.
   - Dynamically recalculates min_trade_volume, price_gap, and quote density every few seconds based on recent liquidity.
 
-- **Built-in Latency Profiling**
-  - `Microsecond`-level timing for each phase:
-    - market data receive → decision → order send (millisecond) → fill confirmation
-
 - **Dockerized & Cloud-Ready** ([`z_docker/`](z_docker))
   - Fully containerized using minimal Docker image
   - Deployed and tested in live conditions on **AWS EC2**, allowing real production-like evaluation
