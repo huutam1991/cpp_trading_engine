@@ -50,10 +50,11 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Fully containerized using minimal Docker image
   - Deployed and tested in live conditions on **AWS EC2**, allowing real production-like evaluation
 
+---
 
 # Performance Summary
   - End-to-end processing latency of `<100 µs` per WebSocket event, measured in production with live Binance data feeds
-  - Demonstrates stable latency distribution across threads under sustained load (no spikes >150 µs)
+  - Demonstrates stable latency distribution across threads under sustained load (no spikes `>150 µs`)
 
 ---
 
