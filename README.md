@@ -25,7 +25,6 @@ This project is a fully self-designed, low-latency trading engine written in mod
 
 - **WebSocket** ([`websocket/`](core/websocket))
   - Built on top of Boost.Asio with fully `asynchronous design` (using custom `co_await` / `co_return` coroutine flow)
-  - End-to-end event processing latency: `< 100 µs` per WebSocket event
 
 - **Cache Pool** ([`cache_pool.h`](core/cache/cache_pool.h))
   - Custom `lock-free memory pool` designed for `high-frequency` object allocation and reuse
@@ -50,6 +49,11 @@ This project is a fully self-designed, low-latency trading engine written in mod
 - **Dockerized & Cloud-Ready** ([`z_docker/`](z_docker))
   - Fully containerized using minimal Docker image
   - Deployed and tested in live conditions on **AWS EC2**, allowing real production-like evaluation
+
+
+# Performance Summary
+  - End-to-end processing latency of `<100 µs` per WebSocket event, measured in production with live Binance data feeds
+  - Demonstrates stable latency distribution across threads under sustained load (no spikes >150 µs)
 
 ---
 
