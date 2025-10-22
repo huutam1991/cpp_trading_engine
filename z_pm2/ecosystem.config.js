@@ -8,7 +8,7 @@ module.exports = {
       cwd: "/home/ubuntu/cpp_trading_engine",
       env: {
         PROD: "true",
-        LOG_LEVEL: "info",
+        LOG_LEVEL: "debug",
       }
     }
   ]
