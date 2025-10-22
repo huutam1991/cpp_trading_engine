@@ -22,20 +22,7 @@ void EventBase::remove_from_event_base(void* id)
 
 void EventBase::set_ready_task(void* task_info)
 {
-    SpinLockGuard spin_lock_guard(m_spin_lock);
-    m_ready_tasks.push(static_cast<TaskInfo*>(task_info));
-}
-
-TaskInfo* EventBase::get_ready_task()
-{
-    SpinLockGuard spin_lock_guard(m_spin_lock);
-
-    if (m_ready_tasks.empty()) return nullptr;
-
-    TaskInfo* task_info = m_ready_tasks.front();
-    m_ready_tasks.pop();
-
-    return task_info;
+    ReadyTaskQueue::push(static_cast<TaskInfo*>(task_info));
 }
 
 void EventBase::check_to_remove_task(TaskInfo* task_info)
@@ -53,7 +40,7 @@ void EventBase::loop()
     while (true)
     {
         // Check if there's any task ready to process
-        TaskInfo* task_info = get_ready_task();
+        TaskInfo* task_info = ReadyTaskQueue::pop();
 
         // Continue process this task
         if (task_info != nullptr && task_info->handle != nullptr && task_info->handle.done() == false)

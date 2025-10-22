@@ -12,31 +12,31 @@
 
 template <typename T>
 std::string demangled_name()
-{
-    int status;
-    char* realname = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
-    std::string result = (status == 0 && realname) ? realname : typeid(T).name();
-    std::free(realname);
-    return result;
-}
+    {
+        int status;
+        char* realname = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
+        std::string result = (status == 0 && realname) ? realname : typeid(T).name();
+        std::free(realname);
+        return result;
+    }
 
 template <typename T, typename U = void>
-struct TypeName
-{
-    static std::string name()
+    struct TypeName
     {
+    static std::string name()
+        {
         return demangled_name<T>();
-    }
-};
+        }
+    };
 
 template <typename T>
 struct TypeName<T, std::void_t<decltype(T::name())>>
-{
-    static std::string name()
     {
-        return T::name();
-    }
-};
+    static std::string name()
+        {
+            return T::name();
+        }
+    };
 
 template <class T, size_t Size>
 class MPSCQueue
@@ -104,13 +104,13 @@ public:
     {
         if (item != nullptr)
         {
-            // MeasureTime measure_time("MPSCQueue::push, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+            // MeasureTime measure_time("MPSCQueue::push, name: " + TypeName<T>::get_name(), MeasureUnit::NANOSECOND);
             // MeasureTime measure_time("MPSCQueue::push", MeasureUnit::NANOSECOND);
 
             PoolBuffer& pool_buffer = get_pool_buffer();
             if (pool_buffer.size.load(std::memory_order_relaxed) == Size)
             {
-                throw std::runtime_error("Queue is full: [" + TypeName<T>::name() + "]");
+                throw std::runtime_error("Queue is full: [" + TypeName<T>::get_name() + "]");
             }
 
             // Push item into the pool
@@ -132,10 +132,10 @@ public:
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (pool_buffer.size.load(std::memory_order_acquire) == 0)
         {
-            throw std::runtime_error("Queue is empty: [" + TypeName<T>::name() + "]");
+            return nullptr;
         }
 
-        // MeasureTime measure_time("MPSCQueue::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::release, name: " + TypeName<T>::get_name(), MeasureUnit::NANOSECOND);
         // MeasureTime measure_time("MPSCQueue::release", MeasureUnit::NANOSECOND);
 
         // Pop imtem from the pool
