@@ -76,23 +76,6 @@ class MPSCQueue
 
             return current;
         }
-
-        FORCE_INLINE size_t get_current_tail()
-        {
-            // size_t current = tail.load(std::memory_order_acquire);
-            // size_t next = (current + 1) % Size;
-
-            // while (!tail.compare_exchange_weak(current, next,
-            //                                 std::memory_order_relaxed,
-            //                                 std::memory_order_relaxed))
-            // {
-            //     next = (current + 1) % Size;
-            // }
-
-            // return current;
-
-            return 0;
-        }
     };
 
     PoolBuffer m_pool_buffer;
@@ -103,7 +86,7 @@ public:
     {
         if (item != nullptr)
         {
-            MeasureTime measure_time("MPSCQueue::push, name: " + GetTypeName<T>::get_name(), MeasureUnit::NANOSECOND);
+            // MeasureTime measure_time("MPSCQueue::push, name: " + GetTypeName<T>::get_name(), MeasureUnit::NANOSECOND);
             // MeasureTime measure_time("MPSCQueue::push", MeasureUnit::NANOSECOND);
 
             if (m_pool_buffer.size.load(std::memory_order_acquire) == Size)
@@ -114,8 +97,6 @@ public:
             // Push item into the pool
             size_t head_index = m_pool_buffer.get_current_head();
             m_pool_buffer.available_items[head_index].ptr.store(item, std::memory_order_release);
-
-            spdlog::debug("MPSCQueue::push, head_index: {}", head_index);
 
             // Increase size only after successfully moving head
             m_pool_buffer.size.fetch_add(1, std::memory_order_release);
@@ -136,19 +117,14 @@ public:
 
         // Pop item from the pool
         size_t tail_index = m_pool_buffer.tail;
-
-        // spdlog::debug("MPSCQueue::pop, current size: {}", m_pool_buffer.size.load(std::memory_order_relaxed));
-        spdlog::debug("MPSCQueue::pop, tail_index: {}", tail_index);
-
         T* item = m_pool_buffer.available_items[tail_index].ptr.load(std::memory_order_acquire);
         if (item == nullptr)
         {
-            // spdlog::debug("MPSCQueue::pop, return");
             _mm_pause();
             return nullptr;
         }
 
-        MeasureTime measure_time("MPSCQueue::pop, name: " + GetTypeName<T>::get_name(), MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::pop, name: " + GetTypeName<T>::get_name(), MeasureUnit::NANOSECOND);
         // MeasureTime measure_time("MPSCQueue::release", MeasureUnit::NANOSECOND);
 
         m_pool_buffer.available_items[tail_index].ptr.store(nullptr, std::memory_order_release);
