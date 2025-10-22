@@ -91,9 +91,6 @@ class CachePool
                 next = (current + 1) % Size;
             }
 
-            // Decrease size only after successfully moving head
-            size.fetch_sub(1, std::memory_order_relaxed);
-
             return current;
         }
 
@@ -108,9 +105,6 @@ class CachePool
             {
                 next = (current + 1) % Size;
             }
-
-            // Increase size only after successfully moving tail
-            size.fetch_add(1, std::memory_order_relaxed);
 
             return current;
         }
@@ -140,6 +134,9 @@ public:
             // Get the item from the pool
             size_t head_index = pool_buffer.get_current_head();
             item = pool_buffer.available_items[head_index].ptr;
+
+            // Decrease size only after successfully moving head
+            pool_buffer.size.fetch_sub(1, std::memory_order_release);
         }
 
         // Check if the item has init method and call it
@@ -164,6 +161,9 @@ public:
                 PoolBuffer& pool_buffer = get_pool_buffer();
                 size_t tail_index = pool_buffer.get_current_tail();
                 pool_buffer.available_items[tail_index].ptr = item;
+
+                // Increase size only after successfully moving tail
+                pool_buffer.size.fetch_add(1, std::memory_order_release);
             }
 
             // Check if the item has clear method and call it
