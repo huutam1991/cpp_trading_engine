@@ -17,7 +17,7 @@ void EventBase::remove_from_event_base(void* id)
 {
     TaskInfoPool::release(static_cast<TaskInfo*>(id));
 
-    // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, TaskInfoPool::total_released_items());
+    // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_ready_task_queue.size());
 }
 
 void EventBase::set_ready_task(void* task_info)
