@@ -39,7 +39,7 @@ public:
     EventBase(size_t id) : m_event_base_id {id} {}
 
     size_t m_event_base_id = 0;
-    uint64_t m_event_id = 1;
+    ReadyTaskQueue m_ready_task_queue;
 
     void* add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address);
     void remove_from_event_base(void* id);

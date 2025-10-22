@@ -22,7 +22,7 @@ void EventBase::remove_from_event_base(void* id)
 
 void EventBase::set_ready_task(void* task_info)
 {
-    ReadyTaskQueue::push(static_cast<TaskInfo*>(task_info));
+    m_ready_task_queue.push(static_cast<TaskInfo*>(task_info));
 }
 
 void EventBase::check_to_remove_task(TaskInfo* task_info)
@@ -40,7 +40,7 @@ void EventBase::loop()
     while (true)
     {
         // Check if there's any task ready to process
-        TaskInfo* task_info = ReadyTaskQueue::pop();
+        TaskInfo* task_info = m_ready_task_queue.pop();
 
         // Continue process this task
         if (task_info != nullptr && task_info->handle != nullptr && task_info->handle.done() == false)
