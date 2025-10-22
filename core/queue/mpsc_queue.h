@@ -120,7 +120,7 @@ public:
         T* item = m_pool_buffer.available_items[tail_index].ptr.load(std::memory_order_acquire);
         if (item == nullptr)
         {
-            _mm_pause();
+            // _mm_pause();
             return nullptr;
         }
 
