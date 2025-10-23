@@ -4,12 +4,10 @@
 
 void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
-    auto a = std::chrono::high_resolution_clock::now();
     TaskInfo* task_info = TaskInfoPool::acquire();
-    // TaskInfo* task_info = new TaskInfo();
     task_info->handle = handle;
     task_info->base_promise_type_address = base_promise_type_address;
-    task_info->start = a;
+    task_info->start = std::chrono::high_resolution_clock::now();
     task_info->is_first_time = true;
 
     // spdlog::info("EventBase: {}, Total task list remaining - add: {} ", m_event_base_id, m_task_list.size());
@@ -20,8 +18,6 @@ void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_pr
 void EventBase::remove_from_event_base(void* id)
 {
     TaskInfoPool::release(static_cast<TaskInfo*>(id));
-    // TaskInfo* task_info = static_cast<TaskInfo*>(id);
-    // delete task_info;
 
     // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_ready_task_queue.size());
 }
