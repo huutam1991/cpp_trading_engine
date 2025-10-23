@@ -17,6 +17,8 @@ struct TaskInfo
 {
     std::coroutine_handle<> handle = nullptr;
     void* base_promise_type_address = nullptr;
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    bool is_first_time = true;
 
     void clear()
     {
