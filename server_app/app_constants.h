@@ -203,9 +203,8 @@ enum IOCId
 
 enum EventBaseID
 {
-    APP,                      // App (currently not used)
     ORDER,                    // OrderManager
-    DB_HELPER,                // Help to data to MongoDB
+    MINOR_TASKS_HELPER,                // Help to data to MongoDB
     GATEWAY,                  // Gateway
 
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot

@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
     Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
     // Init DBHelper with
-    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::DB_HELPER));
+    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::MINOR_TASKS_HELPER));
 
     GatewayManager::instance().init();
     OrderManager::instance().init();
