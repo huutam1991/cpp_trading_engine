@@ -161,11 +161,9 @@ void HttpServer::handle_client_request(int client_fd)
     // Check if request is nullptr (wrong format), return error 404
     if (request == nullptr)
     {
-        std::string response = request->response_not_found_404().get_response_in_string();
-        write_to_socket_io(client_fd, response.c_str(), response.size());
-
-        // Clean save buffer
-        m_save_buffer_by_socket_id[client_fd] = "";
+        // Execute on a single thread
+        auto task = send_404_response(request, client_fd);
+        task.start_running_on(m_event_base);
 
         return;
     }
@@ -185,6 +183,17 @@ void HttpServer::handle_client_request(int client_fd)
     // Execute request on a single thread
     auto task = execute_request(request, client_fd);
     task.start_running_on(m_event_base);
+}
+
+Task<void> HttpServer::send_404_response(HttpRequest* request, int client_fd)
+{
+    std::string response = request->response_not_found_404().get_response_in_string();
+    write_to_socket_io(client_fd, response.c_str(), response.size());
+
+    // Clean save buffer
+    m_save_buffer_by_socket_id[client_fd] = "";
+
+    co_return;
 }
 
 Task<void> HttpServer::execute_request(HttpRequest* request, int client_fd)

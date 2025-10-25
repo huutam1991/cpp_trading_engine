@@ -158,8 +158,6 @@ int HttpsServer::read_buffer(int client_fd, char* const buffer)
 
 void HttpsServer::write_to_socket_io(int client_fd, const char* buffer, std::uint32_t size)
 {
-    std::unique_lock lock(m_server_mutex);
-
     if (check_valid_socket_id(client_fd))
     {
         SSL_write(m_ssl_by_socket_id[client_fd], buffer, size);
@@ -168,7 +166,6 @@ void HttpsServer::write_to_socket_io(int client_fd, const char* buffer, std::uin
 
 void HttpsServer::close_connection(int client_fd)
 {
-    std::unique_lock lock(m_server_mutex);
 
     // Remove old ssl from m_ssl_by_socket_id
     if (check_valid_socket_id(client_fd))
@@ -178,7 +175,6 @@ void HttpsServer::close_connection(int client_fd)
         SSL_free(old_ssl);
         m_ssl_by_socket_id.erase(client_fd);
     }
-    lock.unlock();
 
     m_ssl_accept_success[client_fd] = false;
 

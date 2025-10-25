@@ -28,6 +28,7 @@ public:
 
     void init_socket();
     void start();
+    Task<void> send_404_response(HttpRequest* request, int client_fd);
     Task<void> execute_request(HttpRequest* request, int client_fd);
 
     virtual int accept_new_connection();

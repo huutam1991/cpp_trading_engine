@@ -19,7 +19,6 @@ private:
     SSL_CTX* m_ctx;
     std::unordered_map<int, SSL*> m_ssl_by_socket_id;
     std::unordered_map<int, bool> m_ssl_accept_success;
-    std::mutex m_server_mutex;
 
     SSL_CTX *create_context();
     void configure_context(SSL_CTX *ctx);
