@@ -41,17 +41,12 @@ void EPollWrapper::init_epoll()
     }
 }
 
-void EPollWrapper::stop_waiting()
-{
-    m_is_waiting = false;
-}
-
 void EPollWrapper::start_waitting(std::function<int()> accept_new_connection, std::function<void(int)> handle_client_request)
 {
     epoll_event events[BACKLOG_EPOLL];
 
     int nfds;
-    while (m_is_waiting)
+    while (true)
     {
         if ((nfds = epoll_wait(m_epoll_fd, events, BACKLOG_EPOLL, -1)) == -1)
         {
