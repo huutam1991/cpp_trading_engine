@@ -69,8 +69,7 @@ void HttpServer::init_socket()
     }
     else
     {
-        // LOG(INFO) << "Http server is listening on port: " << m_port << std::endl;
-        spdlog::info("Http server is listening on port: {}", m_port);
+        // spdlog::info("Http server is listening on port: {}", m_port);
     }
 }
 
