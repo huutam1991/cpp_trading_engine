@@ -91,7 +91,7 @@ int HttpServer::accept_new_connection()
 
     if ((client_fd = accept(m_server_fd, (struct sockaddr *) &client_addr, &client_addr_len)) == -1)
     {
-        // LOG(INFO) << "accept: " << std::strerror(errno) << std::endl;
+        spdlog::info("HttpServer - accept: {}", std::strerror(errno));
     }
     else
     {
