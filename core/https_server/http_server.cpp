@@ -98,8 +98,8 @@ int HttpServer::accept_new_connection()
         // LOG(INFO) << "Connection to " << inet_ntoa(client_addr.sin_addr) << " established (fd = " << client_fd << ")" << std::endl;
 
         int dwTimeout = 1000; // milliseconds
-        setsockopt(client_fd, SOL_SOCKET,SO_RCVTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
-        setsockopt(client_fd, SOL_SOCKET,SO_SNDTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
+        setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
+        setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
 
         int buffer_size = 1024 * 1024; // 1 MB
         setsockopt(client_fd, SOL_SOCKET, SO_SNDBUF, &buffer_size, sizeof(buffer_size));
