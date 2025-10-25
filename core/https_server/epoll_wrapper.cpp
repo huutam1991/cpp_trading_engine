@@ -36,7 +36,7 @@ void EPollWrapper::init_epoll()
 
     if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_server_fd, &ev) == -1)
     {
-        // LOG(INFO) << "epoll_ctl: " << std::strerror(errno) << std::endl;
+        spdlog::info("epoll_ctl: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
     }
 }
