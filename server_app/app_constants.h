@@ -203,8 +203,8 @@ enum IOCId
 
 enum EventBaseID
 {
+    SYSTEM_INFRASTRUCTURE,    // All of tasks belong to system infrastructure like: timer, https request, saving data to DB, ...
     ORDER,                    // OrderManager
-    MINOR_TASKS_HELPER,                // Help to data to MongoDB
     GATEWAY,                  // Gateway
 
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
