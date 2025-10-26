@@ -26,7 +26,7 @@ void EPollWrapper::init_epoll()
 {
     if ((m_epoll_fd = epoll_create1(0)) == -1)
     {
-        // LOG(INFO) << "epoll_create1: " << std::strerror(errno) << std::endl;
+        spdlog::info("EPollWrapper - [epoll_create1] error: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -36,7 +36,7 @@ void EPollWrapper::init_epoll()
 
     if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_server_fd, &ev) == -1)
     {
-        spdlog::info("epoll_ctl: {}", std::strerror(errno));
+        spdlog::info("EPollWrapper - [epoll_ctl] error: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
     }
 }
@@ -54,12 +54,12 @@ void EPollWrapper::start_waitting(std::function<int()> accept_new_connection, st
             {
                 // continue; // temporarily put continue here for debuging
 
-                spdlog::info("Exiting main-loop ... , error: {}", std::strerror(errno));
+                spdlog::info("EPollWrapper - Exiting main-loop ... , error: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
             else
             {
-                spdlog::info("EPollWrapper, epoll_wait: {}", std::strerror(errno));
+                spdlog::info("EPollWrapper - [epoll_wait] error: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
         }
@@ -72,13 +72,13 @@ void EPollWrapper::start_waitting(std::function<int()> accept_new_connection, st
                 int client_fd;
                 if ((client_fd = accept_new_connection()) < 0)
                 {
-                    // LOG(INFO) << "accept socket error: " << std::strerror(errno) << std::endl;
+                    spdlog::info("EPollWrapper - accept socket error: {}", std::strerror(errno));
                     continue;
                 }
 
                 if (add_client_fd(client_fd) == -1)
                 {
-                    // LOG(INFO) << "epoll_ctl (EPOLL_CTL_ADD): " << std::strerror(errno) << std::endl;
+                    spdlog::info("EPollWrapper - [epoll_ctl], EPOLL_CTL_ADD error: {}", std::strerror(errno));
                     continue;
                 }
             }
