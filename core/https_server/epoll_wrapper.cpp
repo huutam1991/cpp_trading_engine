@@ -52,13 +52,14 @@ void EPollWrapper::start_waitting(std::function<int()> accept_new_connection, st
         {
             if (errno == EINTR)
             {
-                // LOG(INFO) << "Exiting main-loop..." << std::strerror(errno) << std::endl;
-                continue; // temporarily put continue here for debuging
-                // exit(EXIT_FAILURE);
+                // continue; // temporarily put continue here for debuging
+
+                spdlog::info("Exiting main-loop ... , error: {}", std::strerror(errno));
+                exit(EXIT_FAILURE);
             }
             else
             {
-                // LOG(INFO) << "epoll_wait: " << std::strerror(errno) << std::endl;
+                spdlog::info("EPollWrapper, epoll_wait: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
         }
