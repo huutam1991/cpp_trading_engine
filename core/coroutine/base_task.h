@@ -77,7 +77,7 @@ struct BaseTask
                 base_promise_type->m_event_base->remove_from_event_base(task_ptr);
             }
 
-            // handle.destroy();
+            // handle.destroy(); // Will be destroyed at EventBase
         }
         else
         {
@@ -85,11 +85,6 @@ struct BaseTask
             get_base_promise_type()->is_task_release = true;
         }
     }
-
-    // T value()
-    // {
-    //     return handle.promise().value;
-    // }
 
     // Get BasePromiseType of current coroutine
     BasePromiseType* get_base_promise_type()
