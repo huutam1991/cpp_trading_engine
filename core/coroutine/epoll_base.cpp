@@ -29,7 +29,9 @@ int EpollBase::add_fd(int fd)
 int EpollBase::del_fd(int fd)
 {
     spdlog::info("EPollWrapper - [del_fd] fd: {}", fd);
+    m_system_io_object_list[fd]->release();
     m_system_io_object_list[fd] = nullptr;
+
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
