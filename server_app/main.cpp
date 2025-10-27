@@ -26,6 +26,9 @@
 #include <order/simulator_order.h>
 #include <strategy/strategy_manager.h>
 
+#include <system_io/http_server_socket.h>
+#include <coroutine/epoll_base.h>
+
 extern void add_app_route();
 extern void add_bad_request();
 
@@ -61,16 +64,22 @@ int main(int argc, char **argv) {
     // Init DBHelper with
     DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_INFRASTRUCTURE));
 
-    GatewayManager::instance().init();
-    OrderManager::instance().init();
-    SimulatorOrder::init();
+    // GatewayManager::instance().init();
+    // OrderManager::instance().init();
+    // SimulatorOrder::init();
 
-    // Strategy
-    StrategyManager::instance().init();
+    // // Strategy
+    // StrategyManager::instance().init();
 
     // Server
-    HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
-    server.start();
+    // HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
+    // server.start();
+
+    EpollBase epoll_base;
+    HttpServerSocket* http_server_object = new HttpServerSocket(&epoll_base, 8080);
+    epoll_base.start_running_system_io_object(http_server_object);
+
+    epoll_base.loop();
 
     spdlog::info("Main exit");
 
