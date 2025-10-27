@@ -5,8 +5,6 @@
 
 #include <utils/constants.h>
 #include <app_constants.h>
-#include <https_server/http_server.h>
-#include <https_server/https_server.h>
 #include <websocket/websocket_client_async.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
