@@ -8,6 +8,7 @@
 #include <fcntl.h>
 
 #include "http_server_socket.h"
+#include "http_client_socket.h"
 
 #define BACKLOG_SOCKET 125
 
@@ -55,5 +56,8 @@ void HttpServerSocket::generate_fd()
 
 int HttpServerSocket::handle_io_data()
 {
+    HttpClientSocket* client_socket = new HttpClientSocket(fd);
+    epoll_base->start_running_system_io_object(client_socket);
+
     return 0;
 }
