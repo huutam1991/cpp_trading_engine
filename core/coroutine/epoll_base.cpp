@@ -33,10 +33,9 @@ int EpollBase::del_fd(int fd)
 
 void EpollBase::start_running_system_io_object(SystemIOObject* object)
 {
-    int fd = object->fd;
-    m_system_io_object_list[fd] = object;
-
-    add_fd(fd);
+    object->generate_fd();
+    m_system_io_object_list[object->fd] = object;
+    add_fd(object->fd);
 }
 
 void EpollBase::loop()
