@@ -7,16 +7,11 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-#include <spdlog/spdlog.h>
-#include <https_server/request/http_request.h>
-#include <https_server/route/route_controller.h>
-#include <coroutine/event_base_manager.h>
-
-#include "client_socket.h"
+#include "http_client_socket.h"
 
 #define BUFFER_SIZE 2048
 
-void ClientSocket::generate_fd()
+void HttpClientSocket::generate_fd()
 {
     sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
@@ -48,7 +43,7 @@ void ClientSocket::generate_fd()
     fcntl(fd, F_SETFL, O_NONBLOCK);
 }
 
-int ClientSocket::handle_io_data()
+int HttpClientSocket::handle_io_data()
 {
     char buffer[BUFFER_SIZE];
     char temp_buffer[BUFFER_SIZE];
@@ -116,17 +111,17 @@ int ClientSocket::handle_io_data()
     return 0;
 }
 
-int ClientSocket::read_buffer(char* const buffer)
+int HttpClientSocket::read_buffer(char* const buffer)
 {
     return read(fd, buffer, BUFFER_SIZE);
 }
 
-void ClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
+void HttpClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     write(fd, buffer, size);
 }
 
-Task<void> ClientSocket::send_404_response(HttpRequest* request)
+Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
 {
     std::string response = request->response_not_found_404().get_response_in_string();
     write_to_socket_io(response.c_str(), response.size());
@@ -137,7 +132,7 @@ Task<void> ClientSocket::send_404_response(HttpRequest* request)
     co_return;
 }
 
-Task<void> ClientSocket::execute_request(HttpRequest* request)
+Task<void> HttpClientSocket::execute_request(HttpRequest* request)
 {
     std::string response = co_await RouteController::instance().handle_request_base_on_route(request);
     write_to_socket_io(response.c_str(), response.size());

@@ -7,11 +7,11 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-#include "server_socket.h"
+#include "http_server_socket.h"
 
 #define BACKLOG_SOCKET 125
 
-void ServerSocket::generate_fd()
+void HttpServerSocket::generate_fd()
 {
     sockaddr_in addr;
     int reuse = 1;
@@ -53,7 +53,7 @@ void ServerSocket::generate_fd()
     }
 }
 
-int ServerSocket::handle_io_data()
+int HttpServerSocket::handle_io_data()
 {
-
+    return 0;
 }

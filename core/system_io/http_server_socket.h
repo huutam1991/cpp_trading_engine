@@ -2,11 +2,11 @@
 
 #include "system_io_object.h"
 
-struct ServerSocket : public SystemIOObject
+struct HttpServerSocket : public SystemIOObject
 {
     int port;
 
-    ServerSocket(int port_value) : port{port_value} {}
+    HttpServerSocket(int port_value) : port{port_value} {}
 
     // SystemIOObject's methods
     virtual void generate_fd();

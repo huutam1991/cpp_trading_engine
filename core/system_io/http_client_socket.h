@@ -1,14 +1,19 @@
 #pragma once
 
+#include <spdlog/spdlog.h>
 #include <coroutine/task.h>
+#include <coroutine/event_base_manager.h>
+#include <https_server/request/http_request.h>
+#include <https_server/route/route_controller.h>
+
 #include "system_io_object.h"
 
-struct ClientSocket : public SystemIOObject
+struct HttpClientSocket : public SystemIOObject
 {
     int server_fd;
     std::string save_buffer;
 
-    ClientSocket(int server_fd_value) : server_fd{server_fd_value} {}
+    HttpClientSocket(int server_fd_value) : server_fd{server_fd_value} {}
 
     // SystemIOObject's methods
     virtual void generate_fd();
