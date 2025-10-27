@@ -122,6 +122,11 @@ int HttpClientSocket::handle_io_data()
     return 0;
 }
 
+void HttpClientSocket::release()
+{
+    HttpClientSocketPool::release(this);
+}
+
 Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
 {
     std::string response = request->response_not_found_404().get_response_in_string();

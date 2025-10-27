@@ -9,4 +9,5 @@ struct SystemIOObject
 
     virtual void generate_fd() = 0;
     virtual int handle_io_data() = 0;
+    virtual void release() = 0;
 };

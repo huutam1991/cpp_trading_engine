@@ -13,4 +13,5 @@ struct HttpServerSocket : public SystemIOObject
     // SystemIOObject's methods
     virtual void generate_fd();
     virtual int handle_io_data();
+    virtual void release();
 };

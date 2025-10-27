@@ -60,5 +60,12 @@ int HttpServerSocket::handle_io_data()
     client_socket->set_server_fd(fd);
     epoll_base->start_living_on(client_socket);
 
+    spdlog::info("Size of HttpClientSocketPool = {}", HttpClientSocketPool::size());
+
     return 0;
+}
+
+void HttpServerSocket::release()
+{
+    // Nothing to release for server socket
 }
