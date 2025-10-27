@@ -8,9 +8,9 @@
 
 enum SSL_ACCEPT_STATUS
 {
-    OK,
-    WANT_IO,
-    ERROR
+    ERROR = -1,
+    OK = 0,
+    WANT_IO = 1
 };
 
 class HttpsServer : public HttpServer

@@ -20,11 +20,11 @@ struct HttpClientSocket : public SystemIOObject
     // SystemIOObject's methods
     virtual int generate_fd();
     virtual int handle_io_data();
+    virtual void release();
 
     // Handle data methods
     virtual int read_buffer(char* const buffer);
     virtual void write_to_socket_io(const char* buffer, std::uint32_t size);
-    virtual void release();
 
     Task<void> send_404_response(HttpRequest* request);
     Task<void> execute_request(HttpRequest* request);

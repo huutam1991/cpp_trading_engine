@@ -9,8 +9,6 @@ struct HttpsServerSocket : public HttpServerSocket
 {
     int port;
     SSL_CTX* ctx;
-    SSL* ssl;
-    bool ssl_accept_success;
 
     SSL_CTX *create_context();
     void configure_context(SSL_CTX *ctx);
