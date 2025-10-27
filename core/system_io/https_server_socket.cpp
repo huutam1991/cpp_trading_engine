@@ -36,12 +36,14 @@ void HttpsServerSocket::configure_context(SSL_CTX *ctx)
     /* Set the key and cert */
     if (SSL_CTX_use_certificate_file(ctx, SSL_SERVER_CERTIFICATE, SSL_FILETYPE_PEM) <= 0)
     {
+        spdlog::error("Unable to set SSL certificate");
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
     if (SSL_CTX_use_PrivateKey_file(ctx, SSL_PRIVATE_KEY, SSL_FILETYPE_PEM) <= 0 )
     {
+        spdlog::error("Unable to set SSL private key");
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
