@@ -52,3 +52,8 @@ void ServerSocket::generate_fd()
         // spdlog::info("Http server is listening on port: {}", m_port);
     }
 }
+
+void ServerSocket::handle_io_data()
+{
+
+}
