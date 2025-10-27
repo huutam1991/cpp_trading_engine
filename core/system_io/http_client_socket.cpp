@@ -111,16 +111,6 @@ int HttpClientSocket::handle_io_data()
     return 0;
 }
 
-int HttpClientSocket::read_buffer(char* const buffer)
-{
-    return read(fd, buffer, BUFFER_SIZE);
-}
-
-void HttpClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
-{
-    write(fd, buffer, size);
-}
-
 Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
 {
     std::string response = request->response_not_found_404().get_response_in_string();
@@ -140,4 +130,14 @@ Task<void> HttpClientSocket::execute_request(HttpRequest* request)
     delete request;
 
     co_return;
+}
+
+int HttpClientSocket::read_buffer(char* const buffer)
+{
+    return read(fd, buffer, BUFFER_SIZE);
+}
+
+void HttpClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
+{
+    write(fd, buffer, size);
 }
