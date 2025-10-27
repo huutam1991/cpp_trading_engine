@@ -47,10 +47,10 @@ void HttpsServerSocket::configure_context(SSL_CTX *ctx)
     }
 }
 
-void HttpsServerSocket::generate_fd()
+int HttpsServerSocket::generate_fd()
 {
     // Exactly the same as HttpServerSocket
-    HttpServerSocket::generate_fd();
+    return HttpServerSocket::generate_fd();
 }
 
 int HttpsServerSocket::handle_io_data()

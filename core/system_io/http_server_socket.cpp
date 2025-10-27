@@ -12,7 +12,7 @@
 
 #define BACKLOG_SOCKET 125
 
-void HttpServerSocket::generate_fd()
+int HttpServerSocket::generate_fd()
 {
     sockaddr_in addr;
     int reuse = 1;
@@ -52,6 +52,8 @@ void HttpServerSocket::generate_fd()
     {
         // spdlog::info("Http server is listening on port: {}", m_port);
     }
+
+    return fd;
 }
 
 int HttpServerSocket::handle_io_data()

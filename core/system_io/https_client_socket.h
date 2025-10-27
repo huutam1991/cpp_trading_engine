@@ -10,7 +10,7 @@ struct HttpsClientSocket : public HttpClientSocket
     void clear();
 
     // SystemIOObject's methods
-    virtual void generate_fd();
+    virtual int generate_fd();
     virtual int handle_io_data();
 
     // Handle data methods

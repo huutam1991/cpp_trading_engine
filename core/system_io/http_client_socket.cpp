@@ -22,7 +22,7 @@ void HttpClientSocket::clear()
     save_buffer = "";
 }
 
-void HttpClientSocket::generate_fd()
+int HttpClientSocket::generate_fd()
 {
     sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
@@ -52,6 +52,8 @@ void HttpClientSocket::generate_fd()
     }
 
     fcntl(fd, F_SETFL, O_NONBLOCK);
+
+    return fd;
 }
 
 int HttpClientSocket::handle_io_data()
