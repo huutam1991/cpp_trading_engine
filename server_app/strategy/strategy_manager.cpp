@@ -82,7 +82,7 @@ Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
     // If cannot find [strategy_name], return error
     return {
         {"code", -1},
-        {"message", "no strategy with name: [" + strategy_name + "]"}
+        {"message", "No strategy is running has name: [" + strategy_name + "]"}
     };
 }
 
@@ -103,7 +103,7 @@ Json StrategyManager::update_config_by_strategy(const std::string& strategy_name
     // If cannot find [strategy_name], return error
     return {
         {"code", -1},
-        {"message", "no strategy with name: [" + strategy_name + "]"}
+        {"message", "No strategy is running has name: [" + strategy_name + "]"}
     };
 }
 
@@ -120,6 +120,6 @@ Json StrategyManager::get_info(const std::string& strategy_name, Json& params)
     // If cannot find [strategy_name], return error
     return {
         {"code", -1},
-        {"message", "no strategy with name: [" + strategy_name + "]"}
+        {"message", "No strategy is running has name: [" + strategy_name + "]"}
     };
 }
