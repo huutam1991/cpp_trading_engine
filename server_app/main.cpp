@@ -58,11 +58,11 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    // Init Timer with ioc TIMER
-    Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    // // Init Timer with ioc TIMER
+    // Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
     // Init DBHelper with
-    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_INFRASTRUCTURE));
+    // DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_INFRASTRUCTURE));
 
     // GatewayManager::instance().init();
     // OrderManager::instance().init();
