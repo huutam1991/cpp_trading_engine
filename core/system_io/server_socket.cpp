@@ -33,7 +33,7 @@ void ServerSocket::generate_fd()
     setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof(buffer_size));
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(m_port);
+    addr.sin_port = htons(port);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(fd, (sockaddr*) &addr, sizeof(sockaddr)) == -1)

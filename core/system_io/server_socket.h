@@ -4,9 +4,9 @@
 
 struct ServerSocket : public SystemIOObject
 {
-    int m_port;
+    int port;
 
-    ServerSocket(int port) : m_port{port} {}
+    ServerSocket(int port_value) : port{port_value} {}
 
     // SystemIOObject's methods
     virtual void generate_fd();
