@@ -38,9 +38,16 @@ int EpollBase::del_fd(int fd)
 void EpollBase::start_living_on(SystemIOObject* object)
 {
     object->epoll_base = this;
-    object->generate_fd();
-    m_system_io_object_list[object->fd] = object;
-    add_fd(object->fd);
+
+    int fd = object->generate_fd();
+    if (fd < 0)
+    {
+        spdlog::error("EpollBase - [start_living_on] generate_fd error for fd: {}", fd);
+        return;
+    }
+
+    m_system_io_object_list[fd] = object;
+    add_fd(fd);
 }
 
 void EpollBase::loop()
