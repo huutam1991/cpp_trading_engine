@@ -58,23 +58,20 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    // // Init Timer with ioc TIMER
-    // Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    // Init Timer with ioc TIMER
+    Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
     // Init DBHelper with
-    // DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_INFRASTRUCTURE));
+    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_INFRASTRUCTURE));
 
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
-    // SimulatorOrder::init();
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
+    SimulatorOrder::init();
 
-    // // Strategy
-    // StrategyManager::instance().init();
+    // Strategy
+    StrategyManager::instance().init();
 
-    // Server
-    // HttpsServer server(port, web_data_path, EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY));
-    // server.start();
-
+    // Start HTTPS server - running on EpollBase
     EpollBase epoll_base;
     HttpsServerSocket* https_server_object = new HttpsServerSocket(8080);
     epoll_base.start_living_on(https_server_object);
