@@ -56,7 +56,8 @@ void HttpServerSocket::generate_fd()
 
 int HttpServerSocket::handle_io_data()
 {
-    HttpClientSocket* client_socket = new HttpClientSocket(fd);
+    HttpClientSocket* client_socket = HttpClientSocketPool::acquire();
+    client_socket->set_server_fd(fd);
     epoll_base->start_living_on(client_socket);
 
     return 0;

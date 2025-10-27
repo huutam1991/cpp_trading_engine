@@ -11,6 +11,17 @@
 
 #define BUFFER_SIZE 2048
 
+void HttpClientSocket::set_server_fd(int fd_value)
+{
+    server_fd = fd_value;
+}
+
+void HttpClientSocket::clear()
+{
+    server_fd = -1;
+    save_buffer = "";
+}
+
 void HttpClientSocket::generate_fd()
 {
     sockaddr_in client_addr;
