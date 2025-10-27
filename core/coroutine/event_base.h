@@ -45,7 +45,7 @@ public:
 
     void* add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address);
     void remove_from_event_base(void* id);
-    void set_ready_task(void* task_info);
     void check_to_remove_task(TaskInfo* task_info);
-    void loop();
+    virtual void set_ready_task(void* task_info);
+    virtual void loop();
 };
