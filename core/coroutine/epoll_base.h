@@ -15,6 +15,6 @@ class EpollBase : public EventBase
 public:
     EpollBase();
 
-    void start_running_system_io_object(SystemIOObject* object);
+    void start_living_on(SystemIOObject* object);
     void loop();
 };

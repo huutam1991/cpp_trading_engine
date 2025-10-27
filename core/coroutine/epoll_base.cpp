@@ -33,7 +33,7 @@ int EpollBase::del_fd(int fd)
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
-void EpollBase::start_running_system_io_object(SystemIOObject* object)
+void EpollBase::start_living_on(SystemIOObject* object)
 {
     object->epoll_base = this;
     object->generate_fd();
