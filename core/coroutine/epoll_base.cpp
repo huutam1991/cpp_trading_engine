@@ -3,7 +3,7 @@
 
 #include "epoll_base.h"
 
-#define MAX_EPOLL_EVENTS 1000
+#define MAX_EPOLL_EVENTS 10000
 
 EpollBase::EpollBase()
 {
@@ -19,7 +19,7 @@ EpollBase::EpollBase()
 int EpollBase::add_fd(int fd)
 {
     epoll_event ev;
-    ev.events = EPOLLIN;
+    ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
     ev.data.fd = fd;
     spdlog::info("EPollWrapper - [add_fd] fd: {}", fd);
 
