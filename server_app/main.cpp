@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
     // Start HTTPS server - running on EpollBase
     EpollBase epoll_base;
-    HttpsServerSocket* https_server_object = new HttpsServerSocket(8080);
+    HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     epoll_base.start_living_on(https_server_object);
 
     epoll_base.loop();
