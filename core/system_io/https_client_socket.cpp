@@ -1,12 +1,3 @@
-#include <iostream>
-#include <string>
-#include <cstring>
-#include <signal.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-
 #include "https_client_socket.h"
 
 #define BUFFER_SIZE 2048
