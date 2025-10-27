@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     // server.start();
 
     EpollBase epoll_base;
-    HttpServerSocket* http_server_object = new HttpServerSocket(&epoll_base, 8080);
+    HttpServerSocket* http_server_object = new HttpServerSocket(8080);
     epoll_base.start_running_system_io_object(http_server_object);
 
     epoll_base.loop();

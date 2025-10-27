@@ -21,18 +21,21 @@ int EpollBase::add_fd(int fd)
     epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.fd = fd;
+    spdlog::info("EPollWrapper - [add_fd] fd: {}", fd);
 
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 int EpollBase::del_fd(int fd)
 {
+    spdlog::info("EPollWrapper - [del_fd] fd: {}", fd);
     m_system_io_object_list[fd] = nullptr;
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
 void EpollBase::start_running_system_io_object(SystemIOObject* object)
 {
+    object->epoll_base = this;
     object->generate_fd();
     m_system_io_object_list[object->fd] = object;
     add_fd(object->fd);
@@ -69,7 +72,7 @@ void EpollBase::loop()
             SystemIOObject* io_object = m_system_io_object_list[fd];
             int res = io_object->handle_io_data();
 
-            // -1 means there's error with handle io data and need to close this fd
+            // [-1] means there's error with handle io data and need to close this fd
             if (res == -1)
             {
                 del_fd(fd);
