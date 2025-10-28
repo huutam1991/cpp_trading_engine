@@ -8,10 +8,9 @@
 class EpollBase : public EventBase
 {
     int m_epoll_fd;
-    std::vector<std::variant<SystemIOObject*, TaskInfo*, std::nullptr_t>> m_system_io_object_list;
 
-    int add_fd(int client_fd);
-    int del_fd(int client_fd);
+    int add_fd(int fd, void* ptr);
+    int del_fd(int fd);
 
 public:
     EpollBase();
