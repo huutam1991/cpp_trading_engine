@@ -52,11 +52,11 @@ void EpollBase::start_living_on(SystemIOObject* object)
 
 void EpollBase::set_ready_task(void* task_info)
 {
-    TaskInfo* task = static_cast<TaskInfo*>(task_info);
+    SystemIOObject* task = static_cast<SystemIOObject*>(task_info);
     int fd = task->generate_fd();
     if (fd < 0)
     {
-        spdlog::error("EpollBase - [set_ready_task] generate_fd error for fd: {}", fd);
+        spdlog::error("EpollBase - [set_ready_task], TaskInfo generate_fd error for fd: {}", fd);
         return;
     }
 
