@@ -2,7 +2,6 @@
 
 #include <variant>
 #include <system_io/system_io_object.h>
-#include <system_io/user_task.h>
 
 #include "event_base.h"
 
