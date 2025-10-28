@@ -14,7 +14,7 @@ class EpollBase : public EventBase
     int del_fd(int fd, SystemIOObject* ptr);
 
 public:
-    EpollBase();
+    EpollBase(size_t id);
 
     void start_living_on(SystemIOObject* object);
     virtual void set_ready_task(void* task_info);

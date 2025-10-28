@@ -19,7 +19,7 @@ protected:
 
 public:
     StrategyBase() :
-        StrategyAbstract(EventBaseManager::get_event_base_by_id(eventBaseID)),
+        StrategyAbstract(EventBaseManager<EventBaseID>::get_event_base_by_id((EventBaseID)eventBaseID)),
         m_strategy_name(enum_reflect::enum_name<EventBaseID>((EventBaseID)eventBaseID)),
         m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name, "config")},
         m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name, "state")}

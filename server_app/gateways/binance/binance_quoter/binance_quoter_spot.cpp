@@ -19,7 +19,7 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
 
     // Event base: GATEWAY
-    m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
+    m_event_base = EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::GATEWAY);
 
     init_websocket();
 }

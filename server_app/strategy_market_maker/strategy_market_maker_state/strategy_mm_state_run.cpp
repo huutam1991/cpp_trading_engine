@@ -6,7 +6,7 @@
 #include <utils/utils.h>
 
 StrategyMarketMakerStateRun::StrategyMarketMakerStateRun(std::shared_ptr<Gateway> gateway, const StrategyMarketMakerConfig& config, VolumeStat& volume_stat, PnL& pnl)
-    : m_gateway{gateway}, m_config{config}, m_event_base{EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY)}, m_volume_stat{volume_stat}, m_pnl{pnl}
+    : m_gateway{gateway}, m_config{config}, m_event_base{EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY)}, m_volume_stat{volume_stat}, m_pnl{pnl}
 {
 }
 

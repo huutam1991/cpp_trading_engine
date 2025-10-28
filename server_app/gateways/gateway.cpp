@@ -5,7 +5,7 @@
 #include <order/simulator_order.h>
 
 Gateway::Gateway() : m_event_base {
-    EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
+    EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::GATEWAY) // Default is GATEWAY
 }
 {}
 

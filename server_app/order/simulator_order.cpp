@@ -8,7 +8,7 @@ SavableObject<SimulatorOrder::SimulatorConfig>& SimulatorOrder::get_config()
 
 EventBase* SimulatorOrder::get_event_base()
 {
-    static EventBase* m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
+    static EventBase* m_event_base = EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::ORDER);
     return m_event_base;
 }
 

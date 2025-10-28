@@ -6,13 +6,15 @@
 
 #define MAX_EPOLL_EVENTS 10000
 
-EpollBase::EpollBase()
+EpollBase::EpollBase(size_t id) : EventBase(id)
 {
     if ((m_epoll_fd = epoll_create1(0)) == -1)
     {
         spdlog::info("EpollBase - [epoll_create1] error: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
     }
+
+    spdlog::info("EpollBase - Created EpollBase with id: {}", m_event_base_id);
 }
 
 int EpollBase::add_fd(int fd, SystemIOObject* ptr)
