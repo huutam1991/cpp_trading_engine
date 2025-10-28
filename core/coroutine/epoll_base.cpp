@@ -1,4 +1,5 @@
 #include <sys/epoll.h>
+#include <sys/eventfd.h>
 #include <netinet/in.h>
 
 #include "epoll_base.h"
@@ -51,40 +52,19 @@ void EpollBase::start_living_on(SystemIOObject* object)
 
 void EpollBase::set_ready_task(void* task_info)
 {
-    UserTask* user_task = UserTaskPool::acquire();
-
-    user_task->task = static_cast<TaskInfo*>(task_info);
-    user_task->set_handle_function([](UserTask* user_task) -> int
+    TaskInfo* task = static_cast<TaskInfo*>(task_info);
+    int fd = task->generate_fd();
+    if (fd < 0)
     {
-        TaskInfo* task_info = static_cast<TaskInfo*>(user_task->task);
-        if (task_info != nullptr && task_info->handle != nullptr)
-        {
-            if (task_info->handle.done() == false)
-            {
-                if (task_info->is_first_time == true)
-                {
-                    task_info->is_first_time = false;
-                    auto duration = std::chrono::high_resolution_clock::now() - task_info->start;
-                    auto duration_count = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+        spdlog::error("EpollBase - [set_ready_task] generate_fd error for fd: {}", fd);
+        return;
+    }
 
-                    // spdlog::debug("EpollBase: {}, Task first wait time: {} microsecond", m_event_base_id, duration_count / 1000.0);
-                }
+    // Add to epoll
+    add_fd(fd, task);
 
-                task_info->handle.resume();
-
-                if (task_info->handle.done() == true)
-                {
-                    return -1; // Indicate to release this task
-                }
-            }
-
-            return 0;
-        }
-        else
-        {
-            return -1;
-        }
-    });
+    // Mark this task is ready
+    eventfd_write(fd, 1);
 }
 
 void EpollBase::loop()

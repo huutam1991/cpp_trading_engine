@@ -24,6 +24,24 @@ void TaskInfo::check_handle()
     }
 }
 
+int TaskInfo::generate_fd()
+{
+    int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    return fd;
+}
+
+int TaskInfo::handle_io_data()
+{
+    check_handle();
+    // Always return -1 to indicate this task is done
+    return -1;
+}
+
+void TaskInfo::release()
+{
+    // Do nothing here, will be release at EventBase
+}
+
 void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
     TaskInfo* task_info = TaskInfoPool::acquire();
@@ -42,7 +60,7 @@ void EventBase::remove_from_event_base(void* id)
 {
     TaskInfoPool::release(static_cast<TaskInfo*>(id));
 
-    // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_ready_task_queue.size());
+    spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_ready_task_queue.size());
 }
 
 void EventBase::set_ready_task(void* task_info)

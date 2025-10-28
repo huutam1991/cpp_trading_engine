@@ -5,17 +5,18 @@
 #include <coroutine>
 #include <thread>
 #include <iostream>
+#include <sys/eventfd.h>
 
 #include <cache/cache_pool.h>
 #include <utils/util_macros.h>
 #include <queue/mpsc_queue.h>
-#include <utils/spin_lock.h>
+#include <system_io/system_io_object.h>
 
 #define MAX_TASK_INFO 20000
 
 class EventBase;
 
-struct TaskInfo
+struct TaskInfo : public SystemIOObject
 {
     std::coroutine_handle<> handle = nullptr;
     void* base_promise_type_address = nullptr;
@@ -35,6 +36,11 @@ struct TaskInfo
     }
 
     void check_handle();
+
+    // SystemIOObject's methods
+    virtual int generate_fd();
+    virtual int handle_io_data();
+    virtual void release();
 };
 
 using TaskInfoPool = CachePool<TaskInfo, MAX_TASK_INFO>;
