@@ -18,7 +18,6 @@ int EpollBase::add_fd(int fd, void* ptr)
 {
     epoll_event ev;
     ev.events = EPOLLIN;
-    ev.data.fd = fd;
     ev.data.ptr = ptr;
     spdlog::info("EPollWrapper - [add_fd] fd: {}", fd);
 
@@ -77,10 +76,10 @@ void EpollBase::loop()
         for (int i = 0; i < nfds; i++)
         {
             // if fd is server, accept the new connection
-            int fd = events[i].data.fd;
             void* ptr = events[i].data.ptr;
-
             SystemIOObject* io_object = static_cast<SystemIOObject*>(ptr);
+            int fd = io_object->fd;
+
             int res = io_object->handle_io_data();
 
             // [-1] means there's error with handle io data and need to close this fd
