@@ -20,14 +20,14 @@ int EpollBase::add_fd(int fd, SystemIOObject* ptr)
     epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.ptr = ptr;
-    spdlog::info("EpollBase - [add_fd] fd: {}", fd);
+    // spdlog::debug("EpollBase - [add_fd] fd: {}", fd);
 
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 int EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
-    spdlog::info("EpollBase - [del_fd] fd: {}", fd);
+    // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
     if (ptr != nullptr)
     {
         ptr->release();

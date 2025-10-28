@@ -12,7 +12,9 @@ void TaskInfo::check_handle()
             auto duration = std::chrono::high_resolution_clock::now() - start;
             auto duration_count = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
 
-            // spdlog::debug("EventBase: {}, Task first wait time: {} microsecond", m_event_base_id, duration_count / 1000.0);
+            std::string name = event_base->m_event_base_id == 0 ? "EpollBase" : "EventBase";
+
+            // spdlog::debug("{}: {}, Task first wait time: {} microsecond", name, event_base->m_event_base_id, duration_count / 1000.0);
         }
 
         handle.resume();
