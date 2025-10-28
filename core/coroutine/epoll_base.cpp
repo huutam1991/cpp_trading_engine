@@ -14,7 +14,7 @@ EpollBase::EpollBase()
     }
 }
 
-int EpollBase::add_fd(int fd, void* ptr)
+int EpollBase::add_fd(int fd, SystemIOObject* ptr)
 {
     epoll_event ev;
     ev.events = EPOLLIN;
@@ -24,9 +24,13 @@ int EpollBase::add_fd(int fd, void* ptr)
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
-int EpollBase::del_fd(int fd)
+int EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
     spdlog::info("EPollWrapper - [del_fd] fd: {}", fd);
+    if (ptr != nullptr)
+    {
+        ptr->release();
+    }
 
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
@@ -47,7 +51,40 @@ void EpollBase::start_living_on(SystemIOObject* object)
 
 void EpollBase::set_ready_task(void* task_info)
 {
-    TaskInfo* ti = static_cast<TaskInfo*>(task_info);
+    UserTask* user_task = UserTaskPool::acquire();
+
+    user_task->task = static_cast<TaskInfo*>(task_info);
+    user_task->set_handle_function([](UserTask* user_task) -> int
+    {
+        TaskInfo* task_info = static_cast<TaskInfo*>(user_task->task);
+        if (task_info != nullptr && task_info->handle != nullptr)
+        {
+            if (task_info->handle.done() == false)
+            {
+                if (task_info->is_first_time == true)
+                {
+                    task_info->is_first_time = false;
+                    auto duration = std::chrono::high_resolution_clock::now() - task_info->start;
+                    auto duration_count = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+                    // spdlog::debug("EpollBase: {}, Task first wait time: {} microsecond", m_event_base_id, duration_count / 1000.0);
+                }
+
+                task_info->handle.resume();
+
+                if (task_info->handle.done() == true)
+                {
+                    return -1; // Indicate to release this task
+                }
+            }
+
+            return 0;
+        }
+        else
+        {
+            return -1;
+        }
+    });
 }
 
 void EpollBase::loop()
@@ -85,7 +122,7 @@ void EpollBase::loop()
             // [-1] means there's error with handle io data and need to close this fd
             if (res == -1)
             {
-                del_fd(fd);
+                del_fd(fd, io_object);
             }
         }
     }

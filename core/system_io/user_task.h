@@ -8,9 +8,9 @@
 struct UserTask : public SystemIOObject
 {
     void* task = nullptr;
-    std::function<int()> handle_function = nullptr;
+    std::function<int(UserTask*)> handle_function = nullptr;
 
-    void set_handle_function(std::function<int()> func)
+    void set_handle_function(std::function<int(UserTask*)> func)
     {
         handle_function = std::move(func);
     }

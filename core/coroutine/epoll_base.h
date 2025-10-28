@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <system_io/system_io_object.h>
+#include <system_io/user_task.h>
 
 #include "event_base.h"
 
@@ -9,8 +10,8 @@ class EpollBase : public EventBase
 {
     int m_epoll_fd;
 
-    int add_fd(int fd, void* ptr);
-    int del_fd(int fd);
+    int add_fd(int fd, SystemIOObject* ptr);
+    int del_fd(int fd, SystemIOObject* ptr);
 
 public:
     EpollBase();
