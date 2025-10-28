@@ -11,7 +11,7 @@ int UserTask::handle_io_data()
 {
     if (handle_function)
     {
-        return handle_function();
+        return handle_function(this);
     }
 
     return -1;
