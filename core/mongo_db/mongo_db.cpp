@@ -14,7 +14,7 @@ mongocxx::pool& MongoDB::get_pool()
                 uri = MONGO_URI_PROD;
             }
         }
-        spdlog::debug("MONGO_URI = {}", uri);
+        spdlog::info("MONGO_URI = {}", uri);
 
         // Use SpinLock to ensure thread safety when initializing the pool
         SpinLockGuard lock(m_spin_lock);
