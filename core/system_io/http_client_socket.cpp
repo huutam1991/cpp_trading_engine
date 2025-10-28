@@ -100,7 +100,7 @@ int HttpClientSocket::handle_io_data()
     {
         // Execute on a single thread
         auto task = send_404_response(request);
-        task.start_running_on(EventBaseManager::get_event_base_by_id(0)); // Temporarily hard code 0 here, should update later
+        task.start_running_on((EventBase*)epoll_base);
 
         return 0;
     }
@@ -119,7 +119,7 @@ int HttpClientSocket::handle_io_data()
 
     // Execute request on a single thread
     auto task = execute_request(request);
-    task.start_running_on(EventBaseManager::get_event_base_by_id(0)); // Temporarily hard code 0 here, should update later
+    task.start_running_on((EventBase*)epoll_base);
 
     return 0;
 }

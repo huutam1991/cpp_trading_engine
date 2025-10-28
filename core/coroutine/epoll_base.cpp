@@ -92,11 +92,10 @@ void EpollBase::loop()
 
         for (int i = 0; i < nfds; i++)
         {
-            // if fd is server, accept the new connection
-            void* ptr = events[i].data.ptr;
-            SystemIOObject* io_object = static_cast<SystemIOObject*>(ptr);
+            SystemIOObject* io_object = static_cast<SystemIOObject*>(events[i].data.ptr);
             int fd = io_object->fd;
 
+            // Handle IO data
             int res = io_object->handle_io_data();
 
             // [-1] means there's error with handle io data and need to close this fd
