@@ -17,7 +17,7 @@ EpollBase::EpollBase()
 int EpollBase::add_fd(int fd, void* ptr)
 {
     epoll_event ev;
-    ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+    ev.events = EPOLLIN;
     ev.data.fd = fd;
     ev.data.ptr = ptr;
     spdlog::info("EPollWrapper - [add_fd] fd: {}", fd);
