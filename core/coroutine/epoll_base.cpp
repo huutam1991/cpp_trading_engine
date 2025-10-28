@@ -29,7 +29,20 @@ int EpollBase::add_fd(int fd)
 int EpollBase::del_fd(int fd)
 {
     spdlog::info("EPollWrapper - [del_fd] fd: {}", fd);
-    m_system_io_object_list[fd]->release();
+
+    if (std::holds_alternative<SystemIOObject*>(m_system_io_object_list[fd]))
+    {
+        SystemIOObject* object = std::get<SystemIOObject*>(m_system_io_object_list[fd]);
+        object->release();
+    }
+    else if (std::holds_alternative<TaskInfo*>(m_system_io_object_list[fd]))
+    {
+        TaskInfo* task_info =  std::get<TaskInfo*>(m_system_io_object_list[fd]);
+        if (task_info != nullptr)
+        {
+            check_to_remove_task(task_info);
+        }
+    }
     m_system_io_object_list[fd] = nullptr;
 
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
@@ -83,13 +96,39 @@ void EpollBase::loop()
             // if fd is server, accept the new connection
             int fd = events[i].data.fd;
 
-            SystemIOObject* io_object = m_system_io_object_list[fd];
-            int res = io_object->handle_io_data();
-
-            // [-1] means there's error with handle io data and need to close this fd
-            if (res == -1)
+            if (std::holds_alternative<SystemIOObject*>(m_system_io_object_list[fd]))
             {
-                del_fd(fd);
+                SystemIOObject* io_object = std::get<SystemIOObject*>(m_system_io_object_list[fd]);
+                int res = io_object->handle_io_data();
+
+                // [-1] means there's error with handle io data and need to close this fd
+                if (res == -1)
+                {
+                    del_fd(fd);
+                }
+            }
+            else if (std::holds_alternative<TaskInfo*>(m_system_io_object_list[fd]))
+            {
+                TaskInfo* task_info = std::get<TaskInfo*>(m_system_io_object_list[fd]);
+
+                if (task_info != nullptr && task_info->handle != nullptr && task_info->handle.done() == false)
+                {
+                    if (task_info->is_first_time == true)
+                    {
+                        task_info->is_first_time = false;
+                        auto duration = std::chrono::high_resolution_clock::now() - task_info->start;
+                        auto duration_count = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+
+                        // spdlog::debug("EventBase: {}, Task first wait time: {} microsecond", m_event_base_id, duration_count / 1000.0);
+                    }
+
+                    task_info->handle.resume();
+
+                    if (task_info->handle.done() == true)
+                    {
+                        del_fd(fd);
+                    }
+                }
             }
         }
     }
