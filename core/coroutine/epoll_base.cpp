@@ -10,7 +10,7 @@ EpollBase::EpollBase(size_t id) : EventBase(id)
 {
     if ((m_epoll_fd = epoll_create1(0)) == -1)
     {
-        spdlog::info("EpollBase - [epoll_create1] error: {}", std::strerror(errno));
+        spdlog::error("EpollBase - [epoll_create1] error: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -82,12 +82,12 @@ void EpollBase::loop()
             {
                 // continue; // temporarily put continue here for debuging
 
-                spdlog::info("EpollBase - Exiting main-loop ... , error: {}", std::strerror(errno));
+                spdlog::error("EpollBase - Exiting main-loop ... , error: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
             else
             {
-                spdlog::info("EpollBase - [epoll_wait] error: {}", std::strerror(errno));
+                spdlog::error("EpollBase - [epoll_wait] error: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
         }
