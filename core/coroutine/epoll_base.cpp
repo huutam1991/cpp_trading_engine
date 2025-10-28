@@ -119,7 +119,7 @@ void EpollBase::loop()
                         auto duration = std::chrono::high_resolution_clock::now() - task_info->start;
                         auto duration_count = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
 
-                        // spdlog::debug("EventBase: {}, Task first wait time: {} microsecond", m_event_base_id, duration_count / 1000.0);
+                        // spdlog::debug("EpollBase: {}, Task first wait time: {} microsecond", m_event_base_id, duration_count / 1000.0);
                     }
 
                     task_info->handle.resume();
