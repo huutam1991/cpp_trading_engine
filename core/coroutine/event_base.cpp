@@ -33,7 +33,7 @@ void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_pr
     task_info->start = std::chrono::high_resolution_clock::now();
     task_info->is_first_time = true;
 
-    // spdlog::info("EventBase: {}, Total task list remaining - add: {} ", m_event_base_id, m_task_list.size());
+    // spdlog::info("EventBase: {}, Total task list remaining - add: {} ", m_event_base_id, m_ready_task_queue.size());
 
     return task_info;
 }
