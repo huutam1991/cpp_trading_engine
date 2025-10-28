@@ -34,15 +34,6 @@ public:
             {
                 event_base = std::make_shared<EventBase>(id);
             }
-
-            // // Hard code for EpollBase with id = 0
-            // if (id == 0)
-            // {
-
-            // }
-            // else
-            // {
-            // }
             event_base_list.insert(std::make_pair(id, event_base));
             threads.emplace_back([event_base]()
             {
