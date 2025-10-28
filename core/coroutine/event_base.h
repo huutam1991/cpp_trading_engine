@@ -13,10 +13,13 @@
 
 #define MAX_TASK_INFO 20000
 
+class EventBase;
+
 struct TaskInfo
 {
     std::coroutine_handle<> handle = nullptr;
     void* base_promise_type_address = nullptr;
+    EventBase* event_base = nullptr;
     std::chrono::time_point<std::chrono::high_resolution_clock> start;
     bool is_first_time = true;
 
@@ -28,7 +31,10 @@ struct TaskInfo
         }
         handle = nullptr;
         base_promise_type_address = nullptr;
+        event_base = nullptr;
     }
+
+    void check_handle();
 };
 
 using TaskInfoPool = CachePool<TaskInfo, MAX_TASK_INFO>;
