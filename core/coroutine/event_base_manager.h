@@ -7,6 +7,7 @@
 #include <utils/util_macros.h>
 #include <utils/spin_lock.h>
 #include "event_base.h"
+#include "epoll_base.h"
 
 class EventBaseManager
 {
@@ -21,7 +22,17 @@ public:
 
         if (event_base_list.find(id) == event_base_list.end())
         {
-            auto event_base = std::make_shared<EventBase>(id);
+            std::shared_ptr<EventBase> event_base;
+
+            // Hard code for EpollBase with id = 0
+            if (id == 0)
+            {
+                event_base = std::make_shared<EpollBase>();
+            }
+            else
+            {
+                event_base = std::make_shared<EventBase>(id);
+            }
             event_base_list.insert(std::make_pair(id, event_base));
             threads.emplace_back([event_base]()
             {

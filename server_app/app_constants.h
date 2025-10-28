@@ -203,7 +203,7 @@ enum IOCId
 
 enum EventBaseID
 {
-    SYSTEM_INFRASTRUCTURE,    // All of tasks belong to system infrastructure like: timer, https request, saving data to DB, ...
+    SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
     ORDER,                    // OrderManager
     GATEWAY,                  // Gateway
 
