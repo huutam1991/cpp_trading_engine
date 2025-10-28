@@ -10,7 +10,7 @@ EpollBase::EpollBase()
 {
     if ((m_epoll_fd = epoll_create1(0)) == -1)
     {
-        spdlog::info("EPollWrapper - [epoll_create1] error: {}", std::strerror(errno));
+        spdlog::info("EpollBase - [epoll_create1] error: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
     }
 }
@@ -20,14 +20,14 @@ int EpollBase::add_fd(int fd, SystemIOObject* ptr)
     epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.ptr = ptr;
-    spdlog::info("EPollWrapper - [add_fd] fd: {}", fd);
+    spdlog::info("EpollBase - [add_fd] fd: {}", fd);
 
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
 }
 
 int EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
-    spdlog::info("EPollWrapper - [del_fd] fd: {}", fd);
+    spdlog::info("EpollBase - [del_fd] fd: {}", fd);
     if (ptr != nullptr)
     {
         ptr->release();
@@ -80,12 +80,12 @@ void EpollBase::loop()
             {
                 // continue; // temporarily put continue here for debuging
 
-                spdlog::info("EPollWrapper - Exiting main-loop ... , error: {}", std::strerror(errno));
+                spdlog::info("EpollBase - Exiting main-loop ... , error: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
             else
             {
-                spdlog::info("EPollWrapper - [epoll_wait] error: {}", std::strerror(errno));
+                spdlog::info("EpollBase - [epoll_wait] error: {}", std::strerror(errno));
                 exit(EXIT_FAILURE);
             }
         }
