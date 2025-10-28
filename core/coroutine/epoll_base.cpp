@@ -50,6 +50,11 @@ void EpollBase::start_living_on(SystemIOObject* object)
     add_fd(fd);
 }
 
+void EpollBase::set_ready_task(void* task_info)
+{
+    TaskInfo* ti = static_cast<TaskInfo*>(task_info);
+}
+
 void EpollBase::loop()
 {
     epoll_event events[MAX_EPOLL_EVENTS];

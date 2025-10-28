@@ -16,5 +16,6 @@ public:
     EpollBase();
 
     void start_living_on(SystemIOObject* object);
-    void loop();
+    virtual void set_ready_task(void* task_info);
+    virtual void loop();
 };
