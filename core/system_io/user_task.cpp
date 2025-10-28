@@ -9,7 +9,12 @@ int UserTask::generate_fd()
 
 int UserTask::handle_io_data()
 {
-    return 0;
+    if (handle_function)
+    {
+        return handle_function();
+    }
+
+    return -1;
 }
 
 void UserTask::release()
