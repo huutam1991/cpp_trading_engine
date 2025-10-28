@@ -56,25 +56,28 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    // // Init Timer with ioc TIMER
-    // Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    // Init Timer with ioc TIMER
+    Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
 
-    // // Init DBHelper with
-    // DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_IO_TASK));
+    // Init DBHelper with
+    DBHelper::init(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_IO_TASK));
 
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
-    // SimulatorOrder::init();
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
+    SimulatorOrder::init();
 
-    // // Strategy
-    // StrategyManager::instance().init();
+    // Strategy
+    StrategyManager::instance().init();
 
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = static_cast<EpollBase*>(EventBaseManager::get_event_base_by_id(EventBaseID::SYSTEM_IO_TASK));
     HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     epoll_base->start_living_on(https_server_object);
 
-    // epoll_base->loop();
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1000));
+    }
 
     spdlog::info("Main exit");
 
