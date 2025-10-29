@@ -29,12 +29,12 @@ int EpollBase::add_fd(int fd, SystemIOObject* ptr)
 
 int EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
-    // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
     if (ptr != nullptr)
     {
         close(ptr->fd);
         ptr->release();
     }
+    // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
 
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
