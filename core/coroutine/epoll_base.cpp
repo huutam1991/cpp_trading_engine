@@ -17,26 +17,34 @@ EpollBase::EpollBase(size_t id) : EventBase(id)
     spdlog::info("EpollBase - Created EpollBase with id: {}", m_event_base_id);
 }
 
-int EpollBase::add_fd(int fd, SystemIOObject* ptr)
+void EpollBase::add_fd(int fd, SystemIOObject* ptr)
 {
     epoll_event ev;
     ev.events = EPOLLIN;
     ev.data.ptr = ptr;
-    // spdlog::debug("EpollBase - [add_fd] fd: {}", fd);
 
-    return epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
+    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
+    if (res == -1)
+    {
+        spdlog::error("EpollBase - [add_fd] epoll_ctl ADD error for fd: {}, error: {}", fd, std::strerror(errno));
+    }
+    spdlog::debug("EpollBase - [add_fd] fd: {}", fd);
 }
 
-int EpollBase::del_fd(int fd, SystemIOObject* ptr)
+void EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
+    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
+    if (res == -1)
+    {
+        spdlog::error("EpollBase - [del_fd] epoll_ctl DEL error for fd: {}, error: {}", fd, std::strerror(errno));
+    }
+    spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
+
     if (ptr != nullptr)
     {
         close(ptr->fd);
         ptr->release();
     }
-    // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
-
-    return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
 void EpollBase::start_living_system_io_object(SystemIOObject* object)

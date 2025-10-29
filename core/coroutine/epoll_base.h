@@ -9,8 +9,8 @@ class EpollBase : public EventBase
 {
     int m_epoll_fd;
 
-    int add_fd(int fd, SystemIOObject* ptr);
-    int del_fd(int fd, SystemIOObject* ptr);
+    void add_fd(int fd, SystemIOObject* ptr);
+    void del_fd(int fd, SystemIOObject* ptr);
 
 public:
     EpollBase(size_t id);
