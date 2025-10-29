@@ -13,9 +13,9 @@ struct TimerIO : public SystemIOObject
     size_t interval_ns;
     std::function<void()> callback = nullptr;
 
-    TimerIO(size_t interval_ns_value, std::function<void()> callback_value)
-        : interval_ns(interval_ns_value), callback(callback_value) {};
+    TimerIO() {};
 
+    void set_callback(size_t interval_ns_value, std::function<void()> callback_value);
     void clear();
 
     // SystemIOObject's methods
