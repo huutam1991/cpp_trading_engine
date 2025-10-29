@@ -47,7 +47,5 @@ int TimerIO::handle_io_data()
 
 void TimerIO::release()
 {
-    spdlog::debug("TimerIO::release - Releasing TimerIO with fd: {}", fd);
-
     TimerIOPool::release(this);
 }
