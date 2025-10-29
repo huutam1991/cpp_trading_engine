@@ -29,19 +29,5 @@ public:
     static EpollBase*& get_epoll_base();
     static void check_valid_epoll_base();
     static void add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
-    static void add_schedule_task_on_ioc(std::function<void()> callback, boost::asio::io_context& ioc, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
     static Future<size_t> sleep_for(size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
-
-private:
-    // Class Task (has it's own [m_timer])
-    class Task : public std::enable_shared_from_this<Task>
-    {
-        std::function<void()> m_callback = nullptr;
-        std::unique_ptr<boost::asio::steady_timer> m_timer = nullptr;
-
-    public:
-        Task(boost::asio::io_context& io_context, std::function<void()> callback, size_t tick_in_nanoseconds);
-        void start();
-        void on_tick();
-    };
 };
