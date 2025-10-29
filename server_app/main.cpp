@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     LogInit::init();
 
     // Init Timer with ioc TIMER
-    Timer::init(IOCPool::get_ioc_by_id(IOCId::TIMER));
+    Timer::init((EpollBase*)(EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::SYSTEM_IO_TASK)));
 
     // Init DBHelper with
     DBHelper::init(EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::SYSTEM_IO_TASK));
