@@ -36,15 +36,18 @@ int TimerIO::generate_fd()
 
 int TimerIO::handle_io_data()
 {
-    return 0;
-}
-
-void TimerIO::release()
-{
     if (callback != nullptr)
     {
         callback();
     }
+
+    // [-1] mean always release after handling
+    return -1;
+}
+
+void TimerIO::release()
+{
+    spdlog::debug("TimerIO::release - Releasing TimerIO with fd: {}", fd);
 
     TimerIOPool::release(this);
 }
