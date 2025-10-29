@@ -116,6 +116,7 @@ int HttpsClientSocket::handle_io_data()
 void HttpsClientSocket::release()
 {
     HttpsClientSocketPool::release(this);
+    close(fd);
 }
 
 int HttpsClientSocket::read_buffer(char* const buffer)
