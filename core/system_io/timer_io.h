@@ -1,0 +1,22 @@
+#pragma once
+
+#include <unistd.h>
+#include <sys/timerfd.h>
+#include <iostream>
+#include <functional>
+#include "system_io_object.h"
+
+struct TimerIO : public SystemIOObject
+{
+    size_t interval_ns;
+    std::function<void()> callback = nullptr;
+
+    TimerIO(size_t interval_ns_value, std::function<void()> callback_value)
+        : interval_ns(interval_ns_value), callback(callback_value) {};
+
+    // SystemIOObject's methods
+    virtual int generate_fd();
+    virtual int handle_io_data();
+    virtual void release();
+
+};
