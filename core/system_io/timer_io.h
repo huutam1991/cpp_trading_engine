@@ -4,6 +4,8 @@
 #include <sys/timerfd.h>
 #include <iostream>
 #include <functional>
+
+#include <cache/cache_pool.h>
 #include "system_io_object.h"
 
 struct TimerIO : public SystemIOObject
@@ -14,9 +16,12 @@ struct TimerIO : public SystemIOObject
     TimerIO(size_t interval_ns_value, std::function<void()> callback_value)
         : interval_ns(interval_ns_value), callback(callback_value) {};
 
+    void clear();
+
     // SystemIOObject's methods
     virtual int generate_fd();
     virtual int handle_io_data();
     virtual void release();
-
 };
+
+using TimerIOPool = CachePool<TimerIO, 1000>;

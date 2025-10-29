@@ -1,5 +1,12 @@
 #include "timer_io.h"
 
+
+void TimerIO::clear()
+{
+    callback = nullptr;
+    interval_ns = 0;
+}
+
 int TimerIO::generate_fd()
 {
     fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
@@ -34,5 +41,5 @@ void TimerIO::release()
         callback();
     }
 
-    close(fd);
+    TimerIOPool::release(this);
 }
