@@ -60,7 +60,7 @@ int HttpsServerSocket::handle_io_data()
     HttpsClientSocket* client_socket = HttpsClientSocketPool::acquire();
     client_socket->set_server_fd(fd);
     client_socket->set_ssl_context(ctx);
-    epoll_base->start_living_on(client_socket);
+    epoll_base->start_living_system_io_object(client_socket);
 
     spdlog::info("Size of HttpsClientSocketPool = {}", HttpsClientSocketPool::size());
 

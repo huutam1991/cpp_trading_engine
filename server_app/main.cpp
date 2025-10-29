@@ -72,8 +72,9 @@ int main(int argc, char **argv) {
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = static_cast<EpollBase*>(EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::SYSTEM_IO_TASK));
     HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
-    epoll_base->start_living_on(https_server_object);
+    epoll_base->start_living_system_io_object(https_server_object);
 
+    // Main loop, only sleep here
     while (true)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1000));

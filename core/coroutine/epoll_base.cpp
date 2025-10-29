@@ -38,14 +38,14 @@ int EpollBase::del_fd(int fd, SystemIOObject* ptr)
     return epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
-void EpollBase::start_living_on(SystemIOObject* object)
+void EpollBase::start_living_system_io_object(SystemIOObject* object)
 {
     object->epoll_base = this;
 
     int fd = object->generate_fd();
     if (fd < 0)
     {
-        spdlog::error("EpollBase - [start_living_on] generate_fd error for fd: {}", fd);
+        spdlog::error("EpollBase - [start_living_system_io_object] generate_fd error for fd: {}", fd);
         return;
     }
 
