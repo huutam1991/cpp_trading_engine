@@ -12,7 +12,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Enables fully async flow across market data, order processing, and state transitions
   - Task dispatch latency of `1–3 µs (p90 < 10 µs, p99 < 150 µs)`, `outperforming` or matching `Folly EventBase` in real-world benchmarks
 
-- **Internal REST API System** ([`https_server/`](core/https_server/https_server.h) + [`route/`](core/https_server/route) + [`request/`](core/https_server/request) + [`response/`](core/https_server/response) + [`app_route.cpp/`](server_app/api/app_route.cpp))
+- **Internal REST API System** ([`https_server/`](core/system_io/https_server_socket.cpp) + [`route/`](core/https_server/route) + [`request/`](core/https_server/request) + [`response/`](core/https_server/response) + [`app_route.cpp/`](server_app/api/app_route.cpp))
   - Native C++ HTTPs server (using `epoll`, `openssl`)
   - Fully self-implemented parser and request routing
   - Used for engine control, monitoring, and inter-process communication
