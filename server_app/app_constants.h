@@ -207,7 +207,7 @@ enum EventBaseID
     GATEWAY,                  // Gateway
 
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
-    MEAN_REVERSION_STRATEGY,  // Mean Reversion Strategy
+    MEAN_REVERSION_STRATEGY,  // Strategy - Mean Reversion Strategy
     PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
     MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
     TREND_FOLLOW_STRATEGY     // Strategy - Trend Follow
