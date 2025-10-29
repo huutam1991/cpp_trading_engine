@@ -207,7 +207,7 @@ void WebsocketClientAsync::fail(const std::string& where, beast::error_code ec)
 
 void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds)
 {
-    Timer::add_schedule_task_on_ioc([name = m_name, weak_ptr = weak_from_this(), kal = std::move(keep_alive_logic), tick = tick_in_milliseconds]() mutable
+    Timer::add_schedule_task([name = m_name, weak_ptr = weak_from_this(), kal = std::move(keep_alive_logic), tick = tick_in_milliseconds]() mutable
     {
         if (auto self = weak_ptr.lock())
         {
@@ -217,7 +217,7 @@ void WebsocketClientAsync::add_keep_websocket_alive_task(std::function<Task<void
         {
             spdlog::warn("WebsocketClientAsync: [{}] has been destroyed, cannot run keep alive logic", name);
         }
-    }, m_ioc, tick_in_milliseconds);
+    }, tick_in_milliseconds);
 }
 
 void WebsocketClientAsync::on_keep_websocket_alive(std::function<Task<void>()> keep_alive_logic, size_t tick_in_milliseconds)
