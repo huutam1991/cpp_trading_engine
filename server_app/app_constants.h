@@ -196,7 +196,7 @@ enum NotificationState
 
 enum IOCId
 {
-    MARKET_DATA,
+    MARKET_DATA = 4,
     ORDER_ENTRY,
 };
 
@@ -206,9 +206,9 @@ enum EventBaseID
     ORDER,                    // OrderManager
     GATEWAY,                  // Gateway
 
+    MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
     MEAN_REVERSION_STRATEGY,  // Strategy - Mean Reversion Strategy
     PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
-    MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
     TREND_FOLLOW_STRATEGY     // Strategy - Trend Follow
 };
