@@ -1,31 +1,35 @@
 #include <time/timer.h>
 
-void Timer::init(boost::asio::io_context& io_context)
+void Timer::init(EpollBase* epoll_base)
 {
-    get_io_context() = &io_context;
+    get_epoll_base() = epoll_base;
 }
 
-boost::asio::io_context*& Timer::get_io_context()
+EpollBase*& Timer::get_epoll_base()
 {
-    static boost::asio::io_context* io_context = nullptr;
-    return io_context;
+    static EpollBase* epoll_base = nullptr;
+    return epoll_base;
 }
 
-void Timer::check_valid_io_context()
+void Timer::check_valid_epoll_base()
 {
-    if (get_io_context() == nullptr)
+    if (get_epoll_base() == nullptr)
     {
-        throw std::runtime_error("Schedule task with [m_io_context] is nullptr ");
+        throw std::runtime_error("Schedule task with [m_epoll_base] is nullptr ");
     }
 }
 
 void Timer::add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit)
 {
-    check_valid_io_context();
+    check_valid_epoll_base();
 
-    size_t tick = tick_interval * unit; // Tick in nanoseconds
-    auto task = std::make_shared<Timer::Task>(*get_io_context(), std::move(callback), tick);
-    task->start();
+    // size_t tick = tick_interval * unit; // Tick in nanoseconds
+    // auto task = std::make_shared<Timer::Task>(*get_epoll_base(), std::move(callback), tick);
+    // task->start();
+
+    TimerIO* timer_io = TimerIOPool::acquire();
+    timer_io->set_callback(tick_interval * unit, std::move(callback));
+    get_epoll_base()->start_living_system_io_object(timer_io);
 }
 
 void Timer::add_schedule_task_on_ioc(std::function<void()> callback, boost::asio::io_context& ioc, size_t tick_interval, TimerUnit unit)
