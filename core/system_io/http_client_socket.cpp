@@ -127,7 +127,6 @@ int HttpClientSocket::handle_io_data()
 void HttpClientSocket::release()
 {
     HttpClientSocketPool::release(this);
-    close(fd);
 }
 
 Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
