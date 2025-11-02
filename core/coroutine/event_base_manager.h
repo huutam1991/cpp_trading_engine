@@ -11,30 +11,21 @@
 #include "event_base.h"
 #include "epoll_base.h"
 
-template <class EnumType>
 class EventBaseManager
 {
 public:
-    static EventBase* get_event_base_by_id(EnumType id)
+    static EventBase* get_event_base_by_id(int id)
     {
         static SpinLock spin_lock;
         static std::vector<std::thread> threads;
-        static std::unordered_map<EnumType, std::shared_ptr<EventBase>> event_base_list;
+        static std::unordered_map<int, std::shared_ptr<EventBase>> event_base_list;
 
         SpinLockGuard lock(spin_lock);
 
         if (event_base_list.find(id) == event_base_list.end())
         {
-            std::shared_ptr<EventBase> event_base;
+            std::shared_ptr<EventBase> event_base = std::make_shared<EventBase>(id);
 
-            if (enum_reflect::enum_name<EnumType>(id).find("SYSTEM_IO") != std::string::npos)
-            {
-                event_base = std::make_shared<EpollBase>(id);
-            }
-            else
-            {
-                event_base = std::make_shared<EventBase>(id);
-            }
             event_base_list.insert(std::make_pair(id, event_base));
             threads.emplace_back([event_base]()
             {

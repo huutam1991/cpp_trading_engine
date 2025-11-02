@@ -7,7 +7,7 @@
 void OrderManager::init()
 {
     m_order_list = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
-    m_order_event_base = EventBaseManager<EventBaseID>::get_event_base_by_id(EventBaseID::ORDER);
+    m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
 
     // Print out order list
     for (auto& [order_id, order] : m_order_list)
