@@ -37,4 +37,28 @@ public:
 
         return event_base_list[id].get();
     }
+
+    static EpollBase* get_epoll_base_by_id(int id)
+    {
+        static SpinLock spin_lock;
+        static std::vector<std::thread> threads;
+        static std::unordered_map<int, std::shared_ptr<EpollBase>> epoll_base_list;
+
+        SpinLockGuard lock(spin_lock);
+
+        if (epoll_base_list.find(id) == epoll_base_list.end())
+        {
+            std::shared_ptr<EpollBase> epoll_base = std::make_shared<EpollBase>(id);
+
+            epoll_base_list.insert(std::make_pair(id, epoll_base));
+            threads.emplace_back([epoll_base]()
+            {
+                // Pin each event base thread to a specific core
+                ThreadPinning::pin_thread_to_core(static_cast<int>(epoll_base->m_event_base_id));
+                epoll_base->loop();
+            });
+        }
+
+        return epoll_base_list[id].get();
+    }
 };
