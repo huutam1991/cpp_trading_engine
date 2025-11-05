@@ -30,7 +30,7 @@ public:
     Json(T&& value)
     {
         check_create_json_value();
-        ((JsonValue*)m_value)->operator=(std::forward<T>(value));
+        static_cast<JsonValue*>(m_value)->operator=(std::forward<T>(value));
     }
 
     static Json parse(std::string json_string);
@@ -68,7 +68,7 @@ public:
     Json& operator=(T&& value)
     {
         check_create_json_value();
-        ((JsonValue*)m_value)->operator=(std::forward<T>(value));
+        static_cast<JsonValue*>(m_value)->operator=(std::forward<T>(value));
         return *this;
     }
 
@@ -81,7 +81,7 @@ public:
         }
         else
         {
-            return ((JsonValue*)m_value)->operator T();
+            return static_cast<JsonValue*>(m_value)->operator T();
         }
     }
 
@@ -118,20 +118,20 @@ public:
         {
             if constexpr (std::is_same_v<std::decay_t<T>, const char*>)
             {
-                const ShareString& share_string = ((JsonValue*)m_value)->operator ShareString();
+                const ShareString& share_string = static_cast<JsonValue*>(m_value)->operator ShareString();
                 std::string_view current_value = share_string.data();
                 std::string_view value_view(value);
                 return current_value == value_view;
             }
             else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
             {
-                const ShareString& share_string = ((JsonValue*)m_value)->operator ShareString();
+                const ShareString& share_string = static_cast<JsonValue*>(m_value)->operator ShareString();
                 std::string_view current_value = share_string.data();
                 return current_value == value;
             }
             else
             {
-                T current_value = ((JsonValue*)m_value)->operator T();
+                T current_value = static_cast<JsonValue*>(m_value)->operator T();
                 return current_value == value;
             }
         }
@@ -153,7 +153,7 @@ public:
         }
         else
         {
-            T current_value = ((JsonValue*)m_value)->operator T();
+            T current_value = static_cast<JsonValue*>(m_value)->operator T();
             return current_value < value;
         }
     }
@@ -167,7 +167,7 @@ public:
         }
         else
         {
-            T current_value = ((JsonValue*)m_value)->operator T();
+            T current_value = static_cast<JsonValue*>(m_value)->operator T();
             return current_value > value;
         }
     }
@@ -190,9 +190,9 @@ public:
     Json& operator +=(const T& value)
     {
         check_create_json_value();
-        T current_value = ((JsonValue*)m_value)->operator T();
+        T current_value = static_cast<JsonValue*>(m_value)->operator T();
         current_value += value;
-        ((JsonValue*)m_value)->operator=(current_value);
+        static_cast<JsonValue*>(m_value)->operator=(current_value);
         return *this;
     }
 
@@ -221,7 +221,7 @@ public:
     {
         if (m_value)
         {
-            ((JsonValue*)m_value)->set_is_string_format(val);
+            static_cast<JsonValue*>(m_value)->set_is_string_format(val);
         }
     }
 
@@ -230,7 +230,7 @@ public:
         return m_value == nullptr ?
             false :
             m_value->is_json_value() ?
-                ((JsonValue*)m_value)->is_string() :
+                static_cast<JsonValue*>(m_value)->is_string() :
                 false;
     }
 

@@ -53,7 +53,7 @@ void Json::for_each(std::function<void(Json&)> loop_func)
 
     if (m_value->is_json_value() == false)
     {
-        ((JsonObject*)m_value)->for_each(loop_func);
+        static_cast<JsonObject*>(m_value)->for_each(loop_func);
     }
 }
 
@@ -66,7 +66,7 @@ void Json::for_each_with_key(std::function<void(const std::string&,Json&)> loop_
 
     if (m_value->is_json_value() == false)
     {
-        ((JsonObject*)m_value)->for_each_with_key(loop_func);
+        static_cast<JsonObject*>(m_value)->for_each_with_key(loop_func);
     }
 }
 
@@ -79,19 +79,19 @@ void Json::for_each_with_index(std::function<void(size_t,Json&)> loop_func)
 
     if (m_value->is_json_value() == false)
     {
-        ((JsonObject*)m_value)->for_each_with_index(loop_func);
+        static_cast<JsonObject*>(m_value)->for_each_with_index(loop_func);
     }
 }
 Json::iterator Json::begin()
 {
     check_create_json_object();
-    return ((JsonObject*)m_value)->begin();
+    return static_cast<JsonObject*>(m_value)->begin();
 }
 
 Json::iterator Json::end()
 {
     check_create_json_object();
-    return ((JsonObject*)m_value)->end();
+    return static_cast<JsonObject*>(m_value)->end();
 }
 
 Json::const_iterator Json::begin() const
@@ -116,7 +116,7 @@ bool Json::has_field(const std::string& field) const
 {
     if (m_value->is_json_value() == false)
     {
-        return ((JsonObject*)m_value)->has_field(field);
+        return static_cast<JsonObject*>(m_value)->has_field(field);
     }
     return false; // If it's a JsonValue, it cannot have fields
 }
@@ -125,7 +125,7 @@ void Json::remove_field(const std::string& field)
 {
     if (m_value->is_json_value() == false)
     {
-        ((JsonObject*)m_value)->remove_field(field);
+        static_cast<JsonObject*>(m_value)->remove_field(field);
     }
 }
 
@@ -133,14 +133,14 @@ bool Json::is_array() const
 {
     return m_value == nullptr ?
         false :
-        m_value->is_json_value() == false && ((JsonObject*)m_value)->is_array();
+        m_value->is_json_value() == false && static_cast<JsonObject*>(m_value)->is_array();
 }
 
 bool Json::is_object() const
 {
     return m_value == nullptr ?
         false :
-        m_value->is_json_value() == false && ((JsonObject*)m_value)->is_array() == false;
+        m_value->is_json_value() == false && static_cast<JsonObject*>(m_value)->is_array() == false;
 }
 
 void Json::set_size(size_t size)
@@ -159,12 +159,12 @@ void Json::set_capacity(size_t size)
 
 int Json::size() const
 {
-    return m_value->is_json_value() ? 0 : ((JsonObject*)m_value)->size();
+    return m_value->is_json_value() ? 0 : static_cast<JsonObject*>(m_value)->size();
 }
 
 int Json::capacity() const
 {
-    return m_value->is_json_value() ? 0 : ((JsonObject*)m_value)->capacity();
+    return m_value->is_json_value() ? 0 : static_cast<JsonObject*>(m_value)->capacity();
 }
 
 void Json::reverse()
@@ -190,7 +190,7 @@ void Json::push_back(const Json& value)
 
 bool Json::is_null() const
 {
-    return m_value == nullptr || (m_value->is_json_value() && ((JsonValue*)m_value)->is_null());
+    return m_value == nullptr || (m_value->is_json_value() && static_cast<JsonValue*>(m_value)->is_null());
 }
 
 void Json::check_create_json_value()
