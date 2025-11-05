@@ -2,14 +2,16 @@
 
 #include <chrono>
 #include <spdlog/spdlog.h>
+
+#include <enum_reflect/enum_reflect.h>
 #include <utils/util_macros.h>
 
 enum MeasureUnit
 {
-    SECOND,
-    MILLISECOND,
-    MICROSECOND,
-    NANOSECOND
+    SECOND = 1000000000,
+    MILLISECOND = 1000000,
+    MICROSECOND = 1000,
+    NANOSECOND = 1
 };
 
 class MeasureTime
@@ -29,39 +31,10 @@ public:
 
     ~MeasureTime()
     {
-        if (m_is_stop == false)
-        {
-            end = std::chrono::high_resolution_clock::now();
-        }
+        end = m_is_stop == false ? std::chrono::high_resolution_clock::now() : end;
         auto duration_count = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-        double execute_time;
-        std::string unit;
-
-        switch (m_measure_unit)
-        {
-        case MeasureUnit::SECOND:
-            execute_time = (double)duration_count / 1000000000.0;
-            unit = "seconds";
-            break;
-        case MeasureUnit::MILLISECOND:
-            execute_time = (double)duration_count / 1000000.0;
-            unit = "milliseconds";
-            break;
-        case MeasureUnit::MICROSECOND:
-            execute_time = (double)duration_count / 1000.0;
-            unit = "microseconds";
-            break;
-        case MeasureUnit::NANOSECOND:
-            execute_time = (double)duration_count / 1.0;
-            unit = "nanoseconds";
-            break;
-
-        // Default is millisecond
-        default:
-            execute_time = (double)duration_count / 1000000.0;
-            unit = "milliseconds";
-            break;
-        }
+        double execute_time = (double)duration_count / (double)m_measure_unit;
+        std::string_view unit = enum_reflect::enum_name(m_measure_unit);
 
         spdlog::debug("Execute time - {}: {} {}", m_logs, execute_time, unit);
     }
