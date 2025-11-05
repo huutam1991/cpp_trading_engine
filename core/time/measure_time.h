@@ -34,7 +34,25 @@ public:
         end = m_is_stop == false ? std::chrono::high_resolution_clock::now() : end;
         auto duration_count = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
         double execute_time = (double)duration_count / (double)m_measure_unit;
-        std::string_view unit = enum_reflect::enum_name<MeasureUnit>(m_measure_unit);
+        std::string_view unit;
+        switch (m_measure_unit)
+        {
+            case MeasureUnit::SECOND:
+                unit = "seconds";
+                break;
+            case MeasureUnit::MILLISECOND:
+                unit = "milliseconds";
+                break;
+            case MeasureUnit::MICROSECOND:
+                unit = "microseconds";
+                break;
+            case MeasureUnit::NANOSECOND:
+                unit = "nanoseconds";
+                break;
+            default:
+                unit = "nanoseconds";
+                break;
+        }
 
         spdlog::debug("Execute time - {}: {} {}", m_logs, execute_time, unit);
     }
