@@ -120,9 +120,11 @@ public:
     // Acquire a cache item
     FORCE_INLINE static T* acquire()
     {
+        static std::string name = TypeName<T>::name();
+
         T* item;
         {
-            // MeasureTime measure_time("CachePool::acquire, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+            // MeasureTime measure_time("CachePool::acquire, name: " + name, MeasureUnit::NANOSECOND);
             // MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
 
             PoolBuffer& pool_buffer = get_pool_buffer();
@@ -151,10 +153,12 @@ public:
     // Release a cache item back to the pool
     FORCE_INLINE static void release(T* item)
     {
+        static std::string name = TypeName<T>::name();
+
         if (item != nullptr)
         {
             {
-                // MeasureTime measure_time("CachePool::release, name: " + TypeName<T>::name(), MeasureUnit::NANOSECOND);
+                // MeasureTime measure_time("CachePool::release, name: " + name, MeasureUnit::NANOSECOND);
                 // MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
 
                 // Add item back to the pool
