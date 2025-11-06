@@ -9,6 +9,7 @@
 
 #include <coroutine/future.h>
 #include <coroutine/epoll_base.h>
+#include <coroutine/event_base_manager.h>
 #include <system_io/timer_io.h>
 
 using namespace boost::placeholders;
@@ -25,9 +26,7 @@ public:
         NANOSECOND = 1,
     };
 
-    static void init(EpollBase* epoll_base);
-    static EpollBase*& get_epoll_base();
-    static void check_valid_epoll_base();
+    static EpollBase* get_epoll_base();
     static void add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
     static Future<size_t> sleep_for(size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
 };

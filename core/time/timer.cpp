@@ -1,28 +1,13 @@
 #include <time/timer.h>
 
-void Timer::init(EpollBase* epoll_base)
+EpollBase* Timer::get_epoll_base()
 {
-    get_epoll_base() = epoll_base;
-}
-
-EpollBase*& Timer::get_epoll_base()
-{
-    static EpollBase* epoll_base = nullptr;
+    static EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
     return epoll_base;
-}
-
-void Timer::check_valid_epoll_base()
-{
-    if (get_epoll_base() == nullptr)
-    {
-        throw std::runtime_error("Schedule task with [m_epoll_base] is nullptr ");
-    }
 }
 
 void Timer::add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit)
 {
-    check_valid_epoll_base();
-
     TimerIO* timer_io = TimerIOPool::acquire();
     timer_io->set_callback(tick_interval * unit, std::move(callback));
     get_epoll_base()->start_living_system_io_object(timer_io);
