@@ -11,20 +11,47 @@
 #include "event_base.h"
 #include "epoll_base.h"
 
+enum EpollBaseID
+{
+    SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
+};
+
+enum EventBaseID
+{
+    ORDER = 1,               // OrderManager
+    GATEWAY,                  // Gateway
+
+    MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
+    BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
+    MEAN_REVERSION_STRATEGY,  // Strategy - Mean Reversion Strategy
+    PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
+    TREND_FOLLOW_STRATEGY     // Strategy - Trend Follow
+};
+
 class EventBaseManager
 {
 public:
-    static EventBase* get_event_base_by_id(int id)
+    template <typename T>
+    static EventBase* get_event_base_by_id(T id)
     {
         static SpinLock spin_lock;
         static std::vector<std::thread> threads;
-        static std::unordered_map<int, std::shared_ptr<EventBase>> event_base_list;
+        static std::unordered_map<T, std::shared_ptr<EventBase>> event_base_list;
 
         SpinLockGuard lock(spin_lock);
 
         if (event_base_list.find(id) == event_base_list.end())
         {
-            std::shared_ptr<EventBase> event_base = std::make_shared<EventBase>(id);
+            std::shared_ptr<EventBase> event_base;
+
+            if constexpr (std::is_same_v<T, EpollBaseID>)
+            {
+                event_base = std::make_shared<EpollBase>(static_cast<EpollBaseID>(id));
+            }
+            else
+            {
+                event_base = std::make_shared<EventBase>(static_cast<EventBaseID>(id));
+            }
 
             event_base_list.insert(std::make_pair(id, event_base));
             threads.emplace_back([event_base]()
@@ -36,29 +63,5 @@ public:
         }
 
         return event_base_list[id].get();
-    }
-
-    static EpollBase* get_epoll_base_by_id(int id)
-    {
-        static SpinLock spin_lock;
-        static std::vector<std::thread> threads;
-        static std::unordered_map<int, std::shared_ptr<EpollBase>> epoll_base_list;
-
-        SpinLockGuard lock(spin_lock);
-
-        if (epoll_base_list.find(id) == epoll_base_list.end())
-        {
-            std::shared_ptr<EpollBase> epoll_base = std::make_shared<EpollBase>(id);
-
-            epoll_base_list.insert(std::make_pair(id, epoll_base));
-            threads.emplace_back([epoll_base]()
-            {
-                // Pin each event base thread to a specific core
-                ThreadPinning::pin_thread_to_core(static_cast<int>(epoll_base->m_event_base_id));
-                epoll_base->loop();
-            });
-        }
-
-        return epoll_base_list[id].get();
     }
 };
