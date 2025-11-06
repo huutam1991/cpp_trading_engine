@@ -77,22 +77,59 @@ void OrderManager::update_order(Order order)
     task.start_running_on(m_order_event_base);
 }
 
-SavableObject<Order>& OrderManager::get_order_by_id(OrderId order_id)
+Order OrderManager::get_order_by_id(OrderId order_id)
 {
     // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
-        m_order_list.insert(std::make_pair(order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list")));
+        Order order = Order();
+        order.order_id = order_id;
+
+        return order;
     }
 
     auto it = m_order_list.find(order_id);
-    return it->second;
+    return it->second.object;
+}
+
+Task<void> OrderManager::update_order_in_db(Order order)
+{
+    if (is_valid_order(order.order_id) == true)
+    {
+        auto it = m_order_list.find(order.order_id);
+        it->second = order;
+    }
+    else
+    {
+        m_order_list.insert(std::make_pair(order.order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list", order)));
+    }
+
+    co_return;
+}
+
+Task<void> OrderManager::check_to_remove_order(OrderId order_id)
+{
+    SavableObject<Order>& order = m_order_list.at(order_id);
+
+    // If order is canceled or rejected, remove it from [m_order_list]
+    if (order.object.status == Order::Status::CANCELED || order.object.status == Order::Status::REJECTED)
+    {
+        order.remove();
+        m_order_list.erase(order_id);
+    }
+    // For FILLED order, we can also remove it from [m_order_list] to save space, but dont remove from DB
+    else if (order.object.status == Order::Status::FILLED)
+    {
+        m_order_list.erase(order_id);
+    }
+
+    co_return;
 }
 
 Task<void> OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("Handle order update OrderManager", MeasureUnit::MICROSECOND);
-    SavableObject<Order>& current_order_data = get_order_by_id(order.order_id);
+    Order current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
     {
@@ -112,10 +149,10 @@ Task<void> OrderManager::handle_update_order(Order order)
         }
 
         // Update order's output data
-        order.filled_quantity += current_order_data.object.filled_quantity;
-        order.fee += current_order_data.object.fee;
-        order.output_quantity += current_order_data.object.output_quantity;
-        order.volumn_in_quote_currency += current_order_data.object.volumn_in_quote_currency;
+        order.filled_quantity += current_order_data.filled_quantity;
+        order.fee += current_order_data.fee;
+        order.output_quantity += current_order_data.output_quantity;
+        order.volumn_in_quote_currency += current_order_data.volumn_in_quote_currency;
 
         // If [filled_quantity] == [quantity], order's status is FILLED
         if (order.filled_quantity == order.quantity)
@@ -124,8 +161,8 @@ Task<void> OrderManager::handle_update_order(Order order)
         }
     }
 
-    // Update order
-    current_order_data = order;
+    // Update order in DB
+    update_order_in_db(order).start_running_on(m_order_event_base);
 
     // Inform about order to strategy
     if (order.status == Order::Status::NEW ||
@@ -140,17 +177,8 @@ Task<void> OrderManager::handle_update_order(Order order)
         }
     }
 
-    // If order is canceled or rejected, remove it from [m_order_list]
-    if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
-    {
-        current_order_data.remove();
-        m_order_list.erase(order.order_id);
-    }
-    // For FILLED order, we can also remove it from [m_order_list] to save space, but dont remove from DB
-    else if (order.status == Order::Status::FILLED)
-    {
-        m_order_list.erase(order.order_id);
-    }
+    // Check to remove order if needed
+    co_await check_to_remove_order(order.order_id);
 
     co_return;
 }

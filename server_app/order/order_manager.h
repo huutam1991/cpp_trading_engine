@@ -32,12 +32,14 @@ private:
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
+    Task<void> check_to_remove_order(OrderId order_id);
+    Task<void> update_order_in_db(Order order);
     Task<void> handle_update_order(Order order);
 
 public:
     // Helper method
     static OrderId generate_order_id();
-    SavableObject<Order>& get_order_by_id(OrderId order_id);
+    Order get_order_by_id(OrderId order_id);
     bool is_valid_order(OrderId order_id)
     {
         return m_order_list.find(order_id) != m_order_list.end();
