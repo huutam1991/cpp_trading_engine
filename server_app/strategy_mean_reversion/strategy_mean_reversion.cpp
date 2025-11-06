@@ -72,17 +72,6 @@ void StrategyMeanReversion::init()
     const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
     m_gateway->subscribe_instruments({instrument});
 
-    // Subscribe order update from OrderManager
-    OrderManager::instance().register_order_update([this](Order& order)
-    {
-        std::unique_lock lock(m_strategy_mutex);
-
-        m_state_data_queue.push(order);
-
-        // Inform has data update
-        m_has_data_update.set_value(true);
-    });
-
     //
     m_gateway->check_remove_canceled_orders(m_config.symbol);
 
