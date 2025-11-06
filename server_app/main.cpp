@@ -59,9 +59,6 @@ int main(int argc, char **argv) {
     // Init Timer with ioc TIMER
     Timer::init((EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK));
 
-    // Init DBHelper with
-    DBHelper::init((EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK));
-
     GatewayManager::instance().init();
     OrderManager::instance().init();
     SimulatorOrder::init();
