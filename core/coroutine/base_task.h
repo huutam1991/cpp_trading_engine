@@ -104,7 +104,7 @@ struct BaseTask
         base_promise_type->register_on(event_base, handle);
     }
 
-    std::future<T> start_running_on(EventBase* event_base)
+    inline std::future<T> start_running_on(EventBase* event_base)
     {
         register_on(event_base);
 
