@@ -79,6 +79,7 @@ class MPSCQueue
     };
 
     PoolBuffer m_pool_buffer;
+    std::string name = GetTypeName<T>::get_name();
 
 public:
     // push an item into the queue
@@ -86,12 +87,12 @@ public:
     {
         if (item != nullptr)
         {
-            // MeasureTime measure_time("MPSCQueue::push, name: " + GetTypeName<T>::get_name(), MeasureUnit::NANOSECOND);
+            // MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
             // MeasureTime measure_time("MPSCQueue::push", MeasureUnit::NANOSECOND);
 
             if (m_pool_buffer.size.load(std::memory_order_acquire) == Size)
             {
-                throw std::runtime_error("Queue is full: [" + GetTypeName<T>::get_name() + "]");
+                throw std::runtime_error("Queue is full: [" + name + "]");
             }
 
             // Push item into the pool
@@ -103,7 +104,7 @@ public:
         }
         else
         {
-            throw std::runtime_error("Attempt to release a null item back to the cache pool: [" + GetTypeName<T>::get_name() + "]");
+            throw std::runtime_error("Attempt to release a null item back to the cache pool: [" + name + "]");
         }
     }
 
@@ -124,7 +125,7 @@ public:
             return nullptr;
         }
 
-        // MeasureTime measure_time("MPSCQueue::pop, name: " + GetTypeName<T>::get_name(), MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
         // MeasureTime measure_time("MPSCQueue::release", MeasureUnit::NANOSECOND);
 
         m_pool_buffer.available_items[tail_index].ptr.store(nullptr, std::memory_order_release);
