@@ -40,16 +40,18 @@ public:
     // Helper method
     static OrderId generate_order_id();
     Order get_order_by_id(OrderId order_id);
-    bool is_valid_order(OrderId order_id)
+    std::vector<OrderId> get_open_orders();
+
+    inline bool is_valid_order(OrderId order_id)
     {
         return m_order_list.find(order_id) != m_order_list.end();
     }
-    Order::Status get_order_status(OrderId order_id)
+
+    inline Order::Status get_order_status(OrderId order_id)
     {
         auto it = m_order_list.find(order_id);
         return it != m_order_list.end() ? it->second.object.status : Order::Status::NOT_AVAILABLE;
     }
-    std::vector<OrderId> get_open_orders();
 
     void init();
     void register_order_update(std::function<void(Order&)>);

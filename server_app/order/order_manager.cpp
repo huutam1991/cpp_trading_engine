@@ -178,7 +178,7 @@ Task<void> OrderManager::handle_update_order(Order order)
     }
 
     // Check to remove order if needed
-    co_await check_to_remove_order(order.order_id);
+    check_to_remove_order(order.order_id).start_running_on(m_order_event_base);
 
     co_return;
 }
