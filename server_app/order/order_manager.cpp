@@ -134,6 +134,11 @@ Task<void> OrderManager::handle_update_order(Order order)
         current_order_data.remove();
         m_order_list.erase(order.order_id);
     }
+    // For FILLED order, we can also remove it from [m_order_list] to save space, but dont remove from DB
+    else if (order.status == Order::Status::FILLED)
+    {
+        m_order_list.erase(order.order_id);
+    }
 
     co_return;
 }
