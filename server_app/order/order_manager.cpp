@@ -128,7 +128,7 @@ Task<void> OrderManager::check_to_remove_order(OrderId order_id)
 
 Task<void> OrderManager::handle_update_order(Order order)
 {
-    MeasureTime a("OrderManager - Handle order update", MeasureUnit::MICROSECOND);
+    // MeasureTime a("OrderManager - Handle order update", MeasureUnit::MICROSECOND);
     Order current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
