@@ -9,6 +9,12 @@
 
 namespace net = boost::asio;
 
+enum IOCId
+{
+    MARKET_DATA = 4,
+    ORDER_ENTRY,
+};
+
 class IOCPool
 {
 public:
