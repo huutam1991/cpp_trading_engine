@@ -3,27 +3,15 @@
 #include <data_model/data_model.h>
 #include <coroutine/event_base.h>
 #include <coroutine/task.h>
+#include <coroutine/event_base_manager.h>
 
 class DBHelper
 {
 public:
-    static void init(EventBase* event_base)
+    static EpollBase* get_epoll_base()
     {
-        get_even_base() = event_base;
-    }
-
-    static EventBase*& get_even_base()
-    {
-        static EventBase* even_base = nullptr;
-        return even_base;
-    }
-
-    static void check_valid_event_base()
-    {
-        if (get_even_base() == nullptr)
-        {
-            throw std::runtime_error("DBHelper is not init with valid EventBase yet");
-        }
+        static EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
+        return epoll_base;
     }
 };
 
@@ -43,48 +31,33 @@ public:
     SavableObject(const std::string& db, const std::string& collection)
         : m_data_model{std::make_shared<DataModel>()}, m_db{db}, m_collection{collection}
     {
-        // Check valid EventBase for DBHelper
-        DBHelper::check_valid_event_base();
-
-        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_even_base());
+        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_epoll_base());
     }
 
     SavableObject(const std::string& db, const std::string& collection, T data)
         : m_data_model{std::make_shared<DataModel>()}, m_db{db}, m_collection{collection}, object{std::move(data)}
     {
-        // Check valid EventBase for DBHelper
-        DBHelper::check_valid_event_base();
-
-        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_even_base());
-        update_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
+        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_epoll_base());
+        update_data_model(m_data_model, object).start_running_on(DBHelper::get_epoll_base());
     }
 
     SavableObject& operator=(const T& value)
     {
-        // Check valid EventBase for DBHelper
-        DBHelper::check_valid_event_base();
-
         object = value;
-        update_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
+        update_data_model(m_data_model, object).start_running_on(DBHelper::get_epoll_base());
         return *this;
     }
 
     SavableObject& operator=(T&& value)
     {
-        // Check valid EventBase for DBHelper
-        DBHelper::check_valid_event_base();
-
         object = std::move(value);
-        update_data_model(m_data_model, object).start_running_on(DBHelper::get_even_base());
+        update_data_model(m_data_model, object).start_running_on(DBHelper::get_epoll_base());
         return *this;
     }
 
     void remove()
     {
-        // Check valid EventBase for DBHelper
-        DBHelper::check_valid_event_base();
-
-        remove_data_model(m_data_model).start_running_on(DBHelper::get_even_base());
+        remove_data_model(m_data_model).start_running_on(DBHelper::get_epoll_base());
     }
 
     static Task<void> init_data_model(std::shared_ptr<DataModel> data_model, std::string db, std::string collection)
@@ -131,7 +104,7 @@ public:
         *res.m_data_model = dm;
 
         // Single object can be empty one (in the first load) so need to update it with data from [object]
-        update_data_model(res.m_data_model, res.object).start_running_on(DBHelper::get_even_base());
+        update_data_model(res.m_data_model, res.object).start_running_on(DBHelper::get_epoll_base());
 
         return res;
     }
