@@ -193,22 +193,3 @@ enum NotificationState
     NOTIFICATION_STATE_TOKEN_ISSUED_CHANGE      = 2,
     NOTIFICATION_STATE_TRADE_ERROR              = 3
 };
-
-enum IOCId
-{
-    MARKET_DATA = 4,
-    ORDER_ENTRY,
-};
-
-enum EventBaseID
-{
-    SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
-    ORDER,                    // OrderManager
-    GATEWAY,                  // Gateway
-
-    MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
-    BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
-    MEAN_REVERSION_STRATEGY,  // Strategy - Mean Reversion Strategy
-    PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
-    TREND_FOLLOW_STRATEGY     // Strategy - Trend Follow
-};
