@@ -57,10 +57,10 @@ int main(int argc, char **argv) {
     LogInit::init();
 
     // Init Timer with ioc TIMER
-    Timer::init(EventBaseManager::get_epoll_base_by_id(EventBaseID::SYSTEM_IO_TASK));
+    Timer::init((EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK));
 
     // Init DBHelper with
-    DBHelper::init(EventBaseManager::get_epoll_base_by_id(EventBaseID::SYSTEM_IO_TASK));
+    DBHelper::init((EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK));
 
     GatewayManager::instance().init();
     OrderManager::instance().init();
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     StrategyManager::instance().init();
 
     // Start HTTPS server - running on EpollBase
-    EpollBase* epoll_base = EventBaseManager::get_epoll_base_by_id(EventBaseID::SYSTEM_IO_TASK);
+    EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
     HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     epoll_base->start_living_system_io_object(https_server_object);
 
