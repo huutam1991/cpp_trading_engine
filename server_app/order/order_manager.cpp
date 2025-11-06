@@ -9,10 +9,22 @@ void OrderManager::init()
     m_order_list = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
 
+    std::vector<OrderId> filled_orders;
+
     // Print out order list
     for (auto& [order_id, order] : m_order_list)
     {
         spdlog::debug("Order: {}", order.to_json());
+        if (order.object.status == Order::Status::FILLED)
+        {
+            filled_orders.push_back(order_id);
+        }
+    }
+
+    // Remove FILLED orders from m_order_list to save space
+    for (auto& order_id : filled_orders)
+    {
+        m_order_list.erase(order_id);
     }
 }
 
