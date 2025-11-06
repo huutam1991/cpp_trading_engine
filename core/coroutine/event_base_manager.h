@@ -18,7 +18,7 @@ enum EpollBaseID
 
 enum EventBaseID
 {
-    ORDER = 1,               // OrderManager
+    ORDER = 1,                // OrderManager
     GATEWAY,                  // Gateway
 
     MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
