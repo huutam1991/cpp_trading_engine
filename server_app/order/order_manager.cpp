@@ -6,26 +6,7 @@
 
 void OrderManager::init()
 {
-    m_order_list = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
-
-    std::vector<OrderId> filled_orders;
-
-    // Print out order list
-    for (auto& [order_id, order] : m_order_list)
-    {
-        spdlog::debug("Order: {}", order.to_json());
-        if (order.object.status == Order::Status::FILLED)
-        {
-            filled_orders.push_back(order_id);
-        }
-    }
-
-    // Remove FILLED orders from m_order_list to save space
-    for (auto& order_id : filled_orders)
-    {
-        m_order_list.erase(order_id);
-    }
 }
 
 OrderId OrderManager::generate_order_id()
@@ -43,7 +24,7 @@ std::vector<OrderId> OrderManager::get_open_orders()
 
     for (auto& [order_id, order] : m_order_list)
     {
-        if (order.object.status == Order::Status::NEW)
+        if (order.status == Order::Status::NEW)
         {
             res.push_back(order_id);
         }
@@ -82,45 +63,39 @@ Order OrderManager::get_order_by_id(OrderId order_id)
     // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
-        Order order = Order();
-        order.order_id = order_id;
-
-        return order;
+        Order new_order;
+        new_order.order_id = order_id;
+        m_order_list.insert(std::make_pair(order_id, new_order));
     }
 
     auto it = m_order_list.find(order_id);
-    return it->second.object;
+    return it->second;
 }
 
 Task<void> OrderManager::update_order_in_db(Order order)
 {
-    if (is_valid_order(order.order_id) == true)
+    static std::unordered_map<OrderId, SavableObject<Order>> m_order_db_cache;
+
+    // Create SavableObject for order if not exist
+    if (m_order_db_cache.find(order.order_id) == m_order_db_cache.end())
     {
-        auto it = m_order_list.find(order.order_id);
-        it->second = order;
-    }
-    else
-    {
-        m_order_list.insert(std::make_pair(order.order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list", order)));
+        m_order_db_cache.insert(std::make_pair(order.order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list")));
     }
 
-    co_return;
-}
+    SavableObject<Order>& order_db = m_order_db_cache.at(order.order_id);
+    order_db = order;
 
-Task<void> OrderManager::check_to_remove_order(OrderId order_id)
-{
-    SavableObject<Order>& order = m_order_list.at(order_id);
-
-    // If order is canceled or rejected, remove it from [m_order_list]
-    if (order.object.status == Order::Status::CANCELED || order.object.status == Order::Status::REJECTED)
+    // Check to remove oder if needed
+    // If order is canceled or rejected, remove it from [m_order_db_cache]
+    if (order_db.object.status == Order::Status::CANCELED || order_db.object.status == Order::Status::REJECTED)
     {
-        order.remove();
-        m_order_list.erase(order_id);
+        order_db.remove();
+        m_order_list.erase(order_db.object.order_id);
     }
     // For FILLED order, we can also remove it from [m_order_list] to save space, but dont remove from DB
-    else if (order.object.status == Order::Status::FILLED)
+    else if (order_db.object.status == Order::Status::FILLED)
     {
-        m_order_list.erase(order_id);
+        m_order_list.erase(order_db.object.order_id);
     }
 
     co_return;
@@ -161,9 +136,6 @@ Task<void> OrderManager::handle_update_order(Order order)
         }
     }
 
-    // Update order in DB
-    update_order_in_db(order).start_running_on(m_order_event_base);
-
     // Inform about order to strategy
     if (order.status == Order::Status::NEW ||
         order.status == Order::Status::CANCELED ||
@@ -177,8 +149,8 @@ Task<void> OrderManager::handle_update_order(Order order)
         }
     }
 
-    // Check to remove order if needed
-    check_to_remove_order(order.order_id).start_running_on(m_order_event_base);
+    // Finally, update order in DB
+    update_order_in_db(order).start_running_on(m_order_event_base);
 
     co_return;
 }

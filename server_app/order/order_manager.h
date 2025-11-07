@@ -27,12 +27,11 @@ class OrderManager
     Singleton(OrderManager);
 
 private:
-    std::unordered_map<OrderId, SavableObject<Order>> m_order_list;
+    std::unordered_map<OrderId, Order> m_order_list;
     std::function<void(Order&)> m_order_update_callback = nullptr;
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
-    Task<void> check_to_remove_order(OrderId order_id);
     Task<void> update_order_in_db(Order order);
     Task<void> handle_update_order(Order order);
 
@@ -50,7 +49,7 @@ public:
     inline Order::Status get_order_status(OrderId order_id)
     {
         auto it = m_order_list.find(order_id);
-        return it != m_order_list.end() ? it->second.object.status : Order::Status::NOT_AVAILABLE;
+        return it != m_order_list.end() ? it->second.status : Order::Status::NOT_AVAILABLE;
     }
 
     void init();
