@@ -60,7 +60,7 @@ void OrderManager::update_order(Order order)
 
 Order OrderManager::get_order_by_id(OrderId order_id)
 {
-    // MeasureTime g("Get order by id", MeasureUnit::MICROSECOND);
+    MeasureTime g("OrderManager - get_order_by_id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
         Order new_order;
@@ -90,12 +90,12 @@ Task<void> OrderManager::update_order_in_db(Order order)
     if (order_db.object.status == Order::Status::CANCELED || order_db.object.status == Order::Status::REJECTED)
     {
         order_db.remove();
-        m_order_list.erase(order_db.object.order_id);
+        m_order_db_cache.erase(order_db.object.order_id);
     }
-    // For FILLED order, we can also remove it from [m_order_list] to save space, but dont remove from DB
+    // For FILLED order, we can also remove it from [m_order_db_cache] to save space, but dont remove from DB
     else if (order_db.object.status == Order::Status::FILLED)
     {
-        m_order_list.erase(order_db.object.order_id);
+        m_order_db_cache.erase(order_db.object.order_id);
     }
 
     co_return;
@@ -103,7 +103,7 @@ Task<void> OrderManager::update_order_in_db(Order order)
 
 Task<void> OrderManager::handle_update_order(Order order)
 {
-    // MeasureTime a("OrderManager - Handle order update", MeasureUnit::MICROSECOND);
+    MeasureTime a("OrderManager - Handle order update", MeasureUnit::MICROSECOND);
     Order current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
