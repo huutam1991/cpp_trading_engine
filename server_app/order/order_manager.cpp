@@ -60,7 +60,7 @@ void OrderManager::update_order(Order order)
 
 Order OrderManager::get_order_by_id(OrderId order_id)
 {
-    MeasureTime g("OrderManager - get_order_by_id", MeasureUnit::MICROSECOND);
+    // MeasureTime g("OrderManager - get_order_by_id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
     {
         Order new_order;
