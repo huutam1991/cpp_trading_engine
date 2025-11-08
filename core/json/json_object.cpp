@@ -1,5 +1,9 @@
 #include <json/json_object.h>
 
+JsonObject::JsonObject()
+{
+    is_json_value_ptr = static_cast<IsJsonValuePtr>(&JsonObject::is_json_value);
+}
 
 void JsonObject::for_each(std::function<void(Json&)>& loop_func)
 {

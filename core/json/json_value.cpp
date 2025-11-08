@@ -1,6 +1,11 @@
 #include <charconv>
 #include <json/json_value.h>
 
+JsonValue::JsonValue()
+{
+    is_json_value_ptr = static_cast<IsJsonValuePtr>(&JsonValue::is_json_value);
+}
+
 template<>
 JsonValue::operator std::string() const
 {

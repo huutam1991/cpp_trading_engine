@@ -14,7 +14,20 @@ protected:
 public:
     virtual ~JsonTypeBase() {};
 
-    inline virtual bool is_json_value() = 0;
+protected:
+    using IsJsonValuePtr = bool (JsonTypeBase::*)();
+    IsJsonValuePtr is_json_value_ptr = nullptr;
+
+public:
+    inline bool is_json_value()
+    {
+        if (is_json_value_ptr != nullptr)
+        {
+            return (this->*is_json_value_ptr)();
+        }
+        return false;
+    }
+
     inline virtual void write_string_value(JsonStringBuilder& builder) = 0;
     inline virtual JsonTypeBase* get_copy() = 0;
     inline virtual JsonTypeBase* get_deep_clone() = 0;

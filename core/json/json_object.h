@@ -19,7 +19,7 @@ class JsonObject : public JsonTypeBase
     std::vector<Json> m_array; // Array for JSON object
 
 public:
-    JsonObject() = default;
+    JsonObject();
     JsonObject(const JsonObject&) = delete;
     JsonObject(JsonObject&&) = delete;
     JsonObject& operator=(const JsonObject&) = delete;
@@ -132,7 +132,7 @@ public:
     }
 
     // Methods from JsonTypeBase
-    inline virtual bool is_json_value() override
+    inline bool is_json_value()
     {
         return false; // This is not a JSON value, but an object
     }

@@ -25,7 +25,7 @@ class JsonValue : public JsonTypeBase
     char buffer_number[50]; // Buffer for number conversion
 
 public:
-    JsonValue() = default;
+    JsonValue();
     JsonValue(const JsonValue&) = delete;
     JsonValue(JsonValue&&) = delete;
     JsonValue& operator=(const JsonValue&) = delete;
@@ -100,7 +100,7 @@ public:
     }
 
     // Methosds from JsonTypeBase
-    inline virtual bool is_json_value() override
+    inline bool is_json_value()
     {
         return true;
     }
