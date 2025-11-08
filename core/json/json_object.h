@@ -132,22 +132,70 @@ public:
     }
 
     // Methods from JsonTypeBase
-    virtual bool is_json_value() override
+    inline virtual bool is_json_value() override
     {
         return false; // This is not a JSON value, but an object
     }
 
-    virtual void write_string_value(JsonStringBuilder& builder) override;
+    inline virtual void write_string_value(JsonStringBuilder& builder) override
+    {
+        if (m_is_array)
+        {
+            builder.write_char('[');
+            for (size_t i = 0; i < m_array.size(); ++i)
+            {
+                if (i > 0) builder.write_char(',');
+                m_array[i].write_string_value(builder);
+            }
+            builder.write_char(']');
+        }
+        else
+        {
+            std::string result = "{";
+            builder.write_char('{');
+            int count = 0;
+            for (const auto& [key, value] : m_object)
+            {
+                if (count++ > 0) builder.write_char(',');
+                builder.write_char('\"');
+                builder.write_raw(key.data(), key.size());
+                builder.write_char('\"');
+                builder.write_char(':');
+                value.write_string_value(builder);
+            }
+            builder.write_char('}');
+        }
+    }
 
-    virtual JsonTypeBase* get_copy() override
+
+    inline virtual JsonTypeBase* get_copy() override
     {
         reference_count.fetch_add(1, std::memory_order_acq_rel);
         return this;
     }
 
-    virtual JsonTypeBase* get_deep_clone();
+    inline virtual JsonTypeBase* get_deep_clone() override
+    {
+        JsonObject* clone = JsonObjectPool::acquire();
+        clone->m_is_array = m_is_array;
 
-    virtual void release() override
+        // Deep clone the array
+        clone->m_array.reserve(m_array.size());
+        for (auto& item : m_array)
+        {
+            clone->m_array.push_back(item.deep_clone());
+        }
+
+        // Deep clone the object
+        for (auto& [key, value] : m_object)
+        {
+            clone->m_object[key] = value.deep_clone();
+        }
+
+        return clone;
+    }
+
+    inline virtual void release() override
     {
         if (reference_count.fetch_sub(1, std::memory_order_acq_rel) == 1)
         {

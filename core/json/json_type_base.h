@@ -14,9 +14,9 @@ protected:
 public:
     virtual ~JsonTypeBase() {};
 
-    virtual bool is_json_value() = 0;
-    virtual void write_string_value(JsonStringBuilder& builder) = 0;
-    virtual JsonTypeBase* get_copy() = 0;
-    virtual JsonTypeBase* get_deep_clone() = 0;
-    virtual void release() = 0;
+    inline virtual bool is_json_value() = 0;
+    inline virtual void write_string_value(JsonStringBuilder& builder) = 0;
+    inline virtual JsonTypeBase* get_copy() = 0;
+    inline virtual JsonTypeBase* get_deep_clone() = 0;
+    inline virtual void release() = 0;
 };
