@@ -194,7 +194,7 @@ public:
         return clone;
     }
 
-    inline virtual void release() override
+    inline void release()
     {
         if (reference_count.fetch_sub(1, std::memory_order_acq_rel) == 1)
         {

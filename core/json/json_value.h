@@ -193,7 +193,7 @@ public:
         return get_copy(); // For simplicity, deep clone is same as copy in this case
     }
 
-    inline virtual void release() override
+    inline void release()
     {
         m_value = nullptr; // Clear the value
         JsonValuePool::release(this);

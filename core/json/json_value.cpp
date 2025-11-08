@@ -6,6 +6,7 @@ JsonValue::JsonValue()
     is_json_value_ptr = static_cast<IsJsonValuePtr>(&JsonValue::is_json_value);
     get_copy_ptr = static_cast<GetCopyPtr>(&JsonValue::get_copy);
     get_deep_clone_ptr = static_cast<GetCopyPtr>(&JsonValue::get_deep_clone);
+    release_ptr = static_cast<ReleasePtr>(&JsonValue::release);
 }
 
 template<>

@@ -5,6 +5,7 @@ JsonObject::JsonObject()
     is_json_value_ptr = static_cast<IsJsonValuePtr>(&JsonObject::is_json_value);
     get_copy_ptr = static_cast<GetCopyPtr>(&JsonObject::get_copy);
     get_deep_clone_ptr = static_cast<GetCopyPtr>(&JsonObject::get_deep_clone);
+    release_ptr = static_cast<ReleasePtr>(&JsonObject::release);
 }
 
 void JsonObject::for_each(std::function<void(Json&)>& loop_func)
