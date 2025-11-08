@@ -105,7 +105,7 @@ public:
         return true;
     }
 
-    inline virtual void write_string_value(JsonStringBuilder& builder) override
+    inline void write_string_value(JsonStringBuilder& builder)
     {
         std::visit([this, &builder](auto&& arg) -> void
         {

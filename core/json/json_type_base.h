@@ -22,6 +22,9 @@ protected:
     GetCopyPtr get_copy_ptr = nullptr;
     GetCopyPtr get_deep_clone_ptr = nullptr;
 
+    using WriteStringValuePtr = void (JsonTypeBase::*)(JsonStringBuilder& builder);
+    WriteStringValuePtr write_string_value_ptr = nullptr;
+
     using ReleasePtr = void (JsonTypeBase::*)();
     ReleasePtr release_ptr = nullptr;
 
@@ -53,7 +56,13 @@ public:
         return nullptr;
     }
 
-    inline virtual void write_string_value(JsonStringBuilder& builder) = 0;
+    inline void write_string_value(JsonStringBuilder& builder)
+    {
+        if (write_string_value_ptr != nullptr)
+        {
+            (this->*write_string_value_ptr)(builder);
+        }
+    }
 
     inline void release()
     {

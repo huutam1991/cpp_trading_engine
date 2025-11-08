@@ -137,7 +137,7 @@ public:
         return false; // This is not a JSON value, but an object
     }
 
-    inline virtual void write_string_value(JsonStringBuilder& builder) override
+    inline void write_string_value(JsonStringBuilder& builder)
     {
         if (m_is_array)
         {
