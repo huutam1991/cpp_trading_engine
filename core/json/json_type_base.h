@@ -18,6 +18,10 @@ protected:
     using IsJsonValuePtr = bool (JsonTypeBase::*)();
     IsJsonValuePtr is_json_value_ptr = nullptr;
 
+    using GetCopyPtr = JsonTypeBase* (JsonTypeBase::*)();
+    GetCopyPtr get_copy_ptr = nullptr;
+    GetCopyPtr get_deep_clone_ptr = nullptr;
+
 public:
     inline bool is_json_value()
     {
@@ -28,8 +32,24 @@ public:
         return false;
     }
 
+    inline JsonTypeBase* get_copy()
+    {
+        if (get_copy_ptr != nullptr)
+        {
+            return (this->*get_copy_ptr)();
+        }
+        return nullptr;
+    }
+
+    inline JsonTypeBase* get_deep_clone()
+    {
+        if (get_deep_clone_ptr != nullptr)
+        {
+            return (this->*get_deep_clone_ptr)();
+        }
+        return nullptr;
+    }
+
     inline virtual void write_string_value(JsonStringBuilder& builder) = 0;
-    inline virtual JsonTypeBase* get_copy() = 0;
-    inline virtual JsonTypeBase* get_deep_clone() = 0;
     inline virtual void release() = 0;
 };

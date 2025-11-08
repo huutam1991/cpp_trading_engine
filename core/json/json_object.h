@@ -167,14 +167,13 @@ public:
         }
     }
 
-
-    inline virtual JsonTypeBase* get_copy() override
+    inline JsonTypeBase* get_copy()
     {
         reference_count.fetch_add(1, std::memory_order_acq_rel);
         return this;
     }
 
-    inline virtual JsonTypeBase* get_deep_clone() override
+    inline JsonTypeBase* get_deep_clone()
     {
         JsonObject* clone = JsonObjectPool::acquire();
         clone->m_is_array = m_is_array;

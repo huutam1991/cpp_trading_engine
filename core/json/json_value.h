@@ -180,7 +180,7 @@ public:
         }, m_value);
     }
 
-    inline virtual JsonTypeBase* get_copy() override
+    inline JsonTypeBase* get_copy()
     {
         JsonValue* json_value = JsonValuePool::acquire();
         json_value->m_value = m_value;
@@ -188,7 +188,7 @@ public:
         return json_value;
     }
 
-    inline virtual JsonTypeBase* get_deep_clone() override
+    inline JsonTypeBase* get_deep_clone()
     {
         return get_copy(); // For simplicity, deep clone is same as copy in this case
     }
