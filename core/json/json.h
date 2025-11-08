@@ -35,7 +35,7 @@ public:
 
     static Json parse(std::string json_string);
 
-    Json& operator=(const Json& copy) noexcept
+    inline Json& operator=(const Json& copy) noexcept
     {
         if (this != &copy)
         {
@@ -49,7 +49,7 @@ public:
         return *this;
     }
 
-    Json& operator=(Json&& copy) noexcept
+    inline Json& operator=(Json&& copy) noexcept
     {
         if (this != &copy)
         {
@@ -65,7 +65,7 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    Json& operator=(T&& value)
+    inline Json& operator=(T&& value)
     {
         check_create_json_value();
         static_cast<JsonValue*>(m_value)->operator=(std::forward<T>(value));
@@ -73,7 +73,7 @@ public:
     }
 
     template<class T>
-    operator T()
+    inline operator T()
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
         {
@@ -90,25 +90,25 @@ public:
     Json& operator[](size_t index);
 
     template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
-    Json& operator[](T index)
+    inline Json& operator[](T index)
     {
         return (*this)[static_cast<size_t>(index)];
     }
 
-    bool operator==(const Json& other) const
+    inline bool operator==(const Json& other) const
     {
         // Check if both m_value pointers are the same
         return m_value == other.m_value;
     }
 
-    bool operator!=(const Json& other) const
+    inline bool operator!=(const Json& other) const
     {
         // Check if both m_value pointers are the same
         return m_value != other.m_value;
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    bool operator==(T value) const
+    inline bool operator==(T value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
         {
@@ -138,14 +138,14 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    bool operator !=(T value) const
+    inline bool operator !=(T value) const
     {
         // Reuse == operator
         return operator==(value) == false;
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    bool operator <(const T& value) const
+    inline bool operator <(const T& value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
         {
@@ -159,7 +159,7 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    bool operator >(const T& value) const
+    inline bool operator >(const T& value) const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
         {
@@ -173,21 +173,21 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    bool operator <=(const T& value) const
+    inline bool operator <=(const T& value) const
     {
         // Reuse > operator
         return operator>(value) == false;
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    bool operator >=(const T& value) const
+    inline bool operator >=(const T& value) const
     {
         // Reuse < operator
         return operator<(value) == false;
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    Json& operator +=(const T& value)
+    inline Json& operator +=(const T& value)
     {
         check_create_json_value();
         T current_value = static_cast<JsonValue*>(m_value)->operator T();
@@ -197,7 +197,7 @@ public:
     }
 
     template <class T, std::enable_if_t<!std::is_same<std::decay_t<T>, Json>::value, int> = 0>
-    Json& operator -=(const T& value)
+    inline Json& operator -=(const T& value)
     {
         operator+=(-value); // Reuse += operator
         return *this;
@@ -217,7 +217,7 @@ public:
     bool has_field(const std::string& field) const;
     void remove_field(const std::string& field);
 
-    void set_is_string_format(bool val)
+    inline void set_is_string_format(bool val)
     {
         if (m_value)
         {
@@ -225,7 +225,7 @@ public:
         }
     }
 
-    bool is_string() const
+    inline bool is_string() const
     {
         return m_value == nullptr ?
             false :
@@ -253,7 +253,7 @@ public:
     }
 
     // Null check
-    bool operator==(std::nullptr_t t) const
+    inline bool operator==(std::nullptr_t t) const
     {
         return is_null();
     }
@@ -267,7 +267,7 @@ public:
         }
     }
 
-    std::string get_string_value() const
+    inline std::string get_string_value() const
     {
         char buffer[STRING_BUFFER_SIZE];
 
@@ -278,7 +278,7 @@ public:
         return builder.finish();
     }
 
-    void write_string_value(JsonStringBuilder& builder) const
+    inline void write_string_value(JsonStringBuilder& builder) const
     {
         if (m_value)
         {
