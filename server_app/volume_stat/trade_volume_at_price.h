@@ -44,8 +44,8 @@ struct TradeVolumeAtPrice
             auto time_diff = now - trade.timestamp;
             if (time_diff > duration)
             {
-                spdlog::debug("Remove old trade at price: {}, time_diff: {}, duration: {}, now: {}, trade_time: {}",
-                    trade.price, time_diff, duration, now, trade.timestamp);
+                // spdlog::debug("Remove old trade at price: {}, time_diff: {}, duration: {}, now: {}, trade_time: {}",
+                //     trade.price, time_diff, duration, now, trade.timestamp);
                 // Remove old trade
                 if (trade.is_buy)
                 {
