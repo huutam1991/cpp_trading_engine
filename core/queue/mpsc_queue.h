@@ -113,7 +113,6 @@ public:
     {
         if (m_pool_buffer.size.load(std::memory_order_acquire) == 0)
         {
-            _mm_pause();
             return nullptr;
         }
 
