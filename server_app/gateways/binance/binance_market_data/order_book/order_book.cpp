@@ -40,7 +40,7 @@ bool OrderBook::is_not_synced()
 
 void OrderBook::OnOrderbookWs(std::string data)
 {
-    // MeasureTime t("OrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
+    MeasureTime t("OrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
     // if (DedupeChecker::is_duplicate(data) == true)
     // {
     //     spdlog::debug("[WS] data is duplicate: {}", data);
@@ -50,10 +50,6 @@ void OrderBook::OnOrderbookWs(std::string data)
     Json update = Json::parse(std::move(data));
     // spdlog::debug("[WS] symbol: [{}], update: {}", m_symbol, update);
 
-    uint64_t pu = update["pu"];
-    uint64_t u  = update["u"];
-    uint64_t U  = update["U"];
-
     if (!m_snapshot_loaded)
     {
         spdlog::debug("[WS] symbol: [{}], Snapshot not loaded — skipping update", m_symbol);
@@ -62,6 +58,9 @@ void OrderBook::OnOrderbookWs(std::string data)
 
     if (m_ws_waiting_first_event)
     {
+        uint64_t u  = update["u"];
+        uint64_t U  = update["U"];
+
         if (U <= m_ws_last_update_id && u >= m_ws_last_update_id)
         {
             m_ws_waiting_first_event = false;
@@ -76,6 +75,9 @@ void OrderBook::OnOrderbookWs(std::string data)
     }
     else
     {
+        uint64_t pu = update["pu"];
+        uint64_t u  = update["u"];
+
         // Only after sync is started, we enforce pu == lastUpdateId
         if (pu != m_ws_last_update_id)
         {
