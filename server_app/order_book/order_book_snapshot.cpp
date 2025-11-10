@@ -1,10 +1,5 @@
 #include <order_book/order_book_snapshot.h>
 
-void OrderBookSnapShot::update_instrument(const Instrument* instr)
-{
-    instrument = instr;
-}
-
 void OrderBookSnapShot::clear()
 {
     bids_size = 0;

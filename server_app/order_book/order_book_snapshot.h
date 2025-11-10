@@ -31,7 +31,11 @@ public:
         bids.resize(20);
     }
 
-    void update_instrument(const Instrument* instr);
+    void update_instrument(const Instrument* instr)
+    {
+        instrument = instr;
+    }
+
     void clear();
     void print_order_book();
 
