@@ -4,6 +4,7 @@
 #include <json/json.h>
 #include <json/json_object.h>
 #include <json/json_value.h>
+#include <system_io/https_client_socket.h>
 #include <order_book/order_book_snapshot.h>
 
 APIHandlerObjectPoolInfo::APIHandlerObjectPoolInfo(HttpRequest* request) : APIHandler(request)
@@ -18,7 +19,8 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
     response["data"] = {
         {"Json Object Pool Size", JsonObjectPool::size()},
         {"Json Value Pool Size", JsonValuePool::size()},
-        {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()}
+        {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()},
+        {"Https Client Socket Pool Size", HttpsClientSocketPool::size()}
     };
     response["msg"] = "";
     response["status_code"] = OK_200;
