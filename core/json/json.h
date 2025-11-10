@@ -33,6 +33,15 @@ public:
         static_cast<JsonValue*>(m_value)->operator=(std::forward<T>(value));
     }
 
+    ~Json()
+    {
+        if (m_value != nullptr)
+        {
+            m_value->release();
+            m_value = nullptr;
+        }
+    }
+
     static Json parse(std::string json_string);
 
     inline Json& operator=(const Json& copy) noexcept
@@ -256,15 +265,6 @@ public:
     inline bool operator==(std::nullptr_t t) const
     {
         return is_null();
-    }
-
-    ~Json()
-    {
-        if (m_value != nullptr)
-        {
-            m_value->release();
-            m_value = nullptr;
-        }
     }
 
     inline std::string get_string_value() const
