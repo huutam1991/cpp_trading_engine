@@ -6,6 +6,7 @@ OrderBook::OrderBook(const std::string& symbol, size_t depth_level, net::io_cont
     :   m_symbol{symbol},
         m_instrument{Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol)},
         m_depth_level{depth_level},
+        m_event_base{event_base},
         m_order_book_websocket{
             symbol,
             depth_level,
@@ -15,6 +16,12 @@ OrderBook::OrderBook(const std::string& symbol, size_t depth_level, net::io_cont
         },
         m_order_book_rest{ioc}
 {}
+
+Task<void> OrderBook::release_current_update(Json update)
+{
+    // Just return here, because the goal is just to release the Json object on the other task
+    co_return;
+}
 
 Task<void> OrderBook::send_request_get_full_order_book()
 {
@@ -81,9 +88,6 @@ void OrderBook::OnOrderbookWs(std::string data)
         m_ws_last_update_id = u;
     }
 
-    m_asks.clear();
-    m_bids.clear();
-
     // Get a snapshot
     OrderBookSnapShot* snapshot = OrderBookSnapShotPool::acquire();
     snapshot->update_instrument(m_instrument);
@@ -127,6 +131,7 @@ void OrderBook::OnOrderbookWs(std::string data)
     });
 
     OrderBookManager::instance().publish_order_book_snapshot(snapshot);
+    release_current_update(std::move(update)).start_running_on(m_event_base);
 
     // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
 }

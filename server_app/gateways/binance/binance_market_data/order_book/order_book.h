@@ -24,6 +24,7 @@ private:
     std::string m_symbol;
     const Instrument* m_instrument = nullptr;
     size_t m_depth_level;
+    EventBase* m_event_base;
     OrderBookWebsocket m_order_book_websocket;
     OrderBookRest m_order_book_rest;
 
@@ -36,6 +37,8 @@ private:
     bool m_ws_waiting_first_event = true;
     size_t m_snapshot_last_update_id = 0;
     size_t m_ws_last_update_id = 0;
+
+    Task<void> release_current_update(Json update);
 
     void OnOrderbookWs(std::string data);
     void OnOrderbookRest(std::string data);
