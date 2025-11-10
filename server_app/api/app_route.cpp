@@ -15,6 +15,9 @@
 // Simulator Order
 #include <api_handler/api_handler_simulator_order/api_handler_simulator_order.h>
 
+// Engine Status
+#include <api_handler/api_handler_engine_status/api_handler_object_pool_info.h>
+
 // Strategy
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <api_handler/api_handler_strategy/api_handler_strategy_current_info.h>
@@ -329,6 +332,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/simulator_order")
     {
         co_return co_await APIHandlerSimulatorOrder(request).handle();
+    };
+
+    // Engine Status - Object Pool Info
+    ADD_ROUTE(RequestMethod::GET, "/object_pool_info")
+    {
+        co_return co_await APIHandlerObjectPoolInfo(request).handle();
     };
 
     // Update strategy's config
