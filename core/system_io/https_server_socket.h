@@ -4,14 +4,13 @@
 #include <openssl/err.h>
 
 #include "http_server_socket.h"
+#include <network/tls_wrapper/tls_wrapper.h>
 
 struct HttpsServerSocket : public HttpServerSocket
 {
     int port;
-    SSL_CTX* ctx;
-
-    SSL_CTX *create_context();
-    void configure_context(SSL_CTX *ctx);
+    TlsContext* server_ctx;
+    TlsWrapper* tls_wrapper;
 
     HttpsServerSocket(int port_value);
 

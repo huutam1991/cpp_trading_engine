@@ -8,45 +8,8 @@
 
 HttpsServerSocket::HttpsServerSocket(int port_value) : HttpServerSocket{port_value}
 {
-    ctx = create_context();
-    configure_context(ctx);
-}
-
-SSL_CTX* HttpsServerSocket::create_context()
-{
-    const SSL_METHOD *method;
-    SSL_CTX *ctx;
-
-    method = TLS_server_method();
-
-    ctx = SSL_CTX_new(method);
-    if (!ctx)
-    {
-        spdlog::error("Unable to create SSL context");
-        perror("Unable to create SSL context");
-        ERR_print_errors_fp(stderr);
-        exit(EXIT_FAILURE);
-    }
-
-    return ctx;
-}
-
-void HttpsServerSocket::configure_context(SSL_CTX *ctx)
-{
-    /* Set the key and cert */
-    if (SSL_CTX_use_certificate_file(ctx, SSL_SERVER_CERTIFICATE, SSL_FILETYPE_PEM) <= 0)
-    {
-        spdlog::error("Unable to set SSL certificate");
-        ERR_print_errors_fp(stderr);
-        exit(EXIT_FAILURE);
-    }
-
-    if (SSL_CTX_use_PrivateKey_file(ctx, SSL_PRIVATE_KEY, SSL_FILETYPE_PEM) <= 0 )
-    {
-        spdlog::error("Unable to set SSL private key");
-        ERR_print_errors_fp(stderr);
-        exit(EXIT_FAILURE);
-    }
+    server_ctx = new TlsServerContext(SSL_SERVER_CERTIFICATE, SSL_PRIVATE_KEY);
+    tls_wrapper = new TlsWrapper(server_ctx);
 }
 
 int HttpsServerSocket::generate_fd()
@@ -59,7 +22,7 @@ int HttpsServerSocket::handle_io_data()
 {
     HttpsClientSocket* client_socket = HttpsClientSocketPool::acquire();
     client_socket->set_server_fd(fd);
-    client_socket->set_ssl_context(ctx);
+    client_socket->set_ssl_context(server_ctx->ctx);
     epoll_base->start_living_system_io_object(client_socket);
 
     spdlog::info("Size of HttpsClientSocketPool = {}", HttpsClientSocketPool::size());
