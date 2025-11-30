@@ -1,0 +1,36 @@
+#pragma once
+
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+#include "tls_context.h"
+
+enum class TlsResult {
+    OK = 0,
+    WANT_IO = 1,
+    ERROR = -1
+};
+
+class TlsStream
+{
+private:
+    TlsContext* ctx = nullptr;
+
+    SSL* ssl = nullptr;
+    int fd = -1;
+    bool handshake_done = false;
+
+public:
+    TlsStream(TlsContext* c);
+
+    ~TlsStream()
+    {
+        shutdown_and_free();
+    }
+
+    bool attach_fd(int socket_fd);
+    TlsResult handshake();
+    int read(char* buf, int size);
+    int write(const char* buf, int size);
+    void shutdown_and_free();
+};
