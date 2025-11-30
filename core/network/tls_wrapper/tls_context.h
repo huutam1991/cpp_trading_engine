@@ -6,10 +6,17 @@
 
 #include <spdlog/spdlog.h>
 
+enum TlsType
+{
+    CLIENT,
+    SERVER
+};
+
 class TlsContext
 {
 public:
     SSL_CTX* ctx = nullptr;
+    TlsType type;
 
     TlsContext() = default;
 

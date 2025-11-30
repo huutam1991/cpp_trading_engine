@@ -4,6 +4,7 @@
 TlsServerContext::TlsServerContext(const std::string& cert_file, const std::string& key_file)
     : m_cert_file{cert_file}, m_key_file{key_file}
 {
+    type = TlsType::SERVER;
     init();
 }
 
@@ -49,6 +50,7 @@ bool TlsServerContext::init()
 TlsClientContext::TlsClientContext(bool verify_peer, const std::string& ca_file)
     : m_verify_peer{verify_peer}, m_ca_file{ca_file}
 {
+    type = TlsType::CLIENT;
     init();
 }
 
