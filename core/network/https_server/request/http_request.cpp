@@ -2,11 +2,11 @@
 #include <fstream>
 #include <filesystem>
 
-#include <https_server/request/http_request.h>
-#include <https_server/request/http_request_get.h>
-#include <https_server/request/http_request_post.h>
-#include <https_server/request/http_request_put.h>
-#include <https_server/request/http_request_delete.h>
+#include <network/https_server/request/http_request.h>
+#include <network/https_server/request/http_request_get.h>
+#include <network/https_server/request/http_request_post.h>
+#include <network/https_server/request/http_request_put.h>
+#include <network/https_server/request/http_request_delete.h>
 #include <utils/constants.h>
 #include <utils/util_macros.h>
 #include <utils/utils.h>

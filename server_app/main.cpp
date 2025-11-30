@@ -5,11 +5,11 @@
 
 #include <utils/constants.h>
 #include <app_constants.h>
-#include <websocket/websocket_client_async.h>
+#include <network/websocket/websocket_client_async.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
 #include <time/timer.h>
-#include <external_request/https_client_async.h>
+#include <network/external_request/https_client_async.h>
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 #include <cache/cache_pool.h>
