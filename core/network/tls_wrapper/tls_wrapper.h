@@ -11,7 +11,7 @@ enum class TlsResult {
     ERROR = -1
 };
 
-class TlsStream
+class TlsWrapper
 {
 private:
     TlsContext* ctx = nullptr;
@@ -21,9 +21,9 @@ private:
     bool handshake_done = false;
 
 public:
-    TlsStream(TlsContext* c);
+    TlsWrapper(TlsContext* c);
 
-    ~TlsStream()
+    ~TlsWrapper()
     {
         shutdown_and_free();
     }

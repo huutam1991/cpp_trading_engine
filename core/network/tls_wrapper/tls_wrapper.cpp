@@ -1,17 +1,17 @@
 #include "tls_wrapper.h"
 
-TlsStream::TlsStream(TlsContext* c) : ctx(c)
+TlsWrapper::TlsWrapper(TlsContext* c) : ctx(c)
 {
     if (!ctx || !ctx->ctx)
     {
-        spdlog::error("TlsStream: invalid TlsContext");
+        spdlog::error("TlsWrapper: invalid TlsContext");
         return;
     }
 
     ssl = SSL_new(ctx->ctx);
     if (!ssl)
     {
-        spdlog::error("TlsStream: SSL_new failed");
+        spdlog::error("TlsWrapper: SSL_new failed");
         ERR_print_errors_fp(stderr);
         return;
     }
@@ -28,7 +28,7 @@ TlsStream::TlsStream(TlsContext* c) : ctx(c)
 }
 
 // Attach file descriptor (non-blocking TCP fd)
-bool TlsStream::attach_fd(int socket_fd)
+bool TlsWrapper::attach_fd(int socket_fd)
 {
     fd = socket_fd;
     if (!ssl) return false;
@@ -38,7 +38,7 @@ bool TlsStream::attach_fd(int socket_fd)
 }
 
 // Non-blocking handshake
-TlsResult TlsStream::handshake()
+TlsResult TlsWrapper::handshake()
 {
     if (handshake_done) return TlsResult::OK;
     if (!ssl) return TlsResult::ERROR;
@@ -65,7 +65,7 @@ TlsResult TlsStream::handshake()
 }
 
 // TLS read (return <0 = error, 0 = no data/WANT_READ, >0 = bytes read)
-int TlsStream::read(char* buf, int size)
+int TlsWrapper::read(char* buf, int size)
 {
     if (!ssl || !handshake_done) return -1;
 
@@ -83,7 +83,7 @@ int TlsStream::read(char* buf, int size)
 }
 
 // TLS write (return <0 = error, 0 = WANT_WRITE, >0 = bytes written)
-int TlsStream::write(const char* buf, int size)
+int TlsWrapper::write(const char* buf, int size)
 {
     if (!ssl || !handshake_done) return -1;
 
@@ -100,7 +100,7 @@ int TlsStream::write(const char* buf, int size)
     return -1;
 }
 
-void TlsStream::shutdown_and_free()
+void TlsWrapper::shutdown_and_free()
 {
     if (ssl)
     {
