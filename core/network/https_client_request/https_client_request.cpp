@@ -12,6 +12,15 @@ HttpsClientRequest::HttpsClientRequest(const std::string& hostname, int port)
     SSL_set_tlsext_host_name(m_tls_wrapper->get_ssl(), m_hostname.c_str());
 }
 
+HttpsClientRequest::~HttpsClientRequest()
+{
+    if (m_tls_wrapper)
+    {
+        delete m_tls_wrapper;
+        m_tls_wrapper = nullptr;
+    }
+}
+
 TlsContext* HttpsClientRequest::get_tls_context()
 {
     static TlsClientContext client_ctx{true, ""};

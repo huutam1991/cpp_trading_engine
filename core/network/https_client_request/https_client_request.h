@@ -17,6 +17,7 @@ class HttpsClientRequest
 
 public:
     HttpsClientRequest(const std::string& hostname, int port);
+    ~HttpsClientRequest();
 
 private:
     static TlsContext* get_tls_context();
