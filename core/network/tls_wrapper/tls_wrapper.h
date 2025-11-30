@@ -28,6 +28,7 @@ public:
         shutdown_and_free();
     }
 
+    SSL* get_ssl() const { return ssl; }
     bool attach_fd(int socket_fd);
     bool is_handshake_done() const { return handshake_done; }
     TlsResult handshake();

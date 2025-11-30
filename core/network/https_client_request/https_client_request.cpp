@@ -8,7 +8,9 @@ HttpsClientRequest::HttpsClientRequest(const std::string& hostname, int port)
         m_hostname{hostname},
         m_port{port},
         m_ip{resolve_hostname()}
-{}
+{
+    SSL_set_tlsext_host_name(m_tls_wrapper->get_ssl(), m_hostname.c_str());
+}
 
 TlsContext* HttpsClientRequest::get_tls_context()
 {
@@ -34,7 +36,6 @@ std::string HttpsClientRequest::resolve_hostname()
 
     sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(result->ai_addr);
     inet_ntop(AF_INET, &(addr->sin_addr), ip_str, sizeof(ip_str));
-
     std::string ip = ip_str;
 
     freeaddrinfo(result);
