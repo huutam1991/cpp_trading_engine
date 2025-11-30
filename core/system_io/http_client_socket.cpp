@@ -63,7 +63,7 @@ int HttpClientSocket::handle_io_data()
     int read_bytes = 0;
     int buffer_length = 0;
 
-    if ((read_bytes = read_buffer(temp_buffer)) > 0)
+    if ((read_bytes = read_buffer(temp_buffer)) >= 0)
     {
         memcpy(buffer + buffer_length, temp_buffer, read_bytes);
         buffer_length += read_bytes;
@@ -72,14 +72,6 @@ int HttpClientSocket::handle_io_data()
         {
             memcpy(buffer + buffer_length, temp_buffer, read_bytes);
             buffer_length += read_bytes;
-        }
-
-        if (read_bytes == 0)
-        {
-            spdlog::debug("Connection lost, fd = {}", fd);
-            // Clean save buffer
-            save_buffer = "";
-            return -1;
         }
 
         buffer[buffer_length] = '\0';
