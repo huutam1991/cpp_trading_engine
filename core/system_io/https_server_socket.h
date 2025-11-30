@@ -10,7 +10,6 @@ struct HttpsServerSocket : public HttpServerSocket
 {
     int port;
     TlsContext* server_ctx;
-    TlsWrapper* tls_wrapper;
 
     HttpsServerSocket(int port_value);
 

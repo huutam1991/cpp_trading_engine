@@ -9,7 +9,6 @@
 HttpsServerSocket::HttpsServerSocket(int port_value) : HttpServerSocket{port_value}
 {
     server_ctx = new TlsServerContext(SSL_SERVER_CERTIFICATE, SSL_PRIVATE_KEY);
-    tls_wrapper = new TlsWrapper(server_ctx);
 }
 
 int HttpsServerSocket::generate_fd()
@@ -22,7 +21,7 @@ int HttpsServerSocket::handle_io_data()
 {
     HttpsClientSocket* client_socket = HttpsClientSocketPool::acquire();
     client_socket->set_server_fd(fd);
-    client_socket->set_ssl_context(server_ctx->ctx);
+    client_socket->set_ssl_context(server_ctx);
     epoll_base->start_living_system_io_object(client_socket);
 
     spdlog::info("Size of HttpsClientSocketPool = {}", HttpsClientSocketPool::size());

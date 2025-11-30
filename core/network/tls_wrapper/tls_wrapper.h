@@ -29,6 +29,7 @@ public:
     }
 
     bool attach_fd(int socket_fd);
+    bool is_handshake_done() const { return handshake_done; }
     TlsResult handshake();
     int read(char* buf, int size);
     int write(const char* buf, int size);

@@ -4,25 +4,14 @@
 #include <openssl/err.h>
 
 #include "http_client_socket.h"
-
-enum SSL_ACCEPT_STATUS
-{
-    ERROR = -1,
-    OK = 0,
-    WANT_IO = 1
-};
+#include <network/tls_wrapper/tls_wrapper.h>
 
 struct HttpsClientSocket : public HttpClientSocket
 {
     int server_fd;
-    SSL_CTX* ctx = nullptr;
-    SSL* ssl = nullptr;
-    bool ssl_accept_success = false;
-    std::string save_buffer;
+    TlsWrapper* tls_wrapper = nullptr;
 
-    void clear();
-    void set_ssl_context(SSL_CTX* ctx_value);
-    SSL_ACCEPT_STATUS do_ssl_accept();
+    void set_ssl_context(TlsContext* tls_context);
 
     // SystemIOObject's methods
     virtual int generate_fd();

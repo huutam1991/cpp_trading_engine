@@ -58,7 +58,7 @@ TlsResult TlsWrapper::handshake()
             return TlsResult::WANT_IO;
 
         default:
-            spdlog::error("TLS handshake failed: {}", err);
+            spdlog::error("TlsWrapper::handshake - TLS handshake failed: {}", err);
             ERR_print_errors_fp(stderr);
             return TlsResult::ERROR;
     }
@@ -78,7 +78,7 @@ int TlsWrapper::read(char* buf, int size)
         return 0; // no data
     }
 
-    spdlog::error("TLS read error: {}", err);
+    spdlog::error("TlsWrapper::read - error: {}", err);
     return -1;
 }
 
@@ -96,7 +96,7 @@ int TlsWrapper::write(const char* buf, int size)
         return 0; // try again when epoll reports EPOLLOUT
     }
 
-    spdlog::error("TLS write error: {}", err);
+    spdlog::error("TlsWrapper::write - error: {}", err);
     return -1;
 }
 
