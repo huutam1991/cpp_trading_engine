@@ -6,17 +6,21 @@
 #include <functional>
 
 #include <coroutine/future.h>
+#include <coroutine/epoll_base.h>
 #include <network/tls_wrapper/tls_wrapper.h>
+#include <system_io/https_client_request_io/https_client_request_io.h>
 
 class HttpsClientRequest
 {
-    TlsWrapper* m_tls_wrapper = nullptr;
+    EpollBase* m_epoll_base = nullptr;
+    std::unique_ptr<TlsWrapper> m_tls_wrapper = nullptr;
     std::string m_hostname;
     int m_port;
     std::string m_ip;
+    HttpClientRequestIO m_io_object;
 
 public:
-    HttpsClientRequest(const std::string& hostname, int port);
+    HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port);
     ~HttpsClientRequest();
 
 private:

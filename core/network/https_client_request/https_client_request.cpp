@@ -3,22 +3,23 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-HttpsClientRequest::HttpsClientRequest(const std::string& hostname, int port)
-    :   m_tls_wrapper{new TlsWrapper(get_tls_context())},
+HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port)
+    :   m_epoll_base{epoll_base},
+        m_tls_wrapper{std::make_unique<TlsWrapper>(get_tls_context())},
         m_hostname{hostname},
         m_port{port},
-        m_ip{resolve_hostname()}
+        m_ip{resolve_hostname()},
+        m_io_object{m_ip, m_port, m_tls_wrapper.get()}
 {
+    // Set SNI
     SSL_set_tlsext_host_name(m_tls_wrapper->get_ssl(), m_hostname.c_str());
+
+    // Connect
+    m_epoll_base->start_living_system_io_object(&m_io_object);
 }
 
 HttpsClientRequest::~HttpsClientRequest()
 {
-    if (m_tls_wrapper)
-    {
-        delete m_tls_wrapper;
-        m_tls_wrapper = nullptr;
-    }
 }
 
 TlsContext* HttpsClientRequest::get_tls_context()
