@@ -43,21 +43,26 @@ int HttpClientRequestIO::generate_fd()
 
 int HttpClientRequestIO::handle_io_data()
 {
+    spdlog::info("HttpClientRequestIO::handle_io_data - 1");
     if (is_connected == false)
     {
+    spdlog::info("HttpClientRequestIO::handle_io_data - 2");
         int err = 0;
         socklen_t len = sizeof(err);
         getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len);
 
+    spdlog::info("HttpClientRequestIO::handle_io_data - 3");
         if (err != 0)
         {
             spdlog::error("HttpClientRequestIO::handle_io_data - Connect failed: {}, ip: {}, port: {}", strerror(err), ip, port);
             return -1; // close
         }
+    spdlog::info("HttpClientRequestIO::handle_io_data - 4");
 
         is_connected = true;
         spdlog::info("HttpClientRequestIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
 
+    spdlog::info("HttpClientRequestIO::handle_io_data - 5");
         // Attach fd to TLS wrapper
         if (m_tls_wrapper->attach_fd(fd) == false)
         {
@@ -65,10 +70,12 @@ int HttpClientRequestIO::handle_io_data()
             return -1;
         }
     }
+    spdlog::info("HttpClientRequestIO::handle_io_data - 6");
 
     // Check to TLS handshake non-blocking
     if (m_tls_wrapper->is_handshake_done() == false)
     {
+    spdlog::info("HttpClientRequestIO::handle_io_data - 7");
         TlsResult result = m_tls_wrapper->handshake();
         return result != TlsResult::ERROR ? 0 : -1;
     }
@@ -81,6 +88,7 @@ int HttpClientRequestIO::handle_io_data()
 
 void HttpClientRequestIO::release()
 {
+    spdlog::info("HttpClientRequestIO::release - Releasing HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
     fd = -1;
     is_connected = false;
 }
