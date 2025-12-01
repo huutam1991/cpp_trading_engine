@@ -32,8 +32,8 @@ int HttpsClientSocket::handle_io_data()
     // Continue with ssl_accept if it's not finish yet
     if (tls_wrapper->is_handshake_done() == false)
     {
-        tls_wrapper->handshake();
-        return 0;
+        TlsResult result = tls_wrapper->handshake();
+        return result != TlsResult::ERROR ? 0 : -1;
     }
     // If ssl_accept is finished, handle client request
     else
