@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     epoll_base->start_living_system_io_object(https_server_object);
 
-    HttpsClientRequest https_client_request("fapi.binance.com", 443);
+    HttpsClientRequest https_client_request(epoll_base, "fapi.binance.com", 443);
 
     // Main loop, only sleep here
     while (true)
