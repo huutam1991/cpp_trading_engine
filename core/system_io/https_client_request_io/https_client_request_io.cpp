@@ -75,4 +75,6 @@ int HttpClientRequestIO::handle_io_data()
 
 void HttpClientRequestIO::release()
 {
+    fd = -1;
+    is_connected = false;
 }
