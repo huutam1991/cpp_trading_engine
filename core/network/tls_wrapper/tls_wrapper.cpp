@@ -75,11 +75,10 @@ int TlsWrapper::read(char* buf, int size)
     int err = SSL_get_error(ssl, ret);
     if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
     {
-        spdlog::debug("TlsWrapper::write - SSL want read/write (no data), error: {}", err);
         return 0; // no data
     }
 
-    spdlog::error("TlsWrapper::read - error: {}", err);
+    spdlog::error("TlsWrapper::read - error: {}, connection closed or error occurred", err);
     return -1;
 }
 
