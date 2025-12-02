@@ -58,7 +58,7 @@ TlsResult TlsWrapper::handshake()
             return TlsResult::WANT_IO;
 
         default:
-            spdlog::error("TlsWrapper::handshake - TLS handshake failed: {}", err);
+            spdlog::error("TlsWrapper::handshake - TLS handshake failed, error code: {}", err);
             ERR_print_errors_fp(stderr);
             return TlsResult::ERROR;
     }
