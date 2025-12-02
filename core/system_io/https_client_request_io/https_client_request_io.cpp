@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "https_client_request_io.h"
 
@@ -29,6 +30,8 @@ int HttpClientRequestIO::generate_fd()
         if (errno == EINPROGRESS)
         {
             // Non-blocking connect in progress
+
+    fcntl(fd, F_SETFL, O_NONBLOCK);
     spdlog::info("HttpClientRequestIO::generate_fd - 4");
             return fd;
         }
