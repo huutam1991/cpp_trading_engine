@@ -14,64 +14,49 @@ int HttpClientRequestIO::generate_fd()
     fd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (fd < 0) return -1;
 
-    spdlog::info("HttpClientRequestIO::generate_fd - 1");
-
-    sockaddr_in addr{};
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
-    spdlog::info("HttpClientRequestIO::generate_fd - 2");
-
-    int res = ::connect(fd, (sockaddr*)&addr, sizeof(addr));
-    spdlog::info("HttpClientRequestIO::generate_fd - 3");
-
-    if (res < 0)
-    {
-        if (errno == EINPROGRESS)
-        {
-            // Non-blocking connect in progress
-
-    fcntl(fd, F_SETFL, O_NONBLOCK);
-    spdlog::info("HttpClientRequestIO::generate_fd - 4");
-            return fd;
-        }
-
-        close(fd);
-        return -1;
-    }
-    spdlog::info("HttpClientRequestIO::generate_fd - 5");
-
     return fd;
 }
 
 int HttpClientRequestIO::activate()
 {
-    // TBD
+    sockaddr_in addr{};
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    inet_pton(AF_INET, ip.c_str(), &addr.sin_addr);
+
+    int res = ::connect(fd, (sockaddr*)&addr, sizeof(addr));
+
+    if (res < 0)
+    {
+        // Non-blocking connect in progress
+        if (errno == EINPROGRESS)
+        {
+            return 0;
+        }
+
+        close(fd);
+        return -1;
+    }
     return 0;
 }
 
 int HttpClientRequestIO::handle_io_data()
 {
-    spdlog::info("HttpClientRequestIO::handle_io_data - 1");
     if (is_connected == false)
     {
-    spdlog::info("HttpClientRequestIO::handle_io_data - 2");
         int err = 0;
         socklen_t len = sizeof(err);
         getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len);
 
-    spdlog::info("HttpClientRequestIO::handle_io_data - 3");
         if (err != 0)
         {
             spdlog::error("HttpClientRequestIO::handle_io_data - Connect failed: {}, ip: {}, port: {}", strerror(err), ip, port);
             return -1; // close
         }
-    spdlog::info("HttpClientRequestIO::handle_io_data - 4");
 
         is_connected = true;
         spdlog::info("HttpClientRequestIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
 
-    spdlog::info("HttpClientRequestIO::handle_io_data - 5");
         // Attach fd to TLS wrapper
         if (m_tls_wrapper->attach_fd(fd) == false)
         {
@@ -79,12 +64,10 @@ int HttpClientRequestIO::handle_io_data()
             return -1;
         }
     }
-    spdlog::info("HttpClientRequestIO::handle_io_data - 6");
 
     // Check to TLS handshake non-blocking
     if (m_tls_wrapper->is_handshake_done() == false)
     {
-    spdlog::info("HttpClientRequestIO::handle_io_data - 7");
         TlsResult result = m_tls_wrapper->handshake();
         return result != TlsResult::ERROR ? 0 : -1;
     }
