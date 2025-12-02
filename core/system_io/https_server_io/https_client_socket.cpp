@@ -27,9 +27,10 @@ int HttpsClientSocket::generate_fd()
     return fd;
 }
 
-void HttpsClientSocket::activate()
+int HttpsClientSocket::activate()
 {
     // Nothing to do for client socket
+    return 0;
 }
 
 int HttpsClientSocket::handle_io_data()

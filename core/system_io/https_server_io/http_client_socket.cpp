@@ -56,9 +56,10 @@ int HttpClientSocket::generate_fd()
     return fd;
 }
 
-void HttpClientSocket::activate()
+int HttpClientSocket::activate()
 {
     // Nothing to do for client socket
+    return 0;
 }
 
 int HttpClientSocket::handle_io_data()

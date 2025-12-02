@@ -44,9 +44,10 @@ int HttpClientRequestIO::generate_fd()
     return fd;
 }
 
-void HttpClientRequestIO::activate()
+int HttpClientRequestIO::activate()
 {
     // TBD
+    return 0;
 }
 
 int HttpClientRequestIO::handle_io_data()

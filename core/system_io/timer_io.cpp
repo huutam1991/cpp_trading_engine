@@ -34,9 +34,10 @@ int TimerIO::generate_fd()
     return fd;
 }
 
-void TimerIO::activate()
+int TimerIO::activate()
 {
     // Nothing to do for TimerIO
+    return 0;
 }
 
 int TimerIO::handle_io_data()
