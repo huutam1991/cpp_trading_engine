@@ -59,6 +59,14 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     }
 
     add_fd(fd, object);
+
+    int activate_res = object->activate();
+    if (activate_res < 0)
+    {
+        spdlog::error("EpollBase - [start_living_system_io_object] activate error for fd: {}", fd);
+        del_fd(fd, object);
+        return;
+    }
 }
 
 void EpollBase::set_ready_task(void* task_info)
