@@ -13,17 +13,13 @@
 class HttpsClientRequest
 {
     EpollBase* m_epoll_base = nullptr;
-    std::unique_ptr<TlsWrapper> m_tls_wrapper = nullptr;
     std::string m_hostname;
     int m_port;
-    std::string m_ip;
-    HttpClientRequestIO m_io_object;
+    std::unique_ptr<HttpClientRequestIO> m_io_object;
 
 public:
     HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port);
     ~HttpsClientRequest();
 
 private:
-    static TlsContext* get_tls_context();
-    std::string resolve_hostname();
 };
