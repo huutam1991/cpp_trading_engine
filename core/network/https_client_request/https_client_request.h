@@ -21,5 +21,7 @@ public:
     HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port);
     ~HttpsClientRequest();
 
+    void on_disconnect();
+
 private:
 };
