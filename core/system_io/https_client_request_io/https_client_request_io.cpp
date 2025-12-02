@@ -5,6 +5,8 @@
 
 #include "https_client_request_io.h"
 
+#define BUFFER_SIZE 2048
+
 HttpClientRequestIO::HttpClientRequestIO(const std::string& hostname_value, int port_value)
     : hostname{hostname_value}, ip{resolve_hostname()}, port{port_value}, m_tls_wrapper{std::make_unique<TlsWrapper>(get_tls_context())}
 {
@@ -43,6 +45,47 @@ std::string HttpClientRequestIO::resolve_hostname()
     spdlog::info("HttpClientRequestIO::resolve_hostname - Resolved {} to {}", hostname, ip);
 
     return ip;
+}
+
+int HttpClientRequestIO::read_buffer(char* const buffer)
+{
+    return m_tls_wrapper->read(buffer, BUFFER_SIZE);
+}
+
+void HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
+{
+    m_tls_wrapper->write(buffer, size);
+}
+
+int HttpClientRequestIO::handle_read_data()
+{
+    char buffer[BUFFER_SIZE];
+    char temp_buffer[BUFFER_SIZE];
+    int read_bytes = 0;
+    int buffer_length = 0;
+
+    if ((read_bytes = read_buffer(temp_buffer)) >= 0)
+    {
+        memcpy(buffer + buffer_length, temp_buffer, read_bytes);
+        buffer_length += read_bytes;
+
+        while ((read_bytes = read_buffer(temp_buffer)) > 0)
+        {
+            memcpy(buffer + buffer_length, temp_buffer, read_bytes);
+            buffer_length += read_bytes;
+        }
+
+        buffer[buffer_length] = '\0';
+    }
+    else
+    {
+        spdlog::debug("HttpClientSocket::handle_io_data - connection lost, fd = {}", fd);
+        // Clean save buffer
+        // save_buffer = "";
+        return -1;
+    }
+
+    return 0;
 }
 
 int HttpClientRequestIO::generate_fd()
@@ -109,6 +152,8 @@ int HttpClientRequestIO::handle_io_data()
     }
     else
     {
+        // Handle read data
+        return handle_read_data();
     }
 
     return 0;

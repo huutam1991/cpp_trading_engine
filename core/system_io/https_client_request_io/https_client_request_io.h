@@ -14,8 +14,14 @@ struct HttpClientRequestIO : public SystemIOObject
 
     HttpClientRequestIO(const std::string& hostname_value, int port_value);
 
+    // Get TLS context
     static TlsContext* get_tls_context();
     std::string resolve_hostname();
+
+    // Handle data methods
+    int handle_read_data();
+    int read_buffer(char* const buffer);
+    void write_to_socket_io(const char* buffer, std::uint32_t size);
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
