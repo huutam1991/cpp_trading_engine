@@ -20,7 +20,7 @@ EpollBase::EpollBase(size_t id) : EventBase(id)
 void EpollBase::add_fd(int fd, SystemIOObject* ptr)
 {
     epoll_event ev;
-    ev.events = EPOLLIN;
+    ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
     ev.data.ptr = ptr;
 
     int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
@@ -28,7 +28,7 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
     {
         spdlog::error("EpollBase - [add_fd] epoll_ctl ADD error for fd: {}, error: {}", fd, std::strerror(errno));
     }
-    // spdlog::debug("EpollBase - [add_fd] fd: {}", fd);
+    spdlog::debug("EpollBase - [add_fd] fd: {}", fd);
 }
 
 void EpollBase::del_fd(int fd, SystemIOObject* ptr)
