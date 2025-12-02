@@ -29,11 +29,11 @@ int HttpClientSocket::generate_fd()
 
     if ((fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len)) == -1)
     {
-        spdlog::info("HttpServer - accept: {}", std::strerror(errno));
+        spdlog::info("HttpClientSocket::generate_fd - HttpServer - accept: {}", std::strerror(errno));
     }
     else
     {
-        spdlog::info("Connection to {}, established (fd = {})", inet_ntoa(client_addr.sin_addr), fd);
+        spdlog::info("HttpClientSocket::generate_fd - Connection to {}, established (fd = {})", inet_ntoa(client_addr.sin_addr), fd);
 
         int dwTimeout = 1000; // milliseconds
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
@@ -84,7 +84,7 @@ int HttpClientSocket::handle_io_data()
     }
     else
     {
-        spdlog::debug("Connection lost, fd = {}", fd);
+        spdlog::debug("HttpClientSocket::handle_io_data - connection lost, fd = {}", fd);
         // Clean save buffer
         save_buffer = "";
         return -1;
