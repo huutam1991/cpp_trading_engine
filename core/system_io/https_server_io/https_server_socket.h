@@ -14,7 +14,8 @@ struct HttpsServerSocket : public HttpServerSocket
     HttpsServerSocket(int port_value);
 
     // SystemIOObject's methods
-    virtual int generate_fd();
-    virtual int handle_io_data();
-    virtual void release();
+    virtual int generate_fd() override;
+    virtual void activate() override;
+    virtual int handle_io_data() override;
+    virtual void release() override;
 };

@@ -27,6 +27,11 @@ int HttpsClientSocket::generate_fd()
     return fd;
 }
 
+void HttpsClientSocket::activate()
+{
+    // Nothing to do for client socket
+}
+
 int HttpsClientSocket::handle_io_data()
 {
     // Continue with ssl_accept if it's not finish yet

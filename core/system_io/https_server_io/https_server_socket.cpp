@@ -17,6 +17,11 @@ int HttpsServerSocket::generate_fd()
     return HttpServerSocket::generate_fd();
 }
 
+void HttpsServerSocket::activate()
+{
+    // Nothing to do for server socket
+}
+
 int HttpsServerSocket::handle_io_data()
 {
     HttpsClientSocket* client_socket = HttpsClientSocketPool::acquire();

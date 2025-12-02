@@ -44,6 +44,11 @@ int HttpClientRequestIO::generate_fd()
     return fd;
 }
 
+void HttpClientRequestIO::activate()
+{
+    // TBD
+}
+
 int HttpClientRequestIO::handle_io_data()
 {
     spdlog::info("HttpClientRequestIO::handle_io_data - 1");

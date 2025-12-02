@@ -32,6 +32,11 @@ int TaskInfo::generate_fd()
     return fd;
 }
 
+void TaskInfo::activate()
+{
+    // Nothing to do for TaskInfo
+}
+
 int TaskInfo::handle_io_data()
 {
     check_handle();

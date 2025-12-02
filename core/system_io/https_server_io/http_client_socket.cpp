@@ -56,6 +56,11 @@ int HttpClientSocket::generate_fd()
     return fd;
 }
 
+void HttpClientSocket::activate()
+{
+    // Nothing to do for client socket
+}
+
 int HttpClientSocket::handle_io_data()
 {
     char buffer[BUFFER_SIZE];

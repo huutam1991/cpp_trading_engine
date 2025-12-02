@@ -34,6 +34,11 @@ int TimerIO::generate_fd()
     return fd;
 }
 
+void TimerIO::activate()
+{
+    // Nothing to do for TimerIO
+}
+
 int TimerIO::handle_io_data()
 {
     if (callback != nullptr)

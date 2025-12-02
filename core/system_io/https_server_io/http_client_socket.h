@@ -17,9 +17,10 @@ struct HttpClientSocket : public SystemIOObject
     void clear();
 
     // SystemIOObject's methods
-    virtual int generate_fd();
-    virtual int handle_io_data();
-    virtual void release();
+    virtual int generate_fd() override;
+    virtual void activate() override;
+    virtual int handle_io_data() override;
+    virtual void release() override;
 
     // Handle data methods
     virtual int read_buffer(char* const buffer);
