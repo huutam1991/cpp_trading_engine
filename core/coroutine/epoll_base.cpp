@@ -30,12 +30,12 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
     }
 }
 
-void EpollBase::del_fd(int fd, SystemIOObject* ptr)
+void EpollBase::del_fd(SystemIOObject* ptr)
 {
-    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
+    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, ptr->fd, nullptr);
     if (res == -1)
     {
-        spdlog::error("EpollBase - [del_fd] epoll_ctl DEL error for fd: {}, error: {}", fd, std::strerror(errno));
+        spdlog::error("EpollBase - [del_fd] epoll_ctl DEL error for fd: {}, error: {}", ptr->fd, std::strerror(errno));
     }
     // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
 
@@ -63,7 +63,7 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     if (activate_res < 0)
     {
         spdlog::error("EpollBase - [start_living_system_io_object] activate error for fd: {}", fd);
-        del_fd(fd, object);
+        del_fd(object);
         return;
     }
 }
@@ -119,7 +119,7 @@ void EpollBase::loop()
             // [-1] means there's error with handle io data and need to close this fd
             if (res == -1)
             {
-                del_fd(fd, io_object);
+                del_fd(io_object);
             }
         }
     }
