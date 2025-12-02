@@ -5,9 +5,45 @@
 
 #include "https_client_request_io.h"
 
-HttpClientRequestIO::HttpClientRequestIO(const std::string& ip_value, int port_value, TlsWrapper* tls_wrapper)
-    : ip{ip_value}, port{port_value}, m_tls_wrapper{tls_wrapper}
-{}
+HttpClientRequestIO::HttpClientRequestIO(const std::string& hostname_value, int port_value)
+    : hostname{hostname_value}, ip{resolve_hostname()}, port{port_value}, m_tls_wrapper{std::make_unique<TlsWrapper>(get_tls_context())}
+{
+    // Set SNI
+    SSL_set_tlsext_host_name(m_tls_wrapper->get_ssl(), hostname.c_str());
+}
+
+TlsContext* HttpClientRequestIO::get_tls_context()
+{
+    static TlsClientContext client_ctx{false, ""};
+    return &client_ctx;
+}
+
+std::string HttpClientRequestIO::resolve_hostname()
+{
+    addrinfo hints{};
+    hints.ai_family   = AF_INET;      // IPv4
+    hints.ai_socktype = SOCK_STREAM;  // TCP
+
+    addrinfo* result = nullptr;
+    int ret = getaddrinfo(hostname.c_str(), nullptr, &hints, &result);
+    if (ret != 0)
+    {
+        spdlog::error("HttpClientRequestIO::resolve_hostname - getaddrinfo failed for {}: {}", hostname, gai_strerror(ret));
+        return ""; // fail
+    }
+
+    char ip_str[INET_ADDRSTRLEN] = {0};
+
+    sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(result->ai_addr);
+    inet_ntop(AF_INET, &(addr->sin_addr), ip_str, sizeof(ip_str));
+    std::string ip = ip_str;
+
+    freeaddrinfo(result);
+
+    spdlog::info("HttpClientRequestIO::resolve_hostname - Resolved {} to {}", hostname, ip);
+
+    return ip;
+}
 
 int HttpClientRequestIO::generate_fd()
 {

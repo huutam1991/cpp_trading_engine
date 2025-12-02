@@ -6,12 +6,16 @@
 
 struct HttpClientRequestIO : public SystemIOObject
 {
+    std::string hostname;
     std::string ip;
     int port;
-    TlsWrapper* m_tls_wrapper = nullptr;
+    std::unique_ptr<TlsWrapper> m_tls_wrapper = nullptr;
     bool is_connected = false;
 
-    HttpClientRequestIO(const std::string& ip_value, int port_value, TlsWrapper* tls_wrapper);
+    HttpClientRequestIO(const std::string& hostname_value, int port_value);
+
+    static TlsContext* get_tls_context();
+    std::string resolve_hostname();
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
