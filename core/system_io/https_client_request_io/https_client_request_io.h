@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+
 #include <spdlog/spdlog.h>
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/system_io_object.h>
@@ -13,6 +15,11 @@ struct HttpClientRequestIO : public SystemIOObject
     bool is_connected = false;
 
     HttpClientRequestIO(const std::string& hostname_value, int port_value);
+    ~HttpClientRequestIO();
+
+    // Set callback on disconnect
+    std::function<void()> on_disconnect_callback = nullptr;
+    void set_on_disconnect_callback(std::function<void()> callback);
 
     // Get TLS context
     static TlsContext* get_tls_context();

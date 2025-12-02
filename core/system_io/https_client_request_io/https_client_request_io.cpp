@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <coroutine/epoll_base.h>
 #include "https_client_request_io.h"
 
 #define BUFFER_SIZE 2048
@@ -12,6 +13,21 @@ HttpClientRequestIO::HttpClientRequestIO(const std::string& hostname_value, int 
 {
     // Set SNI
     SSL_set_tlsext_host_name(m_tls_wrapper->get_ssl(), hostname.c_str());
+}
+
+HttpClientRequestIO::~HttpClientRequestIO()
+{
+    spdlog::info("HttpClientRequestIO::~HttpClientRequestIO - Destroying HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
+
+    if (fd != -1 && epoll_base != nullptr)
+    {
+        epoll_base->del_fd(this);
+    }
+}
+
+void HttpClientRequestIO::set_on_disconnect_callback(std::function<void()> callback)
+{
+    on_disconnect_callback = callback;
 }
 
 TlsContext* HttpClientRequestIO::get_tls_context()
@@ -162,6 +178,13 @@ int HttpClientRequestIO::handle_io_data()
 void HttpClientRequestIO::release()
 {
     spdlog::info("HttpClientRequestIO::release - Releasing HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
+
     fd = -1;
+    epoll_base = nullptr;
     is_connected = false;
+
+    if (on_disconnect_callback != nullptr)
+    {
+        on_disconnect_callback();
+    }
 }
