@@ -24,4 +24,6 @@ public:
     void on_disconnect();
 
 private:
+    void connect();
+
 };
