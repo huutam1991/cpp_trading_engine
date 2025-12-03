@@ -94,7 +94,41 @@ void HttpsClientRequest::get(const std::string& path)
     m_io_object->write(request_builder.to_string());
 }
 
-void HttpsClientRequest::send(const std::string& request)
+void HttpsClientRequest::post(const std::string& path, const std::string& body)
 {
+    RequestBuilder request_builder;
 
+    // POST <path> HTTP/1.1\r\n
+    request_builder.append("POST ");
+    request_builder.append(path);
+    request_builder.append(" HTTP/1.1\r\n");
+
+    // Host: <hostname>\r\n
+    request_builder.append("Host: ");
+    request_builder.append(m_hostname);
+    request_builder.append("\r\n");
+
+    // Default headers
+    request_builder.append("Connection: close\r\n");
+    request_builder.append("User-Agent: C++ Trading Engine\r\n");
+    request_builder.append("Accept: */*\r\n");
+    request_builder.append("Content-Type: application/json\r\n");
+
+    // Content-Length
+    {
+        std::string len_str = "Content-Length: " + std::to_string(body.size()) + "\r\n";
+        request_builder.append(len_str);
+    }
+
+    // End of headers
+    request_builder.append("\r\n");
+
+    // Body
+    if (!body.empty())
+    {
+        request_builder.append(body);
+    }
+
+    // Send
+    m_io_object->write(request_builder.to_string());
 }

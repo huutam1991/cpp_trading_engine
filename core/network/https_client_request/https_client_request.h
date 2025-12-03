@@ -25,9 +25,9 @@ public:
     void on_disconnect();
     void on_response_received(const char* buffer, std::uint32_t size);
     void get(const std::string& path);
+    void post(const std::string& path, const std::string& body);
 
 private:
     void connect();
     Task<void> re_connect();
-    void send(const std::string& request);
 };
