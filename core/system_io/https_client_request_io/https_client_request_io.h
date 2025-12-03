@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <queue>
 
 #include <spdlog/spdlog.h>
 #include <network/tls_wrapper/tls_wrapper.h>
@@ -13,6 +14,7 @@ struct HttpClientRequestIO : public SystemIOObject
     int port;
     std::unique_ptr<TlsWrapper> m_tls_wrapper = nullptr;
     bool is_connected = false;
+    std::queue<std::string> write_queue;
 
     HttpClientRequestIO(const std::string& hostname_value, int port_value);
     ~HttpClientRequestIO();
@@ -20,6 +22,7 @@ struct HttpClientRequestIO : public SystemIOObject
     // Set callback on disconnect
     std::function<void()> on_disconnect_callback = nullptr;
     void set_on_disconnect_callback(std::function<void()> callback);
+    void write(std::string data);
 
     // Get TLS context
     static TlsContext* get_tls_context();
@@ -28,7 +31,7 @@ struct HttpClientRequestIO : public SystemIOObject
     // Handle data methods
     int handle_read_data();
     int read_buffer(char* const buffer);
-    void write_to_socket_io(const char* buffer, std::uint32_t size);
+    int write_to_socket_io(const char* buffer, std::uint32_t size);
 
     // SystemIOObject's methods
     virtual int generate_fd() override;

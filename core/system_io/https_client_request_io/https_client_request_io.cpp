@@ -33,6 +33,12 @@ void HttpClientRequestIO::set_on_disconnect_callback(std::function<void()> callb
     on_disconnect_callback = callback;
 }
 
+void HttpClientRequestIO::write(std::string data)
+{
+    write_queue.push(std::move(data));
+    handle_write();
+}
+
 TlsContext* HttpClientRequestIO::get_tls_context()
 {
     static TlsClientContext client_ctx{false, ""};
@@ -71,9 +77,9 @@ int HttpClientRequestIO::read_buffer(char* const buffer)
     return m_tls_wrapper->read(buffer, BUFFER_SIZE);
 }
 
-void HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
-    m_tls_wrapper->write(buffer, size);
+    return m_tls_wrapper->write(buffer, size);
 }
 
 int HttpClientRequestIO::handle_read_data()
@@ -104,12 +110,6 @@ int HttpClientRequestIO::handle_read_data()
         return -1;
     }
 
-    return 0;
-}
-
-int HttpClientRequestIO::handle_write()
-{
-    // Nothing to do for write event
     return 0;
 }
 
@@ -179,6 +179,24 @@ int HttpClientRequestIO::handle_read()
     {
         // Handle read data
         return handle_read_data();
+    }
+
+    return 0;
+}
+
+int HttpClientRequestIO::handle_write()
+{
+    while (write_queue.empty() == false)
+    {
+        const std::string& data = write_queue.front();
+        int written_bytes = write_to_socket_io(data.c_str(), data.size());
+        if (written_bytes == -1)
+        {
+            spdlog::error("HttpClientRequestIO::handle_write - write failed, ip: {}, port: {}", ip, port);
+            return -1;
+        }
+
+        write_queue.pop();
     }
 
     return 0;
