@@ -70,15 +70,35 @@ Task<void> HttpsClientRequest::re_connect()
 
 void HttpsClientRequest::get(const std::string& path)
 {
-    std::string payload;
-    payload  = "GET " + path + " HTTP/1.1\r\n";
-    payload += "Host: " + m_hostname + "\r\n";
-    payload += "Connection: close\r\n";
-    payload += "User-Agent: C++ Trading Engine\r\n";
-    payload += "Accept: */*\r\n";
-    payload += "\r\n";
+    char buf[2048];
+    size_t len = 0;
 
-    m_io_object->write(std::move(payload));
+    auto append = [&](const char* s)
+    {
+        size_t l = strlen(s);
+        memcpy(buf + len, s, l);
+        len += l;
+    };
+
+    // GET <path> HTTP/1.1\r\n
+    append("GET ");
+    append(path.c_str());
+    append(" HTTP/1.1\r\n");
+    // Host: <hostname>\r\n
+    append("Host: ");
+    append(m_hostname.c_str());
+    append("\r\n");
+    // Connection: close\r\n
+    append("Connection: close\r\n");
+    // User-Agent: ...
+    append("User-Agent: C++ Trading Engine\r\n");
+    // Accept */*\r\n
+    append("Accept: */*\r\n");
+    // End
+    append("\r\n");
+
+    // Send request
+    m_io_object->write(std::string(buf, len));
 }
 
 void HttpsClientRequest::send(const std::string& request)
