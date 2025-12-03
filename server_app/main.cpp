@@ -40,6 +40,12 @@ Task<void> test_https_client_request(EpollBase* epoll_base)
     {
         co_await Timer::sleep_for(5000);
 
+        Json post_data = {
+            {"username", "root"},
+            {"password", "tampass123ddd"}
+        };
+        https_client_request.post("/login", post_data.get_string_value());
+
         https_client_request.get("/check_health");
     }
 }
