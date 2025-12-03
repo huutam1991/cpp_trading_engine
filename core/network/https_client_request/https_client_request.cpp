@@ -1,4 +1,5 @@
 #include "https_client_request.h"
+#include "https_client_request_builder.h"
 #include "https_client_response_parser.h"
 
 #include <netdb.h>
@@ -70,35 +71,27 @@ Task<void> HttpsClientRequest::re_connect()
 
 void HttpsClientRequest::get(const std::string& path)
 {
-    char buf[2048];
-    size_t len = 0;
-
-    auto append = [&](const char* s)
-    {
-        size_t l = strlen(s);
-        memcpy(buf + len, s, l);
-        len += l;
-    };
+    RequestBuilder request_builder;
 
     // GET <path> HTTP/1.1\r\n
-    append("GET ");
-    append(path.c_str());
-    append(" HTTP/1.1\r\n");
+    request_builder.append("GET ");
+    request_builder.append(path);
+    request_builder.append(" HTTP/1.1\r\n");
     // Host: <hostname>\r\n
-    append("Host: ");
-    append(m_hostname.c_str());
-    append("\r\n");
+    request_builder.append("Host: ");
+    request_builder.append(m_hostname);
+    request_builder.append("\r\n");
     // Connection: close\r\n
-    append("Connection: close\r\n");
+    request_builder.append("Connection: close\r\n");
     // User-Agent: ...
-    append("User-Agent: C++ Trading Engine\r\n");
+    request_builder.append("User-Agent: C++ Trading Engine\r\n");
     // Accept */*\r\n
-    append("Accept: */*\r\n");
+    request_builder.append("Accept: */*\r\n");
     // End
-    append("\r\n");
+    request_builder.append("\r\n");
 
     // Send request
-    m_io_object->write(std::string(buf, len));
+    m_io_object->write(request_builder.to_string());
 }
 
 void HttpsClientRequest::send(const std::string& request)
