@@ -23,6 +23,10 @@ struct HttpClientRequestIO : public SystemIOObject
     std::function<void()> on_disconnect_callback = nullptr;
     void set_on_disconnect_callback(std::function<void()> callback);
 
+    // Set callback on response received
+    std::function<void(const char* buffer, std::uint32_t size)> on_response_received_callback = nullptr;
+    void set_on_response_received_callback(std::function<void(const char* buffer, std::uint32_t size)> callback);
+
     // Get TLS context
     static TlsContext* get_tls_context();
     std::string resolve_hostname();

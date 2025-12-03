@@ -19,8 +19,9 @@ HttpClientRequestIO::~HttpClientRequestIO()
 {
     spdlog::info("HttpClientRequestIO::~HttpClientRequestIO - Destroying HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
 
-    // No need to call [on_disconnect_callback], because this is intend release
+    // No need to call [on_disconnect_callback] + [on_response_received_callback], because this is intend release
     on_disconnect_callback = nullptr;
+    on_response_received_callback = nullptr;
 
     if (fd != -1 && epoll_base != nullptr)
     {
@@ -31,6 +32,11 @@ HttpClientRequestIO::~HttpClientRequestIO()
 void HttpClientRequestIO::set_on_disconnect_callback(std::function<void()> callback)
 {
     on_disconnect_callback = callback;
+}
+
+void HttpClientRequestIO::set_on_response_received_callback(std::function<void(const char* buffer, std::uint32_t size)> callback)
+{
+    on_response_received_callback = callback;
 }
 
 void HttpClientRequestIO::write(std::string data)
@@ -139,6 +145,11 @@ int HttpClientRequestIO::handle_read_data()
         }
 
         buffer[buffer_length] = '\0';
+
+        if (buffer_length > 0 && on_response_received_callback != nullptr)
+        {
+            on_response_received_callback(buffer, buffer_length);
+        }
     }
     else
     {
