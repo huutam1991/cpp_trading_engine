@@ -117,8 +117,29 @@ void EpollBase::loop()
             SystemIOObject* io_object = static_cast<SystemIOObject*>(events[i].data.ptr);
             int fd = io_object->fd;
 
-            // Handle IO data
-            int res = io_object->handle_read();
+            uint32_t event = events[i].events;
+
+            if (event & (EPOLLERR | EPOLLHUP | EPOLLRDHUP))
+            {
+                // An error has occured on this fd
+                spdlog::error("EpollBase - [loop] EPOLLERR or EPOLLHUP or EPOLLRDHUP on fd: {}", fd);
+                del_fd(io_object);
+                continue;
+            }
+
+            int res;
+
+            // Handle read event
+            if (event & EPOLLIN)
+            {
+                res = io_object->handle_read();
+            }
+
+            // Handle write event
+            if (event & EPOLLOUT)
+            {
+                res = io_object->handle_write();
+            }
 
             // [-1] means there's error with handle io data and need to close this fd
             if (res == -1)
