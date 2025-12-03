@@ -41,11 +41,8 @@ void EpollBase::del_fd(SystemIOObject* ptr)
         }
         // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
 
-        if (ptr != nullptr)
-        {
-            close(ptr->fd);
-            ptr->release();
-        }
+        close(ptr->fd);
+        ptr->release();
     }
 }
 
