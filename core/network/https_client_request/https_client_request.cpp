@@ -31,7 +31,7 @@ void HttpsClientRequest::connect()
     });
     m_epoll_base->start_living_system_io_object(m_io_object.get());
 
-    send_get_request("/check_health");
+    get("/check_health");
 }
 
 void HttpsClientRequest::on_disconnect()
@@ -68,7 +68,7 @@ Task<void> HttpsClientRequest::re_connect()
     connect();
 }
 
-void HttpsClientRequest::send_get_request(const std::string& path)
+void HttpsClientRequest::get(const std::string& path)
 {
     std::string payload;
     payload  = "GET " + path + " HTTP/1.1\r\n";
