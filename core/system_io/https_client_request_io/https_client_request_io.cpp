@@ -19,6 +19,9 @@ HttpClientRequestIO::~HttpClientRequestIO()
 {
     spdlog::info("HttpClientRequestIO::~HttpClientRequestIO - Destroying HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
 
+    // No need to call [on_disconnect_callback], because this is intend release
+    on_disconnect_callback = nullptr;
+
     if (fd != -1 && epoll_base != nullptr)
     {
         epoll_base->del_fd(this);

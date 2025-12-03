@@ -14,7 +14,7 @@ HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string&
 
 HttpsClientRequest::~HttpsClientRequest()
 {
-    m_io_object->set_on_disconnect_callback(nullptr);
+    spdlog::info("HttpsClientRequest::~HttpsClientRequest - Destroying HttpsClientRequest to {}:{}", m_hostname, m_port);
 }
 
 void HttpsClientRequest::connect()
