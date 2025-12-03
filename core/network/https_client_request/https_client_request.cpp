@@ -25,6 +25,8 @@ void HttpsClientRequest::connect()
         this->on_disconnect();
     });
     m_epoll_base->start_living_system_io_object(m_io_object.get());
+
+    send_get_request("/check_health");
 }
 
 void HttpsClientRequest::on_disconnect()
@@ -41,6 +43,7 @@ Task<void> HttpsClientRequest::re_connect()
     co_await Timer::sleep_for(5000);
     connect();
 }
+
 void HttpsClientRequest::send_get_request(const std::string& path)
 {
     std::string payload;
@@ -52,4 +55,9 @@ void HttpsClientRequest::send_get_request(const std::string& path)
     payload += "\r\n";
 
     m_io_object->write_to_socket_io(payload.c_str(), payload.size());
+}
+
+void HttpsClientRequest::send(const std::string& request)
+{
+
 }

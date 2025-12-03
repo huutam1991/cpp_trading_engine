@@ -28,4 +28,5 @@ public:
 private:
     void connect();
     Task<void> re_connect();
+    void send(const std::string& request);
 };
