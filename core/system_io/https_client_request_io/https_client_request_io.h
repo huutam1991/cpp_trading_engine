@@ -19,6 +19,7 @@ struct HttpClientRequestIO : public SystemIOObject
 
     enum State
     {
+        CONNECTING_AND_HANDSHAKING,
         READING,
         WRITING,
         NONE

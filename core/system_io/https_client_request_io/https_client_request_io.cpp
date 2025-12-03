@@ -90,6 +90,8 @@ int HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t si
 
 int HttpClientRequestIO::check_connect_and_handshake()
 {
+    current_state = State::CONNECTING_AND_HANDSHAKING;
+
     if (is_connected == false)
     {
         int err = 0;
@@ -219,8 +221,6 @@ int HttpClientRequestIO::activate()
 
 int HttpClientRequestIO::handle_read()
 {
-    current_state = State::READING;
-
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
@@ -228,19 +228,20 @@ int HttpClientRequestIO::handle_read()
     }
 
     // Handle read data
+    current_state = State::READING;
     return handle_read_data();
 }
 
 int HttpClientRequestIO::handle_write()
 {
-    current_state = State::WRITING;
-
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
         return check_connect_and_handshake();
     }
 
+    // Handle write data
+    current_state = State::WRITING;
     return check_to_write();
 }
 
