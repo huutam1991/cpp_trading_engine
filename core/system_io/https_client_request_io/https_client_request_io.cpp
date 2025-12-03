@@ -42,6 +42,7 @@ void HttpClientRequestIO::set_on_response_received_callback(std::function<void(c
 void HttpClientRequestIO::write(std::string data)
 {
     write_queue.push(std::move(data));
+    check_to_write();
 }
 
 TlsContext* HttpClientRequestIO::get_tls_context()
@@ -162,6 +163,29 @@ int HttpClientRequestIO::handle_read_data()
     return 0;
 }
 
+int HttpClientRequestIO::check_to_write()
+{
+    if (current_state != State::WRITING)
+    {
+        return 0;
+    }
+
+    while (write_queue.empty() == false)
+    {
+        const std::string& data = write_queue.front();
+        int written_bytes = write_to_socket_io(data.c_str(), data.size());
+        if (written_bytes == -1)
+        {
+            spdlog::error("HttpClientRequestIO::handle_write - write failed, ip: {}, port: {}", ip, port);
+            return -1;
+        }
+
+        write_queue.pop();
+    }
+
+    return 0;
+}
+
 int HttpClientRequestIO::generate_fd()
 {
     fd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
@@ -195,6 +219,8 @@ int HttpClientRequestIO::activate()
 
 int HttpClientRequestIO::handle_read()
 {
+    current_state = State::READING;
+
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
@@ -207,26 +233,15 @@ int HttpClientRequestIO::handle_read()
 
 int HttpClientRequestIO::handle_write()
 {
+    current_state = State::WRITING;
+
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
         return check_connect_and_handshake();
     }
 
-    while (write_queue.empty() == false)
-    {
-        const std::string& data = write_queue.front();
-        int written_bytes = write_to_socket_io(data.c_str(), data.size());
-        if (written_bytes == -1)
-        {
-            spdlog::error("HttpClientRequestIO::handle_write - write failed, ip: {}, port: {}", ip, port);
-            return -1;
-        }
-
-        write_queue.pop();
-    }
-
-    return 0;
+    return check_to_write();
 }
 
 void HttpClientRequestIO::release()

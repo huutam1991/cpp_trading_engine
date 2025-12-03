@@ -16,6 +16,15 @@ struct HttpClientRequestIO : public SystemIOObject
     bool is_connected = false;
     std::queue<std::string> write_queue;
 
+
+    enum State
+    {
+        READING,
+        WRITING,
+        NONE
+    };
+    State current_state = State::NONE;
+
     HttpClientRequestIO(const std::string& hostname_value, int port_value);
     ~HttpClientRequestIO();
 
@@ -36,6 +45,7 @@ struct HttpClientRequestIO : public SystemIOObject
     void write(std::string data);
     int handle_read_data();
     int read_buffer(char* const buffer);
+    int check_to_write();
     int write_to_socket_io(const char* buffer, std::uint32_t size);
 
     // SystemIOObject's methods
