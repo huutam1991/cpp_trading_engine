@@ -36,7 +36,6 @@ void HttpClientRequestIO::set_on_disconnect_callback(std::function<void()> callb
 void HttpClientRequestIO::write(std::string data)
 {
     write_queue.push(std::move(data));
-    handle_write();
 }
 
 TlsContext* HttpClientRequestIO::get_tls_context()
@@ -80,6 +79,45 @@ int HttpClientRequestIO::read_buffer(char* const buffer)
 int HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     return m_tls_wrapper->write(buffer, size);
+}
+
+int HttpClientRequestIO::check_connect_and_handshake()
+{
+    if (is_connected == false)
+    {
+        int err = 0;
+        socklen_t len = sizeof(err);
+        getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len);
+
+        if (err != 0)
+        {
+            spdlog::error("HttpClientRequestIO::handle_io_data - Connect failed: {}, ip: {}, port: {}", strerror(err), ip, port);
+            return -1; // close
+        }
+
+        is_connected = true;
+        spdlog::info("HttpClientRequestIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
+
+        // Attach fd to TLS wrapper
+        if (m_tls_wrapper->attach_fd(fd) == false)
+        {
+            spdlog::error("HttpClientRequestIO::handle_io_data - attach_fd failed");
+            return -1;
+        }
+    }
+
+    // Check to TLS handshake non-blocking
+    if (m_tls_wrapper->is_handshake_done() == false)
+    {
+        TlsResult result = m_tls_wrapper->handshake();
+        if (result == TlsResult::OK)
+        {
+            spdlog::info("HttpClientRequestIO::handle_io_data - TLS handshake success, ip: {}, port: {}", ip, port);
+        }
+        return result != TlsResult::ERROR ? 0 : -1;
+    }
+
+    return 0;
 }
 
 int HttpClientRequestIO::handle_read_data()
@@ -146,46 +184,24 @@ int HttpClientRequestIO::activate()
 
 int HttpClientRequestIO::handle_read()
 {
-    if (is_connected == false)
+    // Check connect and handshake
+    if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
-        int err = 0;
-        socklen_t len = sizeof(err);
-        getsockopt(fd, SOL_SOCKET, SO_ERROR, &err, &len);
-
-        if (err != 0)
-        {
-            spdlog::error("HttpClientRequestIO::handle_io_data - Connect failed: {}, ip: {}, port: {}", strerror(err), ip, port);
-            return -1; // close
-        }
-
-        is_connected = true;
-        spdlog::info("HttpClientRequestIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
-
-        // Attach fd to TLS wrapper
-        if (m_tls_wrapper->attach_fd(fd) == false)
-        {
-            spdlog::error("HttpClientRequestIO::handle_io_data - attach_fd failed");
-            return -1;
-        }
+        return check_connect_and_handshake();
     }
 
-    // Check to TLS handshake non-blocking
-    if (m_tls_wrapper->is_handshake_done() == false)
-    {
-        TlsResult result = m_tls_wrapper->handshake();
-        return result != TlsResult::ERROR ? 0 : -1;
-    }
-    else
-    {
-        // Handle read data
-        return handle_read_data();
-    }
-
-    return 0;
+    // Handle read data
+    return handle_read_data();
 }
 
 int HttpClientRequestIO::handle_write()
 {
+    // Check connect and handshake
+    if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
+    {
+        return check_connect_and_handshake();
+    }
+
     while (write_queue.empty() == false)
     {
         const std::string& data = write_queue.front();

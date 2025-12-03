@@ -22,13 +22,14 @@ struct HttpClientRequestIO : public SystemIOObject
     // Set callback on disconnect
     std::function<void()> on_disconnect_callback = nullptr;
     void set_on_disconnect_callback(std::function<void()> callback);
-    void write(std::string data);
 
     // Get TLS context
     static TlsContext* get_tls_context();
     std::string resolve_hostname();
 
     // Handle data methods
+    int check_connect_and_handshake();
+    void write(std::string data);
     int handle_read_data();
     int read_buffer(char* const buffer);
     int write_to_socket_io(const char* buffer, std::uint32_t size);
