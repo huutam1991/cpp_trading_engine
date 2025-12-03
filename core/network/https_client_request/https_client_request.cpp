@@ -49,17 +49,17 @@ void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t 
     HttpsClientResponseParser response_parser;
 
     response_parser.append_data(buffer, size);
-    if (!response_parser.parse(resp))
+    std::vector<HttpsClientResponse> responses = response_parser.parse_all();
+
+    for (auto& resp : responses)
     {
-        spdlog::error("HttpsClientRequest::on_response_received - Failed to parse HTTP response");
-        return;
+        if (resp.is_complete)
+        {
+            spdlog::info("HTTP Response status: {} {}", resp.status_code, resp.status_message);
+            spdlog::info("HTTP Body: {}", resp.body);
+        }
     }
 
-    if (resp.is_complete)
-    {
-        spdlog::info("HTTP Response status: {} {}", resp.status_code, resp.status_message);
-        spdlog::info("HTTP Body: {}", resp.body);
-    }
 }
 
 Task<void> HttpsClientRequest::re_connect()
@@ -109,7 +109,7 @@ void HttpsClientRequest::post(const std::string& path, const std::string& body)
     request_builder.append("\r\n");
 
     // Default headers
-    request_builder.append("Connection: close\r\n");
+    request_builder.append("Connection: keep-alive\r\n");
     request_builder.append("User-Agent: C++ Trading Engine\r\n");
     request_builder.append("Accept: */*\r\n");
     request_builder.append("Content-Type: application/json\r\n");

@@ -13,51 +13,89 @@ public:
         buffer.append(data, len);
     }
 
-    // parse available data
-    // return:
-    // - false: error
-    // - true: still processing or complete
-    bool parse(HttpsClientResponse& resp)
+    // parse ALL available responses inside buffer
+    // return vector of complete responses
+    std::vector<HttpsClientResponse> parse_all()
     {
-        // If header not parsed yet
-        if (!header_parsed)
+        std::vector<HttpsClientResponse> results;
+
+        while (true)
         {
-            size_t pos = buffer.find("\r\n\r\n");
-            if (pos == std::string::npos)
+            HttpsClientResponse resp;
+
+            // 1. Parse header
+            if (!header_parsed)
             {
-                return true;
+                size_t pos = buffer.find("\r\n\r\n");
+                if (pos == std::string::npos)
+                {
+                    // Not enough header data
+                    break;
+                }
+
+                // Extract header block
+                std::string header_block = buffer.substr(0, pos);
+
+                // Parse header
+                if (!parse_header(header_block, resp))
+                {
+                    // Parse failed → break (do not remove buffer)
+                    break;
+                }
+
+                // Remove header from buffer
+                buffer.erase(0, pos + 4);
+                header_parsed = true;
+
+                // If Content-Length = 0 → complete response
+                if (content_length == 0)
+                {
+                    resp.is_complete = true;
+                    results.push_back(resp);
+
+                    // Reset for next response
+                    reset_state();
+                    continue;   // Try parse next response
+                }
             }
 
-            std::string header_block = buffer.substr(0, pos);
-            if (!parse_header(header_block, resp))
+            // 2. Parse body
+            if (header_parsed)
             {
-                return false;
-            }
+                if (buffer.size() < (size_t)content_length)
+                {
+                    // Body not complete → need more data
+                    break;
+                }
 
-            buffer.erase(0, pos + 4);
-            header_parsed = true;
-
-            // If Content-Length = 0 -> complete
-            if (content_length == 0)
-            {
-                resp.body = "";
-                resp.is_complete = true;
-                return true;
-            }
-        }
-
-        // Body parse
-        if (header_parsed)
-        {
-            if (buffer.size() >= (size_t)content_length)
-            {
+                // Extract body
                 resp.body = buffer.substr(0, content_length);
                 resp.is_complete = true;
-                return true;
+
+                // Remove body from buffer
+                buffer.erase(0, content_length);
+
+                // Save response
+                results.push_back(resp);
+
+                // Reset for next response
+                reset_state();
+
+                // Continue loop → try parse next response in remaining buffer
+                continue;
             }
+
+            break; // default exit
         }
 
-        return true; // body not complete, continue waiting
+        return results;
+    }
+
+    // Helper to reset state for the next response
+    void reset_state()
+    {
+        header_parsed = false;
+        content_length = 0;
     }
 
     bool is_header_parsed() const { return header_parsed; }
