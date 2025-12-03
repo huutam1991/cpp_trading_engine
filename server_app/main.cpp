@@ -34,28 +34,17 @@ extern void add_bad_request();
 
 Task<void> test_https_client_request(EpollBase* epoll_base)
 {
-    HttpsClientRequest https_client_request(epoll_base, "127.0.0.1", 8080);
+    HttpsClientRequest https_client_request(epoll_base, "1.1.1.1", 443);
 
     while (true)
     {
-        Json post_data = {
-            {"username", "root"},
-            {"password", "tampass123ddd"}
-        };
-        HttpsClientResponse response_post = co_await https_client_request.post("/login", post_data.get_string_value());
-        spdlog::info("POST /login response: {} - {}", response_post.status_code, response_post.body);
-        co_await Timer::sleep_for(1000);
+        {
+            MeasureTime mt("GET 1.1.1.1/cdn-cgi/trace", MeasureUnit::MILLISECOND);
+            HttpsClientResponse response_get = co_await https_client_request.get("/cdn-cgi/trace");
+            spdlog::info("GET 1.1.1.1/cdn-cgi/trace response: {} - {}", response_get.status_code, response_get.body);
+        }
 
-        HttpsClientResponse response_get = co_await https_client_request.get("/check_health");
-        spdlog::info("GET /check_health response: {} - {}", response_get.status_code, response_get.body);
         co_await Timer::sleep_for(1000);
-        HttpsClientResponse response_put = co_await https_client_request.put("/put_test", "{}");
-        spdlog::info("PUT /put_test response: {} - {}", response_put.status_code, response_put.body);
-        co_await Timer::sleep_for(1000);
-        HttpsClientResponse response_del = co_await https_client_request.del("/delete_test");
-        spdlog::info("DELETE /delete_test response: {} - {}", response_del.status_code, response_del.body);
-
-        co_await Timer::sleep_for(3000);
     }
 }
 
