@@ -18,6 +18,7 @@ struct HttpClientSocket : public SystemIOObject
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
+    virtual int get_io_events() override { return EPOLLIN; }
     virtual int activate() override;
     virtual int handle_io_data() override;
     virtual void release() override;

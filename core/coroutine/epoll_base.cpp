@@ -20,7 +20,7 @@ EpollBase::EpollBase(size_t id) : EventBase(id)
 void EpollBase::add_fd(int fd, SystemIOObject* ptr)
 {
     epoll_event ev;
-    ev.events = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
+    ev.events = ptr->get_io_events();
     ev.data.ptr = ptr;
 
     int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
