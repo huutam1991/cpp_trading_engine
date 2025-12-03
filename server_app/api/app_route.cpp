@@ -98,6 +98,24 @@ void add_app_route()
         co_return HttpResponse(OK_200, response);
     };
 
+    ADD_ROUTE(RequestMethod::DELETE, "/delete_test")
+    {
+        Json response;
+        response["message"] = "OK";
+        response["status"] = "Delete successful";
+
+        co_return HttpResponse(OK_200, response);
+    };
+
+    ADD_ROUTE(RequestMethod::PUT, "/put_test")
+    {
+        Json response;
+        response["message"] = "OK";
+        response["status"] = "Put successful";
+
+        co_return HttpResponse(OK_200, response);
+    };
+
     ADD_ROUTE(RequestMethod::GET, "/test_random")
     {
         DataModel data("test_data_model", "user");
