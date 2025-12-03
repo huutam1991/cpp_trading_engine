@@ -32,17 +32,20 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
 
 void EpollBase::del_fd(SystemIOObject* ptr)
 {
-    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, ptr->fd, nullptr);
-    if (res == -1)
-    {
-        spdlog::error("EpollBase - [del_fd] epoll_ctl DEL error for fd: {}, error: {}", ptr->fd, std::strerror(errno));
-    }
-    // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
-
     if (ptr != nullptr)
     {
-        close(ptr->fd);
-        ptr->release();
+        int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, ptr->fd, nullptr);
+        if (res == -1)
+        {
+            spdlog::error("EpollBase - [del_fd] epoll_ctl DEL error for fd: {}, error: {}", ptr->fd, std::strerror(errno));
+        }
+        // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
+
+        if (ptr != nullptr)
+        {
+            close(ptr->fd);
+            ptr->release();
+        }
     }
 }
 
