@@ -74,7 +74,7 @@ void HttpsClientRequest::send_get_request(const std::string& path)
     payload  = "GET " + path + " HTTP/1.1\r\n";
     payload += "Host: " + m_hostname + "\r\n";
     payload += "Connection: close\r\n";
-    payload += "User-Agent: RawEpollClient\r\n";
+    payload += "User-Agent: C++ Trading Engine\r\n";
     payload += "Accept: */*\r\n";
     payload += "\r\n";
 
