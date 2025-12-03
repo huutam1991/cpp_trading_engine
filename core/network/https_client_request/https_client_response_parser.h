@@ -1,3 +1,5 @@
+#pragma once
+
 #include "https_client_response.h"
 
 class HttpsClientResponseParser
