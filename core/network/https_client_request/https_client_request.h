@@ -5,8 +5,9 @@
 #include <memory>
 #include <functional>
 
-#include <coroutine/future.h>
 #include <coroutine/epoll_base.h>
+#include <coroutine/task.h>
+#include <time/timer.h>
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/https_client_request_io/https_client_request_io.h>
 
@@ -25,5 +26,5 @@ public:
 
 private:
     void connect();
-
+    Task<void> re_connect();
 };

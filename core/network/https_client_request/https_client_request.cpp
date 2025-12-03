@@ -31,4 +31,13 @@ void HttpsClientRequest::on_disconnect()
 {
     spdlog::error("HttpsClientRequest::on_disconnect - Disconnected from {}:{}", m_hostname, m_port);
     m_io_object = nullptr;
+
+    re_connect().start_running_on(m_epoll_base);
+}
+
+Task<void> HttpsClientRequest::re_connect()
+{
+    // Retry connection after 5 seconds
+    co_await Timer::sleep_for(5000);
+    connect();
 }
