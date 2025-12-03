@@ -23,6 +23,7 @@ public:
     ~HttpsClientRequest();
 
     void on_disconnect();
+    void on_response_received(const char* buffer, std::uint32_t size);
     void send_get_request(const std::string& path);
 
 private:

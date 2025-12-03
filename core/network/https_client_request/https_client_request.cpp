@@ -1,4 +1,5 @@
 #include "https_client_request.h"
+#include "https_client_response_parser.h"
 
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -24,6 +25,10 @@ void HttpsClientRequest::connect()
     {
         this->on_disconnect();
     });
+    m_io_object->set_on_response_received_callback([this](const char* buffer, std::uint32_t size)
+    {
+        this->on_response_received(buffer, size);
+    });
     m_epoll_base->start_living_system_io_object(m_io_object.get());
 
     send_get_request("/check_health");
@@ -35,6 +40,25 @@ void HttpsClientRequest::on_disconnect()
     m_io_object = nullptr;
 
     re_connect().start_running_on(m_epoll_base);
+}
+
+void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t size)
+{
+    HttpsClientResponse resp;
+    HttpsClientResponseParser response_parser;
+
+    response_parser.append_data(buffer, size);
+    if (!response_parser.parse(resp))
+    {
+        spdlog::error("HttpsClientRequest::on_response_received - Failed to parse HTTP response");
+        return;
+    }
+
+    if (resp.is_complete)
+    {
+        spdlog::info("HTTP Response status: {} {}", resp.status_code, resp.status_message);
+        spdlog::info("HTTP Body: {}", resp.body);
+    }
 }
 
 Task<void> HttpsClientRequest::re_connect()
