@@ -73,19 +73,19 @@ void HttpsClientRequest::get(const std::string& path)
 {
     RequestBuilder request_builder;
 
-    // GET <path> HTTP/1.1\r\n
+    // GET <path> HTTP/1.1
     request_builder.append("GET ");
     request_builder.append(path);
     request_builder.append(" HTTP/1.1\r\n");
-    // Host: <hostname>\r\n
+    // Host: <hostname>
     request_builder.append("Host: ");
     request_builder.append(m_hostname);
     request_builder.append("\r\n");
-    // Connection: close\r\n
-    request_builder.append("Connection: close\r\n");
+    // Connection: keep-alive
+    request_builder.append("Connection: keep-alive\r\n");
     // User-Agent: ...
     request_builder.append("User-Agent: C++ Trading Engine\r\n");
-    // Accept */*\r\n
+    // Accept */*
     request_builder.append("Accept: */*\r\n");
     // End
     request_builder.append("\r\n");
