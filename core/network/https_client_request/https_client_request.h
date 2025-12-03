@@ -23,6 +23,7 @@ public:
     ~HttpsClientRequest();
 
     void on_disconnect();
+    void send_get_request(const std::string& path);
 
 private:
     void connect();

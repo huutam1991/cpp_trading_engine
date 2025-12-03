@@ -41,3 +41,15 @@ Task<void> HttpsClientRequest::re_connect()
     co_await Timer::sleep_for(5000);
     connect();
 }
+void HttpsClientRequest::send_get_request(const std::string& path)
+{
+    std::string payload;
+    payload  = "GET " + path + " HTTP/1.1\r\n";
+    payload += "Host: " + m_hostname + "\r\n";
+    payload += "Connection: close\r\n";
+    payload += "User-Agent: RawEpollClient\r\n";
+    payload += "Accept: */*\r\n";
+    payload += "\r\n";
+
+    m_io_object->write_to_socket_io(payload.c_str(), payload.size());
+}
