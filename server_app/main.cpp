@@ -32,6 +32,18 @@
 extern void add_app_route();
 extern void add_bad_request();
 
+Task<void> test_https_client_request(EpollBase* epoll_base)
+{
+    HttpsClientRequest https_client_request(epoll_base, "127.0.0.1", 8080);
+
+    while (true)
+    {
+        co_await Timer::sleep_for(5000);
+
+        https_client_request.get("/check_health");
+    }
+}
+
 int main(int argc, char **argv) {
 
     const int port = atoi(argv[1]);
@@ -70,7 +82,8 @@ int main(int argc, char **argv) {
     // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     // epoll_base->start_living_system_io_object(https_server_object);
 
-    HttpsClientRequest https_client_request(epoll_base, "127.0.0.1", 8080);
+    // Test HTTPS client request
+    test_https_client_request(epoll_base).start_running_on(epoll_base);
 
     // Main loop, only sleep here
     while (true)
