@@ -71,7 +71,6 @@ int main(int argc, char **argv) {
     // epoll_base->start_living_system_io_object(https_server_object);
 
     HttpsClientRequest https_client_request(epoll_base, "127.0.0.1", 8080);
-    https_client_request.send_get_request("/check_health");
 
     // Main loop, only sleep here
     while (true)
