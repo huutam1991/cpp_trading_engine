@@ -10,12 +10,11 @@ void HttpsClientSocket::set_ssl_context(TlsContext* tls_context)
 int HttpsClientSocket::generate_fd()
 {
     fd = HttpClientSocket::generate_fd();
+    return fd;
+}
 
-    if (fd < 0)
-    {
-        return fd;
-    }
-
+int HttpsClientSocket::activate()
+{
     if (tls_wrapper->attach_fd(fd) == false)
     {
         spdlog::error("HttpsClientSocket::generate_fd - attach_fd failed");
@@ -24,12 +23,6 @@ int HttpsClientSocket::generate_fd()
 
     tls_wrapper->handshake();
 
-    return fd;
-}
-
-int HttpsClientSocket::activate()
-{
-    // Nothing to do for client socket
     return 0;
 }
 
