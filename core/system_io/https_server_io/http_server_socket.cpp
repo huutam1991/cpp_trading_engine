@@ -62,7 +62,7 @@ int HttpServerSocket::activate()
     return 0;
 }
 
-int HttpServerSocket::handle_io_data()
+int HttpServerSocket::handle_read()
 {
     HttpClientSocket* client_socket = HttpClientSocketPool::acquire();
     client_socket->set_server_fd(fd);
@@ -70,6 +70,12 @@ int HttpServerSocket::handle_io_data()
 
     spdlog::info("Size of HttpClientSocketPool = {}", HttpClientSocketPool::size());
 
+    return 0;
+}
+
+int HttpServerSocket::handle_write()
+{
+    // Nothing to do for write event
     return 0;
 }
 

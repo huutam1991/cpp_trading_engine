@@ -26,7 +26,7 @@ int HttpsClientSocket::activate()
     return 0;
 }
 
-int HttpsClientSocket::handle_io_data()
+int HttpsClientSocket::handle_read()
 {
     // Continue with ssl_accept if it's not finish yet
     if (tls_wrapper->is_handshake_done() == false)
@@ -37,8 +37,14 @@ int HttpsClientSocket::handle_io_data()
     // If ssl_accept is finished, handle client request
     else
     {
-        return HttpClientSocket::handle_io_data();
+        return HttpClientSocket::handle_read();
     }
+}
+
+int HttpsClientSocket::handle_write()
+{
+    // Nothing to do for write event
+    return 0;
 }
 
 void HttpsClientSocket::release()

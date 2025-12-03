@@ -62,7 +62,7 @@ int HttpClientSocket::activate()
     return 0;
 }
 
-int HttpClientSocket::handle_io_data()
+int HttpClientSocket::handle_read()
 {
     char buffer[BUFFER_SIZE];
     char temp_buffer[BUFFER_SIZE];
@@ -119,6 +119,12 @@ int HttpClientSocket::handle_io_data()
     auto task = execute_request(request);
     task.start_running_on((EventBase*)epoll_base);
 
+    return 0;
+}
+
+int HttpClientSocket::handle_write()
+{
+    // Nothing to do for write event
     return 0;
 }
 

@@ -21,7 +21,8 @@ struct TimerIO : public SystemIOObject
     // SystemIOObject's methods
     virtual int generate_fd() override;
     virtual int activate() override;
-    virtual int handle_io_data() override;
+    virtual int handle_read() override;
+    virtual int handle_write() override;
     virtual void release() override;
 };
 

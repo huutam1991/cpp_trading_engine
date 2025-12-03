@@ -107,6 +107,12 @@ int HttpClientRequestIO::handle_read_data()
     return 0;
 }
 
+int HttpClientRequestIO::handle_write()
+{
+    // Nothing to do for write event
+    return 0;
+}
+
 int HttpClientRequestIO::generate_fd()
 {
     fd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
@@ -138,7 +144,7 @@ int HttpClientRequestIO::activate()
     return 0;
 }
 
-int HttpClientRequestIO::handle_io_data()
+int HttpClientRequestIO::handle_read()
 {
     if (is_connected == false)
     {

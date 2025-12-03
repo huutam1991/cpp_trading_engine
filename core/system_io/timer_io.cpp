@@ -40,7 +40,7 @@ int TimerIO::activate()
     return 0;
 }
 
-int TimerIO::handle_io_data()
+int TimerIO::handle_read()
 {
     if (callback != nullptr)
     {
@@ -49,6 +49,12 @@ int TimerIO::handle_io_data()
 
     // [-1] mean always release after handling
     return -1;
+}
+
+int TimerIO::handle_write()
+{
+    // Nothing to do for write event
+    return 0;
 }
 
 void TimerIO::release()

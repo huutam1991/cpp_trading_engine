@@ -38,11 +38,17 @@ int TaskInfo::activate()
     return 0;
 }
 
-int TaskInfo::handle_io_data()
+int TaskInfo::handle_read()
 {
     check_handle();
     // Always return -1 to indicate this task is done
     return -1;
+}
+
+int TaskInfo::handle_write()
+{
+    // Nothing to do for write event
+    return 0;
 }
 
 void TaskInfo::release()

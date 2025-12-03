@@ -20,7 +20,8 @@ struct HttpClientSocket : public SystemIOObject
     virtual int generate_fd() override;
     virtual int get_io_events() override { return EPOLLIN; }
     virtual int activate() override;
-    virtual int handle_io_data() override;
+    virtual int handle_read() override;
+    virtual int handle_write() override;
     virtual void release() override;
 
     // Handle data methods

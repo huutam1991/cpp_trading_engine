@@ -118,7 +118,7 @@ void EpollBase::loop()
             int fd = io_object->fd;
 
             // Handle IO data
-            int res = io_object->handle_io_data();
+            int res = io_object->handle_read();
 
             // [-1] means there's error with handle io data and need to close this fd
             if (res == -1)
