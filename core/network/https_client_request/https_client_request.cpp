@@ -54,7 +54,7 @@ void HttpsClientRequest::send_get_request(const std::string& path)
     payload += "Accept: */*\r\n";
     payload += "\r\n";
 
-    m_io_object->write_to_socket_io(payload.c_str(), payload.size());
+    m_io_object->write(std::move(payload));
 }
 
 void HttpsClientRequest::send(const std::string& request)
