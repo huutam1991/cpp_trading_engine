@@ -26,6 +26,8 @@ public:
     void on_response_received(const char* buffer, std::uint32_t size);
     void get(const std::string& path);
     void post(const std::string& path, const std::string& body);
+    void del(const std::string& path);
+    void put(const std::string& path, const std::string& body);
 
 private:
     void connect();

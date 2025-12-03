@@ -31,8 +31,6 @@ void HttpsClientRequest::connect()
         this->on_response_received(buffer, size);
     });
     m_epoll_base->start_living_system_io_object(m_io_object.get());
-
-    get("/check_health");
 }
 
 void HttpsClientRequest::on_disconnect()
@@ -50,6 +48,8 @@ void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t 
 
     response_parser.append_data(buffer, size);
     std::vector<HttpsClientResponse> responses = response_parser.parse_all();
+
+    spdlog::info("=================================================================");
 
     for (auto& resp : responses)
     {
@@ -124,6 +124,71 @@ void HttpsClientRequest::post(const std::string& path, const std::string& body)
     request_builder.append("\r\n");
 
     // Body
+    if (!body.empty())
+    {
+        request_builder.append(body);
+    }
+
+    // Send
+    m_io_object->write(request_builder.to_string());
+}
+
+void HttpsClientRequest::del(const std::string& path)
+{
+    RequestBuilder request_builder;
+
+    // DELETE <path> HTTP/1.1\r\n
+    request_builder.append("DELETE ");
+    request_builder.append(path);
+    request_builder.append(" HTTP/1.1\r\n");
+
+    // Host: <hostname>\r\n
+    request_builder.append("Host: ");
+    request_builder.append(m_hostname);
+    request_builder.append("\r\n");
+
+    // Standard headers
+    request_builder.append("Connection: keep-alive\r\n");
+    request_builder.append("User-Agent: C++ Trading Engine\r\n");
+    request_builder.append("Accept: */*\r\n");
+
+    // End headers
+    request_builder.append("\r\n");
+
+    // Send request
+    m_io_object->write(request_builder.to_string());
+}
+
+void HttpsClientRequest::put(const std::string& path, const std::string& body)
+{
+    RequestBuilder request_builder;
+
+    // PUT <path> HTTP/1.1\r\n
+    request_builder.append("PUT ");
+    request_builder.append(path);
+    request_builder.append(" HTTP/1.1\r\n");
+
+    // Host
+    request_builder.append("Host: ");
+    request_builder.append(m_hostname);
+    request_builder.append("\r\n");
+
+    // Headers
+    request_builder.append("Connection: keep-alive\r\n");
+    request_builder.append("User-Agent: C++ Trading Engine\r\n");
+    request_builder.append("Accept: */*\r\n");
+    request_builder.append("Content-Type: application/json\r\n");
+
+    // Content-Length
+    {
+        std::string len_str = "Content-Length: " + std::to_string(body.size()) + "\r\n";
+        request_builder.append(len_str);
+    }
+
+    // End headers
+    request_builder.append("\r\n");
+
+    // Body content
     if (!body.empty())
     {
         request_builder.append(body);
