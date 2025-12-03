@@ -26,8 +26,6 @@ struct RequestBuilder
 
     inline std::string to_string()
     {
-        std::string res(buf, len);
-        len = 0;
-        return res;
+        return std::string(buf, len);
     }
 };
