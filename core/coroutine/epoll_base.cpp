@@ -127,24 +127,26 @@ void EpollBase::loop()
                 continue;
             }
 
-            int res;
-
-            // Handle read event
+            // Handle read event first
             if (event & EPOLLIN)
             {
-                res = io_object->handle_read();
+                int res = io_object->handle_read();
+                if (res == -1)
+                {
+                    del_fd(io_object);
+                    continue;
+                }
             }
 
-            // Handle write event
+            // Handle write event (if needed)
             if (event & EPOLLOUT)
             {
-                res = io_object->handle_write();
-            }
-
-            // [-1] means there's error with handle io data and need to close this fd
-            if (res == -1)
-            {
-                del_fd(io_object);
+                int res = io_object->handle_write();
+                if (res == -1)
+                {
+                    del_fd(io_object);
+                    continue;
+                }
             }
         }
     }
