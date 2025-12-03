@@ -4,12 +4,17 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <queue>
 
 #include <coroutine/epoll_base.h>
 #include <coroutine/task.h>
+#include <coroutine/future.h>
 #include <time/timer.h>
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/https_client_request_io/https_client_request_io.h>
+
+#include "https_client_request_builder.h"
+#include "https_client_response_parser.h"
 
 class HttpsClientRequest
 {
@@ -24,12 +29,15 @@ public:
 
     void on_disconnect();
     void on_response_received(const char* buffer, std::uint32_t size);
-    void get(const std::string& path);
-    void post(const std::string& path, const std::string& body);
-    void del(const std::string& path);
-    void put(const std::string& path, const std::string& body);
+
+    Task<HttpsClientResponse> get(const std::string& path);
+    Task<HttpsClientResponse> post(const std::string& path, const std::string& body);
+    Task<HttpsClientResponse> del(const std::string& path);
+    Task<HttpsClientResponse> put(const std::string& path, const std::string& body);
 
 private:
+    std::queue<Future<HttpsClientResponse>::FutureValue> m_response_futures;
+
     void connect();
     Task<void> re_connect();
 };

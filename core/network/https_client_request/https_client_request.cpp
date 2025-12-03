@@ -1,6 +1,4 @@
 #include "https_client_request.h"
-#include "https_client_request_builder.h"
-#include "https_client_response_parser.h"
 
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -53,10 +51,10 @@ void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t 
 
     for (auto& resp : responses)
     {
-        if (resp.is_complete)
+        if (m_response_futures.empty() == false)
         {
-            spdlog::info("HTTP Response status: {} {}", resp.status_code, resp.status_message);
-            spdlog::info("HTTP Body: {}", resp.body);
+            m_response_futures.front().set_value(std::move(resp));
+            m_response_futures.pop();
         }
     }
 
@@ -69,7 +67,7 @@ Task<void> HttpsClientRequest::re_connect()
     connect();
 }
 
-void HttpsClientRequest::get(const std::string& path)
+Task<HttpsClientResponse> HttpsClientRequest::get(const std::string& path)
 {
     RequestBuilder request_builder;
 
@@ -92,9 +90,14 @@ void HttpsClientRequest::get(const std::string& path)
 
     // Send request
     m_io_object->write(request_builder.to_string());
+
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    {
+        m_response_futures.push(std::move(value));
+    });
 }
 
-void HttpsClientRequest::post(const std::string& path, const std::string& body)
+Task<HttpsClientResponse> HttpsClientRequest::post(const std::string& path, const std::string& body)
 {
     RequestBuilder request_builder;
 
@@ -131,9 +134,14 @@ void HttpsClientRequest::post(const std::string& path, const std::string& body)
 
     // Send
     m_io_object->write(request_builder.to_string());
+
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    {
+        m_response_futures.push(std::move(value));
+    });
 }
 
-void HttpsClientRequest::del(const std::string& path)
+Task<HttpsClientResponse> HttpsClientRequest::del(const std::string& path)
 {
     RequestBuilder request_builder;
 
@@ -157,9 +165,14 @@ void HttpsClientRequest::del(const std::string& path)
 
     // Send request
     m_io_object->write(request_builder.to_string());
+
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    {
+        m_response_futures.push(std::move(value));
+    });
 }
 
-void HttpsClientRequest::put(const std::string& path, const std::string& body)
+Task<HttpsClientResponse> HttpsClientRequest::put(const std::string& path, const std::string& body)
 {
     RequestBuilder request_builder;
 
@@ -196,4 +209,9 @@ void HttpsClientRequest::put(const std::string& path, const std::string& body)
 
     // Send
     m_io_object->write(request_builder.to_string());
+
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    {
+        m_response_futures.push(std::move(value));
+    });
 }
