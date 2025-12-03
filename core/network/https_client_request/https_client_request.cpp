@@ -30,5 +30,5 @@ void HttpsClientRequest::connect()
 void HttpsClientRequest::on_disconnect()
 {
     spdlog::error("HttpsClientRequest::on_disconnect - Disconnected from {}:{}", m_hostname, m_port);
-
+    m_io_object = nullptr;
 }
