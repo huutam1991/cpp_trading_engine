@@ -36,6 +36,13 @@ int HttpClientSocket::generate_fd()
     {
         spdlog::info("HttpClientSocket::generate_fd - Connection to {}, established (fd = {})", inet_ntoa(client_addr.sin_addr), fd);
 
+        // Set non-blocking
+        if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
+        {
+            spdlog::error("fcntl failed fd {} err {}", fd, strerror(errno));
+            return -1;
+        }
+
         int dwTimeout = 1000; // milliseconds
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (void*)&dwTimeout, sizeof dwTimeout);
@@ -51,8 +58,6 @@ int HttpClientSocket::generate_fd()
         getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&n, &m);
         // spdlog::debug("fd = {}, Send buffer = {}", fd, n);
     }
-
-    fcntl(fd, F_SETFL, O_NONBLOCK);
 
     return fd;
 }
