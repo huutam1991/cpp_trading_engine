@@ -38,13 +38,13 @@ void EpollBase::del_fd(SystemIOObject* ptr)
         if (res == -1)
         {
             spdlog::error("EpollBase - [del_fd] epoll_ctl DEL error for fd: {}, error: {}", ptr->fd, std::strerror(errno));
-            return;
         }
         // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
 
         if (ptr->fd != -1)
         {
             close(ptr->fd);
+            ptr->fd = -1;
             ptr->release();
         }
     }
