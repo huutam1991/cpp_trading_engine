@@ -29,7 +29,8 @@ int HttpClientSocket::generate_fd()
 
     if ((fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len)) == -1)
     {
-        spdlog::info("HttpClientSocket::generate_fd - HttpServer - accept: {}", std::strerror(errno));
+        spdlog::error("HttpClientSocket::generate_fd - HttpServer - accept: {}", std::strerror(errno));
+        return -1;
     }
     else
     {
