@@ -74,20 +74,20 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
-    // SimulatorOrder::init();
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
+    SimulatorOrder::init();
 
-    // // Strategy
-    // StrategyManager::instance().init();
+    // Strategy
+    StrategyManager::instance().init();
 
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
-    // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
-    // epoll_base->start_living_system_io_object(https_server_object);
+    HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
+    epoll_base->start_living_system_io_object(https_server_object);
 
     // Test HTTPS client request
-    test_https_client_request(epoll_base).start_running_on(epoll_base);
+    // test_https_client_request(epoll_base).start_running_on(epoll_base);
 
     // Main loop, only sleep here
     while (true)
