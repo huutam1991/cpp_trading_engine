@@ -156,7 +156,7 @@ int HttpClientRequestIO::handle_read_data()
     }
     else
     {
-        spdlog::debug("HttpClientSocket::handle_io_data - connection lost, fd = {}", fd);
+        spdlog::debug("HttpClientRequestIO::handle_io_data - connection lost, fd = {}", fd);
         // Clean save buffer
         // save_buffer = "";
         return -1;
