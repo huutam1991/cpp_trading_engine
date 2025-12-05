@@ -1,5 +1,42 @@
 #include "tls_wrapper.h"
 
+
+void ssl_info_callback(const SSL* s, int where, int ret)
+{
+    spdlog::warn("SSL Info Callback triggered");
+    spdlog::info("check crash 1");
+    const char* str = "";
+    int w = where & ~SSL_ST_MASK;
+    spdlog::info("check crash 2");
+
+    if (w & SSL_ST_CONNECT) str = "SSL_connect";
+    else if (w & SSL_ST_ACCEPT) str = "SSL_accept";
+    spdlog::info("check crash 3");
+
+    if (where & SSL_CB_LOOP)
+    {
+        spdlog::info("check crash 4");
+        printf("SSL state (%s): %s\n", str, SSL_state_string_long(s));
+    }
+    else if (where & SSL_CB_ALERT)
+    {
+        spdlog::info("check crash 5");
+        printf("SSL alert (%s): %s: %s\n",
+            (where & SSL_CB_READ) ? "read" : "write",
+            SSL_alert_type_string_long(ret),
+            SSL_alert_desc_string_long(ret));
+    }
+    else if (where & SSL_CB_EXIT)
+    {
+        spdlog::info("check crash 6");
+        printf("SSL_exit (%s): ret=%d state=%s\n",
+            str, ret, SSL_state_string_long(s));
+    }
+    spdlog::info("check crash 7");
+
+    spdlog::warn("SSL Info Callback triggered - end");
+}
+
 TlsWrapper::TlsWrapper(TlsContext* c) : ctx(c)
 {
     if (!ctx || !ctx->ctx)
@@ -9,6 +46,8 @@ TlsWrapper::TlsWrapper(TlsContext* c) : ctx(c)
     }
 
     ssl = SSL_new(ctx->ctx);
+
+    // SSL_set_info_callback(ssl, ssl_info_callback);
     if (!ssl)
     {
         spdlog::error("TlsWrapper: SSL_new failed");
