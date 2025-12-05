@@ -27,25 +27,27 @@ public:
 
     // Disallow copying (SSL_CTX cannot be copied)
     TlsContext(const TlsContext&) = delete;
+    TlsContext(TlsContext&& other) = delete;
     TlsContext& operator=(const TlsContext&) = delete;
+    TlsContext& operator=(TlsContext&& other) = delete;
 
-    // Allow moving
-    TlsContext(TlsContext&& other) noexcept
-    {
-        ctx = other.ctx;
-        other.ctx = nullptr;
-    }
+    // // Allow moving
+    // TlsContext(TlsContext&& other) noexcept
+    // {
+    //     ctx = other.ctx;
+    //     other.ctx = nullptr;
+    // }
 
-    TlsContext& operator=(TlsContext&& other) noexcept
-    {
-        if (this != &other)
-        {
-            cleanup();
-            ctx = other.ctx;
-            other.ctx = nullptr;
-        }
-        return *this;
-    }
+    // TlsContext& operator=(TlsContext&& other) noexcept
+    // {
+    //     if (this != &other)
+    //     {
+    //         cleanup();
+    //         ctx = other.ctx;
+    //         other.ctx = nullptr;
+    //     }
+    //     return *this;
+    // }
 protected:
     static void log_openssl_error(const std::string& msg)
     {
