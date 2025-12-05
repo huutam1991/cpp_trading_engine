@@ -21,8 +21,6 @@ int HttpsClientSocket::activate()
         return -1;
     }
 
-    tls_wrapper->handshake();
-
     return 0;
 }
 
@@ -43,7 +41,13 @@ int HttpsClientSocket::handle_read()
 
 int HttpsClientSocket::handle_write()
 {
-    // Nothing to do for write event
+    // Continue with ssl_accept if it's not finish yet
+    if (tls_wrapper->is_handshake_done() == false)
+    {
+        TlsResult result = tls_wrapper->handshake();
+        return result != TlsResult::ERROR ? 0 : -1;
+    }
+
     return 0;
 }
 
