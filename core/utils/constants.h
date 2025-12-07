@@ -9,9 +9,6 @@
 #define BACKLOG_SOCKET 125                     // number of connections
 #define BACKLOG_EPOLL 125                      // number of epoll events
 #define BUFFER_SIZE 2048                      // size of buffer for reading request data
-#define NUMBER_OF_HTTPS_SERVER_THREADS 1                  // number of threads
-#define NUMBER_OF_WEBSOCKET_CLIENT_THREADS 0 // number of websocket client threads
-#define NUMBER_OF_WEBSOCKET_SERVER_THREADS 0  // number of websocket server threads
 
 #define MONGO_URI "mongodb://127.0.0.1:27017"
 #define MONGO_URI_PROD "mongodb://172.31.9.78:27017"
