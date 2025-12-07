@@ -7,9 +7,6 @@
 chmod 777 z_util_scripts/generate_server_certificate.sh
 ./z_util_scripts/generate_server_certificate.sh
 
-chmod 777 z_util_scripts/generate_server_certificate.sh
-./z_util_scripts/generate_server_certificate.sh
-
 # Detect port
 if [[ "$PROD" == "true" ]]; then
     PORT=443
