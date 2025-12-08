@@ -1,5 +1,4 @@
 #include <network/https_server/request/http_request_post.h>
-#include <utils/util_macros.h>
 #include <utils/utils.h>
 
 HttpRequestPost::HttpRequestPost(const std::string& content, const std::string& dir_path) : HttpRequest(content, dir_path)
@@ -72,10 +71,15 @@ bool HttpRequestPost::is_valid_format()
 {
     int content_length = 0;
 
-    std::string param_content_length = get_header_param("Content-Length");
-    if (param_content_length != PARAM_NOT_FOUND)
+    std::string param_content_length_1 = get_header_param("Content-Length");
+    std::string param_content_length_2 = get_header_param("content-length");
+    if (param_content_length_1 != PARAM_NOT_FOUND)
     {
-        content_length = stoi(param_content_length);
+        content_length = stoi(param_content_length_1);
+    }
+    else if (param_content_length_2 != PARAM_NOT_FOUND)
+    {
+        content_length = stoi(param_content_length_2);
     }
 
     return content_length == 0 || content_length == m_body.size();
