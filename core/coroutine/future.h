@@ -25,6 +25,9 @@ struct Future
         FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_is_set{copy.m_is_set}, m_mutex_future{copy.m_mutex_future}, m_suspending_promise{copy.m_suspending_promise}
         {}
 
+        FutureValue(std::nullptr_t value) : m_value{nullptr}, m_is_set{nullptr}, m_mutex_future{nullptr}, m_suspending_promise{nullptr}
+        {}
+
         FutureValue& operator=(const FutureValue& copy)
         {
             m_value = copy.m_value;
@@ -33,6 +36,21 @@ struct Future
             m_suspending_promise = copy.m_suspending_promise;
 
             return *this;
+        }
+
+        FutureValue& operator=(std::nullptr_t value) noexcept
+        {
+            m_value = nullptr;
+            m_is_set = nullptr;
+            m_mutex_future = nullptr;
+            m_suspending_promise = nullptr;
+
+            return *this;
+        }
+
+        inline bool operator==(std::nullptr_t t) const
+        {
+            return m_value == nullptr;
         }
 
         void set_suspending_promise(BasePromiseType* suspending_promise)
