@@ -64,10 +64,22 @@ void HttpsClientSocket::release()
 
 int HttpsClientSocket::read_buffer(char* const buffer)
 {
+    if (tls_wrapper == nullptr)
+    {
+        spdlog::error("HttpsClientSocket::read_buffer - tls_wrapper is null");
+        return -1;
+    }
+
     return tls_wrapper->read(buffer, BUFFER_SIZE);
 }
 
 void HttpsClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
+    if (tls_wrapper == nullptr)
+    {
+        spdlog::error("HttpsClientSocket::write_to_socket_io - tls_wrapper is null");
+        return;
+    }
+
     tls_wrapper->write(buffer, size);
 }
