@@ -7,10 +7,6 @@ JsonObject::JsonObject()
     get_deep_clone_ptr = static_cast<GetCopyPtr>(&JsonObject::get_deep_clone);
     write_string_value_ptr = static_cast<WriteStringValuePtr>(&JsonObject::write_string_value);
     release_ptr = static_cast<ReleasePtr>(&JsonObject::release);
-
-    // Pre-allocate some space to reduce reallocations
-    m_array.reserve(100);
-    m_object.reserve(100);
 }
 
 void JsonObject::for_each(std::function<void(Json&)>& loop_func)
