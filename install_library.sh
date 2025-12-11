@@ -129,3 +129,5 @@ rm -rf googletest
 
 # Add Path
 export LD_LIBRARY_PATH="$INSTALL_FOLDER/lib:$LD_LIBRARY_PATH"
+
+find $INSTALL_FOLDER -name mongocxxConfig.cmake
