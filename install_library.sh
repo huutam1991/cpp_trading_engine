@@ -62,8 +62,6 @@ install_dependency_packages() {
 
 install_dependency_packages
 
-find "$INSTALL_FOLDER"
-
 # Install the mongoc driver
 if [ ! -f "$INSTALL_FOLDER/lib/libmongoc-1.0.so" ]; then
     cd "$DOWNLOAD_FOLDER"
