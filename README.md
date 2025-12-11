@@ -10,7 +10,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Built without any coroutine library
   - Includes custom `promise_type`, awaiters (`co_await`, `co_return`), and scheduling logic
   - Enables fully async flow across market data, order processing, and state transitions
-  - Task dispatch latency of `0.5–2.5 µs (p90 < 3 µs, p99 < 80 µs)`, `outperforming` library `Folly EventBase` in real-world benchmarks
+  - Typical task dispatch latency: **0.2–0.3 µs (p50)** and **1–3 µs (p90)**, `outperforming` library `Folly EventBase` in real-world benchmarks
 
 - **Internal REST API System** ([`https_server/`](core/system_io/https_server_socket.cpp) + [`route/`](core/https_server/route) + [`request/`](core/https_server/request) + [`response/`](core/https_server/response) + [`app_route.cpp/`](server_app/api/app_route.cpp))
   - Native C++ HTTPs server (using `epoll`, `openssl`)
