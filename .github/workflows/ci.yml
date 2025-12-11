@@ -17,20 +17,50 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IS_RUNNING_CI: "1"
-      INSTALL_FOLDER: ${{ github.workspace }}
+      INSTALL_FOLDER: ${{ github.workspace }}/build_libs   # <– cache folder
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # --------------------------------------------------
+    # 1) Restore cached libraries
+    # --------------------------------------------------
+    - name: Cache built libraries
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.workspace }}/build_libs
+        key: libs-${{ runner.os }}-${{ hashFiles('install_library.sh') }}
+        restore-keys: |
+          libs-${{ runner.os }}-
+
+    # --------------------------------------------------
+    # 2) Setup environment so compiler/CMake can find cached libs
+    # --------------------------------------------------
+    - name: Configure cached library environment
+      run: |
+        echo "LD_LIBRARY_PATH=${{ github.workspace }}/build_libs/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/build_libs:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+        echo "PKG_CONFIG_PATH=${{ github.workspace }}/build_libs/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+        echo "PATH=${{ github.workspace }}/build_libs/bin:$PATH" >> $GITHUB_ENV
+
+    # --------------------------------------------------
+    # 3) Install system dependencies + build libs (cached)
+    # --------------------------------------------------
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y wget curl git build-essential cmake libmongoc-1.0-0 libbson-1.0-0 libgflags-dev libssl-dev libsasl2-dev libzstd-dev libspdlog-dev libgtest-dev libboost-all-dev make g++
-        sudo -E bash install_library.sh
+        sudo -E bash install_library.sh  # <– build into INSTALL_FOLDER (cached)
 
+    # --------------------------------------------------
+    # 4) Build project
+    # --------------------------------------------------
     - name: Run build script
       run: sudo bash build_bash.sh
 
+    # --------------------------------------------------
+    # 5) Run tests
+    # --------------------------------------------------
     - name: Run tests
       run: sudo bash test_bash.sh
