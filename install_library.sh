@@ -2,9 +2,12 @@
 
 set -e
 
-# If INSTALL_FOLDER is not set → use default /temp
+DOWNLOAD_FOLDER="/temp/download_packages"
+mkdir -p "$DOWNLOAD_FOLDER"
+
+# If INSTALL_FOLDER is not set -> use default /usr/local
 if [ -z "$INSTALL_FOLDER" ]; then
-    INSTALL_FOLDER="/temp"
+    INSTALL_FOLDER="/usr/local"
     echo "INSTALL_FOLDER is not set. Using default: $INSTALL_FOLDER"
 else
     echo "INSTALL_FOLDER = $INSTALL_FOLDER"
@@ -59,55 +62,70 @@ install_dependency_packages() {
 
 install_dependency_packages
 
-cd "$INSTALL_FOLDER"
-wget https://github.com/mongodb/mongo-c-driver/releases/download/1.23.0/mongo-c-driver-1.23.0.tar.gz
-tar xzf mongo-c-driver-1.23.0.tar.gz
-cd "$INSTALL_FOLDER"/mongo-c-driver-1.23.0
-mkdir cmake-build
-cd "$INSTALL_FOLDER"/mongo-c-driver-1.23.0/cmake-build
-pwd
-cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
-cmake -DMONGOC_TEST_USE_CRYPT_SHARED=OFF ..
-cmake --build . -j 4
-cmake --build . --target install
+# Install the mongoc driver
+if [ ! -f "$INSTALL_FOLDER/lib/libmongoc-1.0.so" ]; then
+    cd "$DOWNLOAD_FOLDER"
+    wget https://github.com/mongodb/mongo-c-driver/releases/download/1.23.0/mongo-c-driver-1.23.0.tar.gz
+    tar xzf mongo-c-driver-1.23.0.tar.gz
+    cd "$DOWNLOAD_FOLDER"/mongo-c-driver-1.23.0
+    mkdir cmake-build
+    cd "$DOWNLOAD_FOLDER"/mongo-c-driver-1.23.0/cmake-build
+    pwd
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_FOLDER" ..
+    cmake -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF ..
+    cmake -DMONGOC_TEST_USE_CRYPT_SHARED=OFF ..
+    cmake --build . -j 4
+    cmake --build . --target install
+else
+    echo "[Cache Hit] mongo-c-driver found -> skipping build."
+fi
 
 # Install the mongocxx driver
-cd "$INSTALL_FOLDER"
-curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.7/mongo-cxx-driver-r3.6.7.tar.gz
-tar -xzf mongo-cxx-driver-r3.6.7.tar.gz
-# Patch all .hpp files that use std::uintXX_t or std::intXX_t but are missing <cstdint> (not nice, but works)
-find "$INSTALL_FOLDER"/mongo-cxx-driver-r3.6.7/src -name "*.hpp" | while read file; do
-  if grep -qE 'std::(u?int(8|16|32|64)_t)' "$file" && ! grep -q '<cstdint>' "$file"; then
-    echo "Patching $file"
-    sed -i '/#pragma once/a #include <cstdint>' "$file"
-  fi
-done
-cd "$INSTALL_FOLDER"/mongo-cxx-driver-r3.6.7/build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build . -j 4
-cmake --build . --target install
+if [ ! -f "$INSTALL_FOLDER/lib/libmongocxx.so" ]; then
+    cd "$DOWNLOAD_FOLDER"
+    curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.7/mongo-cxx-driver-r3.6.7.tar.gz
+    tar -xzf mongo-cxx-driver-r3.6.7.tar.gz
+    # Patch all .hpp files that use std::uintXX_t or std::intXX_t but are missing <cstdint> (not nice, but works)
+    find "$DOWNLOAD_FOLDER"/mongo-cxx-driver-r3.6.7/src -name "*.hpp" | while read file; do
+    if grep -qE 'std::(u?int(8|16|32|64)_t)' "$file" && ! grep -q '<cstdint>' "$file"; then
+        echo "Patching $file"
+        sed -i '/#pragma once/a #include <cstdint>' "$file"
+    fi
+    done
+    cd "$DOWNLOAD_FOLDER"/mongo-cxx-driver-r3.6.7/build
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$INSTALL_FOLDER"
+    cmake --build . -j 4
+    cmake --build . --target install
+else
+    echo "[Cache Hit] mongo-cxx-driver found -> skipping build."
+fi
 
 # Install google test
-cd "$INSTALL_FOLDER"
-git clone https://github.com/google/googletest.git
-cd "$INSTALL_FOLDER"/googletest
-cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
-cmake --build build
-cmake --install build
+if [ -f "$INSTALL_FOLDER/lib/libgtest.a" ] || [ -d "$INSTALL_FOLDER/include/gtest" ]; then
+    echo "[Cache Hit] GoogleTest already installed → skipping build."
+else
+    cd "$DOWNLOAD_FOLDER"
+    git clone https://github.com/google/googletest.git
+    cd "$DOWNLOAD_FOLDER"/googletest
+    cmake -B build -DCMAKE_INSTALL_PREFIX="$INSTALL_FOLDER"
+    cmake --build build
+    cmake --install build
+fi
 
 # # Install GLog
-# cd "$INSTALL_FOLDER"
+# cd "$DOWNLOAD_FOLDER"
 # git clone https://github.com/google/glog.git
-# cd "$INSTALL_FOLDER"/glog
-# mkdir build && cd "$INSTALL_FOLDER"/build
-# cmake -DCMAKE_INSTALL_PREFIX=/usr/local ..
+# cd "$DOWNLOAD_FOLDER"/glog
+# mkdir build && cd "$DOWNLOAD_FOLDER"/build
+# cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_FOLDER" ..
 # make -j$(nproc) && make install
 
 # Clean up if you want to keep the image size smaller
-rm -rf /glog
-rm -rf /boost_1_71_0*
-rm -rf /mongo-c*
-rm -rf googletest/
+cd "$DOWNLOAD_FOLDER"
+rm -rf glog
+rm -rf boost_1_71_0*
+rm -rf mongo-c*
+rm -rf googletest
 
 # Add Path
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH="$INSTALL_FOLDER/lib:$LD_LIBRARY_PATH"
