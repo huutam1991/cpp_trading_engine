@@ -1,7 +1,5 @@
 #!/bin/bash
 
-find $INSTALL_FOLDER -name mongocxxConfig.cmake
-
 mkdir build
 cd build/
 cmake .. -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc -DENABLE_UNITY_BUILD=OFF -DBUILD_ONLY="core;sts;identitystore;s3;ec2"
