@@ -128,5 +128,7 @@ std::string HttpRequestPost::check_missing_body_params(const std::vector<std::st
         }
     }
 
+    spdlog::debug("All body params are present");
+
     return PARAM_NO_MISSING;
 }
