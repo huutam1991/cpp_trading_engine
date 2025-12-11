@@ -24,14 +24,18 @@ include_directories(${LIBBSONCXX_INCLUDE_DIR})
 
 # Add files from the core directory
 file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
-    ${PROJECT_ROOT}/core/*.h
-    ${PROJECT_ROOT}/core/*.hpp
+    ${PROJECT_ROOT}/core/cache/*.h
+    ${PROJECT_ROOT}/core/cache/*.hpp
+    ${PROJECT_ROOT}/core/json/*.h
+    ${PROJECT_ROOT}/core/json/*.hpp
     ${PROJECT_ROOT}/server_app/pnl/*.h
     ${PROJECT_ROOT}/server_app/pnl/*.hpp
 )
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
-    ${PROJECT_ROOT}/core/*.c
-    ${PROJECT_ROOT}/core/*.cpp
+    ${PROJECT_ROOT}/core/cache/*.c
+    ${PROJECT_ROOT}/core/cache/*.cpp
+    ${PROJECT_ROOT}/core/json/*.c
+    ${PROJECT_ROOT}/core/json/*.cpp
     ${PROJECT_ROOT}/server_app/pnl/*.c
     ${PROJECT_ROOT}/server_app/pnl/*.cpp
 )
