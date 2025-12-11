@@ -1,16 +1,42 @@
 #!/bin/bash
 
-apt-get update -y
-apt-get install -y wget curl git
-apt-get install -y build-essential
-apt-get install -y libgflags-dev
+install_dependency_packages() {
+    # -----------------------------------------
+    # Skip installation when running in CI
+    # -----------------------------------------
+    if [[ "$IS_RUNNING_CI" == "1" ]]; then
+        echo "CI mode: skip installing dependency packages [$pkg]"
+        return
+    fi
 
-# Install the MongoDB C Driver (libmongoc) and BSON library (libbson)¶
-cd /
-apt-get install libmongoc-1.0-0 -y
-apt-get install libbson-1.0-0 -y
-apt-get install cmake libssl-dev libsasl2-dev -y
-cmake --version
+    apt-get update -y
+    apt-get install -y wget curl git
+    apt-get install -y build-essential
+    apt-get install -y libgflags-dev
+
+    apt-get install libmongoc-1.0-0 -y
+    apt-get install libbson-1.0-0 -y
+    apt-get install cmake libssl-dev libsasl2-dev -y
+    cmake --version
+
+    # Install Boost
+    apt update -y
+    apt install -y libboost-all-dev
+
+    # Install SpdLog
+    apt update -y
+    apt install -y libspdlog-dev
+
+    # Install PM2
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    apt install -y nodejs
+    node -v
+    npm -v
+    sudo npm install -g pm2
+    pm2 -v
+}
+
+install_dependency_packages
 
 cd /
 wget https://github.com/mongodb/mongo-c-driver/releases/download/1.23.0/mongo-c-driver-1.23.0.tar.gz
@@ -40,28 +66,12 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build . -j 4
 cmake --build . --target install
 
-# Install Boost
-apt update -y
-apt install -y libboost-all-dev
-
-# Install SpdLog
-apt update -y
-apt install -y libspdlog-dev
-
 # Install google test
 git clone https://github.com/google/googletest.git
 cd googletest
 cmake -B build -DCMAKE_INSTALL_PREFIX=/usr/local
 cmake --build build
 cmake --install build
-
-# Install PM2
-curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-apt install -y nodejs
-node -v
-npm -v
-sudo npm install -g pm2
-pm2 -v
 
 # # Install GLog
 # cd /
