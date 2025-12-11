@@ -21,7 +21,9 @@ This project is a fully self-designed, low-latency trading engine written in mod
   - Lightweight JSON parser and serializer
   - Zero external dependencies
   - Used for config loading, logging, REST/Websocket I/O
-  - Achieved `40–70 µs` parsing time per object, comparable to `RapidJSON` in performance
+  - Depth JSON (Binance's `depthUpdate`, ~800–1200 bytes): **12–30 µs (p50–p90)**
+  - Trade JSON (Binance's `aggTrade`, ~150–200 bytes): **3–10 µs (p50–p90)**
+  - Outperforms `RapidJSON` in real-time workloads.
 
 - **WebSocket** ([`websocket/`](core/websocket))
   - Built on top of Boost.Asio with fully `asynchronous design` (using custom `co_await` / `co_return` coroutine flow)
