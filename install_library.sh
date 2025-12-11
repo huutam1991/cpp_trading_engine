@@ -26,7 +26,7 @@ install_dependency_packages() {
     # Skip installation when running in CI
     # -----------------------------------------
     if [[ "$IS_RUNNING_CI" == "1" ]]; then
-        echo "CI mode: skip installing dependency packages [$pkg]"
+        echo "CI mode: skip installing dependency packages"
         return
     fi
 

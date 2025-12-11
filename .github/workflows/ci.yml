@@ -27,10 +27,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y wget curl git build-essential cmake libmongoc-1.0-0 libbson-1.0-0 libgflags-dev libssl-dev libsasl2-dev libzstd-dev libspdlog-dev libgtest-dev libboost-all-dev make g++
-        sudo bash install_library.sh
+        sudo -E bash install_library.sh
 
-    # - name: Run build script
-    #   run: sudo bash build_bash.sh
+    - name: Run build script
+      run: sudo bash build_bash.sh
 
-    # - name: Run tests
-    #   run: sudo bash test_bash.sh
+    - name: Run tests
+      run: sudo bash test_bash.sh
