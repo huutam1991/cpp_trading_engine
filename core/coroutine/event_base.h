@@ -8,7 +8,6 @@
 #include <sys/eventfd.h>
 
 #include <cache/cache_pool.h>
-#include <utils/util_macros.h>
 #include <queue/mpsc_queue.h>
 #include <system_io/system_io_object.h>
 

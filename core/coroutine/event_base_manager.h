@@ -4,7 +4,6 @@
 #include <vector>
 #include <unordered_map>
 
-#include <utils/util_macros.h>
 #include <utils/spin_lock.h>
 #include <utils/thread_pinning.h>
 #include <enum_reflect/enum_reflect.h>
