@@ -62,6 +62,8 @@ install_dependency_packages() {
 
 install_dependency_packages
 
+find "$INSTALL_FOLDER"
+
 # Install the mongoc driver
 if [ ! -f "$INSTALL_FOLDER/lib/libmongoc-1.0.so" ]; then
     cd "$DOWNLOAD_FOLDER"
@@ -102,7 +104,7 @@ fi
 
 # Install google test
 if [ -f "$INSTALL_FOLDER/lib/libgtest.a" ] || [ -d "$INSTALL_FOLDER/include/gtest" ]; then
-    echo "[Cache Hit] GoogleTest already installed → skipping build."
+    echo "[Cache Hit] GoogleTest already installed -> skipping build."
 else
     cd "$DOWNLOAD_FOLDER"
     git clone https://github.com/google/googletest.git
@@ -129,5 +131,3 @@ rm -rf googletest
 
 # Add Path
 export LD_LIBRARY_PATH="$INSTALL_FOLDER/lib:$LD_LIBRARY_PATH"
-
-find $INSTALL_FOLDER -name mongocxxConfig.cmake
