@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IS_RUNNING_CI: "1"
+      INSTALL_FOLDER: ${{ github.workspace }}
 
     steps:
     - name: Checkout repository

@@ -1,5 +1,26 @@
 #!/bin/bash
 
+set -e
+
+# If INSTALL_FOLDER is not set → use default /temp
+if [ -z "$INSTALL_FOLDER" ]; then
+    INSTALL_FOLDER="/temp"
+    echo "INSTALL_FOLDER is not set. Using default: $INSTALL_FOLDER"
+else
+    echo "INSTALL_FOLDER = $INSTALL_FOLDER"
+fi
+
+# Create the directory if it does not exist
+mkdir -p "$INSTALL_FOLDER"
+
+# Change directory into INSTALL_FOLDER
+cd "$INSTALL_FOLDER" || {
+    echo "ERROR: Cannot cd into $INSTALL_FOLDER"
+    exit 1
+}
+
+echo "Current directory: $(pwd)"
+
 install_dependency_packages() {
     # -----------------------------------------
     # Skip installation when running in CI
@@ -38,7 +59,6 @@ install_dependency_packages() {
 
 install_dependency_packages
 
-cd /
 wget https://github.com/mongodb/mongo-c-driver/releases/download/1.23.0/mongo-c-driver-1.23.0.tar.gz
 tar xzf mongo-c-driver-1.23.0.tar.gz
 cd /mongo-c-driver-1.23.0
@@ -51,7 +71,6 @@ cmake --build . -j 4
 cmake --build . --target install
 
 # Install the mongocxx driver
-cd /
 curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.7/mongo-cxx-driver-r3.6.7.tar.gz
 tar -xzf mongo-cxx-driver-r3.6.7.tar.gz
 # Patch all .hpp files that use std::uintXX_t or std::intXX_t but are missing <cstdint> (not nice, but works)
@@ -82,7 +101,6 @@ cmake --install build
 # make -j$(nproc) && make install
 
 # Clean up if you want to keep the image size smaller
-cd /
 rm -rf /glog
 rm -rf /boost_1_71_0*
 rm -rf /mongo-c*
