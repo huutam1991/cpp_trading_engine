@@ -72,14 +72,17 @@ bool HttpRequestPost::is_valid_format()
     int content_length = 0;
 
     std::string param_content_length_1 = get_header_param("Content-Length");
-    std::string param_content_length_2 = get_header_param("content-length");
     if (param_content_length_1 != PARAM_NOT_FOUND)
     {
         content_length = stoi(param_content_length_1);
     }
-    else if (param_content_length_2 != PARAM_NOT_FOUND)
+    else
     {
-        content_length = stoi(param_content_length_2);
+        std::string param_content_length_2 = get_header_param("content-length");
+        if (param_content_length_2 != PARAM_NOT_FOUND)
+        {
+            content_length = stoi(param_content_length_2);
+        }
     }
 
     return content_length == 0 || content_length == m_body.size();
