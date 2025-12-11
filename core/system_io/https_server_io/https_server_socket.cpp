@@ -38,6 +38,7 @@ int HttpsServerSocket::handle_read()
 int HttpsServerSocket::handle_write()
 {
     // Nothing to do for write event
+    spdlog::warn("HttpsServerSocket::handle_write - unexpected write event on server socket");
     return 0;
 }
 
