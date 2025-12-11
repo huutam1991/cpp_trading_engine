@@ -1,5 +1,4 @@
 #include <network/https_server/request/http_request_delete.h>
-#include <utils/util_macros.h>
 
 HttpRequestDelete::HttpRequestDelete(const std::string& content, const std::string& dir_path) : HttpRequestPost(content, dir_path)
 {

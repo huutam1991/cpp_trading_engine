@@ -6,7 +6,7 @@
 
 Route& RouteController::add_route_group(RequestMethod method, const std::string& route_path)
 {
-    // LOG(INFO) << "Implement API (Group) " << route_path;
+    spdlog::info("Implement API (Group) endpoint: {}", route_path);
     Route* route = new Route(method);
 
     std::unordered_map<RequestMethod, Route*>& route_set = route_group_map[route_path];
@@ -17,7 +17,7 @@ Route& RouteController::add_route_group(RequestMethod method, const std::string&
 
 Route& RouteController::add_route(RequestMethod method, const std::string& route_path)
 {
-    // LOG(INFO) << "Implement API " << route_path;
+    spdlog::info("Implement API endpoint: {}", route_path);
     Route* route = new Route(method);
 
     std::unordered_map<RequestMethod, Route*>& route_set = route_map[route_path];

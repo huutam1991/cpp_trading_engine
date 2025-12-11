@@ -65,7 +65,7 @@ void HttpRequest::deserialize_query_string(const std::string& content)
         m_query_string = m_url.substr(question_mark_pos + 1, m_url.size() - 1);
         m_url = m_url.substr(0, question_mark_pos);
     }
-    spdlog::debug("query = \"{}\"", m_query_string);
+    // spdlog::debug("query = \"{}\"", m_query_string);
 }
 
 void HttpRequest::deserialize_query_params(const std::string& content)

@@ -2,7 +2,6 @@
 #include <fstream>
 #include <filesystem>
 
-#include <utils/util_macros.h>
 #include <network/https_server/response/http_response.h>
 
 HttpResponse::HttpResponse() : m_response_code(OK_200)
@@ -57,7 +56,11 @@ HttpResponse::HttpResponse(const HttpResponse& response)
 
 HttpResponse::~HttpResponse()
 {
-    SAFE_RELEASE(m_content);
+    if (m_content != nullptr)
+    {
+        delete m_content;
+        m_content = nullptr;
+    }
 }
 
 const HttpResponse& HttpResponse::operator=(HttpResponse& response)
