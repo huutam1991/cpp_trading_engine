@@ -35,7 +35,7 @@ private:
     Task<void> m_update_task;
     bool m_is_run_update = false;
     std::queue<StrategyMeanReversionData> m_state_data_queue;
-    Future<bool>::FutureValue m_has_data_update;
+    Future<bool>::FutureValue* m_has_data_update = nullptr;
     Future<bool> wait_new_data_update();
 
     void run();

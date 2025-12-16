@@ -36,7 +36,7 @@ public:
     Task<HttpsClientResponse> put(const std::string& path, const std::string& body);
 
 private:
-    std::queue<Future<HttpsClientResponse>::FutureValue> m_response_futures;
+    std::queue<Future<HttpsClientResponse>::FutureValue*> m_response_futures;
 
     void connect();
     Task<void> re_connect();

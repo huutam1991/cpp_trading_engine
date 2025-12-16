@@ -165,7 +165,7 @@ Task<void> StrategyMeanReversion::update()
 
 Future<bool> StrategyMeanReversion::wait_new_data_update()
 {
-    return Future<bool>([this](Future<bool>::FutureValue value)
+    return Future<bool>([this](Future<bool>::FutureValue* value)
     {
         m_has_data_update = value;
     });

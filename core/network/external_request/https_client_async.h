@@ -46,7 +46,7 @@ private:
     std::string m_endpoint;
     std::string m_body;
     std::unordered_map<std::string, std::string> m_headers;
-    Future<std::string>::FutureValue m_future_value;
+    Future<std::string>::FutureValue* m_future_value = nullptr;
 
     Future<std::string> send_request(http::verb method, const std::string& endpoint, std::string body);
 

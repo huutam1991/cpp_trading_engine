@@ -17,12 +17,12 @@ Future<size_t> Timer::sleep_for(size_t tick_interval, TimerUnit unit)
 {
     size_t tick = tick_interval * unit; // Tick in nanoseconds
 
-    return Future<size_t>([tick](Future<size_t>::FutureValue value)
+    return Future<size_t>([tick](Future<size_t>::FutureValue* value)
     {
         add_schedule_task([tick, value]() mutable
         {
             size_t tick_none_const = tick;
-            value.set_value(tick_none_const);
+            value->set_value(tick_none_const);
         }, tick, TimerUnit::NANOSECOND);
     });
 }

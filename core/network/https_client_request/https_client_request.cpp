@@ -53,7 +53,7 @@ void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t 
     {
         if (m_response_futures.empty() == false)
         {
-            m_response_futures.front().set_value(std::move(resp));
+            m_response_futures.front()->set_value(std::move(resp));
             m_response_futures.pop();
         }
     }
@@ -91,9 +91,9 @@ Task<HttpsClientResponse> HttpsClientRequest::get(const std::string& path)
     // Send request
     m_io_object->write(request_builder.to_string());
 
-    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue* value) mutable
     {
-        m_response_futures.push(std::move(value));
+        m_response_futures.push(value);
     });
 }
 
@@ -135,9 +135,9 @@ Task<HttpsClientResponse> HttpsClientRequest::post(const std::string& path, cons
     // Send
     m_io_object->write(request_builder.to_string());
 
-    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue* value) mutable
     {
-        m_response_futures.push(std::move(value));
+        m_response_futures.push(value);
     });
 }
 
@@ -166,9 +166,9 @@ Task<HttpsClientResponse> HttpsClientRequest::del(const std::string& path)
     // Send request
     m_io_object->write(request_builder.to_string());
 
-    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue* value) mutable
     {
-        m_response_futures.push(std::move(value));
+        m_response_futures.push(value);
     });
 }
 
@@ -210,8 +210,8 @@ Task<HttpsClientResponse> HttpsClientRequest::put(const std::string& path, const
     // Send
     m_io_object->write(request_builder.to_string());
 
-    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue* value) mutable
     {
-        m_response_futures.push(std::move(value));
+        m_response_futures.push(value);
     });
 }

@@ -36,7 +36,7 @@ Future<std::string> HttpsClientAsync::send_request(http::verb method, const std:
     m_endpoint = endpoint;
     m_body = std::move(body);
 
-    Future<std::string> future([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
+    return Future<std::string>([self = shared_from_this()](Future<std::string>::FutureValue* value) mutable
     {
         self->m_future_value = value;
 
@@ -44,8 +44,6 @@ Future<std::string> HttpsClientAsync::send_request(http::verb method, const std:
             self->m_resolve_result,
             beast::bind_front_handler(&HttpsClientAsync::on_connect, self));
     });
-
-    return future;
 }
 
 tcp::resolver::results_type& HttpsClientAsync::get_resolve_result_cache(tcp::resolver& resolver, const std::string& host, const std::string& port)
@@ -140,7 +138,7 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
     if (ec) return fail("read", ec);
 
     m_res = m_parser.get();
-    m_future_value.set_value(m_res.body());
+    m_future_value->set_value(m_res.body());
 
     beast::error_code shutdown_ec;
     m_stream.shutdown(shutdown_ec);
