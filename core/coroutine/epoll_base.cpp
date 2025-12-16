@@ -30,23 +30,19 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
     }
 }
 
-void EpollBase::del_fd(SystemIOObject* ptr)
+void EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
-    if (ptr != nullptr)
+    if (ptr != nullptr && fd != -1)
     {
-        int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, ptr->fd, nullptr);
+        int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
         if (res == -1)
         {
-            spdlog::error("EpollBase - [del_fd], object name: {}, EPOLL_CTL_DEL error for fd: {}, error: {}", ptr->name(), ptr->fd, std::strerror(errno));
+            spdlog::error("EpollBase - [del_fd], object name: {}, EPOLL_CTL_DEL error for fd: {}, error: {}", ptr->name(), fd, std::strerror(errno));
         }
         // spdlog::debug("EpollBase - [del_fd] fd: {}", fd);
 
-        if (ptr->fd != -1)
-        {
-            close(ptr->fd);
-            ptr->fd = -1;
-            ptr->release();
-        }
+        close(fd);
+        ptr->release();
     }
 }
 
@@ -67,7 +63,7 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     if (activate_res < 0)
     {
         spdlog::error("EpollBase - [start_living_system_io_object] activate error for fd: {}", fd);
-        del_fd(object);
+        del_fd(fd, object);
         return;
     }
 }
@@ -123,7 +119,7 @@ void EpollBase::loop()
             {
                 // An error has occured on this fd
                 spdlog::error("EpollBase - [loop] EPOLLERR or EPOLLHUP or EPOLLRDHUP on fd: {}", fd);
-                del_fd(io_object);
+                del_fd(fd, io_object);
                 continue;
             }
 
@@ -133,7 +129,7 @@ void EpollBase::loop()
                 int res = io_object->handle_read();
                 if (res == -1)
                 {
-                    del_fd(io_object);
+                    del_fd(fd, io_object);
                     continue;
                 }
             }
@@ -144,7 +140,7 @@ void EpollBase::loop()
                 int res = io_object->handle_write();
                 if (res == -1)
                 {
-                    del_fd(io_object);
+                    del_fd(fd, io_object);
                     continue;
                 }
             }

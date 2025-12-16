@@ -25,7 +25,7 @@ HttpClientRequestIO::~HttpClientRequestIO()
 
     if (fd != -1 && epoll_base != nullptr)
     {
-        epoll_base->del_fd(this);
+        epoll_base->del_fd(fd, this);
     }
 }
 
