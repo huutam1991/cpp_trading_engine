@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cxxabi.h>
 
 namespace type_name
 {
