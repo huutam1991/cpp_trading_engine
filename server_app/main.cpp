@@ -53,7 +53,6 @@ Future<int> get_number_future()
     return Future<int>([](Future<int>::FutureValue value)
     {
         // Simulate some async operation
-        std::this_thread::sleep_for(std::chrono::seconds(1));
         int result = 42; // Example result
         value.set_value(result);
     });
@@ -66,8 +65,7 @@ Task<void> test_future()
         int number = co_await get_number_future();
         spdlog::info("Received number from future: {}", number);
 
-        // co_await Timer::sleep_for(5000);
-        break;
+        co_await Timer::sleep_for(2000);
     }
 
     co_return;
