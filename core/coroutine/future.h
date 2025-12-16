@@ -113,12 +113,25 @@ struct Future
     std::function<void(FutureValue)> m_execute_func;
 
     // Constructor, need to have an execute function
-    Future(std::function<void(FutureValue)> execute_func) : m_execute_func(execute_func)
+    template <class F, std::enable_if_t<std::is_invocable_v<F, FutureValue>, int> = 0>
+    Future(F&& execute_func) : m_execute_func(std::forward<F>(execute_func))
     {
     }
-    // Or with a value (ready Future)
-    Future(T& value) = delete;
-    Future(T&& value) = delete;
+
+    // Delete other constructors
+    template <class U,
+        std::enable_if_t<
+            !std::is_invocable_v<U, FutureValue> &&
+            !std::is_same_v<std::decay_t<U>, FutureValue>,
+            int> = 0>
+    Future(U& value) = delete;
+
+    template <class U,
+        std::enable_if_t<
+            !std::is_invocable_v<U, FutureValue> &&
+            !std::is_same_v<std::decay_t<U>, FutureValue>,
+            int> = 0>
+    Future(U&& value) = delete;
 
     bool await_ready()
     {
