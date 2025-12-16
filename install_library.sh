@@ -24,6 +24,23 @@ cd "$INSTALL_FOLDER" || {
 
 echo "Current directory: $(pwd)"
 
+check_package() {
+    dpkg -s "$1" >/dev/null 2>&1
+}
+
+install_if_missing() {
+    local pkg="$1"
+
+    if check_package "$pkg"; then
+        echo "✔ [$pkg] is already installed."
+        return
+    fi
+
+    echo "✘ [$pkg] not found. Installing..."
+    apt update -y
+    apt install -y "$pkg"
+}
+
 install_dependency_packages() {
     # -----------------------------------------
     # Skip installation when running in CI
@@ -33,23 +50,18 @@ install_dependency_packages() {
         return
     fi
 
-    apt-get update -y
-    apt-get install -y wget curl git
-    apt-get install -y build-essential
-    apt-get install -y libgflags-dev
-
-    apt-get install libmongoc-1.0-0 -y
-    apt-get install libbson-1.0-0 -y
-    apt-get install cmake libssl-dev libsasl2-dev -y
-    cmake --version
-
-    # Install Boost
-    apt update -y
-    apt install -y libboost-all-dev
-
-    # Install SpdLog
-    apt update -y
-    apt install -y libspdlog-dev
+    install_if_missing wget
+    install_if_missing curl
+    install_if_missing git
+    install_if_missing build-essential
+    install_if_missing libgflags-dev
+    install_if_missing libmongoc-1.0-0
+    install_if_missing libbson-1.0-0
+    install_if_missing cmake
+    install_if_missing libssl-dev
+    install_if_missing libsasl2-dev
+    install_if_missing libboost-all-dev
+    install_if_missing libspdlog-dev
 
     # Install PM2
     curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
