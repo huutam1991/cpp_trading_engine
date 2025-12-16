@@ -60,7 +60,13 @@ jobs:
       run: sudo -E bash build_bash.sh
 
     # --------------------------------------------------
-    # 5) Run tests
+    # 5) Build debug project
+    # --------------------------------------------------
+    - name: Run build script
+      run: sudo -E bash build_debug.sh
+
+    # --------------------------------------------------
+    # 6) Run tests
     # --------------------------------------------------
     - name: Run tests
       run: sudo -E bash test_bash.sh
