@@ -117,10 +117,8 @@ struct Future
     {
     }
     // Or with a value (ready Future)
-    Future(T& value)
-    {
-        m_value.set_value(value);
-    }
+    Future(T& value) = delete;
+    Future(T&& value) = delete;
 
     bool await_ready()
     {
