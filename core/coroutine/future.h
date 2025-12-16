@@ -13,45 +13,20 @@ struct Future
     class FutureValue
     {
     private:
-        std::shared_ptr<T> m_value;
-        std::shared_ptr<bool> m_is_set;
-        std::shared_ptr<std::mutex> m_mutex_future;
+        T m_value;
+        std::atomic<bool> m_is_set = false;
         BasePromiseType* m_suspending_promise = nullptr;
 
     public:
-        FutureValue() : m_value{std::make_shared<T>()}, m_is_set{std::make_shared<bool>(false)}, m_mutex_future{std::make_shared<std::mutex>()}
-        {}
+        FutureValue() = default;
 
-        FutureValue(const FutureValue& copy) : m_value{copy.m_value}, m_is_set{copy.m_is_set}, m_mutex_future{copy.m_mutex_future}, m_suspending_promise{copy.m_suspending_promise}
-        {}
+        // Only allow move constructor and delete copy constructor
+        FutureValue(const FutureValue& copy) = delete;
+        FutureValue(FutureValue&& copy) = delete;
 
-        FutureValue(std::nullptr_t value) : m_value{nullptr}, m_is_set{nullptr}, m_mutex_future{nullptr}, m_suspending_promise{nullptr}
-        {}
-
-        FutureValue& operator=(const FutureValue& copy)
-        {
-            m_value = copy.m_value;
-            m_is_set = copy.m_is_set;
-            m_mutex_future = copy.m_mutex_future;
-            m_suspending_promise = copy.m_suspending_promise;
-
-            return *this;
-        }
-
-        FutureValue& operator=(std::nullptr_t value) noexcept
-        {
-            m_value = nullptr;
-            m_is_set = nullptr;
-            m_mutex_future = nullptr;
-            m_suspending_promise = nullptr;
-
-            return *this;
-        }
-
-        inline bool operator==(std::nullptr_t t) const
-        {
-            return m_value == nullptr;
-        }
+        // Only allow move assignment and delete copy assignment
+        FutureValue& operator=(const FutureValue&) = delete;
+        FutureValue& operator=(FutureValue&&) = delete;
 
         void set_suspending_promise(BasePromiseType* suspending_promise)
         {
@@ -60,18 +35,15 @@ struct Future
 
         bool is_value_set()
         {
-            std::unique_lock lock(*m_mutex_future);
-            return *m_is_set;
+            return m_is_set.load(std::memory_order_acquire);
         }
 
         void set_value(T& value)
         {
-            std::unique_lock lock(*m_mutex_future);
-
             // Check if this future is already set
-            if (*m_is_set == true) return;
+            if (m_is_set.load(std::memory_order_acquire) == true) return;
 
-            *m_value = value;
+            m_value = value;
 
             // Mark future as ready
             future_set_ready();
@@ -79,12 +51,10 @@ struct Future
 
         void set_value(T&& value)
         {
-            std::unique_lock lock(*m_mutex_future);
-
             // Check if this future is already set
-            if (*m_is_set == true) return;
+            if (m_is_set.load(std::memory_order_acquire) == true) return;
 
-            *m_value = std::move(value);
+            m_value = std::move(value);
 
             // Mark future as ready
             future_set_ready();
@@ -92,28 +62,28 @@ struct Future
 
         T get_value()
         {
-            return *m_value;
+            return m_value;
         }
 
     private:
         void future_set_ready()
         {
+            m_is_set.store(true, std::memory_order_release);
+
             // Mark suspending promise as ready
             if (m_suspending_promise != nullptr)
             {
                 m_suspending_promise->set_waiting(false);
             }
-
-            *m_is_set = true;
         }
 
     };
 
     FutureValue m_value;
-    std::function<void(FutureValue)> m_execute_func;
+    std::function<void(FutureValue*)> m_execute_func;
 
     // Constructor, need to have an execute function
-    template <class F, std::enable_if_t<std::is_invocable_v<F, FutureValue>, int> = 0>
+    template <class F, std::enable_if_t<std::is_invocable_v<F, FutureValue*>, int> = 0>
     Future(F&& execute_func) : m_execute_func(std::forward<F>(execute_func))
     {
     }
@@ -121,21 +91,21 @@ struct Future
     // Delete other constructors
     template <class U,
         std::enable_if_t<
-            !std::is_invocable_v<U, FutureValue> &&
+            !std::is_invocable_v<U, FutureValue*> &&
             !std::is_same_v<std::decay_t<U>, FutureValue>,
             int> = 0>
     Future(U& value) = delete;
 
     template <class U,
         std::enable_if_t<
-            !std::is_invocable_v<U, FutureValue> &&
+            !std::is_invocable_v<U, FutureValue*> &&
             !std::is_same_v<std::decay_t<U>, FutureValue>,
             int> = 0>
     Future(U&& value) = delete;
 
     bool await_ready()
     {
-        return m_value.is_value_set(); // If value is set, this Future is ready
+        return false;
     }
 
     template<class promise_type>
@@ -148,8 +118,9 @@ struct Future
 
         m_value.set_suspending_promise(suspend_base_pt);
 
-        if (m_execute_func) {
-            m_execute_func(m_value);
+        if (m_execute_func)
+        {
+            m_execute_func(&m_value);
         }
     }
 
