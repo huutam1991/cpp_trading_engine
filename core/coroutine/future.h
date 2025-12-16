@@ -62,7 +62,7 @@ struct Future
 
         T get_value()
         {
-            return m_value;
+            return std::move(m_value);
         }
 
     private:
