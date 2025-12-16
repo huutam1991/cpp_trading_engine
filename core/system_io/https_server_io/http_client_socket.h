@@ -8,7 +8,7 @@
 #include <network/https_server/route/route_controller.h>
 #include <system_io/system_io_object.h>
 
-struct HttpClientSocket : public SystemIOObject
+struct HttpClientSocket : public NamedIOObject<HttpClientSocket>
 {
     int server_fd;
     std::string save_buffer;

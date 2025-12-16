@@ -15,7 +15,7 @@
 
 class EventBase;
 
-struct TaskInfo : public SystemIOObject
+struct TaskInfo : public NamedIOObject<TaskInfo>
 {
     std::coroutine_handle<> handle = nullptr;
     void* base_promise_type_address = nullptr;

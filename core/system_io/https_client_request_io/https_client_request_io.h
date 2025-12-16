@@ -7,7 +7,7 @@
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/system_io_object.h>
 
-struct HttpClientRequestIO : public SystemIOObject
+struct HttpClientRequestIO : public NamedIOObject<HttpClientRequestIO>
 {
     std::string hostname;
     std::string ip;

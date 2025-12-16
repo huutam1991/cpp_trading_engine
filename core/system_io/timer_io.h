@@ -8,7 +8,7 @@
 #include <cache/cache_pool.h>
 #include "system_io_object.h"
 
-struct TimerIO : public SystemIOObject
+struct TimerIO : public NamedIOObject<TimerIO>
 {
     size_t interval_ns;
     std::function<void()> callback = nullptr;
