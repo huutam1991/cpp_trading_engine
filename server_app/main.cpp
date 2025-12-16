@@ -48,12 +48,14 @@ Task<void> test_https_client_request(EpollBase* epoll_base)
     }
 }
 
-Future<int> get_number_future()
+Future<Json> get_number_future()
 {
-    return Future<int>([](Future<int>::FutureValue value)
+    return Future<Json>([](Future<Json>::FutureValue value)
     {
         // Simulate some async operation
-        int result = 42; // Example result
+        Json result;
+        result["number"] = 42; // Example data
+        // value = result;
         value.set_value(result);
     });
 }
@@ -62,7 +64,7 @@ Task<void> test_future()
 {
     while (true)
     {
-        int number = co_await get_number_future();
+        Json number = co_await get_number_future();
         spdlog::info("Received number from future: {}", number);
 
         co_await Timer::sleep_for(2000);
