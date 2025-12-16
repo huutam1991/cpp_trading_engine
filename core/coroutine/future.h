@@ -15,7 +15,7 @@ struct Future
     private:
         T m_value;
         std::atomic<bool> m_is_set = false;
-        BasePromiseType* m_suspending_promise = nullptr;
+        std::atomic<BasePromiseType*> m_suspending_promise = nullptr;
 
     public:
         FutureValue() = default;
@@ -30,7 +30,7 @@ struct Future
 
         void set_suspending_promise(BasePromiseType* suspending_promise)
         {
-            m_suspending_promise = suspending_promise;
+            m_suspending_promise.store(suspending_promise, std::memory_order_release);
         }
 
         bool is_value_set()
@@ -71,9 +71,10 @@ struct Future
             m_is_set.store(true, std::memory_order_release);
 
             // Mark suspending promise as ready
-            if (m_suspending_promise != nullptr)
+            BasePromiseType* suspending_promise = m_suspending_promise.load(std::memory_order_acquire);
+            if (suspending_promise != nullptr)
             {
-                m_suspending_promise->set_waiting(false);
+                suspending_promise->set_waiting(false);
             }
         }
 
