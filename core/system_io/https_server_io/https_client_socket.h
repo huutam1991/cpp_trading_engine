@@ -23,7 +23,7 @@ struct HttpsClientSocket : public HttpClientSocket
 
     // Handle data methods
     virtual int read_buffer(char* const buffer);
-    virtual void write_to_socket_io(const char* buffer, std::uint32_t size);
+    virtual int write_to_socket_io(const char* buffer, std::uint32_t size);
 };
 
 using HttpsClientSocketPool = CachePool<HttpsClientSocket, 100>;

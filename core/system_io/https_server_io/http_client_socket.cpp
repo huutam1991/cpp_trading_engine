@@ -142,7 +142,13 @@ void HttpClientSocket::release()
 Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
 {
     std::string response = request->response_not_found_404().get_response_in_string();
-    write_to_socket_io(response.c_str(), response.size());
+
+    int res = write_to_socket_io(response.c_str(), response.size());
+    if (res == -1)
+    {
+        spdlog::error("HttpClientSocket::send_404_response - write failed, socket fd = {}", fd);
+        epoll_base->del_fd(fd, this);
+    }
 
     // Clean save buffer
     save_buffer = "";
@@ -153,7 +159,13 @@ Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
 Task<void> HttpClientSocket::execute_request(HttpRequest* request)
 {
     std::string response = co_await RouteController::instance().handle_request_base_on_route(request);
-    write_to_socket_io(response.c_str(), response.size());
+
+    int res = write_to_socket_io(response.c_str(), response.size());
+    if (res == -1)
+    {
+        spdlog::error("HttpClientSocket::send_404_response - write failed, socket fd = {}", fd);
+        epoll_base->del_fd(fd, this);
+    }
 
     delete request;
 
@@ -165,7 +177,7 @@ int HttpClientSocket::read_buffer(char* const buffer)
     return read(fd, buffer, BUFFER_SIZE);
 }
 
-void HttpClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
-    write(fd, buffer, size);
+    return write(fd, buffer, size);
 }

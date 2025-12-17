@@ -73,13 +73,13 @@ int HttpsClientSocket::read_buffer(char* const buffer)
     return tls_wrapper->read(buffer, BUFFER_SIZE);
 }
 
-void HttpsClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpsClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     if (tls_wrapper == nullptr)
     {
         spdlog::error("HttpsClientSocket::write_to_socket_io - tls_wrapper is null, socket fd = {}", fd);
-        return;
+        return -1;
     }
 
-    tls_wrapper->write(buffer, size);
+    return tls_wrapper->write(buffer, size);
 }
