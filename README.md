@@ -55,7 +55,7 @@ This project is a fully self-designed, low-latency trading engine written in mod
 ---
 
 # Performance Summary
-  - Achieves `sub-100 µs` end-to-end latency (`P90`) with tight jitter bounds (`P99 < 120 µs`) under sustained production load
+  - Achieves `sub-40 µs` end-to-end latency (`P90`) with tight jitter bounds (`P99 < 50-60 µs`) under sustained production load
 
 ---
 
