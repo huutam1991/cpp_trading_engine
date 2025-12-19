@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/core",
                 "${workspaceFolder}/server_app",
+                "${workspaceFolder}/build/**",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
