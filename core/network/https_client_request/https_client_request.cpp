@@ -41,7 +41,6 @@ void HttpsClientRequest::on_disconnect()
 
 void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t size)
 {
-    HttpsClientResponse resp;
     HttpsClientResponseParser response_parser;
 
     response_parser.append_data(buffer, size);
