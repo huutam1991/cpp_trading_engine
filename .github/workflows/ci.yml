@@ -54,15 +54,15 @@ jobs:
         sudo -E bash install_library.sh  # <– build into INSTALL_FOLDER (cached)
 
     # --------------------------------------------------
-    # 4) Build project
+    # 4) Build release project
     # --------------------------------------------------
-    - name: Run build script
+    - name: Run build release script
       run: sudo -E bash build_bash.sh
 
     # --------------------------------------------------
     # 5) Build debug project
     # --------------------------------------------------
-    - name: Run build script
+    - name: Run build debug script
       run: sudo -E bash build_debug.sh
 
     # --------------------------------------------------
