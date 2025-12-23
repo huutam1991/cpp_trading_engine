@@ -34,14 +34,33 @@ extern void add_bad_request();
 
 Task<void> test_https_client_request(EpollBase* epoll_base)
 {
-    HttpsClientRequest https_client_request(epoll_base, "1.1.1.1", 443);
+    HttpsClientRequest https_client_request(epoll_base, "fapi.binance.com", 443);
 
     while (true)
     {
         {
-            MeasureTime mt("GET 1.1.1.1/cdn-cgi/trace", MeasureUnit::MILLISECOND);
-            HttpsClientResponse response_get = co_await https_client_request.get("/cdn-cgi/trace");
-            spdlog::info("GET 1.1.1.1/cdn-cgi/trace response: {} - {}", response_get.status_code, response_get.body);
+            MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
+            HttpsClientResponse response_get = co_await https_client_request.get("/fapi/v1/exchangeInfo");
+            spdlog::info("GET fapi.binance.com/fapi/v1/exchangeInfo response: {} - {}", response_get.status_code, response_get.body);
+        }
+
+        co_await Timer::sleep_for(1000);
+    }
+}
+
+Task<void> test_https_client_request_2()
+{
+    while (true)
+    {
+        {
+            MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
+            auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), "fapi.binance.com", "443");
+            std::string response_get = co_await client->get("/fapi/v1/exchangeInfo");
+
+            // auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_FUTURES_URL, "443");
+            // std::string response = co_await client->get("/fapi/v1/exchangeInfo");
+
+            spdlog::info("GET fapi.binance.com/fapi/v1/exchangeInfo response: {}", response_get);
         }
 
         co_await Timer::sleep_for(1000);
