@@ -6,7 +6,8 @@
 #include <coroutine/epoll_base.h>
 #include "https_client_request_io.h"
 
-#define BUFFER_SIZE 2048
+#define BUFFER_SIZE 2000000
+#define BUFFER_TEMP_SIZE 2048
 
 HttpClientRequestIO::HttpClientRequestIO(const std::string& hostname_value, int port_value)
     : hostname{hostname_value}, ip{resolve_hostname()}, port{port_value}, m_tls_wrapper{std::make_unique<TlsWrapper>(get_tls_context())}
@@ -132,7 +133,7 @@ int HttpClientRequestIO::check_connect_and_handshake()
 int HttpClientRequestIO::handle_read_data()
 {
     char buffer[BUFFER_SIZE];
-    char temp_buffer[BUFFER_SIZE];
+    char temp_buffer[BUFFER_TEMP_SIZE];
     int read_bytes = 0;
     int buffer_length = 0;
 
