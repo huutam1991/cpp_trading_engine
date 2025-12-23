@@ -138,7 +138,11 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
     if (ec) return fail("read", ec);
 
     m_res = m_parser.get();
-    m_future_value->set_value(m_res.body());
+
+    if (m_future_value != nullptr)
+    {
+        m_future_value->set_value(m_res.body());
+    }
 
     beast::error_code shutdown_ec;
     m_stream.shutdown(shutdown_ec);
