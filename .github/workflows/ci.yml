@@ -56,13 +56,13 @@ jobs:
     # --------------------------------------------------
     # 4) Build release project
     # --------------------------------------------------
-    - name: Run build release script
+    - name: Run build release
       run: sudo -E bash build_bash.sh
 
     # --------------------------------------------------
     # 5) Build debug project
     # --------------------------------------------------
-    - name: Run build debug script
+    - name: Run build debug
       run: sudo -E bash build_debug.sh
 
     # --------------------------------------------------
