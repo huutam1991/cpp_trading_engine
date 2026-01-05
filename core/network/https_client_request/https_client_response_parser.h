@@ -142,7 +142,7 @@ private:
 
             resp.headers[key] = value;
 
-            if (strcasecmp(key.c_str(), "Content-Length") == 0)
+            if (strcasecmp(key.c_str(), "Content-Length") == 0 || strcasecmp(key.c_str(), "content-length") == 0)
             {
                 content_length = std::stoi(value);
             }
