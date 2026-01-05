@@ -2,7 +2,7 @@
 
 #include <string>
 
-struct RequestBuilder
+struct HttpsClientRequestBuilder
 {
     char buf[2048];
     size_t len = 0;

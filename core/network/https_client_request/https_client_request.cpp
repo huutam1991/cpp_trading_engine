@@ -68,7 +68,7 @@ Task<void> HttpsClientRequest::re_connect()
 
 Task<HttpsClientResponse> HttpsClientRequest::get(const std::string& path)
 {
-    RequestBuilder request_builder;
+    HttpsClientRequestBuilder request_builder;
 
     // GET <path> HTTP/1.1
     request_builder.append("GET ");
@@ -98,7 +98,7 @@ Task<HttpsClientResponse> HttpsClientRequest::get(const std::string& path)
 
 Task<HttpsClientResponse> HttpsClientRequest::post(const std::string& path, const std::string& body)
 {
-    RequestBuilder request_builder;
+    HttpsClientRequestBuilder request_builder;
 
     // POST <path> HTTP/1.1\r\n
     request_builder.append("POST ");
@@ -142,7 +142,7 @@ Task<HttpsClientResponse> HttpsClientRequest::post(const std::string& path, cons
 
 Task<HttpsClientResponse> HttpsClientRequest::del(const std::string& path)
 {
-    RequestBuilder request_builder;
+    HttpsClientRequestBuilder request_builder;
 
     // DELETE <path> HTTP/1.1\r\n
     request_builder.append("DELETE ");
@@ -173,7 +173,7 @@ Task<HttpsClientResponse> HttpsClientRequest::del(const std::string& path)
 
 Task<HttpsClientResponse> HttpsClientRequest::put(const std::string& path, const std::string& body)
 {
-    RequestBuilder request_builder;
+    HttpsClientRequestBuilder request_builder;
 
     // PUT <path> HTTP/1.1\r\n
     request_builder.append("PUT ");
