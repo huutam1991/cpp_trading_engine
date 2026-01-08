@@ -10,10 +10,10 @@ public:
     // append new received data
     void append_data(const char* data, size_t len)
     {
-        buffer.append(data, len);
+        m_buffer.append(data, len);
     }
 
-    // parse ALL available responses inside buffer
+    // parse ALL available responses inside m_buffer
     // return vector of complete responses
     std::vector<HttpsClientResponse> parse_all()
     {
@@ -24,9 +24,9 @@ public:
             HttpsClientResponse resp;
 
             // 1. Parse header
-            if (!header_parsed)
+            if (!m_header_parsed)
             {
-                size_t pos = buffer.find("\r\n\r\n");
+                size_t pos = m_buffer.find("\r\n\r\n");
                 if (pos == std::string::npos)
                 {
                     // Not enough header data
@@ -34,21 +34,21 @@ public:
                 }
 
                 // Extract header block
-                std::string header_block = buffer.substr(0, pos);
+                std::string header_block = m_buffer.substr(0, pos);
 
                 // Parse header
                 if (!parse_header(header_block, resp))
                 {
-                    // Parse failed → break (do not remove buffer)
+                    // Parse failed → break (do not remove m_buffer)
                     break;
                 }
 
-                // Remove header from buffer
-                buffer.erase(0, pos + 4);
-                header_parsed = true;
+                // Remove header from m_buffer
+                m_buffer.erase(0, pos + 4);
+                m_header_parsed = true;
 
                 // If Content-Length = 0 → complete response
-                if (content_length == 0)
+                if (m_content_length == 0)
                 {
                     resp.is_complete = true;
                     results.push_back(resp);
@@ -60,20 +60,20 @@ public:
             }
 
             // 2. Parse body
-            if (header_parsed)
+            if (m_header_parsed)
             {
-                if (buffer.size() < (size_t)content_length)
+                if (m_buffer.size() < (size_t)m_content_length)
                 {
                     // Body not complete → need more data
                     break;
                 }
 
                 // Extract body
-                resp.body = buffer.substr(0, content_length);
+                resp.body = m_buffer.substr(0, m_content_length);
                 resp.is_complete = true;
 
-                // Remove body from buffer
-                buffer.erase(0, content_length);
+                // Remove body from m_buffer
+                m_buffer.erase(0, m_content_length);
 
                 // Save response
                 results.push_back(resp);
@@ -81,7 +81,7 @@ public:
                 // Reset for next response
                 reset_state();
 
-                // Continue loop → try parse next response in remaining buffer
+                // Continue loop → try parse next response in remaining m_buffer
                 continue;
             }
 
@@ -94,17 +94,17 @@ public:
     // Helper to reset state for the next response
     void reset_state()
     {
-        header_parsed = false;
-        content_length = 0;
+        m_header_parsed = false;
+        m_content_length = 0;
     }
 
-    bool is_header_parsed() const { return header_parsed; }
-    int get_content_length() const { return content_length; }
+    bool is_header_parsed() const { return m_header_parsed; }
+    int get_content_length() const { return m_content_length; }
 
 private:
-    std::string buffer;
-    bool header_parsed = false;
-    int content_length = 0;
+    std::string m_buffer;
+    bool m_header_parsed = false;
+    int m_content_length = 0;
 
 private:
     bool parse_header(const std::string& header_block, HttpsClientResponse& resp)
@@ -144,7 +144,7 @@ private:
 
             if (strcasecmp(key.c_str(), "Content-Length") == 0 || strcasecmp(key.c_str(), "content-length") == 0)
             {
-                content_length = std::stoi(value);
+                m_content_length = std::stoi(value);
             }
         }
 
