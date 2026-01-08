@@ -39,7 +39,7 @@ public:
                 // Parse header
                 if (!parse_header(header_block, resp))
                 {
-                    // Parse failed → break (do not remove m_buffer)
+                    // Parse failed -> break (do not remove m_buffer)
                     break;
                 }
 
@@ -47,7 +47,7 @@ public:
                 m_buffer.erase(0, pos + 4);
                 m_header_parsed = true;
 
-                // If Content-Length = 0 → complete response
+                // If Content-Length = 0 -> complete response
                 if (m_content_length == 0)
                 {
                     resp.is_complete = true;
@@ -64,7 +64,7 @@ public:
             {
                 if (m_buffer.size() < (size_t)m_content_length)
                 {
-                    // Body not complete → need more data
+                    // Body not complete -> need more data
                     break;
                 }
 
@@ -81,7 +81,7 @@ public:
                 // Reset for next response
                 reset_state();
 
-                // Continue loop → try parse next response in remaining m_buffer
+                // Continue loop -> try parse next response in remaining m_buffer
                 continue;
             }
 
