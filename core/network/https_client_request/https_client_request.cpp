@@ -41,10 +41,8 @@ void HttpsClientRequest::on_disconnect()
 
 void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t size)
 {
-    static HttpsClientResponseParser response_parser;
-
-    response_parser.append_data(buffer, size);
-    std::vector<HttpsClientResponse> responses = response_parser.parse_all();
+    m_response_parser.append_data(buffer, size);
+    std::vector<HttpsClientResponse> responses = m_response_parser.parse_all();
 
     for (auto& resp : responses)
     {
@@ -54,7 +52,6 @@ void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t 
             m_response_futures.pop();
         }
     }
-
 }
 
 Task<void> HttpsClientRequest::re_connect()
