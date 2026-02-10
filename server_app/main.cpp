@@ -92,9 +92,9 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
-    // SimulatorOrder::init();
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
+    SimulatorOrder::init();
 
     // // Strategy
     // StrategyManager::instance().init();
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
     epoll_base->start_living_system_io_object(https_server_object);
 
     // Test HTTPS client request
-    test_https_client_request(epoll_base).start_running_on(epoll_base);
+    // test_https_client_request(epoll_base).start_running_on(epoll_base);
     // test_future().start_running_on(epoll_base);
 
     // Main loop, only sleep here
