@@ -1,5 +1,6 @@
 #pragma once
 
+#include <coroutine/epoll_base.h>
 #include <network/websocket/websocket_client_async.h>
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 
@@ -10,6 +11,9 @@ private:
     std::string m_port = BINANCE_FUTURES_PORT;
     std::string m_ws_url = BINANCE_FUTURES_WS_URL;
     std::string m_ws_port = BINANCE_FUTURES_WS_PORT;
+
+    // EpollBase
+    EpollBase* m_epoll_base = nullptr;
 
     // Websocket to get order data
     std::shared_ptr<WebsocketClientAsync> m_websocket;

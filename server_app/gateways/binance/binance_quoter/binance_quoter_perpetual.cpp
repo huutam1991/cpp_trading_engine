@@ -1,5 +1,6 @@
 #include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
+#include <network/https_client_request/https_client_request.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 #include <app_utils/app_utils.h>
@@ -8,7 +9,8 @@
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
-BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key) : BinanceQuoter(key)
+BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
+    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK)}
 {
     m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL;
     m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT;
@@ -147,6 +149,7 @@ void BinanceQuoterPerpetual::init_websocket()
 
 Task<std::string> BinanceQuoterPerpetual::get_listen_key()
 {
+    // HttpsClientRequest https_client_request(m_epoll_base, m_url, std::stoi(m_port));
     auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
     client->add_header("X-MBX-APIKEY", m_api_key);
 
