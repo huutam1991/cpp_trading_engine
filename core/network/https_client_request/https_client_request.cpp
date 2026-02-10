@@ -41,12 +41,10 @@ void HttpsClientRequest::on_disconnect()
 
 void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t size)
 {
-    HttpsClientResponseParser response_parser;
+    static HttpsClientResponseParser response_parser;
 
     response_parser.append_data(buffer, size);
     std::vector<HttpsClientResponse> responses = response_parser.parse_all();
-
-    spdlog::info("=================================================================");
 
     for (auto& resp : responses)
     {

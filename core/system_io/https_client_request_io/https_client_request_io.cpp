@@ -81,7 +81,7 @@ std::string HttpClientRequestIO::resolve_hostname()
 
 int HttpClientRequestIO::read_buffer(char* const buffer)
 {
-    return m_tls_wrapper->read(buffer, BUFFER_SIZE);
+    return m_tls_wrapper->read(buffer, BUFFER_TEMP_SIZE);
 }
 
 int HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
