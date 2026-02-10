@@ -150,6 +150,6 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
 
 void HttpsClientAsync::fail(const std::string& where, beast::error_code ec)
 {
-    spdlog::error("HttpsClientAsync - error in {}: {}", where, ec.message());
-    spdlog::error("HttpsClientAsync - data: {}", beast::buffers_to_string(m_buffer.data()));
+    spdlog::error("HttpsClientAsync - endpoint: {}{} - error in {}: {}", m_host, m_endpoint, where, ec.message());
+    spdlog::error("HttpsClientAsync - endpoint: {}{} - data: {}", m_host, m_endpoint, beast::buffers_to_string(m_buffer.data()));
 }
