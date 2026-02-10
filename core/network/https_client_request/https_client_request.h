@@ -21,12 +21,14 @@ class HttpsClientRequest
     EpollBase* m_epoll_base = nullptr;
     std::string m_hostname;
     int m_port;
+    std::vector<std::string> m_custom_headers;
     std::unique_ptr<HttpClientRequestIO> m_io_object;
 
 public:
     HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port);
     ~HttpsClientRequest();
 
+    void add_header(const std::string& key, const std::string& value);
     void on_disconnect();
     void on_response_received(const char* buffer, std::uint32_t size);
 

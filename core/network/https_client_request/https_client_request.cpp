@@ -61,6 +61,11 @@ Task<void> HttpsClientRequest::re_connect()
     connect();
 }
 
+void HttpsClientRequest::add_header(const std::string& key, const std::string& value)
+{
+    m_custom_headers.push_back(key + ": " + value + "\r\n");
+}
+
 Task<HttpsClientResponse> HttpsClientRequest::get(const std::string& path)
 {
     HttpsClientRequestBuilder request_builder;
@@ -79,6 +84,13 @@ Task<HttpsClientResponse> HttpsClientRequest::get(const std::string& path)
     request_builder.append("User-Agent: C++ Trading Engine\r\n");
     // Accept */*
     request_builder.append("Accept: */*\r\n");
+
+    // Custom headers
+    for (auto& header: m_custom_headers)
+    {
+        request_builder.append(header);
+    }
+
     // End
     request_builder.append("\r\n");
 
@@ -110,6 +122,12 @@ Task<HttpsClientResponse> HttpsClientRequest::post(const std::string& path, cons
     request_builder.append("User-Agent: C++ Trading Engine\r\n");
     request_builder.append("Accept: */*\r\n");
     request_builder.append("Content-Type: application/json\r\n");
+
+    // Custom headers
+    for (auto& header: m_custom_headers)
+    {
+        request_builder.append(header);
+    }
 
     // Content-Length
     {
@@ -154,6 +172,12 @@ Task<HttpsClientResponse> HttpsClientRequest::del(const std::string& path)
     request_builder.append("User-Agent: C++ Trading Engine\r\n");
     request_builder.append("Accept: */*\r\n");
 
+    // Custom headers
+    for (auto& header: m_custom_headers)
+    {
+        request_builder.append(header);
+    }
+
     // End headers
     request_builder.append("\r\n");
 
@@ -179,6 +203,12 @@ Task<HttpsClientResponse> HttpsClientRequest::put(const std::string& path, const
     request_builder.append("Host: ");
     request_builder.append(m_hostname);
     request_builder.append("\r\n");
+
+    // Custom headers
+    for (auto& header: m_custom_headers)
+    {
+        request_builder.append(header);
+    }
 
     // Headers
     request_builder.append("Connection: keep-alive\r\n");
