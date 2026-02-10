@@ -175,7 +175,7 @@ Task<void> BinanceQuoterPerpetual::keep_listen_key()
     HttpsClientResponse response = co_await client.put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
     Json data = Json::parse(response.body);
 
-    spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key = {}", m_listen_key);
+    spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key = {}, data: {}", m_listen_key, data);
 
     // Send ping
     m_websocket->send_ping();
