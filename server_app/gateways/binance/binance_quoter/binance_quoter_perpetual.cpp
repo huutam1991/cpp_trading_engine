@@ -149,10 +149,10 @@ void BinanceQuoterPerpetual::init_websocket()
 
 Task<std::string> BinanceQuoterPerpetual::get_listen_key()
 {
-    HttpsClientRequest https_client_request(m_epoll_base, m_url, std::stoi(m_port));
-    https_client_request.add_header("X-MBX-APIKEY", m_api_key);
+    HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
+    client.add_header("X-MBX-APIKEY", m_api_key);
 
-    HttpsClientResponse response = co_await https_client_request.post("/fapi/v1/listenKey", "");
+    HttpsClientResponse response = co_await client.post("/fapi/v1/listenKey", "");
     Json data = Json::parse(response.body);
 
     if (data.has_field("code") && (double)data["code"] < 0)
@@ -169,11 +169,11 @@ Task<std::string> BinanceQuoterPerpetual::get_listen_key()
 
 Task<void> BinanceQuoterPerpetual::keep_listen_key()
 {
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
-    client->add_header("X-MBX-APIKEY", m_api_key);
+    HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
+    client.add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string str = co_await client->put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
-    Json data = Json::parse(str);
+    HttpsClientResponse response = co_await client.put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
+    Json data = Json::parse(response.body);
 
     spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key = {}", m_listen_key);
 
