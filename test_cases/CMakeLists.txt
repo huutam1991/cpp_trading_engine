@@ -28,6 +28,8 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/cache/*.hpp
     ${PROJECT_ROOT}/core/json/*.h
     ${PROJECT_ROOT}/core/json/*.hpp
+    ${PROJECT_ROOT}/core/network/https_client_request/*.h
+    ${PROJECT_ROOT}/core/network/https_client_request/*.hpp
     ${PROJECT_ROOT}/server_app/pnl/*.h
     ${PROJECT_ROOT}/server_app/pnl/*.hpp
 )
@@ -36,6 +38,8 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/cache/*.cpp
     ${PROJECT_ROOT}/core/json/*.c
     ${PROJECT_ROOT}/core/json/*.cpp
+    # ${PROJECT_ROOT}/core/network/https_client_request/*.c
+    # ${PROJECT_ROOT}/core/network/https_client_request/*.cpp
     ${PROJECT_ROOT}/server_app/pnl/*.c
     ${PROJECT_ROOT}/server_app/pnl/*.cpp
 )
