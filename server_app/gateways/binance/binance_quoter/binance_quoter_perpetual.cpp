@@ -44,7 +44,7 @@ void BinanceQuoterPerpetual::init_websocket()
     }
 
     // Event base: GATEWAY
-    EventBase* event_base = EventBaseManager::get_event_base_by_id(EventBaseID::GATEWAY);
+    EventBase* event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 
     auto task = this->get_listen_key();
     m_listen_key = task.start_running_on(event_base).get();

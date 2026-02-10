@@ -13,12 +13,12 @@
 enum EpollBaseID
 {
     SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
+    GATEWAY,                  // Gateway
 };
 
 enum EventBaseID
 {
-    ORDER = 1,                // OrderManager
-    GATEWAY,                  // Gateway
+    ORDER = 2,                // OrderManager
 
     MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
