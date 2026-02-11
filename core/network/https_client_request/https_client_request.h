@@ -43,4 +43,6 @@ private:
 
     void connect();
     Task<void> re_connect();
+
+    Task<HttpsClientResponse> send_request(const std::string& method, const std::string& path, const std::string& body = "");
 };
