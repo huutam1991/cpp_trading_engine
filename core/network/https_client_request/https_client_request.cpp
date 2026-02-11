@@ -88,6 +88,12 @@ Task<HttpsClientResponse> HttpsClientRequest::put(const std::string& path, const
 
 Task<HttpsClientResponse> HttpsClientRequest::send_request(const std::string& method, const std::string& path, const std::string& body)
 {
+    // Check connection
+    if (m_io_object == nullptr)
+    {
+        co_return HttpsClientResponse::create_error_response();
+    }
+
     HttpsClientRequestBuilder request_builder;
 
     // Method <path> HTTP/1.1\r\n

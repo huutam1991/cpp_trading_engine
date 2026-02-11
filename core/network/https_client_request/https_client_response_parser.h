@@ -22,6 +22,11 @@ struct HttpsClientResponse
         body.clear();
         is_complete = false;
     }
+
+    static HttpsClientResponse create_error_response()
+    {
+        return HttpsClientResponse {-1, "Disconnected", {}, "", false};
+    }
 };
 
 class HttpsClientResponseParser
