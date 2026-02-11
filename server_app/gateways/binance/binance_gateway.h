@@ -1,5 +1,7 @@
 #pragma once
 
+#include <coroutine/event_base_manager.h>
+
 #include <gateways/gateway.h>
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
@@ -17,6 +19,8 @@ class BinanceGateway : public Gateway
     BinanceMarketDataPerpetual m_market_data_perpetual;
 
     std::vector<Instrument> m_instruments;
+
+    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 
 protected:
     virtual ExchangeId get_exchange() override;

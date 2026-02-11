@@ -1,3 +1,5 @@
+#include <network/https_client_request/https_client_request.h>
+
 #include <gateways/binance/binance_gateway.h>
 #include <app_utils/app_utils.h>
 #include <account/account.h>
@@ -37,18 +39,18 @@ std::vector<Instrument> BinanceGateway::fetch_instruments()
 
 Task<Json> BinanceGateway::get_exchange_info()
 {
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_SPOT_URL, BINANCE_SPOT_PORT);
-    std::string response = co_await client->get("/api/v3/exchangeInfo");
+    HttpsClientRequest client(m_epoll_base, BINANCE_SPOT_URL, std::stoi(BINANCE_SPOT_PORT));
+    HttpsClientResponse response = co_await client.get("/api/v3/exchangeInfo");
 
-    co_return Json::parse(response);
+    co_return Json::parse(response.body);
 }
 
 Task<Json> BinanceGateway::get_exchange_info_perpetual()
 {
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), BINANCE_FUTURES_URL, BINANCE_FUTURES_PORT);
-    std::string response = co_await client->get("/fapi/v1/exchangeInfo");
+    HttpsClientRequest client(m_epoll_base, BINANCE_FUTURES_URL, std::stoi(BINANCE_FUTURES_PORT));
+    HttpsClientResponse response = co_await client.get("/fapi/v1/exchangeInfo");
 
-    co_return Json::parse(response);
+    co_return Json::parse(response.body);
 }
 
 void BinanceGateway::get_spot_symbols_info()
