@@ -12,7 +12,7 @@ private:
     std::string m_ws_url = BINANCE_SPOT_WS_URL;
     std::string m_ws_port = BINANCE_SPOT_WS_PORT;
 
-    EventBase* m_event_base = nullptr;
+    EpollBase* m_epoll_base = nullptr;
 
     // Websocket to get order data
     std::shared_ptr<WebsocketClientAsync> m_websocket;

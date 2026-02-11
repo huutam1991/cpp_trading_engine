@@ -5,6 +5,7 @@
 #include <ioc_pool.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
+#include <network/https_client_request/https_client_request.h>
 #include <app_utils/app_utils.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
@@ -19,7 +20,7 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
 
     // Event base: GATEWAY
-    m_event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
+    m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 
     init_websocket();
 }
@@ -48,9 +49,9 @@ void BinanceQuoterSpot::init_websocket()
 
     // Get listen key
     auto task = this->get_listen_key();
-    m_listen_key = task.start_running_on(m_event_base).get();
+    m_listen_key = task.start_running_on(m_epoll_base).get();
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_event_base);
+    m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_epoll_base);
     m_websocket->set_callbacks(
         // on_connect
         [this]() -> Task<void>
@@ -175,11 +176,11 @@ void BinanceQuoterSpot::init_websocket()
 
 Task<std::string> BinanceQuoterSpot::get_listen_key()
 {
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_url, m_port);
-    client->add_header("X-MBX-APIKEY", m_api_key);
+    HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
+    client.add_header("X-MBX-APIKEY", m_api_key);
 
-    std::string str = co_await client->post("/api/v3/userDataStream", "");
-    Json data = Json::parse(str);
+    HttpsClientResponse response = co_await client.post("/api/v3/userDataStream", "");
+    Json data = Json::parse(response.body);
 
     if (data.has_field("code") && (double)data["code"] < 0)
     {
