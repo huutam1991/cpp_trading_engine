@@ -13,10 +13,21 @@ struct HttpsClientResponse
     std::string body;
 
     bool is_complete = false;
+
+    void reset()
+    {
+        status_code = 0;
+        status_message.clear();
+        headers.clear();
+        body.clear();
+        is_complete = false;
+    }
 };
 
 class HttpsClientResponseParser
 {
+    HttpsClientResponse m_current_response;
+
 public:
     HttpsClientResponseParser() {}
 
@@ -34,8 +45,6 @@ public:
 
         while (true)
         {
-            HttpsClientResponse resp;
-
             // 1. Parse header
             if (!m_header_parsed)
             {
@@ -50,7 +59,7 @@ public:
                 std::string header_block = m_buffer.substr(0, pos);
 
                 // Parse header
-                if (!parse_header(header_block, resp))
+                if (!parse_header(header_block, m_current_response))
                 {
                     // Parse failed -> break (do not remove m_buffer)
                     break;
@@ -63,8 +72,8 @@ public:
                 // If Content-Length = 0 -> complete response
                 if (m_content_length == 0)
                 {
-                    resp.is_complete = true;
-                    results.push_back(resp);
+                    m_current_response.is_complete = true;
+                    results.push_back(m_current_response);
 
                     // Reset for next response
                     reset_state();
@@ -82,14 +91,14 @@ public:
                 }
 
                 // Extract body
-                resp.body = m_buffer.substr(0, m_content_length);
-                resp.is_complete = true;
+                m_current_response.body = m_buffer.substr(0, m_content_length);
+                m_current_response.is_complete = true;
 
                 // Remove body from m_buffer
                 m_buffer.erase(0, m_content_length);
 
                 // Save response
-                results.push_back(resp);
+                results.push_back(m_current_response);
 
                 // Reset for next response
                 reset_state();
@@ -109,6 +118,7 @@ public:
     {
         m_header_parsed = false;
         m_content_length = 0;
+        m_current_response.reset();
     }
 
     bool is_header_parsed() const { return m_header_parsed; }
