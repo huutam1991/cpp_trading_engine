@@ -1,6 +1,6 @@
 #include <openssl/hmac.h>
 #include <string.h>
-#include <network/external_request/https_client_async.h>
+#include <network/https_client_request/https_client_request.h>
 #include <ioc_pool.h>
 #include <mongo_db/mongo_db.h>
 
@@ -93,25 +93,25 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     auto signature = getSignature(new_query_std);
     new_query_std += "&signature=" + signature;
 
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), get_url(), get_port());
-    client->add_header("X-MBX-APIKEY", m_api_key);
+    HttpsClientRequest client = HttpsClientRequest(m_epoll_base, get_url(), std::stoi(get_port()));
+    client.add_header("X-MBX-APIKEY", m_api_key);
 
     std::string str_response;
     if (method == RequestMethod::GET)
     {
-        str_response = co_await client->get(api_path + "?" + new_query_std);
+        str_response = (co_await client.get(api_path + "?" + new_query_std)).body;
     }
     else if (method == RequestMethod::POST)
     {
-        str_response = co_await client->post(api_path + "?" + new_query_std, "");
+        str_response = (co_await client.post(api_path + "?" + new_query_std, "")).body;
     }
     else if (method == RequestMethod::DELETE)
     {
-        str_response = co_await client->del(api_path + "?" + new_query_std, "");
+        str_response = (co_await client.del(api_path + "?" + new_query_std)).body;
     }
     else if (method == RequestMethod::PUT)
     {
-        str_response = co_await client->put(api_path + "?" + new_query_std, "");
+        str_response = (co_await client.put(api_path + "?" + new_query_std, "")).body;
     }
 
     Json response = Json::parse(str_response);

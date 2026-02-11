@@ -1,9 +1,12 @@
 #pragma once
 
+#include <coroutine/event_base_manager.h>
 #include <gateways/gateway.h>
 
 class BinanceQuoter
 {
+    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
+
     std::string getTimestamp();
     std::string getSignature(std::string& query);
     std::string encryptWithHMAC(const char* key, const char* data);
