@@ -77,37 +77,5 @@ void CoinbaseQuoter::check_save_resonse_error(Json& response, const std::string&
 
 Task<Json> CoinbaseQuoter::send_coinbase_request(RequestMethod method, std::string api_path, std::string query_str)
 {
-    std::string new_query_std = query_str;
-    auto timestamp = getTimestamp();
-    new_query_std += "&timestamp=" + timestamp;
-    auto signature = getSignature(new_query_std);
-    new_query_std += "&signature=" + signature;
-
-    auto client = std::make_shared<HttpsClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), get_url(), get_port());
-    client->add_header("X-MBX-APIKEY", m_api_key);
-
-    std::string str_response;
-    if (method == RequestMethod::GET)
-    {
-        str_response = co_await client->get(api_path + "?" + new_query_std);
-    }
-    else if (method == RequestMethod::POST)
-    {
-        str_response = co_await client->post(api_path + "?" + new_query_std, "");
-    }
-    else if (method == RequestMethod::DELETE)
-    {
-        str_response = co_await client->del(api_path + "?" + new_query_std, "");
-    }
-    else if (method == RequestMethod::PUT)
-    {
-        str_response = co_await client->put(api_path + "?" + new_query_std, "");
-    }
-
-    Json response = Json::parse(str_response);
-
-    // Check to save error
-    check_save_resonse_error(response, new_query_std, method);
-
-    co_return response;
+    co_return {};
 }
