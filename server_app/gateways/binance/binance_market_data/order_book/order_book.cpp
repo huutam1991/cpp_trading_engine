@@ -14,7 +14,7 @@ OrderBook::OrderBook(const std::string& symbol, size_t depth_level, net::io_cont
             event_base,
             [this](std::string data) { this->OnOrderbookWs(std::move(data)); }
         },
-        m_order_book_rest{ioc}
+        m_order_book_rest{}
 {}
 
 Task<void> OrderBook::release_current_update(Json update)

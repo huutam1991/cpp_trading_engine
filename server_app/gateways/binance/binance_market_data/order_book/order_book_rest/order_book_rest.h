@@ -1,14 +1,14 @@
 #pragma once
 
-#include <network/external_request/https_client_async.h>
 #include <coroutine/task.h>
+#include <coroutine/event_base_manager.h>
 
 class OrderBookRest
 {
 public:
-    OrderBookRest(net::io_context& ioc);
+    OrderBookRest();
     Task<std::string> get_order_book(const std::string& symbol, size_t depth);
 
 private:
-    net::io_context& m_ioc;
+    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 };
