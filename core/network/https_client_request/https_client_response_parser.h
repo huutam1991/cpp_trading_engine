@@ -313,23 +313,30 @@ private:
             }
             else if (m_chunk_state == ChunkState::ReadTrailers)
             {
-                // trailers end with \r\n\r\n (can be empty -> immediately starts with \r\n)
-                size_t pos = m_buffer.find("\r\n\r\n");
-                if (pos == std::string::npos)
-                {
-                    // be tolerant: if server sends just "\r\n" as end (rare), accept it
-                    if (m_buffer.size() >= 2 && m_buffer[0] == '\r' && m_buffer[1] == '\n')
-                    {
-                        m_buffer.erase(0, 2);
-                        m_chunk_state = ChunkState::Done;
-                        return ChunkParseResult::Done;
-                    }
+                // RFC7230: after the 0-size chunk line, there is:
+                //   trailer-part = *( header-field CRLF )
+                //   CRLF
+                //
+                // Most common: empty trailers => immediate "\r\n"
+                if (m_buffer.size() < 2)
                     return ChunkParseResult::NeedMoreData;
+
+                // Empty trailers: MUST consume exactly 1 CRLF and finish.
+                // IMPORTANT: do NOT search for "\r\n\r\n" here, or you may
+                // accidentally consume the next response's header delimiter.
+                if (m_buffer[0] == '\r' && m_buffer[1] == '\n')
+                {
+                    m_buffer.erase(0, 2);
+                    m_chunk_state = ChunkState::Done;
+                    return ChunkParseResult::Done;
                 }
 
-                // drop trailers
-                m_buffer.erase(0, pos + 4);
+                // Non-empty trailers: end with "\r\n\r\n"
+                size_t end = m_buffer.find("\r\n\r\n");
+                if (end == std::string::npos)
+                    return ChunkParseResult::NeedMoreData;
 
+                m_buffer.erase(0, end + 4);
                 m_chunk_state = ChunkState::Done;
                 return ChunkParseResult::Done;
             }
