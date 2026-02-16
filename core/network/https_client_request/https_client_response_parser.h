@@ -4,6 +4,8 @@
 #include <sstream>
 #include <strings.h>
 #include <unordered_map>
+#include <vector>
+#include <cctype>
 
 struct HttpsClientResponse
 {
@@ -50,7 +52,7 @@ public:
 
         while (true)
         {
-            // 1. Parse header
+            // 1) Parse header (once)
             if (!m_header_parsed)
             {
                 size_t pos = m_buffer.find("\r\n\r\n");
@@ -60,56 +62,75 @@ public:
                     break;
                 }
 
-                // Extract header block
                 std::string header_block = m_buffer.substr(0, pos);
 
-                // Parse header
                 if (!parse_header(header_block, m_current_response))
                 {
-                    // Parse failed -> break (do not remove m_buffer)
+                    // Parse failed -> do not remove buffer
                     break;
                 }
 
-                // Remove header from m_buffer
+                // remove header
                 m_buffer.erase(0, pos + 4);
                 m_header_parsed = true;
 
-                // If Content-Length = 0 -> complete response
-                if (m_content_length == 0)
+                // If chunked -> body parsing handled by parse_chunked_body()
+                if (m_is_chunked)
                 {
-                    m_current_response.is_complete = true;
-                    results.push_back(m_current_response);
-
-                    // Reset for next response
-                    reset_state();
-                    continue;   // Try parse next response
+                    // continue to body parsing section below
+                }
+                else
+                {
+                    // If Content-Length = 0 -> complete response immediately
+                    if (m_content_length == 0)
+                    {
+                        m_current_response.is_complete = true;
+                        results.push_back(m_current_response);
+                        reset_state();
+                        continue;
+                    }
                 }
             }
 
-            // 2. Parse body
+            // 2) Parse body
             if (m_header_parsed)
             {
-                if (m_buffer.size() < (size_t)m_content_length)
+                if (m_is_chunked)
                 {
-                    // Body not complete -> need more data
-                    break;
+                    ChunkParseResult r = parse_chunked_body();
+                    if (r == ChunkParseResult::NeedMoreData)
+                    {
+                        break;
+                    }
+                    if (r == ChunkParseResult::Error)
+                    {
+                        // parsing error: stop (you can also choose to reset_state() + push error)
+                        break;
+                    }
+
+                    // Done
+                    m_current_response.is_complete = true;
+                    results.push_back(m_current_response);
+                    reset_state();
+                    continue;
                 }
+                else
+                {
+                    // Content-Length path (original logic)
+                    if (m_buffer.size() < (size_t)m_content_length)
+                    {
+                        break; // need more data
+                    }
 
-                // Extract body
-                m_current_response.body = m_buffer.substr(0, m_content_length);
-                m_current_response.is_complete = true;
+                    m_current_response.body = m_buffer.substr(0, m_content_length);
+                    m_current_response.is_complete = true;
 
-                // Remove body from m_buffer
-                m_buffer.erase(0, m_content_length);
+                    m_buffer.erase(0, m_content_length);
 
-                // Save response
-                results.push_back(m_current_response);
-
-                // Reset for next response
-                reset_state();
-
-                // Continue loop -> try parse next response in remaining m_buffer
-                continue;
+                    results.push_back(m_current_response);
+                    reset_state();
+                    continue;
+                }
             }
 
             break; // default exit
@@ -123,16 +144,44 @@ public:
     {
         m_header_parsed = false;
         m_content_length = 0;
+        m_is_chunked = false;
+
+        // reset chunk parser state
+        m_chunk_state = ChunkState::ReadSizeLine;
+        m_chunk_bytes_remaining = 0;
+
         m_current_response.reset();
     }
 
     bool is_header_parsed() const { return m_header_parsed; }
-    int get_content_length() const { return m_content_length; }
+    int  get_content_length() const { return m_content_length; }
+    bool is_chunked() const { return m_is_chunked; }
 
 private:
     std::string m_buffer;
     bool m_header_parsed = false;
-    int m_content_length = 0;
+    int  m_content_length = 0;
+
+    bool   m_is_chunked = false;
+
+    enum class ChunkState
+    {
+        ReadSizeLine,      // read "<hex>\r\n"
+        ReadData,          // read chunk payload
+        ReadDataCRLF,      // read "\r\n" after payload
+        ReadTrailers,      // read trailers until "\r\n\r\n" (or at least "\r\n")
+        Done
+    };
+
+    enum class ChunkParseResult
+    {
+        Done,
+        NeedMoreData,
+        Error
+    };
+
+    ChunkState m_chunk_state = ChunkState::ReadSizeLine;
+    size_t     m_chunk_bytes_remaining = 0;
 
 private:
     bool parse_header(const std::string& header_block, HttpsClientResponse& resp)
@@ -140,39 +189,45 @@ private:
         std::stringstream ss(header_block);
         std::string line;
 
-        // Parse status line
+        // status line
         if (!std::getline(ss, line)) return false;
-        if (line.back() == '\r') line.pop_back();
-
+        if (!line.empty() && line.back() == '\r') line.pop_back();
         if (!parse_status_line(line, resp)) return false;
 
-        // Parse header lines
+        // headers
         while (std::getline(ss, line))
         {
             if (!line.empty() && line.back() == '\r')
-            {
                 line.pop_back();
-            }
 
             if (line.empty())
-            {
                 continue;
-            }
 
             size_t pos = line.find(':');
             if (pos == std::string::npos)
-            {
                 continue;
-            }
 
             std::string key = trim(line.substr(0, pos));
             std::string value = trim(line.substr(pos + 1));
-
             resp.headers[key] = value;
 
-            if (strcasecmp(key.c_str(), "Content-Length") == 0 || strcasecmp(key.c_str(), "content-length") == 0)
+            if (strcasecmp(key.c_str(), "Content-Length") == 0)
             {
+                // Only meaningful if not chunked, but harmless to parse.
                 m_content_length = std::stoi(value);
+            }
+
+            if (strcasecmp(key.c_str(), "Transfer-Encoding") == 0)
+            {
+                // detect "chunked" token (case-insensitive)
+                // value can be: "chunked" or "gzip, chunked" etc.
+                std::string v = to_lower(value);
+                if (v.find("chunked") != std::string::npos)
+                {
+                    m_is_chunked = true;
+                    // In chunked mode, Content-Length MUST be ignored.
+                    m_content_length = 0;
+                }
             }
         }
 
@@ -184,13 +239,122 @@ private:
         // Expected: HTTP/1.1 200 OK
         std::stringstream ss(line);
         std::string http_ver;
-        ss >> http_ver;    // HTTP/1.1
+        ss >> http_ver;
         ss >> resp.status_code;
         std::getline(ss, resp.status_message);
         if (!resp.status_message.empty() && resp.status_message[0] == ' ')
-        {
             resp.status_message.erase(0, 1);
+        return true;
+    }
+
+    // -------- Chunked parsing --------
+    ChunkParseResult parse_chunked_body()
+    {
+        while (true)
+        {
+            if (m_chunk_state == ChunkState::ReadSizeLine)
+            {
+                size_t rn = m_buffer.find("\r\n");
+                if (rn == std::string::npos)
+                    return ChunkParseResult::NeedMoreData;
+
+                std::string size_line = m_buffer.substr(0, rn);
+                m_buffer.erase(0, rn + 2);
+
+                // size_line may contain extensions: "1e8;ext=1"
+                size_t semi = size_line.find(';');
+                if (semi != std::string::npos)
+                    size_line = size_line.substr(0, semi);
+
+                size_line = trim(size_line);
+                if (size_line.empty())
+                    return ChunkParseResult::Error;
+
+                // parse hex
+                size_t chunk_sz = 0;
+                if (!parse_hex_size(size_line, chunk_sz))
+                    return ChunkParseResult::Error;
+
+                m_chunk_bytes_remaining = chunk_sz;
+
+                if (m_chunk_bytes_remaining == 0)
+                {
+                    m_chunk_state = ChunkState::ReadTrailers;
+                }
+                else
+                {
+                    m_chunk_state = ChunkState::ReadData;
+                }
+            }
+            else if (m_chunk_state == ChunkState::ReadData)
+            {
+                if (m_buffer.size() < m_chunk_bytes_remaining)
+                    return ChunkParseResult::NeedMoreData;
+
+                // append chunk payload to body
+                m_current_response.body.append(m_buffer.data(), m_chunk_bytes_remaining);
+                m_buffer.erase(0, m_chunk_bytes_remaining);
+
+                m_chunk_state = ChunkState::ReadDataCRLF;
+            }
+            else if (m_chunk_state == ChunkState::ReadDataCRLF)
+            {
+                if (m_buffer.size() < 2)
+                    return ChunkParseResult::NeedMoreData;
+
+                if (!(m_buffer[0] == '\r' && m_buffer[1] == '\n'))
+                    return ChunkParseResult::Error;
+
+                m_buffer.erase(0, 2);
+
+                // next chunk
+                m_chunk_state = ChunkState::ReadSizeLine;
+                m_chunk_bytes_remaining = 0;
+            }
+            else if (m_chunk_state == ChunkState::ReadTrailers)
+            {
+                // trailers end with \r\n\r\n (can be empty -> immediately starts with \r\n)
+                size_t pos = m_buffer.find("\r\n\r\n");
+                if (pos == std::string::npos)
+                {
+                    // be tolerant: if server sends just "\r\n" as end (rare), accept it
+                    if (m_buffer.size() >= 2 && m_buffer[0] == '\r' && m_buffer[1] == '\n')
+                    {
+                        m_buffer.erase(0, 2);
+                        m_chunk_state = ChunkState::Done;
+                        return ChunkParseResult::Done;
+                    }
+                    return ChunkParseResult::NeedMoreData;
+                }
+
+                // drop trailers
+                m_buffer.erase(0, pos + 4);
+
+                m_chunk_state = ChunkState::Done;
+                return ChunkParseResult::Done;
+            }
+            else if (m_chunk_state == ChunkState::Done)
+            {
+                return ChunkParseResult::Done;
+            }
         }
+    }
+
+    static bool parse_hex_size(const std::string& s, size_t& out)
+    {
+        // strict-ish hex parse
+        size_t v = 0;
+        for (char c : s)
+        {
+            int d = -1;
+            if (c >= '0' && c <= '9') d = c - '0';
+            else if (c >= 'a' && c <= 'f') d = 10 + (c - 'a');
+            else if (c >= 'A' && c <= 'F') d = 10 + (c - 'A');
+            else return false;
+
+            v = (v << 4) + (size_t)d;
+        }
+        out = v;
         return true;
     }
 
@@ -200,5 +364,11 @@ private:
         size_t end   = s.find_last_not_of(" \t");
         if (start == std::string::npos) return "";
         return s.substr(start, end - start + 1);
+    }
+
+    static std::string to_lower(std::string s)
+    {
+        for (char& c : s) c = (char)std::tolower((unsigned char)c);
+        return s;
     }
 };
