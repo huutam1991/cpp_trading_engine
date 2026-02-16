@@ -48,6 +48,22 @@ Task<void> test_https_client_request(EpollBase* epoll_base)
     }
 }
 
+Task<void> test_https_client_request_httpbin(EpollBase* epoll_base)
+{
+    HttpsClientRequest https_client_request(epoll_base, "httpbin.org", 443);
+
+    while (true)
+    {
+        {
+            MeasureTime mt("GET httpbin.org/stream/5", MeasureUnit::MILLISECOND);
+            HttpsClientResponse response_get = co_await https_client_request.get("/stream/5");
+            spdlog::info("GET httpbin.org/stream/5 response: {} - {}", response_get.status_code, response_get.body);
+        }
+
+        co_await Timer::sleep_for(1000);
+    }
+}
+
 Future<Json> get_number_future()
 {
     return Future<Json>([](Future<Json>::FutureValue* value)
@@ -92,12 +108,12 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
-    GatewayManager::instance().init();
-    OrderManager::instance().init();
-    SimulatorOrder::init();
+    // GatewayManager::instance().init();
+    // OrderManager::instance().init();
+    // SimulatorOrder::init();
 
-    // Strategy
-    StrategyManager::instance().init();
+    // // Strategy
+    // StrategyManager::instance().init();
 
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
@@ -105,7 +121,7 @@ int main(int argc, char **argv) {
     epoll_base->start_living_system_io_object(https_server_object);
 
     // Test HTTPS client request
-    // test_https_client_request(epoll_base).start_running_on(epoll_base);
+    test_https_client_request_httpbin(epoll_base).start_running_on(epoll_base);
     // test_future().start_running_on(epoll_base);
 
     // Main loop, only sleep here
