@@ -11,7 +11,7 @@
 class JsonObject;
 using JsonObjectPool = CachePool<JsonObject, 1000000>;
 
-class JsonObject : public JsonTypeDerived<JsonObject>
+class JsonObject : public JsonTypeBase
 {
     std::atomic<uint32_t> reference_count = 0; // Reference count for shared ownership
     bool m_is_array = false; // Flag to indicate if this is an array
@@ -19,7 +19,7 @@ class JsonObject : public JsonTypeDerived<JsonObject>
     std::vector<Json> m_array; // Array for JSON object
 
 public:
-    JsonObject() = default;
+    JsonObject();
     JsonObject(const JsonObject&) = delete;
     JsonObject(JsonObject&&) = delete;
     JsonObject& operator=(const JsonObject&) = delete;
@@ -51,13 +51,11 @@ public:
         return m_array[index];
     }
 
-    // Method init() is used at the CachePool to initialize the object when it is acquired from the pool
     void init()
     {
         reference_count = 1; // Initialize reference count to 1
     }
 
-    // Method clear() is used at the CachePool to reset the object when it is released back to the pool
     void clear()
     {
         m_object.clear();
