@@ -3,7 +3,7 @@
 #include <json/json_type_base.h>
 #include <json/json_value.h>
 
-#define STRING_BUFFER_SIZE 100000 // Reserve space for 100000 characters
+#define STRING_BUFFER_SIZE 500000 // Reserve space for 100000 characters
 
 class Json
 {

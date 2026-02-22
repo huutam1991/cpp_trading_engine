@@ -1,14 +1,5 @@
 #include <json/json_object.h>
 
-JsonObject::JsonObject()
-{
-    is_json_value_ptr = static_cast<IsJsonValuePtr>(&JsonObject::is_json_value);
-    get_copy_ptr = static_cast<GetCopyPtr>(&JsonObject::get_copy);
-    get_deep_clone_ptr = static_cast<GetCopyPtr>(&JsonObject::get_deep_clone);
-    write_string_value_ptr = static_cast<WriteStringValuePtr>(&JsonObject::write_string_value);
-    release_ptr = static_cast<ReleasePtr>(&JsonObject::release);
-}
-
 void JsonObject::for_each(std::function<void(Json&)>& loop_func)
 {
     // Loop through object

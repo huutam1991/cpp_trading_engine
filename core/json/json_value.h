@@ -10,7 +10,7 @@
 class JsonValue;
 using JsonValuePool = CachePool<JsonValue, 10000000>;
 
-class JsonValue : public JsonTypeBase
+class JsonValue : public JsonTypeDerived<JsonValue>
 {
     std::variant<
         std::nullptr_t,
@@ -25,7 +25,7 @@ class JsonValue : public JsonTypeBase
     char buffer_number[50]; // Buffer for number conversion
 
 public:
-    JsonValue();
+    JsonValue() = default;
     JsonValue(const JsonValue&) = delete;
     JsonValue(JsonValue&&) = delete;
     JsonValue& operator=(const JsonValue&) = delete;
