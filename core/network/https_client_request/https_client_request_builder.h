@@ -4,7 +4,7 @@
 
 struct HttpsClientRequestBuilder
 {
-    char buf[20480];
+    char buf[204800]; // 200KB buffer for building request
     size_t len = 0;
 
     template<typename T>
