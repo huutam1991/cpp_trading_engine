@@ -122,11 +122,15 @@ int TlsWrapper::read(char* buf, int size)
 }
 
 // TLS write (return <0 = error, 0 = WANT_WRITE, >0 = bytes written)
-int TlsWrapper::write(const char* buf, int size)
+int TlsWrapper::write(const char* buf, int current_write_offset, int size)
 {
-    if (!ssl || !handshake_done) return -1;
+    if (!ssl || !handshake_done || !buf) return -1;
 
-    int ret = SSL_write(ssl, buf, size);
+    if (current_write_offset < 0) return -1;
+    if (size < 0) return -1;
+    if (current_write_offset >= size) return 0; // nothing to write
+
+    int ret = SSL_write(ssl, buf + current_write_offset, size - current_write_offset);
     if (ret > 0) return ret;
 
     int err = SSL_get_error(ssl, ret);

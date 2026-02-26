@@ -33,6 +33,6 @@ public:
     bool is_handshake_done() const { return handshake_done; }
     TlsResult handshake();
     int read(char* buf, int size);
-    int write(const char* buf, int size);
+    int write(const char* buf, int current_write_offset, int size);
     void shutdown_and_free();
 };
