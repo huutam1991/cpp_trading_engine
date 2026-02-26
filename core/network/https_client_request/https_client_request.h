@@ -29,13 +29,15 @@ public:
     ~HttpsClientRequest();
 
     void add_header(const std::string& key, const std::string& value);
-    void on_disconnect();
-    void on_response_received(const char* buffer, std::uint32_t size);
 
     Task<HttpsClientResponse> get(const std::string& path);
     Task<HttpsClientResponse> post(const std::string& path, const std::string& body);
     Task<HttpsClientResponse> del(const std::string& path);
     Task<HttpsClientResponse> put(const std::string& path, const std::string& body);
+
+protected:
+    virtual void on_disconnect();
+    virtual void on_response_received(const char* buffer, std::uint32_t size);
 
 private:
     HttpsClientResponseParser m_response_parser;
