@@ -81,5 +81,5 @@ int HttpsClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size
         return -1;
     }
 
-    return tls_wrapper->write(buffer, size);
+    return tls_wrapper->write(buffer, 0, size);
 }
