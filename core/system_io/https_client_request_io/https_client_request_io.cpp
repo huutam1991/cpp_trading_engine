@@ -84,9 +84,9 @@ int HttpClientRequestIO::read_buffer(char* const buffer)
     return m_tls_wrapper->read(buffer, BUFFER_TEMP_SIZE);
 }
 
-int HttpClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpClientRequestIO::write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size)
 {
-    return m_tls_wrapper->write(buffer, size);
+    return m_tls_wrapper->write(buffer, current_write_offset, size);
 }
 
 int HttpClientRequestIO::check_connect_and_handshake()
@@ -176,14 +176,29 @@ int HttpClientRequestIO::check_to_write()
     while (write_queue.empty() == false)
     {
         const std::string& data = write_queue.front();
-        int written_bytes = write_to_socket_io(data.c_str(), data.size());
+        int written_bytes = write_to_socket_io(data.c_str(), current_write_offset, data.size());
+
+        current_write_offset += written_bytes;
+        if (current_write_offset == data.size())
+        {
+            // Fully written, pop and continue to next
+            current_write_offset = 0;
+            write_queue.pop();
+
+            continue;
+        }
+
+        if (current_write_offset < data.size())
+        {
+            // Not fully written, wait for next writable event
+            break;
+        }
+
         if (written_bytes == -1)
         {
             spdlog::error("HttpClientRequestIO::handle_write - write failed, ip: {}, port: {}", ip, port);
             return -1;
         }
-
-        write_queue.pop();
     }
 
     return 0;

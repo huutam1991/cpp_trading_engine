@@ -14,6 +14,9 @@ struct HttpClientRequestIO : public NamedIOObject<HttpClientRequestIO>
     int port;
     std::unique_ptr<TlsWrapper> m_tls_wrapper = nullptr;
     bool is_connected = false;
+
+    // For writing data
+    int current_write_offset = 0;
     std::queue<std::string> write_queue;
 
 
@@ -47,7 +50,7 @@ struct HttpClientRequestIO : public NamedIOObject<HttpClientRequestIO>
     int handle_read_data();
     int read_buffer(char* const buffer);
     int check_to_write();
-    int write_to_socket_io(const char* buffer, std::uint32_t size);
+    int write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size);
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
