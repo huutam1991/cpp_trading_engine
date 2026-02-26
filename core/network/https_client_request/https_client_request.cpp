@@ -36,6 +36,13 @@ void HttpsClientRequest::on_disconnect()
     spdlog::error("HttpsClientRequest::on_disconnect - Disconnected from {}:{}", m_hostname, m_port);
     m_io_object = nullptr;
 
+    // Set error response for all pending futures
+    while (m_response_futures.empty() == false)
+    {
+        m_response_futures.front()->set_value(HttpsClientResponse::create_error_response());
+        m_response_futures.pop();
+    }
+
     re_connect().start_running_on(m_epoll_base);
 }
 
