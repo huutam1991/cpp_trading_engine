@@ -33,9 +33,9 @@ Task<void> HttpsClientRequest::wait_for_tcp_data()
 {
     while (true)
     {
-        TCPData data = co_await m_tcp_connection->wait_for_data();
+        std::string data = co_await m_tcp_connection->wait_for_data();
 
-        m_response_parser.append_data(data.buffer, data.size);
+        m_response_parser.append_data(std::move(data));
         std::vector<HttpsClientResponse> responses = m_response_parser.parse_all();
 
         for (auto& resp : responses)
