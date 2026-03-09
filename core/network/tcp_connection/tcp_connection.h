@@ -13,12 +13,6 @@
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/https_client_request_io/https_client_request_io.h>
 
-struct TCPData
-{
-    const char* buffer;
-    std::uint32_t size;
-};
-
 class TCPConnection
 {
     EpollBase* m_epoll_base = nullptr;
@@ -26,7 +20,7 @@ class TCPConnection
     int m_port;
     std::unique_ptr<HttpClientRequestIO> m_io_object = nullptr;
     std::function<void()> m_on_disconnect = nullptr;
-    Future<TCPData>::FutureValue* m_waiting_data_value = nullptr;
+    Future<std::string>::FutureValue* m_waiting_data_value = nullptr;
 
 public:
     TCPConnection() = default;
@@ -49,9 +43,9 @@ public:
         m_io_object->write(std::move(data));
     }
 
-    Future<TCPData> wait_for_data()
+    Future<std::string> wait_for_data()
     {
-        return Future<TCPData>([this](Future<TCPData>::FutureValue* value)
+        return Future<std::string>([this](Future<std::string>::FutureValue* value)
         {
             m_waiting_data_value = value;
         });
@@ -94,7 +88,7 @@ private:
     {
         if (m_waiting_data_value != nullptr)
         {
-            m_waiting_data_value->set_value(TCPData{buffer, size});
+            m_waiting_data_value->set_value(std::string(buffer, size));
             m_waiting_data_value = nullptr;
         }
     }
