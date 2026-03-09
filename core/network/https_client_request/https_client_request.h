@@ -38,11 +38,11 @@ public:
 
 protected:
     void on_disconnect();
-    void on_response_received(const char* buffer, std::uint32_t size);
 
 private:
     HttpsClientResponseParser m_response_parser;
     std::queue<Future<HttpsClientResponse>::FutureValue*> m_response_futures;
 
+    Task<void> wait_for_tcp_data();
     Task<HttpsClientResponse> send_request(const std::string& method, const std::string& path, const std::string& body = "");
 };

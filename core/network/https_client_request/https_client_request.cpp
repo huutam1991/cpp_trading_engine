@@ -8,7 +8,9 @@ HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string&
         m_hostname{hostname},
         m_port{port},
         m_tcp_connection{std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port)}
-{}
+{
+    wait_for_tcp_data().start_running_on(m_epoll_base);
+}
 
 HttpsClientRequest::~HttpsClientRequest()
 {
@@ -27,19 +29,26 @@ void HttpsClientRequest::on_disconnect()
     }
 }
 
-void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t size)
+Task<void> HttpsClientRequest::wait_for_tcp_data()
 {
-    m_response_parser.append_data(buffer, size);
-    std::vector<HttpsClientResponse> responses = m_response_parser.parse_all();
-
-    for (auto& resp : responses)
+    while (true)
     {
-        if (m_response_futures.empty() == false)
+        TCPData data = co_await m_tcp_connection->wait_for_data();
+
+        m_response_parser.append_data(data.buffer, data.size);
+        std::vector<HttpsClientResponse> responses = m_response_parser.parse_all();
+
+        for (auto& resp : responses)
         {
-            m_response_futures.front()->set_value(std::move(resp));
-            m_response_futures.pop();
+            if (m_response_futures.empty() == false)
+            {
+                m_response_futures.front()->set_value(std::move(resp));
+                m_response_futures.pop();
+            }
         }
     }
+
+    co_return;
 }
 
 void HttpsClientRequest::add_header(const std::string& key, const std::string& value)
