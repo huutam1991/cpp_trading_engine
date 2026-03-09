@@ -6,35 +6,18 @@
 HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port)
     :   m_epoll_base{epoll_base},
         m_hostname{hostname},
-        m_port{port}
-{
-    // Connect
-    connect();
-}
+        m_port{port},
+        m_tcp_connection{std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port)}
+{}
 
 HttpsClientRequest::~HttpsClientRequest()
 {
     spdlog::info("HttpsClientRequest::~HttpsClientRequest - Destroying HttpsClientRequest to {}:{}", m_hostname, m_port);
 }
 
-void HttpsClientRequest::connect()
-{
-    m_io_object = std::make_unique<HttpClientRequestIO>(m_hostname, m_port);
-    m_io_object->set_on_disconnect_callback([this]()
-    {
-        this->on_disconnect();
-    });
-    m_io_object->set_on_response_received_callback([this](const char* buffer, std::uint32_t size)
-    {
-        this->on_response_received(buffer, size);
-    });
-    m_epoll_base->start_living_system_io_object(m_io_object.get());
-}
-
 void HttpsClientRequest::on_disconnect()
 {
     spdlog::error("HttpsClientRequest::on_disconnect - Disconnected from {}:{}", m_hostname, m_port);
-    m_io_object = nullptr;
 
     // Set error response for all pending futures
     while (m_response_futures.empty() == false)
@@ -42,8 +25,6 @@ void HttpsClientRequest::on_disconnect()
         m_response_futures.front()->set_value(HttpsClientResponse::create_error_response());
         m_response_futures.pop();
     }
-
-    re_connect().start_running_on(m_epoll_base);
 }
 
 void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t size)
@@ -59,13 +40,6 @@ void HttpsClientRequest::on_response_received(const char* buffer, std::uint32_t 
             m_response_futures.pop();
         }
     }
-}
-
-Task<void> HttpsClientRequest::re_connect()
-{
-    // Retry connection after 5 seconds
-    co_await Timer::sleep_for(5000);
-    connect();
 }
 
 void HttpsClientRequest::add_header(const std::string& key, const std::string& value)
@@ -96,7 +70,7 @@ Task<HttpsClientResponse> HttpsClientRequest::put(const std::string& path, const
 Task<HttpsClientResponse> HttpsClientRequest::send_request(const std::string& method, const std::string& path, const std::string& body)
 {
     // Check connection
-    if (m_io_object == nullptr)
+    if (m_tcp_connection->is_disconnected() == true)
     {
         co_return HttpsClientResponse::create_error_response();
     }
@@ -141,7 +115,7 @@ Task<HttpsClientResponse> HttpsClientRequest::send_request(const std::string& me
     }
 
     // Send
-    m_io_object->write(request_builder.to_string());
+    m_tcp_connection->write(request_builder.to_string());
 
     co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue* value) mutable
     {

@@ -15,6 +15,7 @@
 
 #include "https_client_request_builder.h"
 #include "https_client_response_parser.h"
+#include <network/tcp_connection/tcp_connection.h>
 
 class HttpsClientRequest
 {
@@ -22,7 +23,7 @@ class HttpsClientRequest
     std::string m_hostname;
     int m_port;
     std::vector<std::string> m_custom_headers;
-    std::unique_ptr<HttpClientRequestIO> m_io_object;
+    std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
 
 public:
     HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port);
@@ -36,15 +37,12 @@ public:
     Task<HttpsClientResponse> put(const std::string& path, const std::string& body);
 
 protected:
-    virtual void on_disconnect();
-    virtual void on_response_received(const char* buffer, std::uint32_t size);
+    void on_disconnect();
+    void on_response_received(const char* buffer, std::uint32_t size);
 
 private:
     HttpsClientResponseParser m_response_parser;
     std::queue<Future<HttpsClientResponse>::FutureValue*> m_response_futures;
-
-    void connect();
-    Task<void> re_connect();
 
     Task<HttpsClientResponse> send_request(const std::string& method, const std::string& path, const std::string& body = "");
 };
