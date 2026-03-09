@@ -5,6 +5,11 @@ void HttpsClientResponseParser::append_data(const char* data, size_t len)
     m_buffer.append(data, len);
 }
 
+void HttpsClientResponseParser::append_data(std::string data)
+{
+    m_buffer.append(std::move(data));
+}
+
 std::vector<HttpsClientResponse> HttpsClientResponseParser::parse_all()
 {
     std::vector<HttpsClientResponse> results;

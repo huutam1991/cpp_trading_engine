@@ -21,6 +21,7 @@ public:
 
     // append new received data
     void append_data(const char* data, size_t len);
+    void append_data(std::string data);
 
     // parse ALL available responses inside m_buffer
     // return vector of complete responses
