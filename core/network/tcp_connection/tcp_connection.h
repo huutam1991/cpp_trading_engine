@@ -13,14 +13,14 @@
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/https_client_request_io/https_client_request_io.h>
 
-template <class T>
 class TCPConnection
 {
     EpollBase* m_epoll_base = nullptr;
     std::string m_hostname;
     int m_port;
     std::unique_ptr<HttpClientRequestIO> m_io_object = nullptr;
-    T m_connection_type;
+    std::function<void()> m_on_disconnect = nullptr;
+    std::function<void(const char*, std::uint32_t)> m_on_response_received = nullptr;
 
 public:
     TCPConnection() = default;
@@ -31,15 +31,17 @@ public:
         connect();
     }
 
-    TCPConnection(const TCPConnection<U>& copy)
+    ~TCPConnection() = default;
+
+    bool is_disconnected()
     {
-        m_io_object = std::move(copy.m_io_object);
-        m_epoll_base = copy.m_epoll_base;
-        m_hostname = copy.m_hostname;
-        m_port = copy.m_port;
+        return m_io_object == nullptr;
     }
 
-    ~TCPConnection() = default;
+    void write(std::string data)
+    {
+        m_io_object->write(std::move(data));
+    }
 
 private:
     void connect()
@@ -66,18 +68,19 @@ private:
     void on_disconnect()
     {
         m_io_object = nullptr;
-        connection_type.on_disconnect();
-
         re_connect().start_running_on(m_epoll_base);
+
+        if (m_on_disconnect != nullptr)
+        {
+            m_on_disconnect();
+        }
     }
 
     void on_response_received(const char* buffer, std::uint32_t size)
     {
-        connection_type.on_response_received(buffer, size);
-    }
-
-    T& get_connection_type()
-    {
-        return m_connection_type;
+        if (m_on_response_received != nullptr)
+        {
+            m_on_response_received(buffer, size);
+        }
     }
 };
