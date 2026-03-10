@@ -6,7 +6,7 @@
 #include <coroutine/epoll_base.h>
 #include "https_client_request_io.h"
 
-#define BUFFER_SIZE 1000000
+#define BUFFER_SIZE 3000000
 #define BUFFER_TEMP_SIZE 2048
 
 HttpClientRequestIO::HttpClientRequestIO(const std::string& hostname_value, int port_value)
