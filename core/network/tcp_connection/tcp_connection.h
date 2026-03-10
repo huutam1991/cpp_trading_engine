@@ -21,6 +21,7 @@ class TCPConnection
     std::unique_ptr<HttpClientRequestIO> m_io_object = nullptr;
     std::function<void()> m_on_disconnect = nullptr;
     Future<std::string>::FutureValue* m_waiting_data_value = nullptr;
+    std::queue<std::string> m_pending_data_queue;
 
 public:
     TCPConnection() = default;
@@ -47,6 +48,15 @@ public:
     {
         return Future<std::string>([this](Future<std::string>::FutureValue* value)
         {
+            if (m_pending_data_queue.empty() == false)
+            {
+                // If there is pending data, return immediately
+                value->set_value(std::move(m_pending_data_queue.front()));
+                m_pending_data_queue.pop();
+
+                return;
+            }
+
             m_waiting_data_value = value;
         });
     }
@@ -90,6 +100,11 @@ private:
         {
             m_waiting_data_value->set_value(std::string(buffer, size));
             m_waiting_data_value = nullptr;
+        }
+        else
+        {
+            // No waiting future, save to pending queue
+            m_pending_data_queue.push(std::string(buffer, size));
         }
     }
 };
