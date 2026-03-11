@@ -16,6 +16,9 @@ HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string&
 HttpsClientRequest::~HttpsClientRequest()
 {
     spdlog::info("HttpsClientRequest::~HttpsClientRequest - Destroying HttpsClientRequest to {}:{}", m_hostname, m_port);
+
+    // Need to intendly destroy [m_wait_for_tcp_data_task]
+    m_wait_for_tcp_data_task.destroy(true);
 }
 
 void HttpsClientRequest::on_disconnect()
