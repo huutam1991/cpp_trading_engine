@@ -9,7 +9,8 @@ HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string&
         m_port{port},
         m_tcp_connection{std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port)}
 {
-    wait_for_tcp_data().start_running_on(m_epoll_base);
+    m_wait_for_tcp_data_task = wait_for_tcp_data();
+    m_wait_for_tcp_data_task.start_running_on(m_epoll_base);
 }
 
 HttpsClientRequest::~HttpsClientRequest()

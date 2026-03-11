@@ -43,6 +43,7 @@ private:
     HttpsClientResponseParser m_response_parser;
     std::queue<Future<HttpsClientResponse>::FutureValue*> m_response_futures;
 
+    Task<void> m_wait_for_tcp_data_task = nullptr;
     Task<void> wait_for_tcp_data();
     Task<HttpsClientResponse> send_request(const std::string& method, const std::string& path, const std::string& body = "");
 };
