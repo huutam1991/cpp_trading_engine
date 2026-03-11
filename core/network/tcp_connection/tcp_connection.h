@@ -18,7 +18,7 @@ class TCPConnection
     EpollBase* m_epoll_base = nullptr;
     std::string m_hostname;
     int m_port;
-    std::unique_ptr<HttpClientRequestIO> m_io_object = nullptr;
+    std::unique_ptr<HttpsClientIO> m_io_object = nullptr;
     std::function<void()> m_on_disconnect = nullptr;
     Future<std::string>::FutureValue* m_waiting_data_value = nullptr;
     std::queue<std::string> m_pending_data_queue;
@@ -64,7 +64,7 @@ public:
 private:
     void connect()
     {
-        m_io_object = std::make_unique<HttpClientRequestIO>(m_hostname, m_port);
+        m_io_object = std::make_unique<HttpsClientIO>(m_hostname, m_port);
         m_io_object->set_on_disconnect_callback([this]()
         {
             this->on_disconnect();

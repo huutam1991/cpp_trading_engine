@@ -9,16 +9,16 @@
 #define BUFFER_SIZE 3000000
 #define BUFFER_TEMP_SIZE 2048
 
-HttpClientRequestIO::HttpClientRequestIO(const std::string& hostname_value, int port_value)
+HttpsClientIO::HttpsClientIO(const std::string& hostname_value, int port_value)
     : hostname{hostname_value}, ip{resolve_hostname()}, port{port_value}, m_tls_wrapper{std::make_unique<TlsWrapper>(get_tls_context())}
 {
     // Set SNI
     SSL_set_tlsext_host_name(m_tls_wrapper->get_ssl(), hostname.c_str());
 }
 
-HttpClientRequestIO::~HttpClientRequestIO()
+HttpsClientIO::~HttpsClientIO()
 {
-    spdlog::info("HttpClientRequestIO::~HttpClientRequestIO - Destroying HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
+    spdlog::info("HttpsClientIO::~HttpsClientIO - Destroying HttpsClientIO, fd = {}, ip: {}, port: {}", fd, ip, port);
 
     // No need to call [on_disconnect_callback] + [on_response_received_callback], because this is intend release
     on_disconnect_callback = nullptr;
@@ -30,29 +30,29 @@ HttpClientRequestIO::~HttpClientRequestIO()
     }
 }
 
-void HttpClientRequestIO::set_on_disconnect_callback(std::function<void()> callback)
+void HttpsClientIO::set_on_disconnect_callback(std::function<void()> callback)
 {
     on_disconnect_callback = callback;
 }
 
-void HttpClientRequestIO::set_on_response_received_callback(std::function<void(const char* buffer, std::uint32_t size)> callback)
+void HttpsClientIO::set_on_response_received_callback(std::function<void(const char* buffer, std::uint32_t size)> callback)
 {
     on_response_received_callback = callback;
 }
 
-void HttpClientRequestIO::write(std::string data)
+void HttpsClientIO::write(std::string data)
 {
     write_queue.push(std::move(data));
     check_to_write();
 }
 
-TlsContext* HttpClientRequestIO::get_tls_context()
+TlsContext* HttpsClientIO::get_tls_context()
 {
     static TlsClientContext client_ctx{false, ""};
     return &client_ctx;
 }
 
-std::string HttpClientRequestIO::resolve_hostname()
+std::string HttpsClientIO::resolve_hostname()
 {
     addrinfo hints{};
     hints.ai_family   = AF_INET;      // IPv4
@@ -62,7 +62,7 @@ std::string HttpClientRequestIO::resolve_hostname()
     int ret = getaddrinfo(hostname.c_str(), nullptr, &hints, &result);
     if (ret != 0)
     {
-        spdlog::error("HttpClientRequestIO::resolve_hostname - getaddrinfo failed for {}: {}", hostname, gai_strerror(ret));
+        spdlog::error("HttpsClientIO::resolve_hostname - getaddrinfo failed for {}: {}", hostname, gai_strerror(ret));
         return ""; // fail
     }
 
@@ -74,22 +74,22 @@ std::string HttpClientRequestIO::resolve_hostname()
 
     freeaddrinfo(result);
 
-    spdlog::info("HttpClientRequestIO::resolve_hostname - Resolved {} to {}", hostname, ip);
+    spdlog::info("HttpsClientIO::resolve_hostname - Resolved {} to {}", hostname, ip);
 
     return ip;
 }
 
-int HttpClientRequestIO::read_buffer(char* const buffer)
+int HttpsClientIO::read_buffer(char* const buffer)
 {
     return m_tls_wrapper->read(buffer, BUFFER_TEMP_SIZE);
 }
 
-int HttpClientRequestIO::write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size)
+int HttpsClientIO::write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size)
 {
     return m_tls_wrapper->write(buffer, current_write_offset, size);
 }
 
-int HttpClientRequestIO::check_connect_and_handshake()
+int HttpsClientIO::check_connect_and_handshake()
 {
     current_state = State::CONNECTING_AND_HANDSHAKING;
 
@@ -101,17 +101,17 @@ int HttpClientRequestIO::check_connect_and_handshake()
 
         if (err != 0)
         {
-            spdlog::error("HttpClientRequestIO::handle_io_data - Connect failed: {}, ip: {}, port: {}", strerror(err), ip, port);
+            spdlog::error("HttpsClientIO::handle_io_data - Connect failed: {}, ip: {}, port: {}", strerror(err), ip, port);
             return -1; // close
         }
 
         is_connected = true;
-        spdlog::info("HttpClientRequestIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
+        spdlog::info("HttpsClientIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
 
         // Attach fd to TLS wrapper
         if (m_tls_wrapper->attach_fd(fd) == false)
         {
-            spdlog::error("HttpClientRequestIO::handle_io_data - attach_fd failed");
+            spdlog::error("HttpsClientIO::handle_io_data - attach_fd failed");
             return -1;
         }
     }
@@ -122,7 +122,7 @@ int HttpClientRequestIO::check_connect_and_handshake()
         TlsResult result = m_tls_wrapper->handshake();
         if (result == TlsResult::OK)
         {
-            spdlog::info("HttpClientRequestIO::handle_io_data - TLS handshake success, ip: {}, port: {}", ip, port);
+            spdlog::info("HttpsClientIO::handle_io_data - TLS handshake success, ip: {}, port: {}", ip, port);
         }
         return result != TlsResult::ERROR ? 0 : -1;
     }
@@ -130,7 +130,7 @@ int HttpClientRequestIO::check_connect_and_handshake()
     return 0;
 }
 
-int HttpClientRequestIO::handle_read_data()
+int HttpsClientIO::handle_read_data()
 {
     char buffer[BUFFER_SIZE];
     char temp_buffer[BUFFER_TEMP_SIZE];
@@ -157,7 +157,7 @@ int HttpClientRequestIO::handle_read_data()
     }
     else
     {
-        spdlog::debug("HttpClientRequestIO::handle_io_data - connection lost, fd = {}", fd);
+        spdlog::debug("HttpsClientIO::handle_io_data - connection lost, fd = {}", fd);
         // Clean save buffer
         // save_buffer = "";
         return -1;
@@ -166,7 +166,7 @@ int HttpClientRequestIO::handle_read_data()
     return 0;
 }
 
-int HttpClientRequestIO::check_to_write()
+int HttpsClientIO::check_to_write()
 {
     if (current_state != State::WRITING)
     {
@@ -196,7 +196,7 @@ int HttpClientRequestIO::check_to_write()
 
         if (written_bytes == -1)
         {
-            spdlog::error("HttpClientRequestIO::handle_write - write failed, ip: {}, port: {}", ip, port);
+            spdlog::error("HttpsClientIO::handle_write - write failed, ip: {}, port: {}", ip, port);
             return -1;
         }
     }
@@ -204,7 +204,7 @@ int HttpClientRequestIO::check_to_write()
     return 0;
 }
 
-int HttpClientRequestIO::generate_fd()
+int HttpsClientIO::generate_fd()
 {
     fd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (fd < 0) return -1;
@@ -212,7 +212,7 @@ int HttpClientRequestIO::generate_fd()
     return fd;
 }
 
-int HttpClientRequestIO::activate()
+int HttpsClientIO::activate()
 {
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
@@ -235,7 +235,7 @@ int HttpClientRequestIO::activate()
     return 0;
 }
 
-int HttpClientRequestIO::handle_read()
+int HttpsClientIO::handle_read()
 {
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
@@ -248,7 +248,7 @@ int HttpClientRequestIO::handle_read()
     return handle_read_data();
 }
 
-int HttpClientRequestIO::handle_write()
+int HttpsClientIO::handle_write()
 {
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
@@ -261,9 +261,9 @@ int HttpClientRequestIO::handle_write()
     return check_to_write();
 }
 
-void HttpClientRequestIO::release()
+void HttpsClientIO::release()
 {
-    spdlog::info("HttpClientRequestIO::release - Releasing HttpClientRequestIO, fd = {}, ip: {}, port: {}", fd, ip, port);
+    spdlog::info("HttpsClientIO::release - Releasing HttpsClientIO, fd = {}, ip: {}, port: {}", fd, ip, port);
 
     fd = -1;
     epoll_base = nullptr;
