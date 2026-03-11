@@ -24,6 +24,7 @@ struct Task : public BaseTask<T>
         T value;
     };
 
+    Task(std::nullptr_t) : BaseTask<T>(nullptr) {}
     Task(promise_type* promise) : BaseTask<T>(promise) {}
     Task() = default;
     Task(const Task&) = delete;
@@ -55,6 +56,7 @@ struct Task<void> : public BaseTask<void>
         }
     };
 
+    Task(std::nullptr_t) : BaseTask<void>(nullptr) {}
     Task(promise_type* promise) : BaseTask<void>(promise) {}
     Task() = default;
     Task(const Task&) = delete;

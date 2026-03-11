@@ -30,6 +30,8 @@ struct BaseTask
     };
 
     std::coroutine_handle<promise_type> handle = nullptr;
+
+    BaseTask(std::nullptr_t) : handle(nullptr) {}
     BaseTask(std::coroutine_handle<promise_type> h) : handle(h) {}
     BaseTask(promise_type* promise) : handle(std::coroutine_handle<promise_type>::from_promise(*promise)) {}
     BaseTask() {};
