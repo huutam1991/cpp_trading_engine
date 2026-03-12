@@ -3,11 +3,14 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port)
+HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port, std::unique_ptr<TCPConnection> tcp_connection)
     :   m_epoll_base{epoll_base},
         m_hostname{hostname},
         m_port{port},
-        m_tcp_connection{std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port)}
+        m_tcp_connection{tcp_connection ?
+            std::move(tcp_connection) :
+            std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port)
+        }
 {
     m_wait_for_tcp_data_task = wait_for_tcp_data();
     m_wait_for_tcp_data_task.start_running_on(m_epoll_base);

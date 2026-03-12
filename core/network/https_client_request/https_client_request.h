@@ -26,7 +26,7 @@ class HttpsClientRequest
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
 
 public:
-    HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port);
+    HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port, std::unique_ptr<TCPConnection> tcp_connection = nullptr);
     ~HttpsClientRequest();
 
     void add_header(const std::string& key, const std::string& value);
