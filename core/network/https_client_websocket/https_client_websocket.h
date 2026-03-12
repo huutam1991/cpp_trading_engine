@@ -9,7 +9,7 @@ class HttpsClientWebsocket
 {
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
     HttpsClientRequest m_rest_request;
-    HttpsClientWebsocketConnection m_connection;
+    HttpsClientWebsocketSession m_connection;
 
 public:
     HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port);

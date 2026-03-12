@@ -2,11 +2,11 @@
 
 #include <network/https_client_request/https_client_request.h>
 
-class HttpsClientWebsocketConnection : public HttpsClientRequest
+class HttpsClientWebsocketSession : public HttpsClientRequest
 {
 public:
-    HttpsClientWebsocketConnection(EpollBase* epoll_base, const std::string& hostname, int port);
-    ~HttpsClientWebsocketConnection() = default;
+    HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& hostname, int port);
+    ~HttpsClientWebsocketSession() = default;
 
 protected:
     virtual void on_disconnect();
