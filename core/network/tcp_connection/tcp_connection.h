@@ -39,6 +39,11 @@ public:
         return m_io_object == nullptr;
     }
 
+    void set_on_disconnect_callback(std::function<void()> callback)
+    {
+        m_on_disconnect = callback;
+    }
+
     void write(std::string data)
     {
         m_io_object->write(std::move(data));
