@@ -16,4 +16,5 @@ public:
 
 private:
     Task<void> connect();
+    Task<void> send_switch_protocol_request();
 };
