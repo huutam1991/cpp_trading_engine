@@ -28,6 +28,7 @@
 #include <coroutine/epoll_base.h>
 
 #include <network/https_client_request/https_client_request.h>
+#include <network/https_client_websocket/https_client_websocket.h>
 
 extern void add_app_route();
 extern void add_bad_request();
@@ -61,6 +62,15 @@ Task<void> test_https_client_request_httpbin(EpollBase* epoll_base)
 
         co_await Timer::sleep_for(1000);
     }
+}
+
+Task<void> test_https_client_websocket(EpollBase* epoll_base)
+{
+    HttpsClientWebsocket websocket(epoll_base, "ws.ifelse.io", 443);
+
+    co_await Timer::sleep_for(20000);
+
+    co_return;
 }
 
 Future<Json> get_number_future()
@@ -120,7 +130,7 @@ int main(int argc, char **argv) {
     epoll_base->start_living_system_io_object(https_server_object);
 
     // Test HTTPS client request
-    test_https_client_request(epoll_base).start_running_on(epoll_base);
+    test_https_client_websocket(epoll_base).start_running_on(epoll_base);
     // test_future().start_running_on(epoll_base);
 
     // Main loop, only sleep here
