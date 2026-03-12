@@ -1,7 +1,6 @@
 #include "https_client_websocket_connection.h"
 
 HttpsClientWebsocketSession::HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& hostname, int port)
-    : HttpsClientRequest(epoll_base, hostname, port)
 {
 }
 

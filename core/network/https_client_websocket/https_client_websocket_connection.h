@@ -1,8 +1,10 @@
 #pragma once
 
-#include <network/https_client_request/https_client_request.h>
+#include <string>
 
-class HttpsClientWebsocketSession : public HttpsClientRequest
+#include <coroutine/epoll_base.h>
+
+class HttpsClientWebsocketSession
 {
 public:
     HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& hostname, int port);
