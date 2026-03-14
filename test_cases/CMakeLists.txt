@@ -43,6 +43,7 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/network/https_client_request/https_client_response_parser*.cpp
     ${PROJECT_ROOT}/core/network/https_client_request/https_client_chunk_parser*.cpp
     ${PROJECT_ROOT}/core/network/https_client_websocket/websocket_frame_parser.cpp
+    ${PROJECT_ROOT}/core/network/https_client_websocket/websocket_frame_builder.cpp
     ${PROJECT_ROOT}/server_app/pnl/*.c
     ${PROJECT_ROOT}/server_app/pnl/*.cpp
 )
