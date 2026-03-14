@@ -1,4 +1,7 @@
+#include <enum_reflect/enum_reflect.h>
+
 #include "https_client_websocket.h"
+#include "websocket_frame_parser.h"
 
 HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port)
     : m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port)),
@@ -37,6 +40,19 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
     if (response.status_code == 101)
     {
         spdlog::info("Websocket connection established");
+
+        std::string leftover_data = m_rest_request.get_leftover_data();
+        if (leftover_data.empty() == false)
+        {
+            WebSocketFrameParser frame_parser;
+            frame_parser.feed(leftover_data.data(), leftover_data.size());
+            std::vector<WebSocketFrameParser::Frame> frames = frame_parser.parse_frames();
+
+            for (const auto& frame : frames)
+            {
+                spdlog::info("Received leftover websocket frame: opcode={}, payload={}", enum_reflect::enum_name(frame.opcode), frame.payload_as_string());
+            }
+        }
     }
     else
     {
