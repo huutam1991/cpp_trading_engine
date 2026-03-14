@@ -30,6 +30,7 @@ public:
     ~HttpsClientRequest();
 
     void add_header(const std::string& key, const std::string& value);
+    std::string get_leftover_data() const { return m_response_parser.get_leftover_data(); }
 
     Task<HttpsClientResponse> get(const std::string& path);
     Task<HttpsClientResponse> post(const std::string& path, const std::string& body);

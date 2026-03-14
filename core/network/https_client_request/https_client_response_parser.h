@@ -23,6 +23,12 @@ public:
     void append_data(const char* data, size_t len);
     void append_data(std::string data);
 
+    // get leftover data that has not been parsed into a complete response (e.g. partial header/body for the next response)
+    std::string get_leftover_data() const
+    {
+        return m_buffer;
+    }
+
     // parse ALL available responses inside m_buffer
     // return vector of complete responses
     std::vector<HttpsClientResponse> parse_all();
