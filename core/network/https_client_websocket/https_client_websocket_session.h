@@ -3,9 +3,13 @@
 #include <string>
 
 #include <coroutine/epoll_base.h>
+#include <network/tcp_connection/tcp_connection.h>
+
 
 class HttpsClientWebsocketSession
 {
+    std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
+
 public:
     HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& hostname, int port);
     ~HttpsClientWebsocketSession() = default;

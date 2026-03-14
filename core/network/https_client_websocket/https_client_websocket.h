@@ -3,13 +3,13 @@
 #include <network/tcp_connection/tcp_connection.h>
 #include <network/https_client_request/https_client_request.h>
 
-#include "https_client_websocket_connection.h"
+#include "https_client_websocket_session.h"
 
 class HttpsClientWebsocket
 {
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
     HttpsClientRequest m_rest_request;
-    HttpsClientWebsocketSession m_connection;
+    HttpsClientWebsocketSession m_websocket_session;
 
 public:
     HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port);

@@ -6,7 +6,7 @@
 HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port)
     : m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port)),
       m_rest_request(epoll_base, hostname, port, std::move(m_tcp_connection)),
-      m_connection{epoll_base, hostname, port}
+      m_websocket_session{epoll_base, hostname, port}
 {
     connect().start_running_on(epoll_base);
 }
@@ -14,6 +14,8 @@ HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::str
 Task<void> HttpsClientWebsocket::connect()
 {
     co_await send_switch_protocol_request();
+
+    // Move tcp connection from [m_rest_request] to [m_websocket_session]
 
     co_return;
 }
