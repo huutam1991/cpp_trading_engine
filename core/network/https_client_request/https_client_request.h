@@ -29,8 +29,11 @@ public:
     HttpsClientRequest(EpollBase* epoll_base, const std::string& hostname, int port, std::unique_ptr<TCPConnection> tcp_connection = nullptr);
     ~HttpsClientRequest();
 
-    void add_header(const std::string& key, const std::string& value);
+    // For release TCP connection and leftover data to upper layer (e.g. Websocket session) after switching protocol
     std::string get_leftover_data() const { return m_response_parser.get_leftover_data(); }
+    std::unique_ptr<TCPConnection> release_tcp_connection() { return std::move(m_tcp_connection); }
+
+    void add_header(const std::string& key, const std::string& value);
 
     Task<HttpsClientResponse> get(const std::string& path);
     Task<HttpsClientResponse> post(const std::string& path, const std::string& body);
