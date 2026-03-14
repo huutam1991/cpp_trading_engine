@@ -5,8 +5,8 @@
 
 HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port)
     : m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port)),
-      m_rest_request(epoll_base, hostname, port, std::move(m_tcp_connection)),
-      m_websocket_session{epoll_base, hostname, port}
+      m_rest_request(std::make_unique<HttpsClientRequest>(epoll_base, hostname, port, std::move(m_tcp_connection))),
+      m_websocket_session(std::make_unique<HttpsClientWebsocketSession>(epoll_base, hostname, port))
 {
     connect().start_running_on(epoll_base);
 }
@@ -16,6 +16,10 @@ Task<void> HttpsClientWebsocket::connect()
     co_await send_switch_protocol_request();
 
     // Move tcp connection from [m_rest_request] to [m_websocket_session]
+    m_websocket_session->use_tcp_connection(std::move(m_rest_request->release_tcp_connection()));
+    m_rest_request = nullptr; // Release REST request object
+
+
 
     co_return;
 }
@@ -32,18 +36,18 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
     // Sec-WebSocket-Key: <random_base64>
     // Sec-WebSocket-Version: 13
 
-    m_rest_request.add_header("Upgrade", "websocket");
-    m_rest_request.add_header("Connection", "Upgrade");
-    m_rest_request.add_header("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
-    m_rest_request.add_header("Sec-WebSocket-Version", "13");
+    m_rest_request->add_header("Upgrade", "websocket");
+    m_rest_request->add_header("Connection", "Upgrade");
+    m_rest_request->add_header("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
+    m_rest_request->add_header("Sec-WebSocket-Version", "13");
 
-    HttpsClientResponse response = co_await m_rest_request.get("/");
+    HttpsClientResponse response = co_await m_rest_request->get("/");
 
     if (response.status_code == 101)
     {
         spdlog::info("Websocket connection established");
 
-        std::string leftover_data = m_rest_request.get_leftover_data();
+        std::string leftover_data = m_rest_request->get_leftover_data();
         if (leftover_data.empty() == false)
         {
             WebSocketFrameParser frame_parser;
