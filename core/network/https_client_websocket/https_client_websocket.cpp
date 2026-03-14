@@ -37,14 +37,6 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
     if (response.status_code == 101)
     {
         spdlog::info("Websocket connection established");
-        spdlog::info("Response body: {}", response.body);
-        spdlog::info("Status code: {}", response.status_code);
-        spdlog::info("Status message: {}", response.status_message);
-        spdlog::info("Response headers:");
-        for (const auto& [key, value] : response.headers)
-        {
-            spdlog::info(" - {}: {}", key, value);
-        }
     }
     else
     {
