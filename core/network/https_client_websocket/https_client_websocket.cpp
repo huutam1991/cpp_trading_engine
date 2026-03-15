@@ -25,12 +25,16 @@ HttpsClientWebsocket::HttpsClientWebsocket(
 void HttpsClientWebsocket::on_tcp_connect()
 {
     spdlog::info("HttpsClientWebsocket::on_tcp_connect - Connected to {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
+
     connect().start_running_on(m_epoll_base);
 }
 
 void HttpsClientWebsocket::on_tcp_disconnect()
 {
     spdlog::error("HttpsClientWebsocket::on_tcp_disconnect - Disconnected from {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
+
+    m_rest_request = nullptr;
+    m_websocket_session = nullptr;
 }
 
 bool HttpsClientWebsocket::is_websocket_connected() const
@@ -40,7 +44,6 @@ bool HttpsClientWebsocket::is_websocket_connected() const
 
 Task<void> HttpsClientWebsocket::connect()
 {
-    m_websocket_session = nullptr;
     m_rest_request = std::make_unique<HttpsClientRequest>(m_epoll_base, m_hostname, m_port, std::move(m_tcp_connection));
 
     co_await send_switch_protocol_request();
