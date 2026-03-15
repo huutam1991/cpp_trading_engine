@@ -31,6 +31,11 @@ Json StrategyMeanReversionStateStop::get_info()
             {"success", spread_capture.success},
             {"fail", spread_capture.fail},
             {"win_rate", spread_capture.win_rate()},
+            {"pnl", {
+                {"profit", spread_capture.profit},
+                {"loss", spread_capture.loss},
+                {"total", spread_capture.profit + spread_capture.loss}
+            }},
             {
                 "current_status", {
                     {"current_price", m_current_price},
@@ -94,11 +99,13 @@ void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapSho
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.success++;
+                spread_capture.profit += spread_capture.take_profit;
             }
             else if (m_current_price >= spread_capture.sell_order.price + spread_capture.stop_loss)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.fail++;
+                spread_capture.loss -= spread_capture.stop_loss;
             }
         }
         else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER)
@@ -107,11 +114,13 @@ void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapSho
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.success++;
+                spread_capture.profit += spread_capture.take_profit;
             }
             else if (m_current_price <= spread_capture.buy_order.price - spread_capture.stop_loss)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.fail++;
+                spread_capture.loss -= spread_capture.stop_loss;
             }
         }
     }
