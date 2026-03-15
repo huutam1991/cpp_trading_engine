@@ -11,6 +11,13 @@ HttpsClientWebsocketSession::HttpsClientWebsocketSession(
     m_wait_for_tcp_data_task.start_running_on(epoll_base);
 }
 
+void HttpsClientWebsocketSession::write(std::string message)
+{
+    std::vector<char> frame = WebSocketFrameBuilder::build_text(message, true, true);
+    std::string frame_str(frame.data(), frame.size());
+    m_tcp_connection->write(frame_str);
+}
+
 Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
 {
     while (true)
