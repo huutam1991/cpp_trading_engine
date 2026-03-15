@@ -30,7 +30,20 @@ Json StrategyMeanReversionStateStop::get_info()
             {"stop_loss", spread_capture.stop_loss},
             {"success", spread_capture.success},
             {"fail", spread_capture.fail},
-            {"win_rate", spread_capture.win_rate()}
+            {"win_rate", spread_capture.win_rate()},
+            {
+                "current_status", {
+                    {"status", enum_reflect::enum_name(spread_capture.status)},
+                    {"buy_order", {
+                        {"price", spread_capture.buy_order.price},
+                        {"status", enum_reflect::enum_name(spread_capture.buy_order.status)}
+                    }},
+                    {"sell_order", {
+                        {"price", spread_capture.sell_order.price},
+                        {"status", enum_reflect::enum_name(spread_capture.sell_order.status)}
+                    }}
+                }
+            }
         });
     }
 
