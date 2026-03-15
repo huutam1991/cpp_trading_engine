@@ -4,7 +4,6 @@
 #include <enum_reflect/enum_reflect.h>
 #include <strategy/strategy_abstract.h>
 
-
 enum StrategyState
 {
     STOP,
@@ -33,7 +32,6 @@ struct StrategyStateData
         return res;
     }
 };
-
 
 class StrategyStateBase
 {
