@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <order/order.h>
 
 struct SpreadCaptureConfig
 {
@@ -10,6 +11,19 @@ struct SpreadCaptureConfig
 
     uint64_t success = 0;
     uint64_t fail = 0;
+
+    Order buy_order = nullptr;
+    Order sell_order = nullptr;
+
+    enum Status
+    {
+        NONE,
+        PLACING_INIT_ORDERS,
+        PLACING_HEDGE_BUY_ORDER,
+        PLACING_HEDGE_SELL_ORDER,
+    };
+
+    Status status = Status::NONE;
 
     double win_rate() const
     {
