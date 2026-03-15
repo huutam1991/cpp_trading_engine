@@ -14,7 +14,6 @@ void HttpRequestPost::deserialize_body(const std::string& content)
     size_t end_of_request_header = content.find("\r\n\r\n", 0);
     m_body = content.substr(end_of_request_header + 4, content.size() - 1);
     m_body_json = Json::parse(m_body);
-    spdlog::debug("body = {}", m_body);
 }
 
 void HttpRequestPost::deserialize_body_form_data()
