@@ -22,6 +22,7 @@ class StrategyMeanReversion : public StrategyBase<StrategyMeanReversionConfig, E
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
     virtual void on_config_change(StrategyMeanReversionConfig new_config) override;
+    virtual Json get_info(Json& params) override;
 
     void run();
     void stop();

@@ -43,6 +43,11 @@ void StrategyMeanReversion::on_config_change(StrategyMeanReversionConfig new_con
     }
 }
 
+Json StrategyMeanReversion::get_info(Json& params)
+{
+    return m_states[m_current_state.object.state]->get_info();
+}
+
 void StrategyMeanReversion::run()
 {
     m_current_state = StrategyStateData{StrategyState::RUN};
