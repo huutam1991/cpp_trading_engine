@@ -33,8 +33,14 @@ void HttpsClientWebsocket::on_tcp_disconnect()
     spdlog::error("HttpsClientWebsocket::on_tcp_disconnect - Disconnected from {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
 }
 
+bool HttpsClientWebsocket::is_websocket_connected() const
+{
+    return m_websocket_session != nullptr;
+}
+
 Task<void> HttpsClientWebsocket::connect()
 {
+    m_websocket_session = nullptr;
     m_rest_request = std::make_unique<HttpsClientRequest>(m_epoll_base, m_hostname, m_port, std::move(m_tcp_connection));
 
     co_await send_switch_protocol_request();
@@ -97,4 +103,12 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
     }
 
     co_return;
+}
+
+void HttpsClientWebsocket::write(std::string message)
+{
+    if (is_websocket_connected())
+    {
+        m_websocket_session->write(std::move(message));
+    }
 }

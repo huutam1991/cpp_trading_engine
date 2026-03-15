@@ -31,7 +31,11 @@ public:
         std::function<Task<void>()> on_disconnect,
         std::function<Task<void>()> on_close);
 
+    void write(std::string message);
+
 private:
+    bool is_websocket_connected() const;
+
     Task<void> connect();
     Task<void> send_switch_protocol_request();
 

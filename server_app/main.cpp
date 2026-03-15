@@ -92,7 +92,12 @@ Task<void> test_https_client_websocket(EpollBase* epoll_base)
         }
     );
 
-    co_await Timer::sleep_for(20000);
+    while (true)
+    {
+        co_await Timer::sleep_for(2000);
+
+        websocket.write("Hello from client!");
+    }
 
     co_return;
 }
