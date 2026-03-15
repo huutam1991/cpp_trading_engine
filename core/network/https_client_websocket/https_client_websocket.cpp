@@ -40,8 +40,16 @@ Task<void> HttpsClientWebsocket::connect()
     co_await send_switch_protocol_request();
 
     // Move tcp connection from [m_rest_request] to [m_websocket_session]
-    m_websocket_session = std::make_unique<HttpsClientWebsocketSession>(m_epoll_base, std::move(m_rest_request->release_tcp_connection()));
-    m_rest_request = nullptr; // Release REST request object
+    m_websocket_session = std::make_unique<HttpsClientWebsocketSession>(
+        m_epoll_base,
+        std::move(m_rest_request->release_tcp_connection()),
+        std::move(m_on_message));
+
+    // Release REST request object
+    m_rest_request = nullptr;
+
+    // Call user's [m_on_connect] callback
+    co_await m_on_connect();
 
     co_return;
 }

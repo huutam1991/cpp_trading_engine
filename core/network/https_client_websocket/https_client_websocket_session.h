@@ -13,11 +13,12 @@ class HttpsClientWebsocketSession
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
 
 public:
-    HttpsClientWebsocketSession(EpollBase* epoll_base, std::unique_ptr<TCPConnection> tcp_connection);
+    HttpsClientWebsocketSession(EpollBase* epoll_base, std::unique_ptr<TCPConnection> tcp_connection, std::function<Task<void>(std::string)> on_message);
     ~HttpsClientWebsocketSession() = default;
 
 private:
     WebSocketFrameParser m_response_parser;
+    std::function<Task<void>(std::string)> m_on_message;
 
     Task<void> m_wait_for_tcp_data_task = nullptr;
     Task<void> wait_for_tcp_data();
