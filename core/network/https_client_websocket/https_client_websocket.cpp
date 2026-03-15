@@ -7,17 +7,17 @@ HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::str
     : m_epoll_base{epoll_base},
       m_hostname{hostname},
       m_port{port},
-      m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port, [this]() { this->on_connect(); }, [this]() { this->on_disconnect(); }))
+      m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port, [this]() { this->on_tcp_connect(); }, [this]() { this->on_tcp_disconnect(); }))
 {
 }
 
-void HttpsClientWebsocket::on_connect()
+void HttpsClientWebsocket::on_tcp_connect()
 {
     spdlog::info("HttpsClientWebsocket::on_connect - Connected to {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
     connect().start_running_on(m_epoll_base);
 }
 
-void HttpsClientWebsocket::on_disconnect()
+void HttpsClientWebsocket::on_tcp_disconnect()
 {
     spdlog::error("HttpsClientWebsocket::on_disconnect - Disconnected from {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
 }

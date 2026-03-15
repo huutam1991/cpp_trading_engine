@@ -22,6 +22,6 @@ private:
     Task<void> connect();
     Task<void> send_switch_protocol_request();
 
-    void on_connect();
-    void on_disconnect();
+    void on_tcp_connect();
+    void on_tcp_disconnect();
 };
