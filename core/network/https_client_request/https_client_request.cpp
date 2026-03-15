@@ -9,14 +9,9 @@ HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string&
         m_port{port},
         m_tcp_connection{tcp_connection ?
             std::move(tcp_connection) :
-            std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port)
+            std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port, [this]() { this->on_disconnect(); })
         }
 {
-    m_tcp_connection->set_on_disconnect_callback([this]()
-    {
-        this->on_disconnect();
-    });
-
     m_wait_for_tcp_data_task = wait_for_tcp_data();
     m_wait_for_tcp_data_task.start_running_on(m_epoll_base);
 }
