@@ -63,6 +63,19 @@ public:
         return order_id == 0 && status == Status::NOT_AVAILABLE;
     }
 
+    Order& operator=(std::nullptr_t)
+    {
+        order_id = 0;
+        status = Status::NOT_AVAILABLE;
+        instrument = nullptr;
+        side = Side::BUY;
+        type = OrderType::LIMIT;
+        price = 0.0;
+        quantity = 0.0;
+
+        return *this;
+    }
+
     Order();
     Order(std::nullptr_t null_value);
     Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
