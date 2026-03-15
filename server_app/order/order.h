@@ -41,7 +41,7 @@ public:
     };
 
     // Input data
-    OrderId order_id;
+    OrderId order_id = 0;
     Status status = Status::NOT_AVAILABLE;
     const Instrument *instrument;
     Side side;
@@ -58,7 +58,13 @@ public:
     ShareString commission_asset;
     ShareString output_asset;
 
+    bool operator==(std::nullptr_t) const
+    {
+        return order_id == 0 && status == Status::NOT_AVAILABLE;
+    }
+
     Order();
+    Order(std::nullptr_t null_value);
     Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i);
 
     Json to_json() const;

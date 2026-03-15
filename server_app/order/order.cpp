@@ -2,6 +2,16 @@
 
 Order::Order() {}
 
+Order::Order(std::nullptr_t null_value) :
+    order_id{0},
+    status{Status::NOT_AVAILABLE},
+    instrument{nullptr},
+    side{Side::BUY},
+    type{OrderType::LIMIT},
+    price{0.0},
+    quantity{0.0}
+{}
+
 Order::Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i, Side side_i, const OrderType& type_i, double price_i, double quantity_i) :
     order_id{order_id_i},
     status{status_i},
