@@ -1,5 +1,7 @@
 #include "https_client_websocket_session.h"
 
+#include <spdlog/spdlog.h>
+
 HttpsClientWebsocketSession::HttpsClientWebsocketSession(
     EpollBase* epoll_base,
     std::unique_ptr<TCPConnection> tcp_connection,
@@ -11,11 +13,30 @@ HttpsClientWebsocketSession::HttpsClientWebsocketSession(
     m_wait_for_tcp_data_task.start_running_on(epoll_base);
 }
 
-void HttpsClientWebsocketSession::write(std::string message)
+void HttpsClientWebsocketSession::write_raw_frame(const std::vector<char>& frame)
 {
-    std::vector<char> frame = WebSocketFrameBuilder::build_text(message, true, true);
+    if (frame.empty())
+    {
+        return;
+    }
+
     std::string frame_str(frame.data(), frame.size());
     m_tcp_connection->write(frame_str);
+}
+
+void HttpsClientWebsocketSession::write(std::string message)
+{
+    write_raw_frame(WebSocketFrameBuilder::build_text(message, true, true));
+}
+
+void HttpsClientWebsocketSession::write_ping(const std::string& payload)
+{
+    write_raw_frame(WebSocketFrameBuilder::build_ping(payload, true));
+}
+
+void HttpsClientWebsocketSession::write_pong(const std::string& payload)
+{
+    write_raw_frame(WebSocketFrameBuilder::build_pong(payload, true));
 }
 
 Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
@@ -40,15 +61,22 @@ Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
             else if (frame.opcode == WebSocketFrameParser::Opcode::Close)
             {
                 spdlog::info("Received WebSocket close frame");
+
+                // Good practice: echo close back before stopping.
+                write_raw_frame(WebSocketFrameBuilder::build_close(true));
+
                 co_return;
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Ping)
             {
-                spdlog::info("Received WebSocket ping frame");
+                spdlog::info("Received WebSocket ping frame, payload size: {}", frame.payload.size());
+
+                // MUST reply pong with the same payload
+                write_pong(frame.payload_as_string());
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Pong)
             {
-                spdlog::info("Received WebSocket pong frame");
+                spdlog::info("Received WebSocket pong frame, payload size: {}", frame.payload.size());
             }
         }
     }

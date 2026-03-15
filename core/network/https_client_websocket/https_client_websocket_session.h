@@ -18,6 +18,11 @@ public:
     ~HttpsClientWebsocketSession() = default;
 
     void write(std::string message);
+    void write_ping(const std::string& payload = "");
+    void write_pong(const std::string& payload = "");
+
+private:
+    void write_raw_frame(const std::vector<char>& frame);
 
 private:
     WebSocketFrameParser m_response_parser;
