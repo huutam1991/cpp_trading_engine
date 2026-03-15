@@ -1,7 +1,7 @@
 #include "tcp_connection.h"
 
 TCPConnection::TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port, std::function<void()> on_connect, std::function<void()> on_disconnect)
-        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}, m_on_connect{on_connect}, m_on_disconnect{on_disconnect}
+        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}, m_on_connect{std::move(on_connect)}, m_on_disconnect{std::move(on_disconnect)}
 {
     connect();
 }
@@ -46,6 +46,14 @@ Future<std::string> TCPConnection::wait_for_data()
 void TCPConnection::connect()
 {
     m_io_object = std::make_unique<HttpsClientIO>(m_hostname, m_port);
+
+    m_io_object->set_on_connect_callback([this]()
+    {
+        if (m_on_connect != nullptr)
+        {
+            m_on_connect();
+        }
+    });
     m_io_object->set_on_disconnect_callback([this]()
     {
         this->on_disconnect();
@@ -54,12 +62,8 @@ void TCPConnection::connect()
     {
         this->on_response_received(buffer, size);
     });
-    m_epoll_base->start_living_system_io_object(m_io_object.get());
 
-    if (m_on_connect != nullptr)
-    {
-        m_on_connect();
-    }
+    m_epoll_base->start_living_system_io_object(m_io_object.get());
 }
 
 Task<void> TCPConnection::re_connect()
