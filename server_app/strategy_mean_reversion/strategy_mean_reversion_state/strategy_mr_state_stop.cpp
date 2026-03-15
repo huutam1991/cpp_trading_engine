@@ -1,7 +1,10 @@
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state_stop.h>
 
-StrategyMeanReversionStateStop::StrategyMeanReversionStateStop(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config)
-    : m_gateway{gateway}, m_config{config}
+StrategyMeanReversionStateStop::StrategyMeanReversionStateStop(
+    std::shared_ptr<Gateway> gateway,
+    const StrategyMeanReversionConfig& config,
+    std::vector<SpreadCaptureConfig>& spread_captures)
+    : m_gateway{gateway}, m_config{config}, m_spread_captures{spread_captures}
 {
 }
 
@@ -17,7 +20,87 @@ void StrategyMeanReversionStateStop::end()
 
 Json StrategyMeanReversionStateStop::get_info()
 {
-    return m_config.to_json();
+    Json spread_captures;
+
+    for (auto& spread_capture : m_spread_captures)
+    {
+        spread_captures.push_back({
+            {"entry_distance", spread_capture.entry_distance},
+            {"take_profit", spread_capture.take_profit},
+            {"stop_loss", spread_capture.stop_loss},
+            {"success", spread_capture.success},
+            {"fail", spread_capture.fail},
+            {"win_rate", spread_capture.win_rate()}
+        });
+    }
+
+    return spread_captures;
+}
+
+void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+    // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    double current_price = snapshot->get_mid_price();
+
+    for (auto& spread_capture : m_spread_captures)
+    {
+        if (spread_capture.status == SpreadCaptureConfig::Status::NONE)
+        {
+            spread_capture.buy_order.status = Order::Status::NEW;
+            spread_capture.buy_order.price = current_price - spread_capture.entry_distance;
+            spread_capture.sell_order.status = Order::Status::NEW;
+            spread_capture.sell_order.price = current_price + spread_capture.entry_distance;
+
+            spread_capture.status = SpreadCaptureConfig::Status::PLACING_INIT_ORDERS;
+        }
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_INIT_ORDERS)
+        {
+            if (current_price < spread_capture.buy_order.price)
+            {
+                spread_capture.buy_order.status = Order::Status::FILLED;
+                spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER;
+                spread_capture.sell_order.price = current_price + spread_capture.take_profit;
+            }
+            else if (current_price > spread_capture.sell_order.price)
+            {
+                spread_capture.sell_order.status = Order::Status::FILLED;
+                spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_BUY_ORDER;
+                spread_capture.buy_order.price = current_price - spread_capture.take_profit;
+            }
+            else
+            {
+                // Update new order price
+                spread_capture.buy_order.price = current_price - spread_capture.entry_distance;
+                spread_capture.sell_order.price = current_price + spread_capture.entry_distance;
+            }
+        }
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_BUY_ORDER)
+        {
+            if (current_price < spread_capture.buy_order.price)
+            {
+                spread_capture.status = SpreadCaptureConfig::Status::NONE;
+                spread_capture.success++;
+            }
+            else if (current_price >= spread_capture.sell_order.price + spread_capture.stop_loss)
+            {
+                spread_capture.status = SpreadCaptureConfig::Status::NONE;
+                spread_capture.fail++;
+            }
+        }
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER)
+        {
+            if (current_price > spread_capture.sell_order.price)
+            {
+                spread_capture.status = SpreadCaptureConfig::Status::NONE;
+                spread_capture.success++;
+            }
+            else if (current_price <= spread_capture.buy_order.price - spread_capture.stop_loss)
+            {
+                spread_capture.status = SpreadCaptureConfig::Status::NONE;
+                spread_capture.fail++;
+            }
+        }
+    }
 }
 
 Task<void> StrategyMeanReversionStateStop::update(StrategyUpdateData data)
@@ -31,11 +114,7 @@ Task<void> StrategyMeanReversionStateStop::update(StrategyUpdateData data)
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
         OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        double bid_price = snapshot->get_best_bid();
-        double ask_price = snapshot->get_best_ask();
-        double ask_quantity = snapshot->get_best_ask_quantity();
-        double bid_quantity = snapshot->get_best_bid_quantity();
-        // m_pnl.update_current_price((bid_price + ask_price) / 2.0);
+        handle_order_book_snapshot(snapshot);
 
         OrderBookSnapShotPool::release(snapshot);
     }
