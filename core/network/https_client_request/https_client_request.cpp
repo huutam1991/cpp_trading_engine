@@ -9,7 +9,7 @@ HttpsClientRequest::HttpsClientRequest(EpollBase* epoll_base, const std::string&
         m_port{port},
         m_tcp_connection{tcp_connection ?
             std::move(tcp_connection) :
-            std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port, [this]() { this->on_disconnect(); })
+            std::make_unique<TCPConnection>(m_epoll_base, m_hostname, m_port, [this]() { this->on_connect(); }, [this]() { this->on_disconnect(); })
         }
 {
     m_wait_for_tcp_data_task = wait_for_tcp_data();
@@ -22,6 +22,11 @@ HttpsClientRequest::~HttpsClientRequest()
 
     // Need to intendly destroy [m_wait_for_tcp_data_task]
     m_wait_for_tcp_data_task.destroy(true);
+}
+
+void HttpsClientRequest::on_connect()
+{
+    spdlog::info("HttpsClientRequest::on_connect - Connected to {}:{}", m_hostname, m_port);
 }
 
 void HttpsClientRequest::on_disconnect()

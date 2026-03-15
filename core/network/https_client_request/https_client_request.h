@@ -41,6 +41,7 @@ public:
     Task<HttpsClientResponse> put(const std::string& path, const std::string& body);
 
 protected:
+    void on_connect();
     void on_disconnect();
 
 private:

@@ -4,11 +4,16 @@
 #include "websocket_frame_parser.h"
 
 HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port)
-    : m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port, [this]() { this->on_disconnect(); })),
+    : m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port, [this]() { this->on_connect(); }, [this]() { this->on_disconnect(); })),
       m_rest_request(std::make_unique<HttpsClientRequest>(epoll_base, hostname, port, std::move(m_tcp_connection))),
       m_websocket_session(std::make_unique<HttpsClientWebsocketSession>(epoll_base, hostname, port))
 {
     connect().start_running_on(epoll_base);
+}
+
+void HttpsClientWebsocket::on_connect()
+{
+    spdlog::info("HttpsClientWebsocket::on_connect - Connected to {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
 }
 
 void HttpsClientWebsocket::on_disconnect()
