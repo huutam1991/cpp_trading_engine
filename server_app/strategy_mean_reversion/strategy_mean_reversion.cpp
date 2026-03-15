@@ -18,12 +18,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::ini
     m_spread_captures = m_config.object.spread_capture_configs;
     for (auto& m_spread_capture : m_spread_captures)
     {
-        m_spread_capture.success = 0;
-        m_spread_capture.fail = 0;
-
-        m_spread_capture.status = SpreadCaptureConfig::Status::NONE;
-        m_spread_capture.buy_order = nullptr;
-        m_spread_capture.sell_order = nullptr;
+        m_spread_capture.reset();
     }
 
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
