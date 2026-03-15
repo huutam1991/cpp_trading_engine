@@ -1,6 +1,5 @@
 #pragma once
 
-#include <network/websocket/websocket_client_async.h>
 #include <coroutine/event_base_manager.h>
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter.h>
 
@@ -15,7 +14,6 @@ private:
     EventBase* m_event_base = nullptr;
 
     // Websocket to get order data
-    std::shared_ptr<WebsocketClientAsync> m_websocket;
     std::string m_listen_key;
     void init_websocket();
     Task<std::string> get_listen_key();

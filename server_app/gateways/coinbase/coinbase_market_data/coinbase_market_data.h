@@ -3,9 +3,7 @@
 #include <functional>
 #include <unordered_map>
 
-#include <network/websocket/websocket_client_async.h>
 #include <json/json.h>
-
 #include <instrument/instrument.h>
 
 class CoinbaseMarketData
@@ -29,7 +27,6 @@ private:
 
     EventBase* m_event_base = nullptr;
 
-    std::unordered_map<const Instrument*, std::shared_ptr<WebsocketClientAsync>> m_websockets;
     std::function<void(const Instrument* symbol, Json& payload)> m_on_callback = nullptr;
 
     size_t get_stream_id_count();

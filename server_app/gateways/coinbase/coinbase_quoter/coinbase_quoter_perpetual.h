@@ -1,6 +1,5 @@
 #pragma once
 
-#include <network/websocket/websocket_client_async.h>
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter.h>
 
 class CoinbaseQuoterPerpetual : public CoinbaseQuoter
@@ -18,8 +17,6 @@ private:
     void update_order_result(const Json& order_result);
 
     // Websocket to get order data
-    std::shared_ptr<WebsocketClientAsync> m_websocket;
-    std::string m_listen_key;
     void init_websocket();
     std::string get_listen_key();
 
