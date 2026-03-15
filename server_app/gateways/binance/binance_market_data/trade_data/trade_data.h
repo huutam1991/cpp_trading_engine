@@ -1,24 +1,19 @@
 #pragma once
 
-#include <network/websocket/websocket_client_async.h>
-#include <ioc_pool.h>
+#include <network/https_client_websocket/https_client_websocket.h>
 
 #include <instrument/instrument.h>
 
 class BinanceTradeData
 {
     std::string m_symbol;
-    net::io_context& m_ioc;
-    EventBase* m_event_base;
+    EpollBase* m_event_base;
     const Instrument* m_instrument = nullptr;
-    std::shared_ptr<WebsocketClientAsync> m_websocket = nullptr;
+    std::shared_ptr<HttpsClientWebsocket> m_websocket = nullptr;
 
     void start();
 
 public:
-    BinanceTradeData(const std::string& symbol, net::io_context& ioc, EventBase* event_base);
-    ~BinanceTradeData()
-    {
-        m_websocket->close();
-    }
+    BinanceTradeData(const std::string& symbol, EpollBase* event_base);
+    ~BinanceTradeData() {}
 };
