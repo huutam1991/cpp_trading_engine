@@ -10,50 +10,20 @@
 #include <coroutine/task.h>
 #include <coroutine/future.h>
 
+#include <gateways/gateway.h>
+#include <strategy/strategy_base.h>
 #include <strategy_mean_reversion/strategy_mean_reversion_config.h>
-#include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
 
-class StrategyMeanReversion
+class StrategyMeanReversion : public StrategyBase<StrategyMeanReversionConfig, EventBaseID::MEAN_REVERSION_STRATEGY>
 {
-    Singleton(StrategyMeanReversion)
-
-private:
-    // Mutex
-    std::mutex m_strategy_mutex;
-
-    // Info
-    StrategyMeanReversionConfig m_config;
-    bool m_is_init = false;
-
     // Gateway
     std::shared_ptr<Gateway> m_gateway;
 
-    // StrategyState
-    static std::unordered_map<std::string, StrategyMeanReversionState*>* get_strategy_states();
-
-    // Data update
-    Task<void> m_update_task;
-    bool m_is_run_update = false;
-    std::queue<StrategyMeanReversionData> m_state_data_queue;
-    Future<bool> wait_new_data_update();
+protected:
+    virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;
+    virtual void on_config_change(StrategyMeanReversionConfig new_config) override;
 
     void run();
     void stop();
 
-public:
-    void init();
-    void on_config_change();
-    Task<void> update();
-
-    Json get_orders_chain();
-    Json get_open_orders();
-};
-
-class MeanReversionSimpleGuard
-{
-    bool* m_value;
-
-public:
-    MeanReversionSimpleGuard(bool& value) { m_value = &value; *m_value = true; }
-    ~MeanReversionSimpleGuard() { *m_value = false; }
 };

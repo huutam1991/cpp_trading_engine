@@ -1,21 +1,25 @@
 #pragma once
 
-#include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
 #include <unordered_map>
 #include <array>
 
 #include <order/order_manager.h>
+#include <gateways/gateway.h>
+#include <strategy/strategy_state_base.h>
+#include <strategy_mean_reversion/strategy_mean_reversion_config.h>
 
-class StrategyMeanReversionStateRun : public StrategyMeanReversionState
+class StrategyMeanReversionStateRun : public StrategyStateBase
 {
+    std::shared_ptr<Gateway> m_gateway;
+    const StrategyMeanReversionConfig& m_config;
+
 public:
-    StrategyMeanReversionStateRun(std::shared_ptr<Gateway>& gateway, StrategyMeanReversionConfig& config);
+    StrategyMeanReversionStateRun(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config);
 
     virtual void begin();
     virtual void end();
-    virtual Task<void> run(StrategyMeanReversionData data);
-
-    virtual Json get_open_orders() override;
+    virtual Task<void> update(StrategyUpdateData data);
+    virtual Json get_info() override;
 
 private:
     double m_current_price = 0.0;
@@ -30,13 +34,6 @@ private:
     // Current open orders by price
     std::unordered_map<double, OrderInfo> m_current_open_orders;
 
-    // Generate order
-    Order get_limit_buy_spot_order_by_price(double price);
-    Order get_limit_sell_spot_order_by_price_and_quantity(double price, double quantity);
-
-    void remove_open_order_by_price(double price);
-    void check_place_order_at_price(double price);
-    void check_cancel_order_at_price(double price);
-    Task<void> handle_price_update(MRPriceUpdate price);
+    Task<void> handle_price_update(PriceUpdate price);
     Task<void> handle_order_update(Order& order);
 };

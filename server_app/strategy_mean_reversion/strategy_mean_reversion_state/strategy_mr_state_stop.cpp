@@ -1,7 +1,7 @@
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state_stop.h>
 
-StrategyMeanReversionStateStop::StrategyMeanReversionStateStop(std::shared_ptr<Gateway>& gateway, StrategyMeanReversionConfig& config)
-    : StrategyMeanReversionState(gateway, config)
+StrategyMeanReversionStateStop::StrategyMeanReversionStateStop(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config)
+    : m_gateway{gateway}, m_config{config}
 {
 }
 
@@ -15,20 +15,22 @@ void StrategyMeanReversionStateStop::end()
     spdlog::info("StrategyMeanReversionStateStop - end");
 }
 
-Task<void> StrategyMeanReversionStateStop::run(StrategyMeanReversionData data)
+Json StrategyMeanReversionStateStop::get_info()
 {
-    MRPriceUpdate price_update;
-    if (std::holds_alternative<MRPriceUpdate>(data))
-    {
-        price_update = std::get<MRPriceUpdate>(data);
-    }
-
-    spdlog::debug("StrategyMeanReversionStateStop: do nothing, symbol: {}, price: {}", price_update.symbol, price_update.price);
-
-    co_return;
+    return {
+        {"info", "TBD"}
+    };
 }
 
-Json StrategyMeanReversionStateStop::get_open_orders()
+Task<void> StrategyMeanReversionStateStop::update(StrategyUpdateData data)
 {
-    return {};
+    PriceUpdate price_update;
+    if (std::holds_alternative<PriceUpdate>(data))
+    {
+        price_update = std::get<PriceUpdate>(data);
+    }
+
+    spdlog::debug("StrategyMeanReversionStateStop: do nothing, symbol: {}, price: {}", price_update.instrument->symbol, price_update.price);
+
+    co_return;
 }

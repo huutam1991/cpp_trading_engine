@@ -1,15 +1,19 @@
 #pragma once
 
-#include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state.h>
+#include <strategy/strategy_state_base.h>
+#include <gateways/gateway.h>
+#include <strategy_mean_reversion/strategy_mean_reversion_config.h>
 
-class StrategyMeanReversionStateStop : public StrategyMeanReversionState
+class StrategyMeanReversionStateStop : public StrategyStateBase
 {
+    std::shared_ptr<Gateway> m_gateway;
+    const StrategyMeanReversionConfig& m_config;
+
 public:
-    StrategyMeanReversionStateStop(std::shared_ptr<Gateway>& gateway, StrategyMeanReversionConfig& config);
+    StrategyMeanReversionStateStop(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config);
 
     virtual void begin();
     virtual void end();
-    virtual Task<void> run(StrategyMeanReversionData data);
-
-    virtual Json get_open_orders() override;
+    virtual Task<void> update(StrategyUpdateData data);
+    virtual Json get_info() override;
 };
