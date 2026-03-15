@@ -17,7 +17,7 @@ OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_l
 
 void OrderBookWebsocket::start()
 {
-    std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level) + "@100ms";
+    std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level) + "@500ms";
 
     m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), ws_path,
         // on_connect
