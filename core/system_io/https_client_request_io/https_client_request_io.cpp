@@ -249,7 +249,6 @@ int HttpsClientIO::activate()
 
 int HttpsClientIO::handle_read()
 {
-    spdlog::debug("HttpsClientIO::handle_read - Read event triggered, fd = {}, ip: {}, port: {}", fd, ip, port);
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
@@ -263,7 +262,6 @@ int HttpsClientIO::handle_read()
 
 int HttpsClientIO::handle_write()
 {
-    spdlog::debug("HttpsClientIO::handle_write - Write event triggered, fd = {}, ip: {}, port: {}", fd, ip, port);
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
