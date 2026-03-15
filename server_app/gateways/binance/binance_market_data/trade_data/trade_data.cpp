@@ -1,6 +1,8 @@
 #include "trade_data.h"
 #include <app_constants.h>
 #include <json/json.h>
+#include <utils/utils.h>
+#include <mongo_db/mongo_db.h>
 
 #include <strategy/strategy_manager.h>
 
@@ -31,6 +33,16 @@ void BinanceTradeData::start()
         [this, ws_path]() -> Task<void>
         {
             spdlog::info("BinanceTradeData [{}] is connected", ws_path);
+
+            MongoDB::instance()
+                .set_db_and_collection("websocket_monitoring", "TradeDataWebsocket")
+                .insert_one(Json{
+                    {"event", "CONNECTED"},
+                    {"symbol", m_symbol},
+                    {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
+                }
+            );
+
             co_return;
         },
         // on_message
@@ -62,6 +74,15 @@ void BinanceTradeData::start()
             // Re-start
             spdlog::debug("BinanceTradeData [{}] disconnected, re-starting...", symbol);
             // this->start();
+
+            MongoDB::instance()
+                .set_db_and_collection("websocket_monitoring", "TradeDataWebsocket")
+                .insert_one(Json{
+                    {"event", "DISCONNECTED"},
+                    {"symbol", m_symbol},
+                    {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
+                }
+            );
 
             co_return;
         },

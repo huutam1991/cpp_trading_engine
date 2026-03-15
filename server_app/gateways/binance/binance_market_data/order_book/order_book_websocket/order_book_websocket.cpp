@@ -28,7 +28,7 @@ void OrderBookWebsocket::start()
             MongoDB::instance()
                 .set_db_and_collection("websocket_monitoring", "OrderBookWebsocket")
                 .insert_one(Json{
-                    {"event", "connected"},
+                    {"event", "CONNECTED"},
                     {"symbol", m_symbol},
                     {"depth_level", m_depth_level},
                     {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
@@ -48,6 +48,17 @@ void OrderBookWebsocket::start()
         {
             spdlog::debug("OrderBookWebsocket [{}] disconnected, re-starting...", symbol);
             // this->start();
+
+            MongoDB::instance()
+                .set_db_and_collection("websocket_monitoring", "OrderBookWebsocket")
+                .insert_one(Json{
+                    {"event", "DISCONNECTED"},
+                    {"symbol", m_symbol},
+                    {"depth_level", m_depth_level},
+                    {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
+                }
+            );
+
             co_return;
         },
         // on_close
