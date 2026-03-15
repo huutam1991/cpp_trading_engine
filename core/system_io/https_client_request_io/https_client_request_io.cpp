@@ -30,6 +30,11 @@ HttpsClientIO::~HttpsClientIO()
     }
 }
 
+void HttpsClientIO::set_on_connect_callback(std::function<void()> callback)
+{
+    on_connect_callback = callback;
+}
+
 void HttpsClientIO::set_on_disconnect_callback(std::function<void()> callback)
 {
     on_disconnect_callback = callback;
@@ -124,7 +129,14 @@ int HttpsClientIO::check_connect_and_handshake()
         {
             spdlog::info("HttpsClientIO::handle_io_data - TLS handshake success, ip: {}, port: {}", ip, port);
         }
-        return result != TlsResult::ERROR ? 0 : -1;
+
+        int connect_result = result != TlsResult::ERROR ? 0 : -1;
+        if (connect_result == 0 && on_connect_callback != nullptr)
+        {
+            on_connect_callback();
+        }
+
+        return connect_result;
     }
 
     return 0;
@@ -237,6 +249,7 @@ int HttpsClientIO::activate()
 
 int HttpsClientIO::handle_read()
 {
+    spdlog::debug("HttpsClientIO::handle_read - Read event triggered, fd = {}, ip: {}, port: {}", fd, ip, port);
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
@@ -250,6 +263,7 @@ int HttpsClientIO::handle_read()
 
 int HttpsClientIO::handle_write()
 {
+    spdlog::debug("HttpsClientIO::handle_write - Write event triggered, fd = {}, ip: {}, port: {}", fd, ip, port);
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {

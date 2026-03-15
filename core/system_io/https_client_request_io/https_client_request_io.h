@@ -32,6 +32,10 @@ struct HttpsClientIO : public NamedIOObject<HttpsClientIO>
     HttpsClientIO(const std::string& hostname_value, int port_value);
     ~HttpsClientIO();
 
+    // Set callback on connect
+    std::function<void()> on_connect_callback = nullptr;
+    void set_on_connect_callback(std::function<void()> callback);
+
     // Set callback on disconnect
     std::function<void()> on_disconnect_callback = nullptr;
     void set_on_disconnect_callback(std::function<void()> callback);
