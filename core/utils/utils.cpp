@@ -36,6 +36,25 @@ size_t Utils::get_0h_by_number_of_day_before_in_utc(size_t number_of_day_before)
     return get_0h_today_in_utc() - 86400 * number_of_day_before;
 }
 
+std::string Utils::get_time_now_in_string_HMS_DMY(time_t offset)
+{
+    time_t now = get_time_now_in_utc();
+    now += offset;
+
+    struct tm* timeinfo;
+    char buffer[80];
+
+    timeinfo = gmtime(&now);
+
+    if (timeinfo)
+    {
+        strftime(buffer, sizeof(buffer), "%H:%M:%S %d-%m-%Y", timeinfo);
+        return std::string(buffer);
+    }
+
+    return "";
+}
+
 std::string Utils::get_string_time(time_t time_val, time_t offset)
 {
     time_val += offset;

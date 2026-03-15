@@ -38,6 +38,7 @@ public:
     static size_t get_0h_tomorrow_in_utc();
     static size_t get_0h_by_number_of_day_before_in_utc(size_t number_of_date_before);
 
+    static std::string get_time_now_in_string_HMS_DMY(time_t offset = UTC_PLUS_7_IN_S);
     static std::string get_string_time(time_t time, time_t offset = UTC_PLUS_7_IN_S);
     static std::string get_string_time_YMD(time_t time, time_t offset = UTC_PLUS_7_IN_S);
     static std::string get_string_time_YMD_with_millisecond(time_t time, time_t offset = UTC_PLUS_7_IN_MS);
