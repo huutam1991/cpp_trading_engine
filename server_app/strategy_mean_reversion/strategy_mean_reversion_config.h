@@ -5,9 +5,9 @@
 
 struct StrategyMeanReversionConfig
 {
-    std::string symbol; // BTCUSDT
-    bool is_running;
-    std::vector<SpreadCaptureConfig> spread_capture_configs = {{10.0, 3.0, 100.0}}; // Default config
+    std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
+    bool is_running = false;
+    std::vector<SpreadCaptureConfig> spread_capture_configs = {{10.0, 3.0, 100.0}};
 
     Json to_json() const
     {
