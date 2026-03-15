@@ -14,7 +14,6 @@ struct SpreadCaptureConfig
 
     double profit = 0.0;
     double loss = 0.0;
-    double total = 0.0;
 
     Order buy_order = nullptr;
     Order sell_order = nullptr;
@@ -35,7 +34,6 @@ struct SpreadCaptureConfig
         fail = 0;
         profit = 0.0;
         loss = 0.0;
-        total = 0.0;
         buy_order = nullptr;
         sell_order = nullptr;
         status = Status::NONE;
