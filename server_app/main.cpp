@@ -66,10 +66,12 @@ Task<void> test_https_client_request_httpbin(EpollBase* epoll_base)
 
 Task<void> test_https_client_websocket(EpollBase* epoll_base)
 {
+    // stream.binance.com:9443/ws/btcusdt@trade
     HttpsClientWebsocket websocket(
         epoll_base,
-        "ws.ifelse.io",
-        443,
+        "stream.binance.com",
+        9443,
+        "/ws/btcusdt@trade",
         []() -> Task<void>
         {
             spdlog::info("Websocket connected");
@@ -95,9 +97,10 @@ Task<void> test_https_client_websocket(EpollBase* epoll_base)
     int counter = 1;
     while (true)
     {
-        co_await Timer::sleep_for(1000);
+        co_await Timer::sleep_for(15000);
 
-        websocket.write("Hello from client! " + std::to_string(counter++));
+        // websocket.write("Hello from client! " + std::to_string(counter++));
+        // websocket.write_ping("hb1");
     }
 
     co_return;
