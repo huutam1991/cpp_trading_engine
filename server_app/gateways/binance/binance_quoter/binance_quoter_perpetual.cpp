@@ -1,6 +1,7 @@
-#include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 #include <network/https_client_request/https_client_request.h>
+#include <utils/utils.h>
+#include <mongo_db/mongo_db.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 #include <app_utils/app_utils.h>
@@ -53,6 +54,14 @@ void BinanceQuoterPerpetual::init_websocket()
         [this]() -> Task<void>
         {
             spdlog::info("BinanceQuoterPerpetual websocket connected");
+
+            MongoDB::instance()
+                .set_db_and_collection("websocket_monitoring", "BinanceQuoterPerpetual")
+                .insert_one(Json{
+                    {"event", "CONNECTED"},
+                    {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
+                }
+            );
 
             co_return;
         },
