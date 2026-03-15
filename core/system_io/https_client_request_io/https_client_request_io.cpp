@@ -32,17 +32,17 @@ HttpsClientIO::~HttpsClientIO()
 
 void HttpsClientIO::set_on_connect_callback(std::function<void()> callback)
 {
-    on_connect_callback = callback;
+    on_connect_callback = std::move(callback);
 }
 
 void HttpsClientIO::set_on_disconnect_callback(std::function<void()> callback)
 {
-    on_disconnect_callback = callback;
+    on_disconnect_callback = std::move(callback);
 }
 
 void HttpsClientIO::set_on_response_received_callback(std::function<void(const char* buffer, std::uint32_t size)> callback)
 {
-    on_response_received_callback = callback;
+    on_response_received_callback = std::move(callback);
 }
 
 void HttpsClientIO::write(std::string data)
