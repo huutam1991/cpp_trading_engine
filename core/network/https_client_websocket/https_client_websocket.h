@@ -10,6 +10,7 @@ class HttpsClientWebsocket
     EpollBase* m_epoll_base = nullptr;
     std::string m_hostname;
     int m_port;
+    std::string m_path;
 
     // User's callbacks
     std::function<Task<void>()> m_on_connect = nullptr;
@@ -26,6 +27,7 @@ public:
         EpollBase* epoll_base,
         const std::string& hostname,
         int port,
+        const std::string& path,
         std::function<Task<void>()> on_connect,
         std::function<Task<void>(std::string)> on_message,
         std::function<Task<void>()> on_disconnect,

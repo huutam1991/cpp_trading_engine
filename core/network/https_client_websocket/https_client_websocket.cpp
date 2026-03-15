@@ -7,6 +7,7 @@ HttpsClientWebsocket::HttpsClientWebsocket(
     EpollBase* epoll_base,
     const std::string& hostname,
     int port,
+    const std::string& path,
     std::function<Task<void>()> on_connect,
     std::function<Task<void>(std::string)> on_message,
     std::function<Task<void>()> on_disconnect,
@@ -14,6 +15,7 @@ HttpsClientWebsocket::HttpsClientWebsocket(
     : m_epoll_base{epoll_base},
       m_hostname{hostname},
       m_port{port},
+      m_path{path},
       m_on_connect{std::move(on_connect)},
       m_on_message{std::move(on_message)},
       m_on_disconnect{std::move(on_disconnect)},
@@ -35,6 +37,11 @@ void HttpsClientWebsocket::on_tcp_disconnect()
 
     m_rest_request = nullptr;
     m_websocket_session = nullptr;
+
+    if (m_on_disconnect != nullptr)
+    {
+        m_on_disconnect().start_running_on(m_epoll_base);
+    }
 }
 
 bool HttpsClientWebsocket::is_websocket_connected() const
@@ -80,7 +87,7 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
     m_rest_request->add_header("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
     m_rest_request->add_header("Sec-WebSocket-Version", "13");
 
-    HttpsClientResponse response = co_await m_rest_request->get("/");
+    HttpsClientResponse response = co_await m_rest_request->get(m_path);
 
     if (response.status_code == 101)
     {
