@@ -3,6 +3,8 @@
 #include <time/timer.h>
 #include <time/measure_time.h>
 #include <app_constants.h>
+#include <mongo_db/mongo_db.h>
+#include <utils/utils.h>
 
 #define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
 
@@ -22,6 +24,17 @@ void OrderBookWebsocket::start()
         [this, ws_path]() -> Task<void>
         {
             spdlog::info("OrderBookWebsocket [{}] is connected", ws_path);
+
+            MongoDB::instance()
+                .set_db_and_collection("websocket_monitoring", "OrderBookWebsocket")
+                .insert_one(Json{
+                    {"event", "connected"},
+                    {"symbol", m_symbol},
+                    {"depth_level", m_depth_level},
+                    {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
+                }
+            );
+
             co_return;
         },
         // on_message
