@@ -19,6 +19,7 @@ class TCPConnection
     std::string m_hostname;
     int m_port;
     std::unique_ptr<HttpsClientIO> m_io_object = nullptr;
+    std::function<void()> m_on_connect = nullptr;
     std::function<void()> m_on_disconnect = nullptr;
     Future<std::string>::FutureValue* m_waiting_data_value = nullptr;
     std::queue<std::string> m_pending_data_queue;
@@ -26,8 +27,8 @@ class TCPConnection
 public:
     TCPConnection() = default;
 
-    TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port, std::function<void()> callback)
-        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}, m_on_disconnect{callback}
+    TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port, std::function<void()> on_connect, std::function<void()> on_disconnect)
+        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}, m_on_connect{on_connect}, m_on_disconnect{on_disconnect}
     {
         connect();
     }
