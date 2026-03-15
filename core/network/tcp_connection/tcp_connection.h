@@ -26,22 +26,27 @@ class TCPConnection
 public:
     TCPConnection() = default;
 
-    TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port)
-        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}
+    TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port, std::function<void()> callback)
+        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}, m_on_disconnect{callback}
     {
         connect();
     }
 
     ~TCPConnection() = default;
 
+    std::string get_hostname() const
+    {
+        return m_hostname;
+    }
+
+    int get_port() const
+    {
+        return m_port;
+    }
+
     bool is_disconnected()
     {
         return m_io_object == nullptr;
-    }
-
-    void set_on_disconnect_callback(std::function<void()> callback)
-    {
-        m_on_disconnect = callback;
     }
 
     void write(std::string data)
