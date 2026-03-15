@@ -77,7 +77,7 @@ Task<void> test_https_client_websocket(EpollBase* epoll_base)
         },
         [](std::string message) -> Task<void>
         {
-            spdlog::info("Received websocket message: {}", message);
+            spdlog::info("Received ws.ifelse.io's websocket message: {}", message);
             co_return;
         },
         []() -> Task<void>
@@ -92,11 +92,12 @@ Task<void> test_https_client_websocket(EpollBase* epoll_base)
         }
     );
 
+    int counter = 1;
     while (true)
     {
-        co_await Timer::sleep_for(2000);
+        co_await Timer::sleep_for(1000);
 
-        websocket.write("Hello from client!");
+        websocket.write("Hello from client! " + std::to_string(counter++));
     }
 
     co_return;
