@@ -33,6 +33,7 @@ Json StrategyMeanReversionStateStop::get_info()
             {"win_rate", spread_capture.win_rate()},
             {
                 "current_status", {
+                    {"current_price", m_current_price},
                     {"status", enum_reflect::enum_name(spread_capture.status)},
                     {"buy_order", {
                         {"price", spread_capture.buy_order.price},
@@ -53,48 +54,48 @@ Json StrategyMeanReversionStateStop::get_info()
 void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
     // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
-    double current_price = snapshot->get_mid_price();
+    m_current_price = snapshot->get_mid_price();
 
     for (auto& spread_capture : m_spread_captures)
     {
         if (spread_capture.status == SpreadCaptureConfig::Status::NONE)
         {
             spread_capture.buy_order.status = Order::Status::NEW;
-            spread_capture.buy_order.price = current_price - spread_capture.entry_distance;
+            spread_capture.buy_order.price = m_current_price - spread_capture.entry_distance;
             spread_capture.sell_order.status = Order::Status::NEW;
-            spread_capture.sell_order.price = current_price + spread_capture.entry_distance;
+            spread_capture.sell_order.price = m_current_price + spread_capture.entry_distance;
 
             spread_capture.status = SpreadCaptureConfig::Status::PLACING_INIT_ORDERS;
         }
         else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_INIT_ORDERS)
         {
-            if (current_price < spread_capture.buy_order.price)
+            if (m_current_price < spread_capture.buy_order.price)
             {
                 spread_capture.buy_order.status = Order::Status::FILLED;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER;
-                spread_capture.sell_order.price = current_price + spread_capture.take_profit;
+                spread_capture.sell_order.price = m_current_price + spread_capture.take_profit;
             }
-            else if (current_price > spread_capture.sell_order.price)
+            else if (m_current_price > spread_capture.sell_order.price)
             {
                 spread_capture.sell_order.status = Order::Status::FILLED;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_BUY_ORDER;
-                spread_capture.buy_order.price = current_price - spread_capture.take_profit;
+                spread_capture.buy_order.price = m_current_price - spread_capture.take_profit;
             }
             else
             {
                 // Update new order price
-                spread_capture.buy_order.price = current_price - spread_capture.entry_distance;
-                spread_capture.sell_order.price = current_price + spread_capture.entry_distance;
+                spread_capture.buy_order.price = m_current_price - spread_capture.entry_distance;
+                spread_capture.sell_order.price = m_current_price + spread_capture.entry_distance;
             }
         }
         else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_BUY_ORDER)
         {
-            if (current_price < spread_capture.buy_order.price)
+            if (m_current_price < spread_capture.buy_order.price)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.success++;
             }
-            else if (current_price >= spread_capture.sell_order.price + spread_capture.stop_loss)
+            else if (m_current_price >= spread_capture.sell_order.price + spread_capture.stop_loss)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.fail++;
@@ -102,12 +103,12 @@ void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapSho
         }
         else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER)
         {
-            if (current_price > spread_capture.sell_order.price)
+            if (m_current_price > spread_capture.sell_order.price)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.success++;
             }
-            else if (current_price <= spread_capture.buy_order.price - spread_capture.stop_loss)
+            else if (m_current_price <= spread_capture.buy_order.price - spread_capture.stop_loss)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.fail++;
