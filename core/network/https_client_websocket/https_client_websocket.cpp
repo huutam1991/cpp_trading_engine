@@ -115,3 +115,19 @@ void HttpsClientWebsocket::write(std::string message)
         m_websocket_session->write(std::move(message));
     }
 }
+
+void HttpsClientWebsocket::write_ping(const std::string& payload)
+{
+    if (is_websocket_connected())
+    {
+        m_websocket_session->write_ping(payload);
+    }
+}
+
+void HttpsClientWebsocket::write_pong(const std::string& payload)
+{
+    if (is_websocket_connected())
+    {
+        m_websocket_session->write_pong(payload);
+    }
+}

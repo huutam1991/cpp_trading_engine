@@ -32,6 +32,8 @@ public:
         std::function<Task<void>()> on_close);
 
     void write(std::string message);
+    void write_ping(const std::string& payload = "");
+    void write_pong(const std::string& payload = "");
 
 private:
     bool is_websocket_connected() const;
