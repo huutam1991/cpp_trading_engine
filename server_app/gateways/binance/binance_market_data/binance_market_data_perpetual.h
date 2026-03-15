@@ -26,7 +26,7 @@ private:
     std::string m_port;
     std::vector<const Instrument*> m_instruments;
 
-    EventBase* m_event_base = nullptr;
+    EpollBase* m_event_base = nullptr;
 
     struct MarketData
     {
