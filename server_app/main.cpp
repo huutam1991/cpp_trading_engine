@@ -66,7 +66,31 @@ Task<void> test_https_client_request_httpbin(EpollBase* epoll_base)
 
 Task<void> test_https_client_websocket(EpollBase* epoll_base)
 {
-    HttpsClientWebsocket websocket(epoll_base, "ws.ifelse.io", 443);
+    HttpsClientWebsocket websocket(
+        epoll_base,
+        "ws.ifelse.io",
+        443,
+        []() -> Task<void>
+        {
+            spdlog::info("Websocket connected");
+            co_return;
+        },
+        [](std::string message) -> Task<void>
+        {
+            spdlog::info("Received websocket message: {}", message);
+            co_return;
+        },
+        []() -> Task<void>
+        {
+            spdlog::info("Websocket disconnected");
+            co_return;
+        },
+        []() -> Task<void>
+        {
+            spdlog::info("Websocket closed");
+            co_return;
+        }
+    );
 
     co_await Timer::sleep_for(20000);
 

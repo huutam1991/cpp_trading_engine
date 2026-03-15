@@ -3,10 +3,21 @@
 #include "https_client_websocket.h"
 #include "websocket_frame_parser.h"
 
-HttpsClientWebsocket::HttpsClientWebsocket(EpollBase* epoll_base, const std::string& hostname, int port)
+HttpsClientWebsocket::HttpsClientWebsocket(
+    EpollBase* epoll_base,
+    const std::string& hostname,
+    int port,
+    std::function<Task<void>()> on_connect,
+    std::function<Task<void>(std::string)> on_message,
+    std::function<Task<void>()> on_disconnect,
+    std::function<Task<void>()> on_close)
     : m_epoll_base{epoll_base},
       m_hostname{hostname},
       m_port{port},
+      m_on_connect{std::move(on_connect)},
+      m_on_message{std::move(on_message)},
+      m_on_disconnect{std::move(on_disconnect)},
+      m_on_close{std::move(on_close)},
       m_tcp_connection(std::make_unique<TCPConnection>(epoll_base, hostname, port, [this]() { this->on_tcp_connect(); }, [this]() { this->on_tcp_disconnect(); }))
 {
 }
@@ -29,8 +40,7 @@ Task<void> HttpsClientWebsocket::connect()
     co_await send_switch_protocol_request();
 
     // Move tcp connection from [m_rest_request] to [m_websocket_session]
-    m_websocket_session = std::make_unique<HttpsClientWebsocketSession>(m_epoll_base, m_hostname, m_port);
-    m_websocket_session->use_tcp_connection(std::move(m_rest_request->release_tcp_connection()));
+    m_websocket_session = std::make_unique<HttpsClientWebsocketSession>(m_epoll_base, std::move(m_rest_request->release_tcp_connection()));
     m_rest_request = nullptr; // Release REST request object
 
     co_return;

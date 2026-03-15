@@ -1,12 +1,10 @@
 #include "https_client_websocket_session.h"
 
-HttpsClientWebsocketSession::HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& hostname, int port)
+HttpsClientWebsocketSession::HttpsClientWebsocketSession(EpollBase* epoll_base, std::unique_ptr<TCPConnection> tcp_connection)
+    : m_tcp_connection(std::move(tcp_connection))
 {
-}
-
-void HttpsClientWebsocketSession::use_tcp_connection(std::unique_ptr<TCPConnection> tcp_connection)
-{
-    m_tcp_connection = std::move(tcp_connection);
+    m_wait_for_tcp_data_task = wait_for_tcp_data();
+    m_wait_for_tcp_data_task.start_running_on(epoll_base);
 }
 
 Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()

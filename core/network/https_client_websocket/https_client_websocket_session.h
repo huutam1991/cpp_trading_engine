@@ -13,10 +13,8 @@ class HttpsClientWebsocketSession
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
 
 public:
-    HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& hostname, int port);
+    HttpsClientWebsocketSession(EpollBase* epoll_base, std::unique_ptr<TCPConnection> tcp_connection);
     ~HttpsClientWebsocketSession() = default;
-
-    void use_tcp_connection(std::unique_ptr<TCPConnection> tcp_connection);
 
 private:
     WebSocketFrameParser m_response_parser;
