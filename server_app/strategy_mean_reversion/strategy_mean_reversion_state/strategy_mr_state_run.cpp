@@ -50,6 +50,19 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
 {
     // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
     m_current_price = snapshot->get_mid_price();
+
+    if (m_buy_order == nullptr && m_sell_order == nullptr)
+    {
+        // double buy_price = m_current_price - 10;
+        // double sell_price = m_current_price + 10;
+        // double quantity = 1.0;
+
+        // m_buy_order = get_limit_order(Order::Side::BUY, buy_price, quantity);
+        // m_sell_order = get_limit_order(Order::Side::SELL, sell_price, quantity);
+
+        // m_gateway->place(m_buy_order);
+        // m_gateway->place(m_sell_order);
+    }
 }
 
 void StrategyMeanReversionStateRun::handle_order_update(Order& order)
