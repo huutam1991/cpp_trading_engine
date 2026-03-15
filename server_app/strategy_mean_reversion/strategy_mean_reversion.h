@@ -13,11 +13,13 @@
 #include <gateways/gateway.h>
 #include <strategy/strategy_base.h>
 #include <strategy_mean_reversion/strategy_mean_reversion_config.h>
+#include <strategy_mean_reversion/spread_capture_config.h>
 
 class StrategyMeanReversion : public StrategyBase<StrategyMeanReversionConfig, EventBaseID::MEAN_REVERSION_STRATEGY>
 {
     // Gateway
     std::shared_ptr<Gateway> m_gateway;
+    std::vector<SpreadCaptureConfig> m_spread_captures;
 
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;

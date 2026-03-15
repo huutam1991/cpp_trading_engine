@@ -14,6 +14,18 @@
 
 std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::init_states()
 {
+    // Re-init [m_spread_captures] from config
+    m_spread_captures = m_config.object.spread_capture_configs;
+    for (auto& m_spread_capture : m_spread_captures)
+    {
+        m_spread_capture.success = 0;
+        m_spread_capture.fail = 0;
+
+        m_spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        m_spread_capture.buy_order = nullptr;
+        m_spread_capture.sell_order = nullptr;
+    }
+
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
     // For now, only use Binance
@@ -22,7 +34,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::ini
     m_gateway->subscribe_instruments({instrument});
 
     strategy_states[StrategyState::RUN] = new StrategyMeanReversionStateRun(m_gateway, get_config_reference());
-    strategy_states[StrategyState::STOP] = new StrategyMeanReversionStateStop(m_gateway, get_config_reference());
+    strategy_states[StrategyState::STOP] = new StrategyMeanReversionStateStop(m_gateway, get_config_reference(), m_spread_captures);
 
     return strategy_states;
 }
