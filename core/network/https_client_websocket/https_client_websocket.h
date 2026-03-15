@@ -45,4 +45,8 @@ private:
 
     void on_tcp_connect();
     void on_tcp_disconnect();
+
+    // For sending ping at 15 seconds interval
+    Task<void> m_send_ping_task = nullptr;
+    Task<void> send_ping_at_15_second_interval();
 };

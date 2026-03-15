@@ -38,6 +38,9 @@ void HttpsClientWebsocket::on_tcp_disconnect()
     m_rest_request = nullptr;
     m_websocket_session = nullptr;
 
+    // Need to intendly destroy [m_send_ping_task]
+    m_send_ping_task.destroy(true);
+
     if (m_on_disconnect != nullptr)
     {
         m_on_disconnect().start_running_on(m_epoll_base);
@@ -66,6 +69,10 @@ Task<void> HttpsClientWebsocket::connect()
 
     // Call user's [m_on_connect] callback
     co_await m_on_connect();
+
+    // Start sending ping at 15 seconds interval
+    m_send_ping_task = send_ping_at_15_second_interval();
+    m_send_ping_task.start_running_on(m_epoll_base);
 
     co_return;
 }
@@ -110,6 +117,17 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
     {
         spdlog::error("Failed to establish websocket connection, status code: {}", response.status_code);
         co_return;
+    }
+
+    co_return;
+}
+
+Task<void> HttpsClientWebsocket::send_ping_at_15_second_interval()
+{
+    while (is_websocket_connected())
+    {
+        co_await Timer::sleep_for(15000);
+        write_ping("");
     }
 
     co_return;

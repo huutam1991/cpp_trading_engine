@@ -94,13 +94,9 @@ Task<void> test_https_client_websocket(EpollBase* epoll_base)
         }
     );
 
-    int counter = 1;
     while (true)
     {
         co_await Timer::sleep_for(15000);
-
-        // websocket.write("Hello from client! " + std::to_string(counter++));
-        // websocket.write_ping("hb1");
     }
 
     co_return;
