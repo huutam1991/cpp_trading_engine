@@ -2,7 +2,7 @@
 #include <utils/dedupe_checker.h>
 #include <iomanip>
 
-OrderBook::OrderBook(const std::string& symbol, size_t depth_level, net::io_context& ioc, EventBase* event_base)
+OrderBook::OrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base)
     :   m_symbol{symbol},
         m_instrument{Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol)},
         m_depth_level{depth_level},
@@ -10,7 +10,6 @@ OrderBook::OrderBook(const std::string& symbol, size_t depth_level, net::io_cont
         m_order_book_websocket{
             symbol,
             depth_level,
-            ioc,
             event_base,
             [this](std::string data) { this->OnOrderbookWs(std::move(data)); }
         },

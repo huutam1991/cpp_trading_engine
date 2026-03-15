@@ -14,7 +14,7 @@
 class OrderBook
 {
 public:
-    OrderBook(const std::string& symbol, size_t depth_level, net::io_context& ioc, EventBase* event_base);
+    OrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base);
     Task<void> send_request_get_full_order_book();
 
     bool is_not_synced();
@@ -24,7 +24,7 @@ private:
     std::string m_symbol;
     const Instrument* m_instrument = nullptr;
     size_t m_depth_level;
-    EventBase* m_event_base;
+    EpollBase* m_event_base;
     OrderBookWebsocket m_order_book_websocket;
     OrderBookRest m_order_book_rest;
 
