@@ -17,9 +17,7 @@ void StrategyMeanReversionStateStop::end()
 
 Json StrategyMeanReversionStateStop::get_info()
 {
-    return {
-        {"info", "TBD"}
-    };
+    return m_config.to_json();
 }
 
 Task<void> StrategyMeanReversionStateStop::update(StrategyUpdateData data)
@@ -38,9 +36,6 @@ Task<void> StrategyMeanReversionStateStop::update(StrategyUpdateData data)
         double ask_quantity = snapshot->get_best_ask_quantity();
         double bid_quantity = snapshot->get_best_bid_quantity();
         // m_pnl.update_current_price((bid_price + ask_price) / 2.0);
-
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
-        spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
 
         OrderBookSnapShotPool::release(snapshot);
     }
