@@ -131,7 +131,7 @@ int HttpsClientIO::check_connect_and_handshake()
         }
 
         int connect_result = result != TlsResult::ERROR ? 0 : -1;
-        if (connect_result == 0 && on_connect_callback != nullptr)
+        if (result == TlsResult::OK && connect_result == 0 && on_connect_callback != nullptr)
         {
             on_connect_callback();
         }
