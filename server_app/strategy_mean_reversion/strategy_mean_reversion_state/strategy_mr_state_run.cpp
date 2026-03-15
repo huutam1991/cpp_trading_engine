@@ -4,6 +4,7 @@
 StrategyMeanReversionStateRun::StrategyMeanReversionStateRun(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config)
     : m_gateway{gateway}, m_config{config}
 {
+    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
 }
 
 void StrategyMeanReversionStateRun::begin()
@@ -18,8 +19,6 @@ void StrategyMeanReversionStateRun::end()
 
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol);
-    m_current_open_orders.clear();
-    is_taking_profit = false;
 }
 
 Json StrategyMeanReversionStateRun::get_info()
@@ -29,16 +28,33 @@ Json StrategyMeanReversionStateRun::get_info()
     };
 }
 
-Task<void> StrategyMeanReversionStateRun::handle_price_update(PriceUpdate price_update)
+Order StrategyMeanReversionStateRun::get_limit_order(Order::Side side, double price, double quantity)
 {
-
-    co_return;
+    return Order(
+        OrderManager::instance().generate_order_id(),
+        Order::Status::NOT_AVAILABLE,
+        m_instrument,
+        side,
+        Order::OrderType::LIMIT,
+        m_instrument->get_round_up_price(price),
+        quantity
+    );
 }
 
-Task<void> StrategyMeanReversionStateRun::handle_order_update(Order& order)
+void StrategyMeanReversionStateRun::handle_price_update(PriceUpdate price_update)
 {
 
-    co_return;
+}
+
+void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    m_current_price = snapshot->get_mid_price();
+}
+
+void StrategyMeanReversionStateRun::handle_order_update(Order& order)
+{
+
 }
 
 Task<void> StrategyMeanReversionStateRun::update(StrategyUpdateData data)
@@ -62,7 +78,7 @@ Task<void> StrategyMeanReversionStateRun::update(StrategyUpdateData data)
     else if (std::holds_alternative<OrderBookSnapShot*>(data))
     {
         OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        // handle_order_book_snapshot(snapshot);
+        handle_order_book_snapshot(snapshot);
 
         OrderBookSnapShotPool::release(snapshot);
     }

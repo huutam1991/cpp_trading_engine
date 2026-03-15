@@ -13,6 +13,9 @@ class StrategyMeanReversionStateRun : public StrategyStateBase
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMeanReversionConfig& m_config;
 
+    const Instrument* m_instrument = nullptr;
+    double m_current_price = 0.0;
+
 public:
     StrategyMeanReversionStateRun(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config);
 
@@ -22,18 +25,12 @@ public:
     virtual Json get_info() override;
 
 private:
-    double m_current_price = 0.0;
-    bool is_taking_profit = false;
+    Order m_buy_order = nullptr;
+    Order m_sell_order = nullptr;
 
-    struct OrderInfo
-    {
-        Order order;
-        bool is_handeling = false;
-    };
+    Order get_limit_order(Order::Side side, double price, double quantity);
 
-    // Current open orders by price
-    std::unordered_map<double, OrderInfo> m_current_open_orders;
-
-    Task<void> handle_price_update(PriceUpdate price);
-    Task<void> handle_order_update(Order& order);
+    void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
+    void handle_price_update(PriceUpdate price);
+    void handle_order_update(Order& order);
 };
