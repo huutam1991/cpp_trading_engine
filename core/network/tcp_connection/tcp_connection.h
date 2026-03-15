@@ -85,6 +85,11 @@ private:
             this->on_response_received(buffer, size);
         });
         m_epoll_base->start_living_system_io_object(m_io_object.get());
+
+        if (m_on_connect != nullptr)
+        {
+            m_on_connect();
+        }
     }
 
     Task<void> re_connect()
