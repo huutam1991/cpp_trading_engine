@@ -1,17 +1,30 @@
 #pragma once
 
 #include <string>
+#include "spread_capture_config.h"
 
 struct StrategyMeanReversionConfig
 {
     std::string symbol; // BTCUSDT
     bool is_running;
+    std::vector<SpreadCaptureConfig> spread_capture_configs = {{10.0, 3.0, 100.0}}; // Default config
 
     Json to_json() const
     {
+        Json spread_capture_configs_json;
+        for (const auto& config : spread_capture_configs)
+        {
+            spread_capture_configs_json.push_back({
+                {"entry_distance", config.entry_distance},
+                {"take_profit", config.take_profit},
+                {"stop_loss", config.stop_loss}
+            });
+        }
+
         return {
             {"symbol", symbol},
             {"is_running", is_running},
+            {"spread_capture_configs", spread_capture_configs_json}
         };
     }
 
@@ -24,6 +37,20 @@ struct StrategyMeanReversionConfig
         {
             res.symbol = (std::string)data["symbol"];
             res.is_running = (bool)data["is_running"];
+
+            res.spread_capture_configs = std::vector<SpreadCaptureConfig>();
+            if (data.has_field("spread_capture_configs") && data["spread_capture_configs"].is_array())
+            {
+                data["spread_capture_configs"].for_each([&res](Json& config_json)
+                {
+                    SpreadCaptureConfig config;
+                    config.entry_distance = (double)config_json["entry_distance"];
+                    config.take_profit = (double)config_json["take_profit"];
+                    config.stop_loss = (double)config_json["stop_loss"];
+
+                    res.spread_capture_configs.push_back(config);
+                });
+            }
         }
 
         return res;
