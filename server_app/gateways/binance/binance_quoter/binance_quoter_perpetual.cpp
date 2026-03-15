@@ -39,7 +39,6 @@ void BinanceQuoterPerpetual::init_websocket()
 {
     if (m_websocket != nullptr)
     {
-        m_websocket->close();
         m_websocket = nullptr;
     }
 
@@ -49,18 +48,11 @@ void BinanceQuoterPerpetual::init_websocket()
     auto task = this->get_listen_key();
     m_listen_key = task.start_running_on(event_base).get();
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), event_base);
-    m_websocket->set_callbacks(
+    m_websocket = std::make_shared<HttpsClientWebsocket>(m_epoll_base, m_ws_url, std::stoi(m_ws_port), "/ws/" + m_listen_key,
         // on_connect
         [this]() -> Task<void>
         {
             spdlog::info("BinanceQuoterPerpetual websocket connected");
-
-            // Set period time to re-active m_listen_key at every 30 seconds
-            m_websocket->add_keep_websocket_alive_task([this]() -> Task<void>
-            {
-                return keep_listen_key();
-            }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
 
             co_return;
         },
@@ -132,7 +124,6 @@ void BinanceQuoterPerpetual::init_websocket()
         {
             // Re-start
             spdlog::info("BinanceQuoterPerpetual - disconnect, re-starting");
-            this->init_websocket();
 
             co_return;
         },
@@ -143,8 +134,6 @@ void BinanceQuoterPerpetual::init_websocket()
             co_return;
         }
     );
-
-    m_websocket->connect(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
 }
 
 Task<std::string> BinanceQuoterPerpetual::get_listen_key()
@@ -176,9 +165,6 @@ Task<void> BinanceQuoterPerpetual::keep_listen_key()
     Json data = Json::parse(response.body);
 
     spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key: {}", data);
-
-    // Send ping
-    m_websocket->send_ping();
 }
 
 Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
