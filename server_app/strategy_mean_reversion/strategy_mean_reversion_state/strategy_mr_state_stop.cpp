@@ -73,13 +73,13 @@ void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapSho
             {
                 spread_capture.buy_order.status = Order::Status::FILLED;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER;
-                spread_capture.sell_order.price = m_current_price + spread_capture.take_profit;
+                spread_capture.sell_order.price = spread_capture.buy_order.price + spread_capture.take_profit;
             }
             else if (m_current_price > spread_capture.sell_order.price)
             {
                 spread_capture.sell_order.status = Order::Status::FILLED;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_BUY_ORDER;
-                spread_capture.buy_order.price = m_current_price - spread_capture.take_profit;
+                spread_capture.buy_order.price = spread_capture.sell_order.price - spread_capture.take_profit;
             }
             else
             {
