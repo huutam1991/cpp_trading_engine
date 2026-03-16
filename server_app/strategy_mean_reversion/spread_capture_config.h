@@ -94,6 +94,11 @@ public:
 
     inline double mean()
     {
+        if (prices.size() < window)
+        {
+            return 0.0;
+        }
+
         double sum = 0;
         for (auto p : prices)
         {

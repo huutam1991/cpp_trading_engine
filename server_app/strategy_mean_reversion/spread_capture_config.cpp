@@ -67,8 +67,13 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
     for (auto& spread_capture : spread_captures)
     {
         double volatility = volatility_estimator.stddev();
-        spread_capture.mean_price = volatility_estimator.mean();
         spread_capture.volatility = volatility;
+        spread_capture.mean_price = volatility_estimator.mean();
+
+        if (spread_capture.mean_price == 0.0)
+        {
+            continue; // Not enough data to calculate mean price, do nothing
+        }
 
         if (spread_capture.status == SpreadCaptureConfig::Status::NONE)
         {
