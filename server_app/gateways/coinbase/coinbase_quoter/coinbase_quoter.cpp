@@ -1,7 +1,6 @@
 #include <openssl/hmac.h>
 #include <string.h>
 #include <network/external_request/https_client_async.h>
-#include <ioc_pool.h>
 #include <mongo_db/mongo_db.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter.h>

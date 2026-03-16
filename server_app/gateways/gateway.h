@@ -8,7 +8,6 @@
 #include <coroutine/task.h>
 #include <data_model/savable_object.h>
 #include <network/external_request/https_client_async.h>
-#include <ioc_pool.h>
 
 #include <instrument/instrument.h>
 #include <order/order_manager.h>

@@ -1,6 +1,5 @@
 #include <gateways/binance/binance_market_data/binance_market_data_perpetual.h>
 #include <mongo_db/mongo_db.h>
-#include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 #include <time/measure_time.h>
 

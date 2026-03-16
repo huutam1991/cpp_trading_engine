@@ -5,7 +5,6 @@
 #include <functional>
 
 #include <network/https_client_websocket/https_client_websocket.h>
-#include <ioc_pool.h>
 
 class OrderBookWebsocket
 {

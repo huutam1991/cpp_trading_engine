@@ -1,5 +1,4 @@
 #include <time/measure_time.h>
-#include <ioc_pool.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_spot.h>
 #include <app_utils/app_utils.h>

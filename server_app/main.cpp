@@ -9,7 +9,6 @@
 #include <jwt/jwt_manager.h>
 #include <time/timer.h>
 #include <network/external_request/https_client_async.h>
-#include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 #include <cache/cache_pool.h>
 #include <cache/share_string.h>

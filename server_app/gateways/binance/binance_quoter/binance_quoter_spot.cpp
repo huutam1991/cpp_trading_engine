@@ -1,8 +1,6 @@
 #include <network/external_request/https_client_async.h>
-#include <ioc_pool.h>
 #include <time/timer.h>
 #include <time/measure_time.h>
-#include <ioc_pool.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <network/https_client_request/https_client_request.h>

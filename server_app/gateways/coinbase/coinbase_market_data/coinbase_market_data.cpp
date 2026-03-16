@@ -1,7 +1,6 @@
 #include <gateways/coinbase/coinbase_market_data/coinbase_market_data.h>
 #include <mongo_db/mongo_db.h>
 #include <coroutine/event_base_manager.h>
-#include <ioc_pool.h>
 
 #include <app_constants.h>
 

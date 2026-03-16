@@ -1,7 +1,6 @@
 #include <openssl/hmac.h>
 #include <string.h>
 #include <network/https_client_request/https_client_request.h>
-#include <ioc_pool.h>
 #include <mongo_db/mongo_db.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter.h>

@@ -1,4 +1,3 @@
-#include <ioc_pool.h>
 #include <coroutine/event_base_manager.h>
 
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_perpetual.h>
