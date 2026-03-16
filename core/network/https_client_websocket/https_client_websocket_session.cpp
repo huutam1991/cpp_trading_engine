@@ -58,11 +58,11 @@ Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Binary)
             {
-                spdlog::debug("[Websocket] Received WebSocket binary frame for [{}] of size: {}", m_name, frame.payload.size());
+                spdlog::debug("[Websocket] Received binary frame for [{}] of size: {}", m_name, frame.payload.size());
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Close)
             {
-                spdlog::debug("[Websocket] Received WebSocket close frame for [{}]", m_name);
+                spdlog::debug("[Websocket] Received close frame for [{}]", m_name);
 
                 // Good practice: echo close back before stopping.
                 write_raw_frame(WebSocketFrameBuilder::build_close(true));
@@ -71,14 +71,14 @@ Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Ping)
             {
-                spdlog::debug("[Websocket] Received WebSocket ping frame for [{}], payload size: {}", m_name, frame.payload.size());
+                spdlog::debug("[Websocket] Received ping frame for [{}], payload size: {}", m_name, frame.payload.size());
 
                 // MUST reply pong with the same payload
                 write_pong(frame.payload_as_string());
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Pong)
             {
-                spdlog::debug("[Websocket] Received WebSocket pong frame for [{}], payload size: {}", m_name, frame.payload.size());
+                spdlog::debug("[Websocket] Received pong frame for [{}], payload size: {}", m_name, frame.payload.size());
             }
         }
     }
