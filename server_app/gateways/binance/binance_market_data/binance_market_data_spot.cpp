@@ -7,8 +7,6 @@
 
 #include <app_constants.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 BinanceMarketDataSpot::BinanceMarketDataSpot(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)

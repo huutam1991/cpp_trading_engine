@@ -4,8 +4,6 @@
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_spot.h>
 #include <app_utils/app_utils.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 CoinbaseQuoterSpot::CoinbaseQuoterSpot(const std::string& key) : CoinbaseQuoter(key)
 {
     m_url = m_is_testnet == true ? COINBASE_ADVANCE_REALNET_URL : COINBASE_ADVANCE_REALNET_URL;

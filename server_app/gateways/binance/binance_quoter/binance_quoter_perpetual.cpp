@@ -8,8 +8,6 @@
 
 #include <time/measure_time.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK)}
 {

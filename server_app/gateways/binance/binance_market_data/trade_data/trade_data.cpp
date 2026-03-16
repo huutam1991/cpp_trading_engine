@@ -6,8 +6,6 @@
 
 #include <strategy/strategy_manager.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 BinanceTradeData::BinanceTradeData(const std::string& symbol, EpollBase* event_base)
     : m_symbol{symbol}, m_event_base{event_base}
 {

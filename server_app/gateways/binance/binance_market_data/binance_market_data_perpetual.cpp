@@ -10,8 +10,6 @@
 #include <json/json_value.h>
 #include <json/json_object.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 BinanceMarketDataPerpetual::BinanceMarketDataPerpetual(const std::string& url, const std::string& port):
     m_url(url),
     m_port(port)

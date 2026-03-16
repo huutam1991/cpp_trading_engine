@@ -6,8 +6,6 @@
 #include <mongo_db/mongo_db.h>
 #include <utils/utils.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_level, EpollBase* event_base, std::function<void(std::string)> on_order_book_ws)
     : m_symbol{symbol}, m_depth_level{depth_level}, m_event_base{event_base}, m_on_order_book_ws{on_order_book_ws}
 {
