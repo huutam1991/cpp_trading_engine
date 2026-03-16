@@ -20,6 +20,7 @@ Json SpreadCaptureConfigManager::get_info()
     for (auto& spread_capture : spread_captures)
     {
         data.push_back({
+            {"move_distance", spread_capture.move_distance},
             {"entry_distance", spread_capture.entry_distance},
             {"take_profit", spread_capture.take_profit},
             {"stop_loss", spread_capture.stop_loss},
