@@ -10,8 +10,8 @@ void SpreadCaptureConfigManager::reset()
     for (auto& spread_capture : spread_captures)
     {
         spread_capture.reset();
-        volatility_estimator.reset();
     }
+    volatility_estimator.reset();
 }
 
 Json SpreadCaptureConfigManager::get_info()
