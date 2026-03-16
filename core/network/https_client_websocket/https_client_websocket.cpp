@@ -100,7 +100,7 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
 
     if (response.status_code == 101)
     {
-        spdlog::info("Websocket connection established");
+        spdlog::info("[Websocket] connection established: {}", m_name);
 
         std::string leftover_data = m_rest_request->get_leftover_data();
         if (leftover_data.empty() == false)
@@ -111,13 +111,13 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
 
             for (const auto& frame : frames)
             {
-                spdlog::info("Received leftover websocket frame: opcode={}, payload={}", enum_reflect::enum_name(frame.opcode), frame.payload_as_string());
+                spdlog::info("[Websocket] Received leftover websocket frame for [{}]: opcode={}, payload={}", m_name, enum_reflect::enum_name(frame.opcode), frame.payload_as_string());
             }
         }
     }
     else
     {
-        spdlog::error("Failed to establish websocket connection, status code: {}", response.status_code);
+        spdlog::error("[Websocket] Failed to establish websocket connection for [{}], status code: {}", m_name, response.status_code);
         co_return;
     }
 
