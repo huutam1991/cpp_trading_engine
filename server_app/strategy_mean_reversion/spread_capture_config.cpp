@@ -95,7 +95,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 spread_capture.sell_order.status = Order::Status::NEW;
                 spread_capture.sell_order.price = spread_capture.buy_order.price + spread_capture.take_profit;
             }
-            else if (mid_price >= spread_capture.buy_order.price + spread_capture.move_distance)
+            else if (mid_price >= spread_capture.buy_order.price + spread_capture.entry_distance + (spread_capture.move_distance) / 2)
             {
                 // Price go back to entry price, cancel buy order and reset
                 spread_capture.buy_order.status = Order::Status::CANCELED;
@@ -111,7 +111,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 spread_capture.buy_order.status = Order::Status::NEW;
                 spread_capture.buy_order.price = spread_capture.sell_order.price - spread_capture.take_profit;
             }
-            else if (mid_price <= spread_capture.sell_order.price - spread_capture.move_distance)
+            else if (mid_price <= spread_capture.sell_order.price - spread_capture.entry_distance - (spread_capture.move_distance) / 2)
             {
                 // Price go back to entry price, cancel sell order and reset
                 spread_capture.sell_order.status = Order::Status::CANCELED;
