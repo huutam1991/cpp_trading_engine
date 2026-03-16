@@ -67,6 +67,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
         {
             if (std::abs(mid_price - spread_capture.prev_mid_price) < spread_capture.move_distance)
             {
+                spread_capture.prev_mid_price = mid_price; // Update prev_mid_price even if price has not moved enough, so that we can measure the move distance from the last price
                 continue; // Price has not moved enough, do nothing
             }
 
@@ -147,5 +148,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 spread_capture.loss -= spread_capture.stop_loss;
             }
         }
+
+        spread_capture.prev_mid_price = mid_price; // Update prev_mid_price at the end of each handle, so that we can measure the move distance from the last price
     }
 }
