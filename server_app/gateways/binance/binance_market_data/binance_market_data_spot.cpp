@@ -14,7 +14,7 @@ BinanceMarketDataSpot::BinanceMarketDataSpot(const std::string& url, const std::
     m_port(port)
 {
     // Default is GATEWAY
-    m_event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
+    m_event_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 }
 
 BinanceMarketDataSpot::~BinanceMarketDataSpot()
@@ -26,10 +26,6 @@ BinanceMarketDataSpot::~BinanceMarketDataSpot()
 void BinanceMarketDataSpot::start()
 {
     // Close all remaining websockets
-    for (auto& [_, websocket] : m_websockets)
-    {
-        websocket->close();
-    }
     m_websockets.clear();
 
     for (size_t i = 0; i < m_instruments.size(); i++)
@@ -45,12 +41,9 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
         return; // Already started
     }
 
-    auto websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::MARKET_DATA), m_event_base);
-    m_websockets.insert(std::make_pair(instrument, websocket));
-
-    websocket->set_callbacks(
-        // on_connect
-        [this, instrument, websocket = std::weak_ptr<WebsocketClientAsync>(websocket)]() -> Task<void>
+    auto websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, m_url, std::stoi(m_port), "/ws",
+        // On connect
+        [this, instrument]() -> Task<void>
         {
             spdlog::info("Binance websocket depth connected");
 
@@ -68,22 +61,6 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
             subcribe["id"] = stream_id;
 
             spdlog::info("subcribe = {}", subcribe);
-
-            if (auto ws = websocket.lock())
-            {
-                ws->send(subcribe.get_string_value());
-
-                // Set period time to send ping frame at every 30 seconds
-                ws->add_keep_websocket_alive_task([this, websocket = std::weak_ptr<WebsocketClientAsync>(ws)]() -> Task<void>
-                {
-                    if (auto ws = websocket.lock())
-                    {
-                        ws->send_ping();
-                    }
-
-                    co_return;
-                }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
-            }
 
             co_return;
         },
@@ -117,7 +94,6 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
         {
             // Re-start
             spdlog::debug("Disconnect, re-start BinanceMarketDataSpot");
-            this->start_websocket(instrument);
 
             co_return;
         },
@@ -129,7 +105,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
         }
     );
 
-    websocket->connect(m_url, m_port, "/ws");
+    m_websockets.insert(std::make_pair(instrument, websocket));
 }
 
 size_t BinanceMarketDataSpot::get_stream_id_count()
