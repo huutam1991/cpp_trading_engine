@@ -126,12 +126,18 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.success++;
                 spread_capture.profit += spread_capture.take_profit;
+
+                spread_capture.buy_order = nullptr;
+                spread_capture.sell_order = nullptr;
             }
             else if (mid_price >= spread_capture.sell_order.price + spread_capture.stop_loss)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.fail++;
                 spread_capture.loss -= spread_capture.stop_loss;
+
+                spread_capture.buy_order = nullptr;
+                spread_capture.sell_order = nullptr;
             }
         }
         else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_SELL_ORDER)
@@ -141,12 +147,18 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.success++;
                 spread_capture.profit += spread_capture.take_profit;
+
+                spread_capture.buy_order = nullptr;
+                spread_capture.sell_order = nullptr;
             }
             else if (mid_price <= spread_capture.buy_order.price - spread_capture.stop_loss)
             {
                 spread_capture.status = SpreadCaptureConfig::Status::NONE;
                 spread_capture.fail++;
                 spread_capture.loss -= spread_capture.stop_loss;
+
+                spread_capture.buy_order = nullptr;
+                spread_capture.sell_order = nullptr;
             }
         }
 
