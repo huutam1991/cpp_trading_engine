@@ -15,11 +15,8 @@
 std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::init_states()
 {
     // Re-init [m_spread_captures] from config
-    m_spread_captures = m_config.object.spread_capture_configs;
-    for (auto& m_spread_capture : m_spread_captures)
-    {
-        m_spread_capture.reset();
-    }
+    m_spread_captures.init_from_config(get_config_reference().spread_capture_configs);
+    m_spread_captures.reset();
 
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 

@@ -19,7 +19,7 @@ class StrategyMeanReversion : public StrategyBase<StrategyMeanReversionConfig, E
 {
     // Gateway
     std::shared_ptr<Gateway> m_gateway;
-    std::vector<SpreadCaptureConfig> m_spread_captures;
+    SpreadCaptureConfigManager m_spread_captures;
 
 protected:
     virtual std::unordered_map<StrategyState, StrategyStateBase*> init_states() override;

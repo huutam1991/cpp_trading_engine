@@ -9,11 +9,11 @@ class StrategyMeanReversionStateStop : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMeanReversionConfig& m_config;
-    std::vector<SpreadCaptureConfig>& m_spread_captures;
+    SpreadCaptureConfigManager& m_spread_captures;
     double m_current_price = 0;
 
 public:
-    StrategyMeanReversionStateStop(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config, std::vector<SpreadCaptureConfig>& spread_captures);
+    StrategyMeanReversionStateStop(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config, SpreadCaptureConfigManager& spread_captures);
 
     virtual void begin();
     virtual void end();
