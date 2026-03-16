@@ -86,14 +86,14 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
             {
                 // Price moved up, we want to sell high and buy back low
                 spread_capture.sell_order.status = Order::Status::NEW;
-                spread_capture.sell_order.price = spread_capture.mean_price + spread_capture.current_entry_distance;
+                spread_capture.sell_order.price = mid_price + spread_capture.current_entry_distance;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_INIT_SELL_ORDER;
             }
             else
             {
                 // Price moved down, we want to buy low and sell back high
                 spread_capture.buy_order.status = Order::Status::NEW;
-                spread_capture.buy_order.price = spread_capture.mean_price - spread_capture.current_entry_distance;
+                spread_capture.buy_order.price = mid_price - spread_capture.current_entry_distance;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_INIT_BUY_ORDER;
             }
         }
