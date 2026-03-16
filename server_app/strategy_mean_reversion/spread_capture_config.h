@@ -18,6 +18,8 @@ struct SpreadCaptureConfig
     double current_take_profit = 0.0; // in USD, updated in real-time based on price movement and volatility
     double current_stop_loss = 0.0; // in USD, updated in real-time
 
+    size_t count = 0;
+
     uint64_t success = 0;
     uint64_t fail = 0;
 
