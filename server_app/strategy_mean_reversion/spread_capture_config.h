@@ -50,19 +50,8 @@ struct SpreadCaptureConfigManager
 {
     std::vector<SpreadCaptureConfig> spread_captures;
 
-    void init_from_config(const std::vector<SpreadCaptureConfig>& configs)
-    {
-        spread_captures = configs;
-    }
-
-    void reset()
-    {
-        for (auto& spread_capture : spread_captures)
-        {
-            spread_capture.reset();
-        }
-    }
-
+    void init_from_config(const std::vector<SpreadCaptureConfig>& configs);
+    void reset();
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
     Json get_info();
 };

@@ -1,5 +1,10 @@
 #include "spread_capture_config.h"
 
+void SpreadCaptureConfigManager::init_from_config(const std::vector<SpreadCaptureConfig>& configs)
+{
+    spread_captures = configs;
+}
+
 void SpreadCaptureConfigManager::reset()
 {
     for (auto& spread_capture : spread_captures)
