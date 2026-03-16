@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <order/order.h>
+#include <order_book/order_book_snapshot.h>
 
 struct SpreadCaptureConfig
 {
@@ -43,4 +44,20 @@ struct SpreadCaptureConfig
     {
         return double(success) * 100.0 / double(success + fail);
     }
+};
+
+struct SpreadCaptureConfigManager
+{
+    std::vector<SpreadCaptureConfig> spread_captures;
+
+    void reset()
+    {
+        for (auto& spread_capture : spread_captures)
+        {
+            spread_capture.reset();
+        }
+    }
+
+    void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
+    Json get_info();
 };
