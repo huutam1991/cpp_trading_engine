@@ -40,9 +40,19 @@ struct SpreadCaptureConfig
         status = Status::NONE;
     }
 
-    double win_rate() const
+    std::string win_rate() const
     {
-        return double(success) * 100.0 / double(success + fail);
+        if (success + fail == 0)
+        {
+            return "0%";
+        }
+
+        double rate = double(success) * 100.0 / double(success + fail);
+
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(1) << rate;
+
+        return ss.str() + "%";
     }
 };
 
