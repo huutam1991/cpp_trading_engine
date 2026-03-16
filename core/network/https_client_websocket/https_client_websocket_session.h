@@ -12,9 +12,10 @@
 class HttpsClientWebsocketSession
 {
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
+    std::string m_name;
 
 public:
-    HttpsClientWebsocketSession(EpollBase* epoll_base, std::unique_ptr<TCPConnection> tcp_connection, std::function<Task<void>(std::string)> on_message);
+    HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& name, std::unique_ptr<TCPConnection> tcp_connection, std::function<Task<void>(std::string)> on_message);
     ~HttpsClientWebsocketSession() = default;
 
     void write(std::string message);

@@ -4,9 +4,11 @@
 
 HttpsClientWebsocketSession::HttpsClientWebsocketSession(
     EpollBase* epoll_base,
+    const std::string& name,
     std::unique_ptr<TCPConnection> tcp_connection,
     std::function<Task<void>(std::string)> on_message)
-    : m_tcp_connection(std::move(tcp_connection)),
+    : m_name(name),
+      m_tcp_connection(std::move(tcp_connection)),
       m_on_message(std::move(on_message))
 {
     m_wait_for_tcp_data_task = wait_for_tcp_data();
@@ -56,11 +58,11 @@ Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Binary)
             {
-                spdlog::debug("Received WebSocket binary frame of size: {}", frame.payload.size());
+                spdlog::debug("Received WebSocket binary frame for [{}] of size: {}", m_name, frame.payload.size());
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Close)
             {
-                spdlog::debug("Received WebSocket close frame");
+                spdlog::debug("Received WebSocket close frame for [{}]", m_name);
 
                 // Good practice: echo close back before stopping.
                 write_raw_frame(WebSocketFrameBuilder::build_close(true));
@@ -69,14 +71,14 @@ Task<void> HttpsClientWebsocketSession::wait_for_tcp_data()
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Ping)
             {
-                spdlog::debug("Received WebSocket ping frame, payload size: {}", frame.payload.size());
+                spdlog::debug("Received WebSocket ping frame for [{}], payload size: {}", m_name, frame.payload.size());
 
                 // MUST reply pong with the same payload
                 write_pong(frame.payload_as_string());
             }
             else if (frame.opcode == WebSocketFrameParser::Opcode::Pong)
             {
-                spdlog::debug("Received WebSocket pong frame, payload size: {}", frame.payload.size());
+                spdlog::debug("Received WebSocket pong frame for [{}], payload size: {}", m_name, frame.payload.size());
             }
         }
     }

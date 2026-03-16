@@ -16,6 +16,7 @@ HttpsClientWebsocket::HttpsClientWebsocket(
       m_hostname{hostname},
       m_port{port},
       m_path{path},
+      m_name{hostname + path},
       m_on_connect{std::move(on_connect)},
       m_on_message{std::move(on_message)},
       m_on_disconnect{std::move(on_disconnect)},
@@ -26,14 +27,14 @@ HttpsClientWebsocket::HttpsClientWebsocket(
 
 void HttpsClientWebsocket::on_tcp_connect()
 {
-    spdlog::info("HttpsClientWebsocket::on_tcp_connect - Connected to {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
+    spdlog::info("HttpsClientWebsocket::on_tcp_connect - Connected to {}:{}", m_name, m_tcp_connection->get_port());
 
     connect().start_running_on(m_epoll_base);
 }
 
 void HttpsClientWebsocket::on_tcp_disconnect()
 {
-    spdlog::error("HttpsClientWebsocket::on_tcp_disconnect - Disconnected from {}:{}", m_tcp_connection->get_hostname(), m_tcp_connection->get_port());
+    spdlog::error("HttpsClientWebsocket::on_tcp_disconnect - Disconnected from {}:{}", m_name, m_tcp_connection->get_port());
 
     m_rest_request = nullptr;
     m_websocket_session = nullptr;
@@ -61,6 +62,7 @@ Task<void> HttpsClientWebsocket::connect()
     // Move tcp connection from [m_rest_request] to [m_websocket_session]
     m_websocket_session = std::make_unique<HttpsClientWebsocketSession>(
         m_epoll_base,
+        m_name,
         std::move(m_rest_request->release_tcp_connection()),
         std::move(m_on_message));
 

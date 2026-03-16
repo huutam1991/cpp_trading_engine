@@ -11,6 +11,7 @@ class HttpsClientWebsocket
     std::string m_hostname;
     int m_port;
     std::string m_path;
+    std::string m_name;
 
     // User's callbacks
     std::function<Task<void>()> m_on_connect = nullptr;
