@@ -6,12 +6,17 @@
 
 struct SpreadCaptureConfig
 {
-    double move_distance = 10.0; // in USD
-    double entry_distance = 10.0; // in USD
-    double take_profit = 3.0; // in USD
-    double stop_loss = 100.0; // in USD
+    double move_distance = 2.5; // in USD
+    double entry_distance = 1.5; // in USD
+    double take_profit = 0.8; // in USD
+    double stop_loss = 2.0; // in USD
 
-    double prev_mid_price = 0.0;
+    double mean_price = 0.0; // in USD, updated in real-time based on price movement
+    double volatility = 0.0; // in USD, updated in real-time based on price movement
+    double current_move_distance = 0.0; // in USD, updated in real-time based on price movement and volatility
+    double current_entry_distance = 0.0; // in USD, updated in real-time based on price movement and volatility
+    double current_take_profit = 0.0; // in USD, updated in real-time based on price movement and volatility
+    double current_stop_loss = 0.0; // in USD, updated in real-time
 
     uint64_t success = 0;
     uint64_t fail = 0;
@@ -35,7 +40,12 @@ struct SpreadCaptureConfig
 
     void reset()
     {
-        prev_mid_price = 0.0;
+        volatility = 0.0;
+        mean_price = 0.0;
+        current_move_distance = 0.0;
+        current_entry_distance = 0.0;
+        current_take_profit = 0.0;
+        current_stop_loss = 0.0;
         success = 0;
         fail = 0;
         profit = 0.0;
@@ -61,9 +71,77 @@ struct SpreadCaptureConfig
     }
 };
 
+class VolatilityEstimator
+{
+    std::deque<double> prices;
+    double prev_price = 0.0;
+    double current_price = 0.0;
+    int window = 60;
+
+public:
+    inline void reset()
+    {
+        prices.clear();
+        prev_price = 0.0;
+    }
+
+    inline void update(double price)
+    {
+        prices.push_back(price);
+        prev_price = current_price;
+        current_price = price;
+
+        if (prices.size() > window)
+        {
+            prices.pop_front();
+        }
+    }
+
+    inline double get_prev_price() const
+    {
+        return prev_price;
+    }
+
+    inline double mean()
+    {
+        double sum = 0;
+        for (auto p : prices)
+        {
+            sum += p;
+        }
+
+        return sum / prices.size();
+    }
+
+    inline double stddev()
+    {
+        double m = mean();
+        double s = 0;
+
+        for (auto p : prices)
+        {
+            s += (p - m)*(p - m);
+        }
+
+        return sqrt(s / prices.size());
+    }
+
+    inline double zscore(double price)
+    {
+        double vol = stddev();
+        if (vol == 0)
+        {
+            return 0;
+        }
+
+        return (price - mean()) / vol;
+    }
+};
+
 struct SpreadCaptureConfigManager
 {
     std::vector<SpreadCaptureConfig> spread_captures;
+    VolatilityEstimator volatility_estimator;
 
     void init_from_config(const std::vector<SpreadCaptureConfig>& configs);
     void reset();
