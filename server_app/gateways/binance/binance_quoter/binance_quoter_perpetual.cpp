@@ -18,6 +18,8 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL : BINANCE_FUTURES_WS_URL;
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     init_websocket();
+
+    keep_listen_key().start_running_on(m_epoll_base);
 }
 
 BinanceQuoterPerpetual::~BinanceQuoterPerpetual()
@@ -165,13 +167,18 @@ Task<std::string> BinanceQuoterPerpetual::get_listen_key()
 
 Task<void> BinanceQuoterPerpetual::keep_listen_key()
 {
-    HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
-    client.add_header("X-MBX-APIKEY", m_api_key);
+    while (true)
+    {
+        co_await Timer::sleep_for(30000);
 
-    HttpsClientResponse response = co_await client.put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
-    Json data = Json::parse(response.body);
+        HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
+        client.add_header("X-MBX-APIKEY", m_api_key);
 
-    spdlog::debug("BinanceQuoterPerpetual, re-active m_listen_key: {}", data);
+        HttpsClientResponse response = co_await client.put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
+        Json data = Json::parse(response.body);
+
+        spdlog::info("BinanceQuoterPerpetual, re-active m_listen_key: {}", data);
+    }
 }
 
 Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)

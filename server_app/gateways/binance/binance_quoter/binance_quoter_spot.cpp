@@ -19,6 +19,7 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
     m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 
     init_websocket();
+    keep_listen_key().start_running_on(m_epoll_base);
 }
 
 BinanceQuoterSpot::~BinanceQuoterSpot()
@@ -150,13 +151,18 @@ Task<std::string> BinanceQuoterSpot::get_listen_key()
 
 Task<void> BinanceQuoterSpot::keep_listen_key()
 {
-    HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
-    client.add_header("X-MBX-APIKEY", m_api_key);
+    while (true)
+    {
+        co_await Timer::sleep_for(30000);
 
-    HttpsClientResponse response = co_await client.put("/api/v3/userDataStream?listenKey=" + m_listen_key, "");
-    Json data = Json::parse(response.body);
+        HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
+        client.add_header("X-MBX-APIKEY", m_api_key);
 
-    spdlog::debug("BinanceQuoterSpot, re-active m_listen_key = {}", m_listen_key);
+        HttpsClientResponse response = co_await client.put("/api/v3/userDataStream?listenKey=" + m_listen_key, "");
+        Json data = Json::parse(response.body);
+
+        spdlog::debug("BinanceQuoterSpot, re-active m_listen_key = {}", m_listen_key);
+    }
 }
 
 Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)
