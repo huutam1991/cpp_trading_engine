@@ -18,7 +18,7 @@ HttpsClientIO::HttpsClientIO(const std::string& hostname_value, int port_value)
 
 HttpsClientIO::~HttpsClientIO()
 {
-    spdlog::info("HttpsClientIO::~HttpsClientIO - Destroying HttpsClientIO, fd = {}, ip: {}, port: {}", fd, ip, port);
+    spdlog::debug("HttpsClientIO::~HttpsClientIO - Destroying HttpsClientIO, fd = {}, ip: {}, port: {}", fd, ip, port);
 
     // No need to call [on_disconnect_callback] + [on_response_received_callback], because this is intend release
     on_disconnect_callback = nullptr;
@@ -79,7 +79,7 @@ std::string HttpsClientIO::resolve_hostname()
 
     freeaddrinfo(result);
 
-    spdlog::info("HttpsClientIO::resolve_hostname - Resolved {} to {}", hostname, ip);
+    spdlog::debug("HttpsClientIO::resolve_hostname - Resolved {} to {}", hostname, ip);
 
     return ip;
 }
@@ -111,7 +111,7 @@ int HttpsClientIO::check_connect_and_handshake()
         }
 
         is_connected = true;
-        spdlog::info("HttpsClientIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
+        spdlog::debug("HttpsClientIO::handle_io_data - TCP connect success, ip: {}, port: {}", ip, port);
 
         // Attach fd to TLS wrapper
         if (m_tls_wrapper->attach_fd(fd) == false)
@@ -127,7 +127,7 @@ int HttpsClientIO::check_connect_and_handshake()
         TlsResult result = m_tls_wrapper->handshake();
         if (result == TlsResult::OK)
         {
-            spdlog::info("HttpsClientIO::handle_io_data - TLS handshake success, ip: {}, port: {}", ip, port);
+            spdlog::debug("HttpsClientIO::handle_io_data - TLS handshake success, ip: {}, port: {}", ip, port);
         }
 
         int connect_result = result != TlsResult::ERROR ? 0 : -1;
@@ -275,7 +275,7 @@ int HttpsClientIO::handle_write()
 
 void HttpsClientIO::release()
 {
-    spdlog::info("HttpsClientIO::release - Releasing HttpsClientIO, fd = {}, ip: {}, port: {}", fd, ip, port);
+    spdlog::debug("HttpsClientIO::release - Releasing HttpsClientIO, fd = {}, ip: {}, port: {}", fd, ip, port);
 
     fd = -1;
     epoll_base = nullptr;
