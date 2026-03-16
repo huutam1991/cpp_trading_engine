@@ -6,9 +6,12 @@
 
 struct SpreadCaptureConfig
 {
+    double move_distance = 10.0; // in USD
     double entry_distance = 10.0; // in USD
     double take_profit = 3.0; // in USD
     double stop_loss = 100.0; // in USD
+
+    double prev_mid_price = 0.0;
 
     uint64_t success = 0;
     uint64_t fail = 0;
@@ -22,7 +25,8 @@ struct SpreadCaptureConfig
     enum Status
     {
         NONE,
-        PLACING_INIT_ORDERS,
+        PLACING_INIT_BUY_ORDER,
+        PLACING_INIT_SELL_ORDER,
         PLACING_HEDGE_BUY_ORDER,
         PLACING_HEDGE_SELL_ORDER,
     };
@@ -31,6 +35,7 @@ struct SpreadCaptureConfig
 
     void reset()
     {
+        prev_mid_price = 0.0;
         success = 0;
         fail = 0;
         profit = 0.0;

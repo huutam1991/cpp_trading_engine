@@ -7,7 +7,7 @@ struct StrategyMeanReversionConfig
 {
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     bool is_running = false;
-    std::vector<SpreadCaptureConfig> spread_capture_configs = {{10.0, 3.0, 100.0}};
+    std::vector<SpreadCaptureConfig> spread_capture_configs = {{10.0, 10.0, 3.0, 100.0}};
 
     Json to_json() const
     {
@@ -15,6 +15,7 @@ struct StrategyMeanReversionConfig
         for (const auto& config : spread_capture_configs)
         {
             spread_capture_configs_json.push_back({
+                {"move_distance", config.move_distance},
                 {"entry_distance", config.entry_distance},
                 {"take_profit", config.take_profit},
                 {"stop_loss", config.stop_loss}
@@ -44,6 +45,7 @@ struct StrategyMeanReversionConfig
                 data["spread_capture_configs"].for_each([&res](Json& config_json)
                 {
                     SpreadCaptureConfig config;
+                    config.move_distance = (double)config_json["move_distance"];
                     config.entry_distance = (double)config_json["entry_distance"];
                     config.take_profit = (double)config_json["take_profit"];
                     config.stop_loss = (double)config_json["stop_loss"];
