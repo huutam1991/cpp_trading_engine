@@ -23,12 +23,14 @@ Json StrategyMeanReversionStateStop::get_info()
     return {
         {"spread_captures", m_spread_captures.get_info()},
         {"current_price", m_current_price}
-    };;
+    };
 }
 
 void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
     // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    m_current_price = snapshot->get_mid_price();
+
     m_spread_captures.handle_order_book_snapshot(snapshot);
 }
 
