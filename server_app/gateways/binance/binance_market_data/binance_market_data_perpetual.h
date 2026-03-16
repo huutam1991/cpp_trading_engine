@@ -3,7 +3,6 @@
 #include <functional>
 #include <unordered_map>
 
-#include <network/websocket/websocket_client_async.h>
 #include <json/json.h>
 
 #include <instrument/instrument.h>

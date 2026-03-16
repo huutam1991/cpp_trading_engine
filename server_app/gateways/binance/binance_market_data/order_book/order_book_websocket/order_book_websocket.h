@@ -4,7 +4,6 @@
 #include <string>
 #include <functional>
 
-#include <network/websocket/websocket_client_async.h>
 #include <network/https_client_websocket/https_client_websocket.h>
 #include <ioc_pool.h>
 

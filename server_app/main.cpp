@@ -5,7 +5,6 @@
 
 #include <utils/constants.h>
 #include <app_constants.h>
-#include <network/websocket/websocket_client_async.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
 #include <time/timer.h>
