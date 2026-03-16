@@ -29,9 +29,9 @@ Json SpreadCaptureConfigManager::get_info()
             {"fail", spread_capture.fail},
             {"win_rate", spread_capture.win_rate()},
             {"pnl", {
-                {"pnl", spread_capture.profit},
+                {"profit", spread_capture.profit},
                 {"loss", spread_capture.loss},
-                {"total", spread_capture.profit + spread_capture.loss}
+                {"pnl", spread_capture.profit + spread_capture.loss}
             }},
             {
                 "current_status", {
