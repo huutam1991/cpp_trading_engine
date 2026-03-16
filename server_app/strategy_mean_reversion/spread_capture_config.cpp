@@ -62,45 +62,38 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
 {
     // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
     double mid_price = snapshot->get_mid_price();
+    volatility_estimator.update(mid_price);
 
     for (auto& spread_capture : spread_captures)
     {
-        volatility_estimator.update(mid_price);
         double volatility = volatility_estimator.stddev();
         spread_capture.mean_price = volatility_estimator.mean();
         spread_capture.volatility = volatility;
 
         if (spread_capture.status == SpreadCaptureConfig::Status::NONE)
         {
-            double prev_price = volatility_estimator.get_prev_price();
-
-            if (prev_price == 0.0)
-            {
-                continue; // Not enough data to determine price movement, do nothing
-            }
-
             spread_capture.current_move_distance = volatility * spread_capture.move_distance;
             spread_capture.current_entry_distance = volatility * spread_capture.entry_distance;
             spread_capture.current_take_profit = volatility * spread_capture.take_profit;
             spread_capture.current_stop_loss = volatility * spread_capture.stop_loss;
 
-            if (std::abs(mid_price - prev_price) < spread_capture.current_move_distance)
+            if (std::abs(mid_price - spread_capture.mean_price) < spread_capture.current_move_distance)
             {
                 continue; // Price has not moved enough, do nothing
             }
 
-            if (mid_price > prev_price)
+            if (mid_price > spread_capture.mean_price)
             {
                 // Price moved up, we want to sell high and buy back low
                 spread_capture.sell_order.status = Order::Status::NEW;
-                spread_capture.sell_order.price = mid_price + spread_capture.current_entry_distance;
+                spread_capture.sell_order.price = spread_capture.mean_price + spread_capture.current_entry_distance;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_INIT_SELL_ORDER;
             }
             else
             {
                 // Price moved down, we want to buy low and sell back high
                 spread_capture.buy_order.status = Order::Status::NEW;
-                spread_capture.buy_order.price = mid_price - spread_capture.current_entry_distance;
+                spread_capture.buy_order.price = spread_capture.mean_price - spread_capture.current_entry_distance;
                 spread_capture.status = SpreadCaptureConfig::Status::PLACING_INIT_BUY_ORDER;
             }
         }

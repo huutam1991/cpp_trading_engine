@@ -74,32 +74,22 @@ struct SpreadCaptureConfig
 class VolatilityEstimator
 {
     std::deque<double> prices;
-    double prev_price = 0.0;
-    double current_price = 0.0;
-    int window = 60;
+    int window = 150;
 
 public:
     inline void reset()
     {
         prices.clear();
-        prev_price = 0.0;
     }
 
     inline void update(double price)
     {
         prices.push_back(price);
-        prev_price = current_price;
-        current_price = price;
 
         if (prices.size() > window)
         {
             prices.pop_front();
         }
-    }
-
-    inline double get_prev_price() const
-    {
-        return prev_price;
     }
 
     inline double mean()
