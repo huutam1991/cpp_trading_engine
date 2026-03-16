@@ -17,18 +17,19 @@ class JsonParseNew
     bool check_exceed_size(size_t index);
     ShareString get_sub_string(size_t start, size_t end);
 
-    bool is_number(char c)
+public:
+    static bool is_number(char c)
     {
         int n = c - '0';
         return (n >= 0 && n <= 9) || c == '-';
     }
 
-    bool is_letter(char c)
+    static bool is_letter(char c)
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     }
 
-    int is_boolean(const char* m_object_string, size_t start, size_t size)
+    static int is_boolean(const char* m_object_string, size_t start, size_t size)
     {
         // Check true value
         if (start + 4 < size &&
@@ -55,7 +56,7 @@ class JsonParseNew
         return NOT_BOOLEAN_VALUE;
     }
 
-    bool is_null(const char* m_object_string, size_t start, size_t size)
+    static bool is_null(const char* m_object_string, size_t start, size_t size)
     {
         // Check true value
         if (start + 4 < size &&
