@@ -37,19 +37,23 @@ Json SpreadCaptureConfigManager::get_info()
                 "current_status", {
                     {"mean_price", spread_capture.mean_price},
                     {"volatility", spread_capture.volatility},
-                    {"current_move_distance", spread_capture.current_move_distance},
-                    {"current_entry_distance", spread_capture.current_entry_distance},
-                    {"current_take_profit", spread_capture.current_take_profit},
-                    {"current_stop_loss", spread_capture.current_stop_loss},
                     {"status", enum_reflect::enum_name(spread_capture.status)},
-                    {"buy_order", {
-                        {"price", spread_capture.buy_order.price},
-                        {"status", enum_reflect::enum_name(spread_capture.buy_order.status)}
+                    {"current_configs", {
+                        {"current_move_distance", spread_capture.current_move_distance},
+                        {"current_entry_distance", spread_capture.current_entry_distance},
+                        {"current_take_profit", spread_capture.current_take_profit},
+                        {"current_stop_loss", spread_capture.current_stop_loss},
                     }},
-                    {"sell_order", {
-                        {"price", spread_capture.sell_order.price},
-                        {"status", enum_reflect::enum_name(spread_capture.sell_order.status)}
-                    }}
+                    {"orders", {
+                        {"buy_order", {
+                            {"price", spread_capture.buy_order.price},
+                            {"status", enum_reflect::enum_name(spread_capture.buy_order.status)}
+                        }},
+                        {"sell_order", {
+                            {"price", spread_capture.sell_order.price},
+                            {"status", enum_reflect::enum_name(spread_capture.sell_order.status)}
+                        }}
+                    }},
                 }
             }
         });
