@@ -8,8 +8,6 @@
 #include <network/https_client_request/https_client_request.h>
 #include <app_utils/app_utils.h>
 
-#define CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD 30000
-
 BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
 {
     m_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_URL : BINANCE_SPOT_URL;
@@ -41,29 +39,15 @@ std::string& BinanceQuoterSpot::get_port()
 
 void BinanceQuoterSpot::init_websocket()
 {
-    if (m_websocket != nullptr)
-    {
-        m_websocket->close();
-        m_websocket = nullptr;
-    }
-
     // Get listen key
     auto task = this->get_listen_key();
     m_listen_key = task.start_running_on(m_epoll_base).get();
 
-    m_websocket = std::make_shared<WebsocketClientAsync>(IOCPool::get_ioc_by_id(IOCId::ORDER_ENTRY), m_epoll_base);
-    m_websocket->set_callbacks(
+    m_websocket = std::make_shared<HttpsClientWebsocket>(m_epoll_base, m_ws_url, std::stoi(m_ws_port), "/ws",
         // on_connect
         [this]() -> Task<void>
         {
             spdlog::info("BinanceQuoterSpot websocket connected");
-
-            // Set period time to re-active m_listen_key at every 30 seconds
-            m_websocket->add_keep_websocket_alive_task([this]() -> Task<void>
-            {
-                return keep_listen_key();
-            }, CHECK_KEEP_WEBSOCKET_ALIVE_PERIOD);
-
             co_return;
         },
         // on_message
@@ -132,21 +116,7 @@ void BinanceQuoterSpot::init_websocket()
         // on_disconnect
         [this]() -> Task<void>
         {
-            // Save when websocket spot disconnect
-            auto now = std::chrono::system_clock::now();
-            auto duration = now.time_since_epoch();
-            auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-
-            MongoDB::instance()
-                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_spot_issue")
-                .insert_one({
-                    {"type", "disconnect"},
-                    {"time", nanos}
-                });
-
-            // Re-start
             spdlog::info("BinanceQuoterSpot - disconnect, re-starting");
-            this->init_websocket();
 
             co_return;
         },
@@ -155,23 +125,9 @@ void BinanceQuoterSpot::init_websocket()
         {
             spdlog::info("BinanceQuoterSpot close");
 
-            // Save when websocket spot close
-            auto now = std::chrono::system_clock::now();
-            auto duration = now.time_since_epoch();
-            auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-
-            MongoDB::instance()
-                .set_db_and_collection(STRATEGY_DB_NAME, "websocket_spot_issue")
-                .insert_one({
-                    {"type", "close"},
-                    {"time", nanos}
-                });
-
             co_return;
         }
     );
-
-    m_websocket->connect(m_ws_url, m_ws_port, "/ws/" + m_listen_key);
 }
 
 Task<std::string> BinanceQuoterSpot::get_listen_key()
@@ -203,9 +159,6 @@ Task<void> BinanceQuoterSpot::keep_listen_key()
     Json data = Json::parse(response.body);
 
     spdlog::debug("BinanceQuoterSpot, re-active m_listen_key = {}", m_listen_key);
-
-    // Send ping
-    m_websocket->send_ping();
 }
 
 Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)

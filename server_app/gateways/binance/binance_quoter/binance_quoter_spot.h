@@ -1,6 +1,6 @@
 #pragma once
 
-#include <network/websocket/websocket_client_async.h>
+#include <network/https_client_websocket/https_client_websocket.h>
 #include <coroutine/event_base_manager.h>
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 
@@ -15,7 +15,7 @@ private:
     EpollBase* m_epoll_base = nullptr;
 
     // Websocket to get order data
-    std::shared_ptr<WebsocketClientAsync> m_websocket;
+    std::shared_ptr<HttpsClientWebsocket> m_websocket;
     std::string m_listen_key;
     void init_websocket();
     Task<std::string> get_listen_key();
