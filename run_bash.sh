@@ -7,6 +7,8 @@
 chmod 777 z_util_scripts/generate_server_certificate.sh
 ./z_util_scripts/generate_server_certificate.sh
 
+ulimit -c unlimited
+
 # Detect port
 if [[ "$PROD" == "true" ]]; then
     PORT=443
@@ -14,5 +16,9 @@ else
     PORT=8080
 fi
 
+echo "Starting http_server_cpp on port ${PORT} - $(date '+%F %T')"
+echo "---------------------------------------------------------------"
+echo "---------------------------------------------------------------"
+
 # perf stat -e cycles,instructions,task-clock,context-switches ./http_server_cpp "$PORT" web_data
-./http_server_cpp "$PORT" web_data
+exec ./http_server_cpp "$PORT" web_data
