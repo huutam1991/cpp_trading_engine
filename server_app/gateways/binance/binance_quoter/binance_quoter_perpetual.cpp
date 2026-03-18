@@ -9,12 +9,7 @@
 #include <time/measure_time.h>
 
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
-    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY)},
-      m_client(
-        m_epoll_base,
-        (m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL),
-        std::stoi(m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT)
-    )
+    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY)}
 {
     m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL;
     m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT;
@@ -23,6 +18,8 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL : BINANCE_FUTURES_WS_URL;
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     init_websocket();
+
+    m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
 
     keep_listen_key().start_running_on(m_epoll_base);
 }
@@ -188,12 +185,12 @@ Task<void> BinanceQuoterPerpetual::keep_listen_key()
 
 Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
 {
-    co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol, &m_client);
+    co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol, m_client.get());
 }
 
 Task<void> BinanceQuoterPerpetual::cancel_all(std::string symbol)
 {
-    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol, &m_client);
+    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol, m_client.get());
     co_return;
 }
 
@@ -207,7 +204,7 @@ Task<Json> BinanceQuoterPerpetual::cancel(Order order)
     query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);
 
-    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/order", std::move(query_str), &m_client);
+    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/order", std::move(query_str), m_client.get());
 }
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
@@ -227,5 +224,5 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
         query_str += "&price=" + std::to_string(order.price);
     }
 
-    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", std::move(query_str), &m_client);
+    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", std::move(query_str), m_client.get());
 }

@@ -8,7 +8,7 @@
 
 class BinanceQuoterPerpetual : public BinanceQuoter
 {
-    HttpsClientRequest m_client;
+    std::shared_ptr<HttpsClientRequest> m_client = nullptr;
 
 private:
     std::string m_url = BINANCE_FUTURES_URL;
