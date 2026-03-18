@@ -100,6 +100,11 @@ public:
         return prev_price;
     }
 
+    double get_current_price()
+    {
+        return current_price;
+    }
+
     inline double mean()
     {
         if (prices.size() < window)

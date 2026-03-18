@@ -66,13 +66,31 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
 {
     for (auto& spread_capture : spread_captures)
     {
-        if (order.side == Order::Side::BUY)
+        if (order.status == Order::Status::NEW)
         {
-            spread_capture.buy_order = order;
+            if (order.side == Order::Side::BUY)
+            {
+                spread_capture.buy_order = order;
+            }
+            else if (order.side == Order::Side::SELL)
+            {
+                spread_capture.sell_order = order;
+            }
         }
-        else if (order.side == Order::Side::SELL)
+        else if (order.status == Order::Status::REJECTED)
         {
-            spread_capture.sell_order = order;
+            double current_price = volatility_estimator.get_current_price();
+
+            if (order.side == Order::Side::BUY)
+            {
+                spread_capture.buy_order.price = current_price - spread_capture.current_take_profit;
+                spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
+            }
+            else if (order.side == Order::Side::SELL)
+            {
+                spread_capture.sell_order.price = current_price + spread_capture.current_take_profit;
+                spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
+            }
         }
 
         if (spread_capture.buy_order.status == Order::Status::NEW &&
