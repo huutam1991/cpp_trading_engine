@@ -5,19 +5,22 @@ StrategyMeanReversionStateRun::StrategyMeanReversionStateRun(std::shared_ptr<Gat
     : m_gateway{gateway}, m_config{config}, m_spread_captures{spread_captures}
 {
     m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
+    m_pnl.update_instrument(m_instrument);
 }
 
 void StrategyMeanReversionStateRun::begin()
 {
+    spdlog::info("StrategyMeanReversionStateRun - begin");
+
     m_current_price = 0.0;
     m_pnl.reset();
-    spdlog::info("StrategyMeanReversionStateRun - begin");
 }
 
 void StrategyMeanReversionStateRun::end()
 {
     spdlog::info("StrategyMeanReversionStateRun - end");
 
+    m_pnl.reset();
     // Send cancel all of placed order
     m_gateway->cancel_all(m_config.symbol);
 }
@@ -25,7 +28,9 @@ void StrategyMeanReversionStateRun::end()
 Json StrategyMeanReversionStateRun::get_info()
 {
     return {
-        {"info", "TBD"}
+        {"spread_captures", m_spread_captures.get_info()},
+        {"current_price", m_current_price},
+        {"pnl", m_pnl.get_data()}
     };
 }
 
