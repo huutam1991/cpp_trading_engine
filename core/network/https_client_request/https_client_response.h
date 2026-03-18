@@ -12,6 +12,12 @@ struct HttpsClientResponse
 
     bool is_complete = false;
 
+    HttpsClientResponse() = default;
+    HttpsClientResponse(const HttpsClientResponse&) = default;
+    HttpsClientResponse(HttpsClientResponse&&) = default;
+    HttpsClientResponse& operator=(const HttpsClientResponse&) = default;
+    HttpsClientResponse& operator=(HttpsClientResponse&&) = default;
+
     void reset()
     {
         status_code = 0;
