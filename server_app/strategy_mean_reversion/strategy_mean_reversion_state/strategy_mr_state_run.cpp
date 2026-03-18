@@ -70,8 +70,8 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_ORDERS &&
             m_buy_order == nullptr && m_sell_order == nullptr)
         {
-            m_buy_order  = get_limit_order(Order::Side::BUY, spread_capture.buy_order.price, 1.0);
-            m_sell_order = get_limit_order(Order::Side::SELL, spread_capture.sell_order.price, 1.0);
+            m_buy_order  = get_limit_order(Order::Side::BUY, spread_capture.buy_order.price, 0.01);
+            m_sell_order = get_limit_order(Order::Side::SELL, spread_capture.sell_order.price, 0.01);
 
             m_gateway->place(m_buy_order);
             m_gateway->place(m_sell_order);
