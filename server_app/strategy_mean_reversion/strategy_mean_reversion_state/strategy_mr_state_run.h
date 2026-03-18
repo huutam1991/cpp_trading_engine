@@ -21,7 +21,6 @@ public:
 
     virtual void begin();
     virtual void end();
-    virtual Task<void> update(StrategyUpdateData data);
     virtual Json get_info() override;
 
 private:
@@ -30,7 +29,8 @@ private:
 
     Order get_limit_order(Order::Side side, double price, double quantity);
 
+    void handle_price_update(PriceUpdate& price);
+    void handle_trade_update(TradeUpdate& trade);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
-    void handle_price_update(PriceUpdate price);
     void handle_order_update(Order& order);
 };

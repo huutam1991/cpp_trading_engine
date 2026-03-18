@@ -26,29 +26,23 @@ Json StrategyMeanReversionStateStop::get_info()
     };
 }
 
+void StrategyMeanReversionStateStop::handle_price_update(PriceUpdate& price)
+{
+}
+
+void StrategyMeanReversionStateStop::handle_trade_update(TradeUpdate& trade)
+{
+}
+
 void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
     // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
     m_current_price = snapshot->get_mid_price();
-
     m_spread_captures.handle_order_book_snapshot(snapshot);
 }
 
-Task<void> StrategyMeanReversionStateStop::update(StrategyUpdateData data)
+void StrategyMeanReversionStateStop::handle_order_update(Order& order)
 {
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        spdlog::debug("StrategyMeanReversionStateStop: do nothing, symbol: {}, price: {}", price_update.instrument->symbol, price_update.price);
-    }
-    else if (std::holds_alternative<OrderBookSnapShot*>(data))
-    {
-        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        handle_order_book_snapshot(snapshot);
-
-        OrderBookSnapShotPool::release(snapshot);
-    }
-
-    co_return;
+    // spdlog::info("StrategyMeanReversionStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}, status: {}",
+    //     order.instrument->symbol, enum_reflect::enum_name(order.side), order.price, order.quantity, enum_reflect::enum_name(order.status));
 }

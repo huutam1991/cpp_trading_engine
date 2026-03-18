@@ -41,9 +41,12 @@ Order StrategyMeanReversionStateRun::get_limit_order(Order::Side side, double pr
     );
 }
 
-void StrategyMeanReversionStateRun::handle_price_update(PriceUpdate price_update)
+void StrategyMeanReversionStateRun::handle_price_update(PriceUpdate& price_update)
 {
+}
 
+void StrategyMeanReversionStateRun::handle_trade_update(TradeUpdate& trade_update)
+{
 }
 
 void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -67,40 +70,4 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
 
 void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 {
-
-}
-
-Task<void> StrategyMeanReversionStateRun::update(StrategyUpdateData data)
-{
-
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        handle_price_update(price_update);
-    }
-    else if (std::holds_alternative<TradeUpdate>(data))
-    {
-        TradeUpdate trade = std::get<TradeUpdate>(data);
-        std::string side = trade.is_buy ? "BUY" : "SELL";
-
-        // spdlog::info("StrategyMarketMakerStateRun: trade update, symbol: {}, side: {}, price: {}, quantity: {}",
-        //     trade.instrument->symbol, side, trade.price, trade.quantity);
-
-    }
-    else if (std::holds_alternative<OrderBookSnapShot*>(data))
-    {
-        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        handle_order_book_snapshot(snapshot);
-
-        OrderBookSnapShotPool::release(snapshot);
-    }
-    else
-    {
-        Order order = std::get<Order>(data);
-        handle_order_update(order);
-    }
-
-
-    co_return;
 }
