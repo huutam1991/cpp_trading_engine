@@ -99,21 +99,15 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
 
 Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str)
 {
-    spdlog::warn("BinanceQuoter::send_binance_request order: 1");
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();
-    spdlog::warn("BinanceQuoter::send_binance_request order: 1.1");
     new_query_std += "&timestamp=" + timestamp;
-    spdlog::warn("BinanceQuoter::send_binance_request new_query_std: {}", new_query_std);
     auto signature = getSignature(new_query_std);
 
-    spdlog::warn("BinanceQuoter::send_binance_request order: 1.2");
     new_query_std += "&signature=" + signature;
-    spdlog::warn("BinanceQuoter::send_binance_request order: 2");
 
     HttpsClientRequest client = HttpsClientRequest(m_epoll_base, get_url(), std::stoi(get_port()));
     client.add_header("X-MBX-APIKEY", m_api_key);
-    spdlog::warn("BinanceQuoter::send_binance_request order: 3");
 
     std::string str_response;
     if (method == RequestMethod::GET)
@@ -132,16 +126,11 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     {
         str_response = (co_await client.put(api_path + "?" + new_query_std, "")).body;
     }
-    spdlog::warn("BinanceQuoter::send_binance_request order: 4");
 
     Json response = Json::parse(str_response);
-    spdlog::warn("BinanceQuoter::send_binance_request order: 5");
 
     // Check to save error
     check_save_resonse_error(response, api_path, new_query_std, method);
-    spdlog::warn("BinanceQuoter::send_binance_request order: 6");
-
-
 
     co_return response;
 }
