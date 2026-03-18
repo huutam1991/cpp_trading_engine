@@ -95,6 +95,22 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
             m_sell_order = nullptr;
         }
     }
+    else if (order.status == Order::Status::REJECTED)
+    {
+        m_spread_captures.handle_order_update(order);
+
+        // Re-place order if it's rejected
+        if (order.side == Order::Side::BUY)
+        {
+            m_buy_order = get_limit_order(Order::Side::BUY, order.price, m_config.volume);
+            m_gateway->place(m_buy_order);
+        }
+        else if (order.side == Order::Side::SELL)
+        {
+            m_sell_order = get_limit_order(Order::Side::SELL, order.price, m_config.volume);
+            m_gateway->place(m_sell_order);
+        }
+    }
     else if (order.status == Order::Status::FILLED)
     {
         double trade_volume = (order.side == Order::Side::BUY) ? order.filled_quantity : -order.filled_quantity;
