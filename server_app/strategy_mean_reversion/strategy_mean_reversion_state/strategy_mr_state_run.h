@@ -7,17 +7,20 @@
 #include <gateways/gateway.h>
 #include <strategy/strategy_state_base.h>
 #include <strategy_mean_reversion/strategy_mean_reversion_config.h>
+#include <pnl/pnl.h>
 
 class StrategyMeanReversionStateRun : public StrategyStateBase
 {
     std::shared_ptr<Gateway> m_gateway;
     const StrategyMeanReversionConfig& m_config;
+    SpreadCaptureConfigManager& m_spread_captures;
 
     const Instrument* m_instrument = nullptr;
     double m_current_price = 0.0;
+    PnL m_pnl;
 
 public:
-    StrategyMeanReversionStateRun(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config);
+    StrategyMeanReversionStateRun(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config, SpreadCaptureConfigManager& spread_captures);
 
     virtual void begin();
     virtual void end();
