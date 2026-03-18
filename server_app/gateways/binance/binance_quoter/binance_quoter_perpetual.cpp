@@ -20,6 +20,7 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     init_websocket();
 
     m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
+    m_client->add_header("X-MBX-APIKEY", m_api_key);
 
     keep_listen_key().start_running_on(m_epoll_base);
 }
