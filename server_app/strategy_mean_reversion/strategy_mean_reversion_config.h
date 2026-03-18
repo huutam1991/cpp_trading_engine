@@ -7,6 +7,7 @@ struct StrategyMeanReversionConfig
 {
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     bool is_running = false;
+    double volume = 0.01; // in BTC
     std::vector<SpreadCaptureConfig> spread_capture_configs = {{2.5, 1.5, 0.8, 2.0}};
 
     Json to_json() const
@@ -25,6 +26,7 @@ struct StrategyMeanReversionConfig
         return {
             {"symbol", symbol},
             {"is_running", is_running},
+            {"volume", volume},
             {"spread_capture_configs", spread_capture_configs_json}
         };
     }
@@ -38,6 +40,7 @@ struct StrategyMeanReversionConfig
         {
             res.symbol = (std::string)data["symbol"];
             res.is_running = (bool)data["is_running"];
+            res.volume = (double)data["volume"];
 
             res.spread_capture_configs = std::vector<SpreadCaptureConfig>();
             if (data.has_field("spread_capture_configs") && data["spread_capture_configs"].is_array())
