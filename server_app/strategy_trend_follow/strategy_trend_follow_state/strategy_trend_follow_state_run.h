@@ -20,8 +20,13 @@ public:
 
     virtual void begin() override;
     virtual void end() override;
-    virtual Task<void> update(StrategyUpdateData data) override;
     virtual Json get_info() override;
+
+protected:
+    virtual void handle_price_update(PriceUpdate& price_update) override;
+    virtual void handle_trade_update(TradeUpdate& trade_update) override;
+    virtual void handle_order_book_snapshot(OrderBookSnapShot* snapshot) override;
+    virtual void handle_order_update(Order& order) override;
 
     void on_config_change();
 

@@ -46,9 +46,14 @@ Order StrategyTrendFollowStateRun::get_limit_order(Order::Side side, double pric
     );
 }
 
-void StrategyTrendFollowStateRun::handle_price_update(PriceUpdate price_update)
+void StrategyTrendFollowStateRun::handle_price_update(PriceUpdate& price_update)
 {
     MeasureTime t("StrategyTrendFollowStateRun - handle_price_update");
+}
+
+void StrategyTrendFollowStateRun::handle_trade_update(TradeUpdate& trade_update)
+{
+    // Dont need to handle trade update
 }
 
 void StrategyTrendFollowStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -100,28 +105,4 @@ void StrategyTrendFollowStateRun::handle_order_update(Order& order)
     else if (order.status == Order::Status::CANCELED || order.status == Order::Status::REJECTED)
     {
     }
-}
-
-Task<void> StrategyTrendFollowStateRun::update(StrategyUpdateData data)
-{
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        handle_price_update(price_update);
-    }
-    else if (std::holds_alternative<OrderBookSnapShot*>(data))
-    {
-        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        handle_order_book_snapshot(snapshot);
-
-        OrderBookSnapShotPool::release(snapshot);
-    }
-    else
-    {
-        Order order = std::get<Order>(data);
-        handle_order_update(order);
-    }
-
-    co_return;
 }
