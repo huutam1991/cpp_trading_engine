@@ -31,23 +31,36 @@ std::string BinanceQuoter::getTimestamp()
 
 std::string BinanceQuoter::encryptWithHMAC(const char* key, const char* data)
 {
-    unsigned char *result;
-    static char res_hexstring[64];
-    int result_len = 32;
+    static constexpr char hex[] = "0123456789abcdef";
+
+    unsigned int result_len = 0;
+    unsigned char result[EVP_MAX_MD_SIZE];
+
+    unsigned char* hmac_res = HMAC(
+        EVP_sha256(),
+        key,
+        static_cast<int>(strlen(key)),
+        reinterpret_cast<const unsigned char*>(data),
+        strlen(data),
+        result,
+        &result_len
+    );
+
+    if (hmac_res == nullptr || result_len != 32)
+    {
+        throw std::runtime_error("HMAC-SHA256 failed");
+    }
+
     std::string signature;
+    signature.resize(result_len * 2);
 
-    result = HMAC(EVP_sha256(), key, strlen((char *)key), const_cast<unsigned char *>(reinterpret_cast<const unsigned char*>(data)), strlen((char *)data), NULL, NULL);
-  	for (int i = 0; i < result_len; i++)
+    for (unsigned int i = 0; i < result_len; ++i)
     {
-    	sprintf(&(res_hexstring[i * 2]), "%02x", result[i]);
-  	}
+        signature[2 * i]     = hex[(result[i] >> 4) & 0x0F];
+        signature[2 * i + 1] = hex[result[i] & 0x0F];
+    }
 
-  	for (int i = 0; i < 64; i++)
-    {
-  		signature += res_hexstring[i];
-  	}
-
-  	return signature;
+    return signature;
 }
 
 std::string BinanceQuoter::getSignature(std::string& query)
@@ -86,14 +99,21 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
 
 Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str)
 {
+    spdlog::warn("BinanceQuoter::send_binance_request order: 1");
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();
+    spdlog::warn("BinanceQuoter::send_binance_request order: 1.1");
     new_query_std += "&timestamp=" + timestamp;
+    spdlog::warn("BinanceQuoter::send_binance_request new_query_std: {}", new_query_std);
     auto signature = getSignature(new_query_std);
+
+    spdlog::warn("BinanceQuoter::send_binance_request order: 1.2");
     new_query_std += "&signature=" + signature;
+    spdlog::warn("BinanceQuoter::send_binance_request order: 2");
 
     HttpsClientRequest client = HttpsClientRequest(m_epoll_base, get_url(), std::stoi(get_port()));
     client.add_header("X-MBX-APIKEY", m_api_key);
+    spdlog::warn("BinanceQuoter::send_binance_request order: 3");
 
     std::string str_response;
     if (method == RequestMethod::GET)
@@ -112,11 +132,16 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     {
         str_response = (co_await client.put(api_path + "?" + new_query_std, "")).body;
     }
+    spdlog::warn("BinanceQuoter::send_binance_request order: 4");
 
     Json response = Json::parse(str_response);
+    spdlog::warn("BinanceQuoter::send_binance_request order: 5");
 
     // Check to save error
     check_save_resonse_error(response, api_path, new_query_std, method);
+    spdlog::warn("BinanceQuoter::send_binance_request order: 6");
+
+
 
     co_return response;
 }
