@@ -20,7 +20,8 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 
 Task<Json> BinanceQuoter::get_balances()
 {
-    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "");
+    HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "", &client);
 }
 
 std::string BinanceQuoter::getTimestamp()
@@ -97,7 +98,7 @@ void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& 
     }
 }
 
-Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str)
+Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str, HttpsClientRequest* client)
 {
     std::string new_query_std = query_str;
     auto timestamp = getTimestamp();
@@ -106,31 +107,35 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
 
     new_query_std += "&signature=" + signature;
 
-    HttpsClientRequest client = HttpsClientRequest(m_epoll_base, get_url(), std::stoi(get_port()));
-    client.add_header("X-MBX-APIKEY", m_api_key);
-
-    std::string str_response;
+    HttpsClientResponse response;
     if (method == RequestMethod::GET)
     {
-        str_response = (co_await client.get(api_path + "?" + new_query_std)).body;
+        response = co_await client->get(api_path + "?" + new_query_std);
     }
     else if (method == RequestMethod::POST)
     {
-        str_response = (co_await client.post(api_path + "?" + new_query_std, "")).body;
+        response = co_await client->post(api_path + "?" + new_query_std, "");
     }
     else if (method == RequestMethod::DELETE)
     {
-        str_response = (co_await client.del(api_path + "?" + new_query_std)).body;
+        response = co_await client->del(api_path + "?" + new_query_std);
     }
     else if (method == RequestMethod::PUT)
     {
-        str_response = (co_await client.put(api_path + "?" + new_query_std, "")).body;
+        response = co_await client->put(api_path + "?" + new_query_std, "");
     }
 
-    Json response = Json::parse(str_response);
+    Json response_json = Json::parse(response.body);
+    if (response.status_code == -1)
+    {
+        response_json = {
+            {"code", -1},
+            {"msg", "Disconnected"}
+        };
+    }
 
     // Check to save error
-    check_save_resonse_error(response, api_path, new_query_std, method);
+    check_save_resonse_error(response_json, api_path, new_query_std, method);
 
-    co_return response;
+    co_return response_json;
 }

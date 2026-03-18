@@ -167,12 +167,14 @@ Task<void> BinanceQuoterSpot::keep_listen_key()
 
 Task<Json> BinanceQuoterSpot::get_open_orders(std::string symbol)
 {
-    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol);
+    HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/openOrders", "symbol=" + symbol, &client);
 }
 
 Task<void> BinanceQuoterSpot::cancel_all(std::string symbol)
 {
-    co_await send_binance_request(RequestMethod::DELETE, "/api/v3/openOrders", "symbol=" + symbol);
+    HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    co_await send_binance_request(RequestMethod::DELETE, "/api/v3/openOrders", "symbol=" + symbol, &client);
 
     co_return;
 }
@@ -187,7 +189,8 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
     query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);
 
-    co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str));
+    HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    co_return co_await send_binance_request(RequestMethod::DELETE, "/api/v3/order", std::move(query_str), &client);
 }
 
 Task<Json> BinanceQuoterSpot::place(Order order)
@@ -209,5 +212,6 @@ Task<Json> BinanceQuoterSpot::place(Order order)
 
     spdlog::debug("query: {}", query_str);
 
-    co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str));
+    HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str), &client);
 }

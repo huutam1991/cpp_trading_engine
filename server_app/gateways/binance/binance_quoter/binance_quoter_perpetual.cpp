@@ -9,7 +9,12 @@
 #include <time/measure_time.h>
 
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
-    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK)}
+    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY)},
+      m_client(
+        m_epoll_base,
+        (m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL),
+        std::stoi(m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT)
+    )
 {
     m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL;
     m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT;
@@ -183,12 +188,12 @@ Task<void> BinanceQuoterPerpetual::keep_listen_key()
 
 Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
 {
-    co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol);
+    co_return co_await send_binance_request(RequestMethod::GET, "fapi/v1/openOrders", "symbol=" + symbol, &m_client);
 }
 
 Task<void> BinanceQuoterPerpetual::cancel_all(std::string symbol)
 {
-    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol);
+    co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol, &m_client);
     co_return;
 }
 
@@ -202,7 +207,7 @@ Task<Json> BinanceQuoterPerpetual::cancel(Order order)
     query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
     query_str += "&origClientOrderId=" + std::to_string(order.order_id);
 
-    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/order", std::move(query_str));
+    co_return co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/order", std::move(query_str), &m_client);
 }
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
@@ -222,5 +227,5 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
         query_str += "&price=" + std::to_string(order.price);
     }
 
-    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", std::move(query_str));
+    co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", std::move(query_str), &m_client);
 }

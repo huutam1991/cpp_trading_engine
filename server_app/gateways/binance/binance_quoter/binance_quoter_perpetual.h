@@ -2,10 +2,14 @@
 
 #include <coroutine/epoll_base.h>
 #include <network/https_client_websocket/https_client_websocket.h>
+#include <network/https_client_request/https_client_request.h>
+
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 
 class BinanceQuoterPerpetual : public BinanceQuoter
 {
+    HttpsClientRequest m_client;
+
 private:
     std::string m_url = BINANCE_FUTURES_URL;
     std::string m_port = BINANCE_FUTURES_PORT;
