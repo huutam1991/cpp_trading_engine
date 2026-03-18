@@ -387,10 +387,22 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
     m_last_quoted_price = price;
 }
 
-void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate price_update)
+void StrategyMarketMakerStateRun::handle_price_update(PriceUpdate& price_update)
 {
     MeasureTime t("StrategyMarketMakerStateRun - handle_price_update");
     m_pnl.update_current_price(price_update.price);
+}
+
+void StrategyMarketMakerStateRun::handle_trade_update(TradeUpdate& trade_update)
+{
+    MeasureTime t("StrategyMarketMakerStateRun - handle_trade_update");
+
+    std::string side = trade_update.is_buy ? "BUY" : "SELL";
+    // spdlog::info("StrategyMarketMakerStateRun: trade update, symbol: {}, side: {}, price: {}, quantity: {}",
+    //     trade.instrument->symbol, side, trade.price, trade.quantity);
+
+    m_volume_stat.add_trade_volume(trade_update);
+    m_15_mins_volume_stat.add_trade_volume(trade_update);
 }
 
 void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -457,39 +469,4 @@ void StrategyMarketMakerStateRun::handle_order_update(Order& order)
     {
         m_open_orders.erase(order.order_id);
     }
-}
-
-Task<void> StrategyMarketMakerStateRun::update(StrategyUpdateData data)
-{
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        handle_price_update(price_update);
-    }
-    else if (std::holds_alternative<TradeUpdate>(data))
-    {
-        TradeUpdate trade = std::get<TradeUpdate>(data);
-        std::string side = trade.is_buy ? "BUY" : "SELL";
-
-        // spdlog::info("StrategyMarketMakerStateRun: trade update, symbol: {}, side: {}, price: {}, quantity: {}",
-        //     trade.instrument->symbol, side, trade.price, trade.quantity);
-
-        m_volume_stat.add_trade_volume(trade);
-        m_15_mins_volume_stat.add_trade_volume(trade);
-    }
-    else if (std::holds_alternative<OrderBookSnapShot*>(data))
-    {
-        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        handle_order_book_snapshot(snapshot);
-
-        OrderBookSnapShotPool::release(snapshot);
-    }
-    else
-    {
-        Order order = std::get<Order>(data);
-        handle_order_update(order);
-    }
-
-    co_return;
 }

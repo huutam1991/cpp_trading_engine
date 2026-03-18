@@ -22,44 +22,26 @@ Json StrategyMarketMakerStateStop::get_info()
     };
 }
 
-Task<void> StrategyMarketMakerStateStop::update(StrategyUpdateData data)
+void StrategyMarketMakerStateStop::handle_price_update(PriceUpdate& price)
 {
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        m_pnl.update_current_price(price_update.price);
-        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
-    }
-    else if (std::holds_alternative<TradeUpdate>(data))
-    {
-        TradeUpdate trade = std::get<TradeUpdate>(data);
-        std::string side = trade.is_buy ? "BUY" : "SELL";
-
-        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
-        //     trade.instrument->symbol, side, trade.price, trade.quantity);
-
-        m_volume_stat.add_trade_volume(trade);
-    }
-    else if (std::holds_alternative<OrderBookSnapShot*>(data))
-    {
-        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        double bid_price = snapshot->get_best_bid();
-        double ask_price = snapshot->get_best_ask();
-        double ask_quantity = snapshot->get_best_ask_quantity();
-        double bid_quantity = snapshot->get_best_bid_quantity();
-        m_pnl.update_current_price((bid_price + ask_price) / 2.0);
-
-        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
-        // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
-
-        OrderBookSnapShotPool::release(snapshot);
-    }
-
-    co_return;
+    m_pnl.update_current_price(price.price);
 }
 
-// Json StrategyMarketMakerStateStop::get_open_orders()
-// {
-//     return Json::create_array();
-// }
+void StrategyMarketMakerStateStop::handle_trade_update(TradeUpdate& trade)
+{
+    std::string side = trade.is_buy ? "BUY" : "SELL";
+    // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}",
+    //     trade.instrument->symbol, side, trade.price, trade.quantity);
+
+    m_volume_stat.add_trade_volume(trade);
+}
+
+void StrategyMarketMakerStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+}
+
+void StrategyMarketMakerStateStop::handle_order_update(Order& order)
+{
+    // spdlog::info("StrategyMarketMakerStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}, status: {}",
+    //     order.instrument->symbol, enum_reflect::enum_name(order.side), order.price, order.quantity, enum_reflect::enum_name(order.status));
+}
