@@ -36,8 +36,36 @@ struct StrategyStateData
 class StrategyStateBase
 {
 public:
+    Task<void> update(StrategyUpdateData data)
+    {
+        if (std::holds_alternative<PriceUpdate>(data))
+        {
+            handle_price_update(std::get<PriceUpdate>(data));
+        }
+        else if (std::holds_alternative<TradeUpdate>(data))
+        {
+            handle_trade_update(std::get<TradeUpdate>(data));
+        }
+        else if (std::holds_alternative<OrderBookSnapShot*>(data))
+        {
+            OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
+            handle_order_book_snapshot(snapshot);
+
+            OrderBookSnapShotPool::release(snapshot);
+        }
+        else
+        {
+            handle_order_update(std::get<Order>(data));
+        }
+
+        co_return;
+    }
+
     virtual void begin() = 0;
     virtual void end() = 0;
-    virtual Task<void> update(StrategyUpdateData data) = 0;
     virtual Json get_info() = 0;
+    virtual void handle_price_update(PriceUpdate& price_update) = 0;
+    virtual void handle_trade_update(TradeUpdate& trade_update) = 0;
+    virtual void handle_order_book_snapshot(OrderBookSnapShot* snapshot) = 0;
+    virtual void handle_order_update(Order& order) = 0;
 };
