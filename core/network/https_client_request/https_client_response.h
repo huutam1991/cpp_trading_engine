@@ -18,6 +18,14 @@ struct HttpsClientResponse
     HttpsClientResponse& operator=(const HttpsClientResponse&) = default;
     HttpsClientResponse& operator=(HttpsClientResponse&&) = default;
 
+    HttpsClientResponse(int status_code, std::string status_message, std::unordered_map<std::string, std::string> headers, std::string body, bool is_complete) :
+        status_code(status_code),
+        status_message(std::move(status_message)),
+        headers(std::move(headers)),
+        body(std::move(body)),
+        is_complete(is_complete)
+    {}
+
     void reset()
     {
         status_code = 0;
