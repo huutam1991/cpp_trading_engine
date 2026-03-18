@@ -22,7 +22,4 @@ public:
     void handle_trade_update(TradeUpdate& trade);
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
     void handle_order_update(Order& order);
-
-private:
-    void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
 };
