@@ -14,33 +14,30 @@ void StrategyBuySpotStateStop::end()
     spdlog::info("StrategyBuySpotStateStop - end");
 }
 
-Task<void> StrategyBuySpotStateStop::update(StrategyUpdateData data)
+void StrategyBuySpotStateStop::handle_price_update(PriceUpdate& price_update)
 {
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
-    }
-    else if (std::holds_alternative<OrderBookSnapShot*>(data))
-    {
-        OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-        double bid_price = snapshot->get_best_bid();
-        double ask_price = snapshot->get_best_ask();
-        double ask_quantity = snapshot->get_best_ask_quantity();
-        double bid_quantity = snapshot->get_best_bid_quantity();
-
-        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
-        spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
-
-        // Release the snapshot back to the pool
-        OrderBookSnapShotPool::release(snapshot);
-    }
-
-    co_return;
+    spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {} ", price_update.instrument->symbol, price_update.price);
 }
 
-// Json StrategyBuySpotStateStop::get_open_orders()
-// {
-//     return Json::create_array();
-// }
+void StrategyBuySpotStateStop::handle_trade_update(TradeUpdate& trade_update)
+{
+    spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, price: {}, quantity: {}, is_buy: {}",
+        trade_update.instrument->symbol, trade_update.price, trade_update.quantity, trade_update.is_buy);
+}
+
+void StrategyBuySpotStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+    double bid_price = snapshot->get_best_bid();
+    double ask_price = snapshot->get_best_ask();
+    double ask_quantity = snapshot->get_best_ask_quantity();
+    double bid_quantity = snapshot->get_best_bid_quantity();
+
+    spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, bid_price: {}, ask_price: {}", snapshot->instrument->symbol, bid_price, ask_price);
+    spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, bid_quantity: {}, ask_quantity: {}", snapshot->instrument->symbol, bid_quantity, ask_quantity);
+}
+
+void StrategyBuySpotStateStop::handle_order_update(Order& order)
+{
+    spdlog::info("StrategyBuySpotStateStop: do nothing, symbol: {}, side: {}, price: {}, quantity: {}, status: {}",
+        order.instrument->symbol, enum_reflect::enum_name(order.side), order.price, order.quantity, enum_reflect::enum_name(order.status));
+}

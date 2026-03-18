@@ -256,14 +256,13 @@ void StrategyBuySpotStateRun::update_sell_orders()
     }
 }
 
-Task<void> StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update)
+void StrategyBuySpotStateRun::handle_price_update(PriceUpdate& price_update)
 {
     m_current_price = price_update.price;
     spdlog::debug("StrategyBuySpotStateRun - m_current_price: {}", m_current_price);
     if (m_current_price >= m_config.max_price || m_current_price <= m_config.min_price)
     {
         spdlog::debug("StrategyBuySpotStateRun - dont handle, min_price: {}, max_price: {}", m_config.min_price, m_config.max_price);
-        co_return;
     }
 
     m_lower_nearest_price = get_lower_nearest_price();
@@ -271,11 +270,17 @@ Task<void> StrategyBuySpotStateRun::handle_price_update(PriceUpdate price_update
     add_new_buy_points();
     update_buy_orders();
     update_sell_orders();
-
-    co_return;
 }
 
-Task<void> StrategyBuySpotStateRun::handle_order_update(Order& order)
+void StrategyBuySpotStateRun::handle_trade_update(TradeUpdate& trade_update)
+{
+}
+
+void StrategyBuySpotStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+}
+
+void StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
     MeasureTime a("StrategyBuySpotStateRun - handle_order_update", MeasureUnit::MICROSECOND);
 
@@ -286,7 +291,6 @@ Task<void> StrategyBuySpotStateRun::handle_order_update(Order& order)
     if (buy_point == nullptr)
     {
         spdlog::warn("StrategyBuySpotStateRun - handle_order_update - buy point not found for price: {}", buy_point_price);
-        co_return;
     }
 
     // Get [buy_point_data]
@@ -329,25 +333,6 @@ Task<void> StrategyBuySpotStateRun::handle_order_update(Order& order)
     }
 
     *buy_point = buy_point_data;
-
-    co_return;
-}
-
-Task<void> StrategyBuySpotStateRun::update(StrategyUpdateData data)
-{
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        co_await handle_price_update(price_update);
-    }
-    else
-    {
-        Order order = std::get<Order>(data);
-        co_await handle_order_update(order);
-    }
-
-    co_return;
 }
 
 // Json StrategyBuySpotStateRun::get_open_orders()
