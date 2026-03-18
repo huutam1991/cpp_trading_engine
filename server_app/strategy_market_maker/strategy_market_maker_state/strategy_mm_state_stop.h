@@ -19,8 +19,10 @@ public:
     virtual void begin() override;
     virtual void end() override;
     virtual Json get_info() override;
-    void handle_price_update(PriceUpdate& price);
-    void handle_trade_update(TradeUpdate& trade);
-    void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
-    void handle_order_update(Order& order);
+
+protected:
+    virtual void handle_price_update(PriceUpdate& price_update) override;
+    virtual void handle_trade_update(TradeUpdate& trade_update) override;
+    virtual void handle_order_book_snapshot(OrderBookSnapShot* snapshot) override;
+    virtual void handle_order_update(Order& order) override;
 };

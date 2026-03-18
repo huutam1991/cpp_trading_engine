@@ -64,6 +64,8 @@ public:
     virtual void begin() = 0;
     virtual void end() = 0;
     virtual Json get_info() = 0;
+
+protected:
     virtual void handle_price_update(PriceUpdate& price_update) = 0;
     virtual void handle_trade_update(TradeUpdate& trade_update) = 0;
     virtual void handle_order_book_snapshot(OrderBookSnapShot* snapshot) = 0;
