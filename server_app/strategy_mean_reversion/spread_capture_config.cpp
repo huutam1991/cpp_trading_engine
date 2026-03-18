@@ -83,12 +83,12 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
 
             if (order.side == Order::Side::BUY)
             {
-                spread_capture.buy_order.price = order.price - std::max(spread_capture.current_take_profit * 0.8, 2.0);
+                spread_capture.buy_order.price = order.price - std::max(spread_capture.current_take_profit * 0.8, 3.0);
                 spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
             }
             else if (order.side == Order::Side::SELL)
             {
-                spread_capture.sell_order.price = order.price + std::max(spread_capture.current_take_profit * 0.8, 2.0);
+                spread_capture.sell_order.price = order.price + std::max(spread_capture.current_take_profit * 0.8, 3.0);
                 spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
             }
         }
