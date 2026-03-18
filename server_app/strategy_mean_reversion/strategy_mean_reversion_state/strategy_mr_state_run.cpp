@@ -102,12 +102,12 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
         // Re-place order if it's rejected
         if (order.side == Order::Side::BUY)
         {
-            m_buy_order = get_limit_order(Order::Side::BUY, order.price, m_config.volume);
+            m_buy_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_captures[0].buy_order.price, m_config.volume);
             m_gateway->place(m_buy_order);
         }
         else if (order.side == Order::Side::SELL)
         {
-            m_sell_order = get_limit_order(Order::Side::SELL, order.price, m_config.volume);
+            m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_captures[0].sell_order.price, m_config.volume);
             m_gateway->place(m_sell_order);
         }
     }
