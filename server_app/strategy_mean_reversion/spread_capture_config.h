@@ -8,7 +8,7 @@ struct SpreadCaptureConfig
 {
     double move_distance = 2.5; // in USD
     double entry_distance = 1.5; // in USD
-    double take_profit = 0.8; // in USD
+    double take_profit = 0.2; // in USD
     double stop_loss = 2.0; // in USD
 
     double mean_price = 0.0; // in USD, updated in real-time based on price movement
@@ -17,8 +17,6 @@ struct SpreadCaptureConfig
     double current_entry_distance = 0.0; // in USD, updated in real-time based on price movement and volatility
     double current_take_profit = 0.0; // in USD, updated in real-time based on price movement and volatility
     double current_stop_loss = 0.0; // in USD, updated in real-time
-
-    size_t count = 0;
 
     uint64_t success = 0;
     uint64_t fail = 0;
@@ -32,10 +30,7 @@ struct SpreadCaptureConfig
     enum Status
     {
         NONE,
-        PLACING_INIT_BUY_ORDER,
-        PLACING_INIT_SELL_ORDER,
-        PLACING_HEDGE_BUY_ORDER,
-        PLACING_HEDGE_SELL_ORDER,
+        PLACING_ORDERS,
     };
 
     Status status = Status::NONE;
@@ -78,6 +73,9 @@ class VolatilityEstimator
     std::deque<double> prices;
     int window = 150;
 
+    double current_price = 0.0;
+    double prev_price = 0.0;
+
 public:
     inline void reset()
     {
@@ -88,10 +86,18 @@ public:
     {
         prices.push_back(price);
 
+        prev_price = current_price;
+        current_price = price;
+
         if (prices.size() > window)
         {
             prices.pop_front();
         }
+    }
+
+    double get_prev_price()
+    {
+        return prev_price;
     }
 
     inline double mean()
@@ -143,5 +149,6 @@ struct SpreadCaptureConfigManager
     void init_from_config(const std::vector<SpreadCaptureConfig>& configs);
     void reset();
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
+    void handle_order_update(Order& order);
     Json get_info();
 };
