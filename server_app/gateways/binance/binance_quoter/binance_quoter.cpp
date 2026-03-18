@@ -114,7 +114,6 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     }
     else if (method == RequestMethod::POST)
     {
-        MeasureTime t("BinanceQuoter::send_binance_request - POST request", MeasureUnit::MICROSECOND);
         response = co_await client->post(api_path + "?" + new_query_std, "");
     }
     else if (method == RequestMethod::DELETE)
