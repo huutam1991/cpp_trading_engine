@@ -140,12 +140,12 @@ void StrategyPriceArbitrageStateRun::update_orders_at_price(double price)
     check_place_order_at_price(price - m_config.buy_at_lower_price);
 }
 
-Task<void> StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price_update)
+void StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate& price_update)
 {
     if (price_update.instrument == m_instrument_2)
     {
         m_symbol_2_price = price_update.price;
-        co_return;
+        return;
     }
 
     double price = price_update.price;
@@ -171,11 +171,19 @@ Task<void> StrategyPriceArbitrageStateRun::handle_price_update(PriceUpdate price
 
     update_orders_at_price(price);
     check_cancel_order_at_price(price);
-
-    co_return;
 }
 
-Task<void> StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
+void StrategyPriceArbitrageStateRun::handle_trade_update(TradeUpdate& trade_update)
+{
+    // Dont need to handle trade update
+}
+
+void StrategyPriceArbitrageStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
+{
+    // Dont need to handle order book snapshot
+}
+
+void StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
 {
     // NEW - do nothing
     if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)
@@ -227,40 +235,4 @@ Task<void> StrategyPriceArbitrageStateRun::handle_order_update(Order& order)
     {
         remove_open_order_by_price(order.price);
     }
-
-    co_return;
 }
-
-Task<void> StrategyPriceArbitrageStateRun::update(StrategyUpdateData data)
-{
-    PriceUpdate price_update;
-    if (std::holds_alternative<PriceUpdate>(data))
-    {
-        price_update = std::get<PriceUpdate>(data);
-        co_await handle_price_update(price_update);
-    }
-    else
-    {
-        Order order = std::get<Order>(data);
-        co_await handle_order_update(order);
-    }
-
-    co_return;
-}
-
-// Json StrategyPriceArbitrageStateRun::get_open_orders()
-// {
-//     Json open_orders;
-
-//     for (auto& [_, order_info] : m_current_open_orders)
-//     {
-//         open_orders.push_back(order_info.order.to_json());
-//     }
-
-//     return {
-//         {"current_price", m_current_price},
-//         {"too_low_price", m_current_price - m_config.too_low_price_delta},
-//         {"too_high_price", m_current_price - m_config.too_high_price_delta},
-//         {"order", open_orders}
-//     };
-// }
