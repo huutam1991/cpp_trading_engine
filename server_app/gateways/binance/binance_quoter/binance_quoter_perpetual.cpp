@@ -171,10 +171,7 @@ Task<void> BinanceQuoterPerpetual::keep_listen_key()
     {
         co_await Timer::sleep_for(30000);
 
-        HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
-        client.add_header("X-MBX-APIKEY", m_api_key);
-
-        HttpsClientResponse response = co_await client.put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
+        HttpsClientResponse response = co_await m_client->put("/fapi/v1/listenKey?listenKey=" + m_listen_key, "");
         Json data = Json::parse(response.body);
 
         spdlog::info("BinanceQuoterPerpetual, re-active m_listen_key: {}", data);
