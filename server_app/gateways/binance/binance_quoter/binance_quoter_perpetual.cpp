@@ -11,6 +11,9 @@
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY)}
 {
+    m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
+    m_client->add_header("X-MBX-APIKEY", m_api_key);
+
     m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL;
     m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT;
 
@@ -18,9 +21,6 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL : BINANCE_FUTURES_WS_URL;
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     init_websocket();
-
-    m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
-    m_client->add_header("X-MBX-APIKEY", m_api_key);
 
     keep_listen_key().start_running_on(m_epoll_base);
 }
@@ -150,10 +150,7 @@ void BinanceQuoterPerpetual::init_websocket()
 
 Task<std::string> BinanceQuoterPerpetual::get_listen_key()
 {
-    HttpsClientRequest client(m_epoll_base, m_url, std::stoi(m_port));
-    client.add_header("X-MBX-APIKEY", m_api_key);
-
-    HttpsClientResponse response = co_await client.post("/fapi/v1/listenKey", "");
+    HttpsClientResponse response = co_await m_client->post("/fapi/v1/listenKey", "");
     Json data = Json::parse(response.body);
 
     if (data.has_field("code") && (double)data["code"] < 0)
