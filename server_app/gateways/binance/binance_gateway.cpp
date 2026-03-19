@@ -219,6 +219,8 @@ Task<Json> BinanceGateway::place_on_exchange(Order order)
     if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
     {
         order.status = Order::REJECTED;
+        order.error.code = (int)response["code"];
+        order.error.message = response["msg"];
         OrderManager::instance().update_order(order);
     }
 
