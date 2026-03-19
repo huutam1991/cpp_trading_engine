@@ -25,9 +25,10 @@ Order::Order(OrderId order_id_i, Status status_i, const Instrument* instrument_i
 Json Order::to_json() const
 {
     return {
+        {"instrument", instrument->to_json()},
+        {"error", error.to_json()},
         {"order_id", order_id},
         {"status", enum_reflect::enum_name(status)},
-        {"instrument", instrument->to_json()},
         {"side", enum_reflect::enum_name(side)},
         {"type", enum_reflect::enum_name(type)},
         {"price", price},
@@ -37,7 +38,7 @@ Json Order::to_json() const
         {"volumn_in_quote_currency", volumn_in_quote_currency},
         {"output_asset", commission_asset},
         {"fee", fee},
-        {"commission_asset", commission_asset},
+        {"commission_asset", commission_asset}
     };
 }
 
@@ -53,10 +54,17 @@ Order Order::from_json(Json& data)
     // Get instrument pointer
     const Instrument* instrument_ptr = Instrument::get_instrument_by_exchange_symbol(exchange_id, instrument_type, exchange_symbol);
 
+    // Get error
+    Error error {
+        .code = (int)data["error"]["code"],
+        .message = data["error"]["message"]
+    };
+
     Order res;
+    res.instrument = instrument_ptr;
+    res.error = error;
     res.order_id = (OrderId)data["order_id"];
     res.status = enum_reflect::enum_value<Status>(std::string(data["status"]));
-    res.instrument = instrument_ptr;
     res.side = enum_reflect::enum_value<Side>(std::string(data["side"]));
     res.type = enum_reflect::enum_value<OrderType>(std::string(data["type"]));
     res.price = (double)data["price"];

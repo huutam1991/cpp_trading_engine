@@ -40,6 +40,20 @@ public:
         TOTAL_ORDER_TYPES
     };
 
+    struct Error
+    {
+        int code;
+        ShareString message;
+
+        Json to_json() const
+        {
+            return {
+                {"code", code},
+                {"message", message}
+            };
+        }
+    };
+
     // Input data
     OrderId order_id = 0;
     Status status = Status::NOT_AVAILABLE;
@@ -57,6 +71,9 @@ public:
     double volumn_in_quote_currency = 0.0; // Volumn of the order in quote currency
     ShareString commission_asset;
     ShareString output_asset;
+
+    // Error data
+    Error error;
 
     bool operator==(std::nullptr_t) const
     {
