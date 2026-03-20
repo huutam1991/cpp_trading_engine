@@ -65,27 +65,59 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
 
     m_spread_captures.handle_order_book_snapshot(snapshot);
 
-    for (auto& spread_capture : m_spread_captures.spread_captures)
+    if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_INITIAL_ORDER &&
+        m_buy_order == nullptr)
     {
-        if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_ORDERS &&
-            m_buy_order == nullptr && m_sell_order == nullptr)
-        {
-            m_buy_order  = get_limit_order(Order::Side::BUY, spread_capture.buy_order.price, m_config.volume);
-            m_sell_order = get_limit_order(Order::Side::SELL, spread_capture.sell_order.price, m_config.volume);
-
-            m_gateway->place(m_buy_order);
-            m_gateway->place(m_sell_order);
-        }
+        m_buy_order  = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
+        m_gateway->place(m_buy_order);
+    }
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER &&
+        m_sell_order == nullptr)
+    {
+        m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
+        m_gateway->place(m_sell_order);
+    }
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER &&
+        m_buy_order == nullptr)
+    {
+        m_buy_order  = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
+        m_gateway->place(m_buy_order);
+    }
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER &&
+        m_sell_order == nullptr)
+    {
+        m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
+        m_gateway->place(m_sell_order);
     }
 }
 
 void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 {
+    m_spread_captures.handle_order_update(order);
+
     if (order.status == Order::Status::NEW)
     {
-        m_spread_captures.handle_order_update(order);
+        // Do nothing, just update order status in SpreadCaptureConfigManager, we will place hedge order in handle_order_book_snapshot when we receive new price update
+    }
+    else if (order.status == Order::Status::REJECTED)
+    {
+        // Re-place order if it's rejected
+        if (order.side == Order::Side::BUY)
+        {
+            m_buy_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
+            m_gateway->place(m_buy_order);
+        }
+        else if (order.side == Order::Side::SELL)
+        {
+            m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
+            m_gateway->place(m_sell_order);
+        }
+    }
+    else if (order.status == Order::Status::FILLED)
+    {
+        double trade_volume = (order.side == Order::Side::BUY) ? order.filled_quantity : -order.filled_quantity;
+        m_pnl.update_trade(order.filled_price, trade_volume, order.fee);
 
-        // Update orders
         if (order.side == Order::Side::BUY)
         {
             m_buy_order = nullptr;
@@ -94,26 +126,5 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
         {
             m_sell_order = nullptr;
         }
-    }
-    else if (order.status == Order::Status::REJECTED)
-    {
-        m_spread_captures.handle_order_update(order);
-
-        // Re-place order if it's rejected
-        if (order.side == Order::Side::BUY)
-        {
-            m_buy_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_captures[0].buy_order.price, m_config.volume);
-            m_gateway->place(m_buy_order);
-        }
-        else if (order.side == Order::Side::SELL)
-        {
-            m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_captures[0].sell_order.price, m_config.volume);
-            m_gateway->place(m_sell_order);
-        }
-    }
-    else if (order.status == Order::Status::FILLED)
-    {
-        double trade_volume = (order.side == Order::Side::BUY) ? order.filled_quantity : -order.filled_quantity;
-        m_pnl.update_trade(order.filled_price, trade_volume, order.fee);
     }
 }
