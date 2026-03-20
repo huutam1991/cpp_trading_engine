@@ -166,7 +166,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
     {
         if (spread_capture.buy_order.status == Order::Status::NEW)
         {
-            spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_BUY_ORDER_FILLED;
+            // spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_BUY_ORDER_FILLED;
         }
         else if (spread_capture.buy_order.status == Order::Status::FILLED)
         {
@@ -215,7 +215,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
     {
         if (spread_capture.sell_order.status == Order::Status::NEW)
         {
-            spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_SELL_ORDER_FILLED;
+            // spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_SELL_ORDER_FILLED;
         }
         else if (spread_capture.sell_order.status == Order::Status::FILLED)
         {
