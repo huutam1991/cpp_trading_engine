@@ -95,6 +95,10 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
             spread_capture.sell_order = order;
         }
     }
+    else if (order.status == Order::Status::CANCELED)
+    {
+        // Do nothing, this is because Stop loss is triggered and limit order is canceled
+    }
 }
 
 void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -175,10 +179,23 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
             spread_capture.status = SpreadCaptureConfig::Status::NONE;
         }
     }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_SELL_ORDER_FILLED &&
-             spread_capture.sell_order.status == Order::Status::FILLED)
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_SELL_ORDER_FILLED)
     {
-        spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        if (spread_capture.sell_order.status == Order::Status::FILLED)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        }
+        else if (spread_capture.buy_order.price - mid_price >= spread_capture.current_stop_loss)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS_BUY;
+        }
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
+    {
+        if (spread_capture.sell_order.status == Order::Status::FILLED && spread_capture.buy_order.status == Order::Status::FILLED)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        }
     }
 
     // SELL -> BUY
@@ -211,9 +228,22 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
             spread_capture.status = SpreadCaptureConfig::Status::NONE;
         }
     }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_BUY_ORDER_FILLED &&
-             spread_capture.buy_order.status == Order::Status::FILLED)
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_BUY_ORDER_FILLED)
     {
-        spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        if (spread_capture.buy_order.status == Order::Status::FILLED)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        }
+        else if (mid_price - spread_capture.sell_order.price >= spread_capture.current_stop_loss)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS_SELL;
+        }
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
+    {
+        if (spread_capture.sell_order.status == Order::Status::FILLED && spread_capture.buy_order.status == Order::Status::FILLED)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::NONE;
+        }
     }
 }

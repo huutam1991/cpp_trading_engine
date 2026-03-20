@@ -47,6 +47,19 @@ Order StrategyMeanReversionStateRun::get_limit_order(Order::Side side, double pr
     );
 }
 
+Order StrategyMeanReversionStateRun::get_market_order(Order::Side side, double quantity)
+{
+    return Order(
+        OrderManager::instance().generate_order_id(),
+        Order::Status::NOT_AVAILABLE,
+        m_instrument,
+        side,
+        Order::OrderType::MARKET,
+        0.0,
+        quantity
+    );
+}
+
 void StrategyMeanReversionStateRun::handle_price_update(PriceUpdate& price_update)
 {
     m_current_price = price_update.price;
@@ -89,6 +102,14 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
         m_gateway->place(m_sell_order);
     }
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
+    {
+        m_gateway->cancel(m_sell_order);
+    }
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
+    {
+        m_gateway->cancel(m_buy_order);
+    }
 }
 
 void StrategyMeanReversionStateRun::handle_order_update(Order& order)
@@ -125,6 +146,20 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
         else if (order.side == Order::Side::SELL)
         {
             m_sell_order = nullptr;
+        }
+    }
+    // Place market order after Limit order is canceled due to stop loss
+    else if (order.status == Order::Status::CANCELED)
+    {
+        if (order.side == Order::Side::BUY)
+        {
+            m_buy_order = get_market_order(Order::Side::BUY, m_config.volume);
+            m_gateway->place(m_buy_order);
+        }
+        else if (order.side == Order::Side::SELL)
+        {
+            m_sell_order = get_market_order(Order::Side::SELL, m_config.volume);
+            m_gateway->place(m_sell_order);
         }
     }
 }

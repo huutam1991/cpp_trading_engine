@@ -31,6 +31,7 @@ private:
     Order m_sell_order = nullptr;
 
     Order get_limit_order(Order::Side side, double price, double quantity);
+    Order get_market_order(Order::Side side, double quantity);
 
 protected:
     virtual void handle_price_update(PriceUpdate& price_update) override;
