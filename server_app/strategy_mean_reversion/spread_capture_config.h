@@ -149,10 +149,10 @@ public:
 
 struct SpreadCaptureConfigManager
 {
-    std::vector<SpreadCaptureConfig> spread_captures;
+    SpreadCaptureConfig spread_capture;
     VolatilityEstimator volatility_estimator;
 
-    void init_from_config(const std::vector<SpreadCaptureConfig>& configs);
+    void init_from_config(const SpreadCaptureConfig& config);
     void reset();
     void handle_order_book_snapshot(OrderBookSnapShot* snapshot);
     void handle_order_update(Order& order);
