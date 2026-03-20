@@ -24,7 +24,7 @@ struct StrategyMeanReversionConfig
             {"symbol", symbol},
             {"is_running", is_running},
             {"volume", volume},
-            {"spread_capture_configs", spread_capture_configs_json}
+            {"spread_capture_config", spread_capture_configs_json}
         };
     }
 
@@ -39,9 +39,9 @@ struct StrategyMeanReversionConfig
             res.is_running = (bool)data["is_running"];
             res.volume = (double)data["volume"];
 
-            if (data.has_field("spread_capture_configs"))
+            if (data.has_field("spread_capture_config"))
             {
-                Json config_json = data["spread_capture_configs"];
+                Json config_json = data["spread_capture_config"];
 
                 res.spread_capture_config.move_distance = (double)config_json["move_distance"];
                 res.spread_capture_config.entry_distance = (double)config_json["entry_distance"];
