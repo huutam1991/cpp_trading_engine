@@ -89,8 +89,11 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         else if (m_buy_order.status == Order::Status::NEW)
         {
             // Cancel and re-place with more close price if current price moves away from buy order price too much
-            m_gateway->cancel(m_buy_order);
-            m_buy_order.status = Order::Status::NOT_AVAILABLE;
+            if (m_current_price - m_buy_order.price > 0.5)
+            {
+                m_gateway->cancel(m_buy_order);
+                m_buy_order.status = Order::Status::NOT_AVAILABLE;
+            }
         }
     }
     else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER)
@@ -103,8 +106,11 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         else if (m_sell_order.status == Order::Status::NEW)
         {
             // Cancel and re-place with more close price if current price moves away from sell order price too much
-            m_gateway->cancel(m_sell_order);
-            m_sell_order.status = Order::Status::NOT_AVAILABLE;
+            if (m_sell_order.price - m_current_price > 0.5)
+            {
+                m_gateway->cancel(m_sell_order);
+                m_sell_order.status = Order::Status::NOT_AVAILABLE;
+            }
         }
     }
     else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER &&
