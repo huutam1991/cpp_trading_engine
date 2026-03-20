@@ -103,13 +103,15 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
         m_gateway->place(m_sell_order);
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY && m_sell_order != nullptr)
     {
         m_gateway->cancel(m_sell_order);
+        m_sell_order = nullptr;
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL && m_buy_order != nullptr)
     {
         m_gateway->cancel(m_buy_order);
+        m_buy_order = nullptr;
     }
 }
 
