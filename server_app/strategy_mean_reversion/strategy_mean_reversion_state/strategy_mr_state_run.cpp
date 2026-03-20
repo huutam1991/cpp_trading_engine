@@ -14,6 +14,7 @@ void StrategyMeanReversionStateRun::begin()
 
     m_current_price = 0.0;
     m_pnl.reset();
+    m_spread_captures.reset();
 }
 
 void StrategyMeanReversionStateRun::end()
