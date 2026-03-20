@@ -98,13 +98,17 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
     // Order is canceled due to stop loss, need to place stop loss order
     else if (order.status == Order::Status::CANCELED)
     {
+        double current_price = volatility_estimator.get_current_price();
+
         if (order.side == Order::Side::BUY)
         {
-            spread_capture.buy_order = order;
+            spread_capture.buy_order.price = current_price - 0.5;
+            spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
         }
         else if (order.side == Order::Side::SELL)
         {
-            spread_capture.sell_order = order;
+            spread_capture.sell_order.price = current_price + 0.5;
+            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
         }
     }
 }
@@ -195,19 +199,10 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
         }
         else if (spread_capture.buy_order.price - mid_price >= spread_capture.current_stop_loss)
         {
-            spread_capture.status = SpreadCaptureConfig::Status::CANCEL_SELL_ORDER;
+            spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS_BUY;
         }
     }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::CANCEL_SELL_ORDER)
-    {
-        if (spread_capture.sell_order.status == Order::Status::CANCELED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_STOP_LOST_SELL_ORDER;
-            spread_capture.sell_order.price = mid_price + 0.5;
-            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_STOP_LOST_SELL_ORDER)
+    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
     {
         if (spread_capture.sell_order.status == Order::Status::FILLED && spread_capture.buy_order.status == Order::Status::FILLED)
         {
@@ -253,19 +248,10 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
         }
         else if (mid_price - spread_capture.sell_order.price >= spread_capture.current_stop_loss)
         {
-            spread_capture.status = SpreadCaptureConfig::Status::CANCEL_BUY_ORDER;
+            spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS_SELL;
         }
     }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::CANCEL_BUY_ORDER)
-    {
-        if (spread_capture.buy_order.status == Order::Status::CANCELED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_STOP_LOST_BUY_ORDER;
-            spread_capture.buy_order.price = mid_price - 0.5;
-            spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_STOP_LOST_BUY_ORDER)
+    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
     {
         if (spread_capture.sell_order.status == Order::Status::FILLED && spread_capture.buy_order.status == Order::Status::FILLED)
         {

@@ -103,27 +103,13 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
         m_gateway->place(m_sell_order);
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::CANCEL_BUY_ORDER)
-    {
-        m_gateway->cancel(m_buy_order);
-        m_buy_order = nullptr;
-    }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::CANCEL_SELL_ORDER)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
     {
         m_gateway->cancel(m_sell_order);
-        m_sell_order = nullptr;
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_STOP_LOST_BUY_ORDER &&
-        m_buy_order == nullptr)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
     {
-        m_buy_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
-        m_gateway->place(m_buy_order);
-    }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_STOP_LOST_SELL_ORDER &&
-        m_sell_order == nullptr)
-    {
-        m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
-        m_gateway->place(m_sell_order);
+        m_gateway->cancel(m_buy_order);
     }
 }
 
@@ -163,8 +149,18 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
             m_sell_order = nullptr;
         }
     }
+    // Place market order after Limit order is canceled due to stop loss
     else if (order.status == Order::Status::CANCELED)
     {
-        // Do nothing
+        if (order.side == Order::Side::BUY)
+        {
+            m_buy_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
+            m_gateway->place(m_buy_order);
+        }
+        else if (order.side == Order::Side::SELL)
+        {
+            m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
+            m_gateway->place(m_sell_order);
+        }
     }
 }
