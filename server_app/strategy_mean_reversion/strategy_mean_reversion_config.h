@@ -12,19 +12,18 @@ struct StrategyMeanReversionConfig
 
     Json to_json() const
     {
-        Json spread_capture_configs_json;
-        spread_capture_configs_json.push_back({
+        Json spread_capture_config_json = {
             {"move_distance", spread_capture_config.move_distance},
             {"entry_distance", spread_capture_config.entry_distance},
             {"take_profit", spread_capture_config.take_profit},
             {"stop_loss", spread_capture_config.stop_loss}
-        });
+        };
 
         return {
             {"symbol", symbol},
             {"is_running", is_running},
             {"volume", volume},
-            {"spread_capture_config", spread_capture_configs_json}
+            {"spread_capture_config", spread_capture_config_json}
         };
     }
 
