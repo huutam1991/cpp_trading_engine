@@ -153,12 +153,12 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
     {
         if (order.side == Order::Side::BUY)
         {
-            m_buy_order = get_market_order(Order::Side::BUY, m_config.volume);
+            m_buy_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
             m_gateway->place(m_buy_order);
         }
         else if (order.side == Order::Side::SELL)
         {
-            m_sell_order = get_market_order(Order::Side::SELL, m_config.volume);
+            m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
             m_gateway->place(m_sell_order);
         }
     }

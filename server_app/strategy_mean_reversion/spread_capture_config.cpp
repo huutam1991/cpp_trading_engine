@@ -95,9 +95,21 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
             spread_capture.sell_order = order;
         }
     }
+    // Order is canceled due to stop loss, need to place stop loss order
     else if (order.status == Order::Status::CANCELED)
     {
-        // Do nothing, this is because Stop loss is triggered and limit order is canceled
+        double current_price = volatility_estimator.get_current_price();
+
+        if (order.side == Order::Side::BUY)
+        {
+            spread_capture.buy_order.price = current_price - 0.5;
+            spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
+        }
+        else if (order.side == Order::Side::SELL)
+        {
+            spread_capture.sell_order.price = current_price + 0.5;
+            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
+        }
     }
 }
 
