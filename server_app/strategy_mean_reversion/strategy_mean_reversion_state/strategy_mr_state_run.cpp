@@ -22,7 +22,7 @@ void StrategyMeanReversionStateRun::end()
 
     m_pnl.reset();
     // Send cancel all of placed order
-    m_gateway->cancel_all(m_config.symbol);
+    m_gateway->cancel_all(m_instrument->exchange_symbol);
 }
 
 Json StrategyMeanReversionStateRun::get_info()
