@@ -38,8 +38,10 @@ struct SpreadCaptureConfig
         PLACING_SELL_HEDGE_ORDER,
         WAITING_FOR_HEDGE_BUY_ORDER_FILLED,
         WAITING_FOR_HEDGE_SELL_ORDER_FILLED,
-        STOP_LOSS_BUY,
-        STOP_LOSS_SELL
+        CANCEL_BUY_ORDER,
+        CANCEL_SELL_ORDER,
+        PLACING_STOP_LOST_BUY_ORDER,
+        PLACING_STOP_LOST_SELL_ORDER
     };
 
     Status status = Status::NONE;
