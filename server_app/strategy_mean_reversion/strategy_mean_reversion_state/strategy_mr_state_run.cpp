@@ -103,15 +103,21 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
         m_gateway->place(m_sell_order);
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY && m_sell_order != nullptr)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
     {
-        m_gateway->cancel(m_sell_order);
-        m_sell_order = nullptr;
+        if (m_sell_order != nullptr && m_sell_order.status == Order::Status::NEW)
+        {
+            m_gateway->cancel(m_sell_order);
+            m_sell_order = nullptr;
+        }
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL && m_buy_order != nullptr)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
     {
-        m_gateway->cancel(m_buy_order);
-        m_buy_order = nullptr;
+        if (m_buy_order != nullptr && m_buy_order.status == Order::Status::NEW)
+        {
+            m_gateway->cancel(m_buy_order);
+            m_buy_order = nullptr;
+        }
     }
 }
 
@@ -121,7 +127,14 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
     if (order.status == Order::Status::NEW)
     {
-        // Do nothing, just update order status in SpreadCaptureConfigManager, we will place hedge order in handle_order_book_snapshot when we receive new price update
+        if (order.side == Order::Side::BUY)
+        {
+            m_buy_order = order;
+        }
+        else if (order.side == Order::Side::SELL)
+        {
+            m_sell_order = order;
+        }
     }
     else if (order.status == Order::Status::REJECTED)
     {
