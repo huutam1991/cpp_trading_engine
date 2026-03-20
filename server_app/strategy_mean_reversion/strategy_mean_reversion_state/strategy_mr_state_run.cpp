@@ -129,16 +129,22 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
     {
         if (m_sell_order != nullptr && m_sell_order.status == Order::Status::NEW)
         {
-            m_gateway->cancel(m_sell_order);
-            m_sell_order = nullptr;
+            if (m_sell_order.price - m_current_price > 0.5)
+            {
+                m_gateway->cancel(m_sell_order);
+                m_sell_order = nullptr;
+            }
         }
     }
     else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
     {
         if (m_buy_order != nullptr && m_buy_order.status == Order::Status::NEW)
         {
-            m_gateway->cancel(m_buy_order);
-            m_buy_order = nullptr;
+            if (m_current_price - m_buy_order.price > 0.5)
+            {
+                m_gateway->cancel(m_buy_order);
+                m_buy_order = nullptr;
+            }
         }
     }
 }
