@@ -79,17 +79,33 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
 
     m_spread_captures.handle_order_book_snapshot(snapshot);
 
-    if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_INITIAL_ORDER &&
-        m_buy_order == nullptr)
+    if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_INITIAL_ORDER)
     {
-        m_buy_order  = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
-        m_gateway->place(m_buy_order);
+        if (m_buy_order == nullptr)
+        {
+            m_buy_order  = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.buy_order.price, m_config.volume);
+            m_gateway->place(m_buy_order);
+        }
+        else if (m_buy_order.status == Order::Status::NEW)
+        {
+            // Cancel and re-place with more close price if current price moves away from buy order price too much
+            m_gateway->cancel(m_buy_order);
+            m_buy_order.status = Order::Status::NOT_AVAILABLE;
+        }
     }
-    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER &&
-        m_sell_order == nullptr)
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER)
     {
-        m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
-        m_gateway->place(m_sell_order);
+        if (m_sell_order == nullptr)
+        {
+            m_sell_order = get_limit_order(Order::Side::SELL, m_spread_captures.spread_capture.sell_order.price, m_config.volume);
+            m_gateway->place(m_sell_order);
+        }
+        else if (m_sell_order.status == Order::Status::NEW)
+        {
+            // Cancel and re-place with more close price if current price moves away from sell order price too much
+            m_gateway->cancel(m_sell_order);
+            m_sell_order.status = Order::Status::NOT_AVAILABLE;
+        }
     }
     else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER &&
         m_buy_order == nullptr)
