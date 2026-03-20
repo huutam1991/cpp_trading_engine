@@ -95,12 +95,6 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
             spread_capture.sell_order = order;
         }
     }
-
-    if (spread_capture.buy_order.status == Order::Status::FILLED &&
-        spread_capture.sell_order.status == Order::Status::FILLED)
-    {
-        spread_capture.status = SpreadCaptureConfig::Status::NONE;
-    }
 }
 
 void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -151,26 +145,47 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
             spread_capture.status = SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER;
         }
     }
+    // BUY -> SELL
     else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_INITIAL_ORDER &&
              spread_capture.buy_order.status == Order::Status::NEW)
     {
-        spread_capture.sell_order.price = spread_capture.buy_order.price + spread_capture.current_take_profit;
+        spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_BUY_ORDER_FILLED;
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_BUY_ORDER_FILLED &&
+             spread_capture.buy_order.status == Order::Status::FILLED)
+    {
         spread_capture.status = SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER;
     }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER &&
+             spread_capture.sell_order.status == Order::Status::NEW)
+    {
+        spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_SELL_ORDER_FILLED;
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_SELL_ORDER_FILLED &&
+             spread_capture.sell_order.status == Order::Status::FILLED)
+    {
+        spread_capture.status = SpreadCaptureConfig::Status::NONE;
+    }
+
+    // SELL -> BUY
     else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER &&
              spread_capture.sell_order.status == Order::Status::NEW)
     {
-        spread_capture.buy_order.price = spread_capture.sell_order.price - spread_capture.current_take_profit;
+        spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_SELL_ORDER_FILLED;
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_SELL_ORDER_FILLED &&
+             spread_capture.sell_order.status == Order::Status::FILLED)
+    {
         spread_capture.status = SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER;
     }
     else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER &&
              spread_capture.buy_order.status == Order::Status::NEW)
     {
-        spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED;
+        spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_BUY_ORDER_FILLED;
     }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER &&
-             spread_capture.sell_order.status == Order::Status::NEW)
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_BUY_ORDER_FILLED &&
+             spread_capture.buy_order.status == Order::Status::FILLED)
     {
-        spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED;
+        spread_capture.status = SpreadCaptureConfig::Status::NONE;
     }
 }
