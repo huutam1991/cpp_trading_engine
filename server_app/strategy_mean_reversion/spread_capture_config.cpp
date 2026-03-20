@@ -132,24 +132,27 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 continue; // Price has not moved enough, do nothing
             }
 
-            if (mid_price > prev_price)
+            if (mid_price > spread_capture.mean_price)
             {
-                // Price moved up, we want to sell high and buy back low
-                spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-                spread_capture.sell_order.price = mid_price + spread_capture.current_entry_distance;
+                // Try to buy first then sell back, we want to sell high and buy back low
                 spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
-                spread_capture.buy_order.price = mid_price - spread_capture.current_take_profit;
+                spread_capture.buy_order.price = mid_price - 0.5;
             }
             else
             {
-                // Price moved down, we want to buy low and sell back high
-                spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
-                spread_capture.buy_order.price = mid_price - spread_capture.current_entry_distance;
+                // Try to sell first then buy back, we want to buy low and sell back high
                 spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-                spread_capture.sell_order.price = mid_price + spread_capture.current_take_profit;
+                spread_capture.sell_order.price = mid_price + 0.5;
             }
 
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_ORDERS;
+            spread_capture.status = SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER;
         }
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER)
+        {
+        }
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_ORDER)
+        {
+        }
+
     }
 }

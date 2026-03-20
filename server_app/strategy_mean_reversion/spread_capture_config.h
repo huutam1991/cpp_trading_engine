@@ -30,7 +30,8 @@ struct SpreadCaptureConfig
     enum Status
     {
         NONE,
-        PLACING_ORDERS,
+        PLACING_INITIAL_ORDER,
+        PLACING_HEDGE_ORDER,
     };
 
     Status status = Status::NONE;
