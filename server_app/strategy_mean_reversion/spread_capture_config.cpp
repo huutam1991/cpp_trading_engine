@@ -200,7 +200,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
         {
             spread_capture.hedge_order = nullptr;
             spread_capture.initial_order = nullptr;
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER;
+            spread_capture.status = SpreadCaptureConfig::Status::NONE;
         }
     }
 }

@@ -201,10 +201,10 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
             m_gateway->cancel(m_hedge_order);
             m_hedge_order.status = Order::Status::NOT_AVAILABLE;
         }
-        else if (m_hedge_order.status == Order::Status::FILLED)
-        {
-            m_initial_order = nullptr;
-            m_hedge_order = nullptr;
-        }
+    }
+    else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::NONE)
+    {
+        m_initial_order = nullptr;
+        m_hedge_order = nullptr;
     }
 }
