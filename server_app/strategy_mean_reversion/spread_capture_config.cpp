@@ -42,10 +42,12 @@ Json SpreadCaptureConfigManager::get_info()
                 {"orders", {
                     {"initial_order", {
                         {"price", spread_capture.initial_order.price},
+                        {"side", enum_reflect::enum_name(spread_capture.initial_order.side)},
                         {"status", enum_reflect::enum_name(spread_capture.initial_order.status)}
                     }},
                     {"hedge_order", {
                         {"price", spread_capture.hedge_order.price},
+                        {"side", enum_reflect::enum_name(spread_capture.hedge_order.side)},
                         {"status", enum_reflect::enum_name(spread_capture.hedge_order.status)}
                     }}
                 }},
