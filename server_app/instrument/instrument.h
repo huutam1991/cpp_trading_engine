@@ -33,6 +33,7 @@ public:
     ShareString exchange_symbol;
     size_t lot_size;
     size_t tick_size;
+    double price_precision;
 
     Json to_json() const;
     static Instrument from_json(Json& data);

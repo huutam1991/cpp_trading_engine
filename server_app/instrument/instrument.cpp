@@ -8,19 +8,28 @@ Json Instrument::to_json() const
         {"symbol", symbol},
         {"exchange_symbol", exchange_symbol},
         {"lot_size", lot_size},
-        {"tick_size", tick_size}
+        {"tick_size", tick_size},
+        {"price_precision", price_precision}
     };
 }
 
 Instrument Instrument::from_json(Json& data)
 {
+    double price_precision = 1.0;
+    size_t tick_size = (size_t)data["tick_size"];
+    for (int i = 0; i < tick_size; i++)
+    {
+        price_precision /= 10.0;
+    }
+
     return Instrument {
         enum_reflect::enum_value<ExchangeId>((std::string)data["exchange_id"]),
         enum_reflect::enum_value<InstrumentType>((std::string)data["instrument_type"]),
         data["symbol"],
         data["exchange_symbol"],
         (size_t)data["lot_size"],
-        (size_t)data["tick_size"]
+        (size_t)data["tick_size"],
+        price_precision
     };
 };
 
