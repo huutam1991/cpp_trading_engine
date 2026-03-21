@@ -111,7 +111,8 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
             order.side = Order::Side::SELL;
         }
 
-        m_gateway->place(order);
+        Order new_order = get_limit_order(order.side, order.price, m_config.volume);
+        m_gateway->place(new_order);
     }
     else if (order.status == Order::Status::FILLED)
     {
@@ -175,6 +176,10 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         else if (m_initial_order.status == Order::Status::NEW &&
                 is_same_order_info(m_initial_order, m_spread_captures.spread_capture.initial_order) == false)
         {
+            spdlog::warn("Initial order info has changed, canceling the previous order");
+            spdlog::warn("Current order: {}", m_initial_order.to_json());
+            spdlog::warn("New order: {}", m_spread_captures.spread_capture.initial_order.to_json());
+
             m_gateway->cancel(m_initial_order);
             m_initial_order.status = Order::Status::NOT_AVAILABLE;
         }
