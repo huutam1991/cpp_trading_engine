@@ -40,13 +40,13 @@ Json SpreadCaptureConfigManager::get_info()
                     {"current_stop_loss", spread_capture.current_stop_loss},
                 }},
                 {"orders", {
-                    {"buy_order", {
+                    {"initial_order", {
                         {"price", spread_capture.initial_order.price},
                         {"status", enum_reflect::enum_name(spread_capture.initial_order.status)}
                     }},
-                    {"sell_order", {
-                        {"price", spread_capture.initial_order.price},
-                        {"status", enum_reflect::enum_name(spread_capture.initial_order.status)}
+                    {"hedge_order", {
+                        {"price", spread_capture.hedge_order.price},
+                        {"status", enum_reflect::enum_name(spread_capture.hedge_order.status)}
                     }}
                 }},
             }
@@ -172,6 +172,9 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
     {
         if (spread_capture.hedge_order.status == Order::Status::FILLED)
         {
+            spread_capture.success += 1;
+            spread_capture.profit += std::abs(spread_capture.initial_order.price - spread_capture.hedge_order.price);
+
             spread_capture.initial_order = nullptr;
             spread_capture.hedge_order = nullptr;
             spread_capture.status = SpreadCaptureConfig::Status::NONE;
@@ -198,6 +201,9 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
     {
         if (spread_capture.hedge_order.status == Order::Status::FILLED)
         {
+            spread_capture.fail += 1;
+            spread_capture.loss += std::abs(spread_capture.initial_order.price - spread_capture.hedge_order.price) * -1.0;
+
             spread_capture.hedge_order = nullptr;
             spread_capture.initial_order = nullptr;
             spread_capture.status = SpreadCaptureConfig::Status::NONE;
