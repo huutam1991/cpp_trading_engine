@@ -27,9 +27,10 @@ public:
     virtual Json get_info() override;
 
 private:
-    Order m_buy_order = nullptr;
-    Order m_sell_order = nullptr;
+    Order m_initial_order = nullptr;
+    Order m_hedge_order = nullptr;
 
+    bool is_same_order_info(Order& order1, Order& order2);
     Order get_limit_order(Order::Side side, double price, double quantity);
     Order get_market_order(Order::Side side, double quantity);
 

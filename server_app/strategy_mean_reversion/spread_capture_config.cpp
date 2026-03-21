@@ -41,12 +41,12 @@ Json SpreadCaptureConfigManager::get_info()
                 }},
                 {"orders", {
                     {"buy_order", {
-                        {"price", spread_capture.buy_order.price},
-                        {"status", enum_reflect::enum_name(spread_capture.buy_order.status)}
+                        {"price", spread_capture.initial_order.price},
+                        {"status", enum_reflect::enum_name(spread_capture.initial_order.status)}
                     }},
                     {"sell_order", {
-                        {"price", spread_capture.sell_order.price},
-                        {"status", enum_reflect::enum_name(spread_capture.sell_order.status)}
+                        {"price", spread_capture.initial_order.price},
+                        {"status", enum_reflect::enum_name(spread_capture.initial_order.status)}
                     }}
                 }},
             }
@@ -60,56 +60,38 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
 {
     if (order.status == Order::Status::NEW)
     {
-        if (order.side == Order::Side::BUY)
+        if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER)
         {
-            spread_capture.buy_order = order;
+            spread_capture.initial_order = order;
         }
-        else if (order.side == Order::Side::SELL)
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_ORDER ||
+                 spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED ||
+                 spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS)
         {
-            spread_capture.sell_order = order;
+            spread_capture.hedge_order = order;
         }
     }
     else if (order.status == Order::Status::REJECTED)
     {
-        double current_price = volatility_estimator.get_current_price();
-
-        if (order.side == Order::Side::BUY)
-        {
-            spread_capture.buy_order.price = current_price - 0.5;
-            spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
-        }
-        else if (order.side == Order::Side::SELL)
-        {
-            spread_capture.sell_order.price = current_price + 0.5;
-            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-        }
+        // TBD
     }
     else if (order.status == Order::Status::FILLED)
     {
-        if (order.side == Order::Side::BUY)
+        if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER)
         {
-            spread_capture.buy_order = order;
+            spread_capture.initial_order = order;
         }
-        else if (order.side == Order::Side::SELL)
+        else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_ORDER ||
+                 spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED ||
+                 spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS)
         {
-            spread_capture.sell_order = order;
+            spread_capture.hedge_order = order;
         }
     }
     // Order is canceled due to stop loss, need to place stop loss order
     else if (order.status == Order::Status::CANCELED)
     {
-        double current_price = volatility_estimator.get_current_price();
-
-        if (order.side == Order::Side::BUY)
-        {
-            spread_capture.buy_order.price = current_price - 0.5;
-            spread_capture.buy_order.status = Order::Status::NOT_AVAILABLE;
-        }
-        else if (order.side == Order::Side::SELL)
-        {
-            spread_capture.sell_order.price = current_price + 0.5;
-            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-        }
+        // TBD
     }
 }
 
@@ -130,132 +112,93 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
 
     double prev_price = volatility_estimator.get_prev_price();
 
-    if (spread_capture.status == SpreadCaptureConfig::Status::NONE)
+    if (spread_capture.status == SpreadCaptureConfig::Status::NONE ||
+        spread_capture.status == SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER)
     {
         spread_capture.current_move_distance = volatility * spread_capture.move_distance;
         spread_capture.current_entry_distance = volatility * spread_capture.entry_distance;
         spread_capture.current_take_profit = volatility * spread_capture.take_profit;
         spread_capture.current_stop_loss = volatility * spread_capture.stop_loss;
 
-        if (std::abs(mid_price - prev_price) < spread_capture.current_move_distance)
+        // Hedge order in the beginning is not placed yet
+        spread_capture.hedge_order = nullptr;
+
+        if (spread_capture.initial_order.status != Order::Status::FILLED)
         {
-            return; // Price has not moved enough, do nothing
+            if (mid_price > spread_capture.mean_price)
+            {
+                // Try to sell first then buy back
+                spread_capture.initial_order.status = Order::Status::NOT_AVAILABLE;
+                spread_capture.initial_order.price = mid_price + spread_capture.current_move_distance;
+                spread_capture.initial_order.side = Order::Side::SELL;
+            }
+            else
+            {
+                // Try to buy first then sell back
+                spread_capture.initial_order.status = Order::Status::NOT_AVAILABLE;
+                spread_capture.initial_order.price = mid_price - spread_capture.current_move_distance;
+                spread_capture.initial_order.side = Order::Side::BUY;
+            }
         }
-
-        if (mid_price > spread_capture.mean_price)
+        // Update status to PLACING_HEDGE_ORDER
+        else
         {
-            // Try to buy first then sell back, we want to sell high and buy back low
-            spread_capture.buy_order = nullptr;
-            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-            spread_capture.buy_order.price = mid_price - 0.5;
+            if (spread_capture.initial_order.side == Order::Side::BUY)
+            {
+                spread_capture.hedge_order.side = Order::Side::SELL;
+                spread_capture.hedge_order.price = spread_capture.initial_order.price + spread_capture.current_take_profit;
+                spread_capture.hedge_order.status = Order::Status::NOT_AVAILABLE;
+            }
+            else if (spread_capture.initial_order.side == Order::Side::SELL)
+            {
+                spread_capture.hedge_order.side = Order::Side::BUY;
+                spread_capture.hedge_order.status = Order::Status::NOT_AVAILABLE;
+                spread_capture.hedge_order.price = spread_capture.initial_order.price - spread_capture.current_take_profit;
+            }
 
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_BUY_INITIAL_ORDER;
+            spread_capture.status = SpreadCaptureConfig::Status::PLACING_HEDGE_ORDER;
+        }
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_HEDGE_ORDER)
+    {
+        if (spread_capture.hedge_order.status == Order::Status::NEW)
+        {
+            spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED;
+        }
+    }
+    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED)
+    {
+        if (spread_capture.hedge_order.status == Order::Status::FILLED)
+        {
+            spread_capture.initial_order = nullptr;
+            spread_capture.hedge_order = nullptr;
+            spread_capture.status = SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER;
         }
         else
         {
-            // Try to sell first then buy back, we want to buy low and sell back high
-            spread_capture.buy_order = nullptr;
-            spread_capture.sell_order.status = Order::Status::NOT_AVAILABLE;
-            spread_capture.sell_order.price = mid_price + 0.5;
-
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER;
+            if (spread_capture.initial_order.side == Order::Side::BUY)
+            {
+                if (mid_price < spread_capture.initial_order.price - spread_capture.stop_loss)
+                {
+                    spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS;
+                }
+            }
+            else if (spread_capture.initial_order.side == Order::Side::SELL)
+            {
+                if (mid_price > spread_capture.initial_order.price + spread_capture.stop_loss)
+                {
+                    spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS;
+                }
+            }
         }
     }
-    // BUY -> SELL
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_INITIAL_ORDER)
+    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS)
     {
-        if (spread_capture.buy_order.status == Order::Status::NEW)
+        if (spread_capture.hedge_order.status != Order::Status::FILLED)
         {
-            // spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_BUY_ORDER_FILLED;
-        }
-        else if (spread_capture.buy_order.status == Order::Status::FILLED)
-        {
-            spread_capture.sell_order.price = spread_capture.buy_order.price + spread_capture.current_take_profit;
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_BUY_ORDER_FILLED &&
-             spread_capture.buy_order.status == Order::Status::FILLED)
-    {
-        spread_capture.sell_order.price = spread_capture.buy_order.price + spread_capture.current_take_profit;
-        spread_capture.status = SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER;
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_HEDGE_ORDER)
-    {
-        if (spread_capture.sell_order.status == Order::Status::NEW)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_SELL_ORDER_FILLED;
-        }
-        else if (spread_capture.sell_order.status == Order::Status::FILLED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::NONE;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_SELL_ORDER_FILLED)
-    {
-        if (spread_capture.sell_order.status == Order::Status::FILLED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::NONE;
-        }
-        else if (spread_capture.buy_order.price - mid_price >= spread_capture.current_stop_loss)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS_BUY;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_BUY)
-    {
-        if (spread_capture.sell_order.status == Order::Status::FILLED && spread_capture.buy_order.status == Order::Status::FILLED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::NONE;
-        }
-    }
-
-    // SELL -> BUY
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_SELL_INITIAL_ORDER)
-    {
-        if (spread_capture.sell_order.status == Order::Status::NEW)
-        {
-            // spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_SELL_ORDER_FILLED;
-        }
-        else if (spread_capture.sell_order.status == Order::Status::FILLED)
-        {
-            spread_capture.buy_order.price = spread_capture.sell_order.price - spread_capture.current_take_profit;
-            spread_capture.status = SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_INITIAL_SELL_ORDER_FILLED &&
-             spread_capture.sell_order.status == Order::Status::FILLED)
-    {
-        spread_capture.buy_order.price = spread_capture.sell_order.price - spread_capture.current_take_profit;
-        spread_capture.status = SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER;
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::PLACING_BUY_HEDGE_ORDER)
-    {
-        if (spread_capture.buy_order.status == Order::Status::NEW)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_BUY_ORDER_FILLED;
-        }
-        else if (spread_capture.buy_order.status == Order::Status::FILLED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::NONE;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_BUY_ORDER_FILLED)
-    {
-        if (spread_capture.buy_order.status == Order::Status::FILLED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::NONE;
-        }
-        else if (mid_price - spread_capture.sell_order.price >= spread_capture.current_stop_loss)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::STOP_LOSS_SELL;
-        }
-    }
-    else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS_SELL)
-    {
-        if (spread_capture.sell_order.status == Order::Status::FILLED && spread_capture.buy_order.status == Order::Status::FILLED)
-        {
-            spread_capture.status = SpreadCaptureConfig::Status::NONE;
+            spread_capture.hedge_order = nullptr;
+            spread_capture.initial_order = nullptr;
+            spread_capture.status = SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER;
         }
     }
 }

@@ -24,22 +24,16 @@ struct SpreadCaptureConfig
     double profit = 0.0;
     double loss = 0.0;
 
-    Order buy_order = nullptr;
-    Order sell_order = nullptr;
+    Order initial_order = nullptr;
+    Order hedge_order = nullptr;
 
     enum Status
     {
         NONE,
-        PLACING_BUY_INITIAL_ORDER,
-        PLACING_SELL_INITIAL_ORDER,
-        WAITING_FOR_INITIAL_BUY_ORDER_FILLED,
-        WAITING_FOR_INITIAL_SELL_ORDER_FILLED,
-        PLACING_BUY_HEDGE_ORDER,
-        PLACING_SELL_HEDGE_ORDER,
-        WAITING_FOR_HEDGE_BUY_ORDER_FILLED,
-        WAITING_FOR_HEDGE_SELL_ORDER_FILLED,
-        STOP_LOSS_BUY,
-        STOP_LOSS_SELL
+        PLACING_INITIAL_ORDER,
+        PLACING_HEDGE_ORDER,
+        WAITING_FOR_HEDGE_ORDER_FILLED,
+        STOP_LOSS
     };
 
     Status status = Status::NONE;
@@ -56,8 +50,8 @@ struct SpreadCaptureConfig
         fail = 0;
         profit = 0.0;
         loss = 0.0;
-        buy_order = nullptr;
-        sell_order = nullptr;
+        initial_order = nullptr;
+        hedge_order = nullptr;
         status = Status::NONE;
     }
 
