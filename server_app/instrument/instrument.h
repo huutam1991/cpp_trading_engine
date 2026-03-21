@@ -35,6 +35,10 @@ public:
     size_t tick_size;
     double price_precision = 0.0;
 
+    Instrument(ExchangeId exchange_id, InstrumentType instrument_type, std::string symbol, std::string exchange_symbol, size_t lot_size, size_t tick_size, double price_precision = 0.0)
+        : exchange_id{exchange_id}, instrument_type{instrument_type}, symbol{std::move(symbol)}, exchange_symbol{std::move(exchange_symbol)}, lot_size{lot_size}, tick_size{tick_size}, price_precision{price_precision}
+    {}
+
     Json to_json() const;
     static Instrument from_json(Json& data);
 

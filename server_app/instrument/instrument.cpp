@@ -1,20 +1,20 @@
 #include <instrument/instrument.h>
 
-Json Instrument::to_json() const
+Instrument::Instrument(ExchangeId exchange_id, InstrumentType instrument_type, std::string symbol, std::string exchange_symbol, size_t lot_size, size_t tick_size, double price_precision)
+        : exchange_id{exchange_id}, instrument_type{instrument_type}, symbol{std::move(symbol)}, exchange_symbol{std::move(exchange_symbol)}, lot_size{lot_size}, tick_size{tick_size}, price_precision{price_precision}
 {
-    double price_precision_value = 1.0;
     if (price_precision == 0.0)
     {
+        price_precision = 1.0;
         for (int i = 0; i < tick_size; i++)
         {
-            price_precision_value /= 10.0;
+            price_precision /= 10.0;
         }
     }
-    else
-    {
-        price_precision_value = price_precision;
-    }
+}
 
+Json Instrument::to_json() const
+{
     return {
         {"exchange_id", enum_reflect::enum_name(exchange_id)},
         {"instrument_type", enum_reflect::enum_name(instrument_type)},
@@ -22,19 +22,12 @@ Json Instrument::to_json() const
         {"exchange_symbol", exchange_symbol},
         {"lot_size", lot_size},
         {"tick_size", tick_size},
-        {"price_precision", price_precision_value}
+        {"price_precision", price_precision}
     };
 }
 
 Instrument Instrument::from_json(Json& data)
 {
-    double price_precision = 1.0;
-    size_t tick_size_value = (size_t)data["tick_size"];
-    for (int i = 0; i < tick_size_value; i++)
-    {
-        price_precision /= 10.0;
-    }
-
     return Instrument {
         enum_reflect::enum_value<ExchangeId>((std::string)data["exchange_id"]),
         enum_reflect::enum_value<InstrumentType>((std::string)data["instrument_type"]),
@@ -42,7 +35,7 @@ Instrument Instrument::from_json(Json& data)
         data["exchange_symbol"],
         (size_t)data["lot_size"],
         (size_t)data["tick_size"],
-        price_precision
+        (double)data["price_precision"]
     };
 };
 
