@@ -37,7 +37,7 @@ Json StrategyMeanReversionStateRun::get_info()
 
 bool StrategyMeanReversionStateRun::is_same_order_info(Order& order1, Order& order2)
 {
-    return order1.price == order2.price &&
+    return std::abs(order1.price - order2.price) > m_instrument->price_precision &&
         order1.side == order2.side &&
         order1.type == order2.type;
 }
