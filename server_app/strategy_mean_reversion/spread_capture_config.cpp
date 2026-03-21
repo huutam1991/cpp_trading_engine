@@ -139,6 +139,8 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
                 spread_capture.initial_order.price = mid_price - spread_capture.current_move_distance;
                 spread_capture.initial_order.side = Order::Side::BUY;
             }
+
+            spread_capture.status = SpreadCaptureConfig::Status::PLACING_INITIAL_ORDER;
         }
         // Update status to PLACING_HEDGE_ORDER
         else
