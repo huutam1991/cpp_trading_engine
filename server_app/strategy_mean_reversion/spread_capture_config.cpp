@@ -196,7 +196,7 @@ void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* s
     }
     else if (spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS)
     {
-        if (spread_capture.hedge_order.status != Order::Status::FILLED)
+        if (spread_capture.hedge_order.status == Order::Status::FILLED)
         {
             spread_capture.hedge_order = nullptr;
             spread_capture.initial_order = nullptr;

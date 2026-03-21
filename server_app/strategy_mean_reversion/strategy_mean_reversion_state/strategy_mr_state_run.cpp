@@ -37,7 +37,7 @@ Json StrategyMeanReversionStateRun::get_info()
 
 bool StrategyMeanReversionStateRun::is_same_order_info(Order& order1, Order& order2)
 {
-    return std::abs(order1.price - order2.price) > m_instrument->price_precision &&
+    return std::abs(order1.price - order2.price) <= m_instrument->price_precision &&
         order1.side == order2.side &&
         order1.type == order2.type;
 }
@@ -176,10 +176,6 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         else if (m_initial_order.status == Order::Status::NEW &&
                 is_same_order_info(m_initial_order, m_spread_captures.spread_capture.initial_order) == false)
         {
-            spdlog::warn("Initial order info has changed, canceling the previous order");
-            spdlog::warn("Current order: {}", m_initial_order.to_json());
-            spdlog::warn("New order: {}", m_spread_captures.spread_capture.initial_order.to_json());
-
             m_gateway->cancel(m_initial_order);
             m_initial_order.status = Order::Status::NOT_AVAILABLE;
         }
