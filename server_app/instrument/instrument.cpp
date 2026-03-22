@@ -3,28 +3,18 @@
 Instrument::Instrument(ExchangeId exchange_id, InstrumentType instrument_type, std::string symbol, std::string exchange_symbol, size_t lot_size, size_t tick_size, double price_precision)
     : exchange_id{exchange_id}, instrument_type{instrument_type}, symbol{std::move(symbol)}, exchange_symbol{std::move(exchange_symbol)}, lot_size{lot_size}, tick_size{tick_size}, price_precision{price_precision}
 {
-    if (price_precision == 0.0)
+    if (this->price_precision == 0.0)
     {
-        price_precision = 1.0;
+        this->price_precision = 1.0;
         for (int i = 0; i < tick_size; i++)
         {
-            price_precision /= 10.0;
+            this->price_precision /= 10.0;
         }
     }
 }
 
 Json Instrument::to_json() const
 {
-    double price_precision_value = this->price_precision;
-    if (price_precision_value == 0.0)
-    {
-        price_precision_value = 1.0;
-        for (int i = 0; i < tick_size; i++)
-        {
-            price_precision_value /= 10.0;
-        }
-    }
-
     return {
         {"exchange_id", enum_reflect::enum_name(exchange_id)},
         {"instrument_type", enum_reflect::enum_name(instrument_type)},
@@ -32,7 +22,7 @@ Json Instrument::to_json() const
         {"exchange_symbol", exchange_symbol},
         {"lot_size", lot_size},
         {"tick_size", tick_size},
-        {"price_precision", price_precision_value}
+        {"price_precision", price_precision}
     };
 }
 
