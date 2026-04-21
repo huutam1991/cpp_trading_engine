@@ -26,8 +26,8 @@ Task<HttpResponse> APIHandlerSimulatorOrder::child_handle()
     else
     {
         Json config_data = m_request->get_body_json();
-        bool active = config_data.has_field("active") ? (bool)config_data["active"] : false;
-        SimulatorOrder::set_active(active);
+        bool is_real_trading = config_data.has_field("is_real_trading") ? (bool)config_data["is_real_trading"] : false;
+        SimulatorOrder::set_active(!is_real_trading);
 
         response["data"] = "";
         response["msg"] = "update simulator order config successfully";
