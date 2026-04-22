@@ -8,7 +8,7 @@
 #include <fcntl.h>
 
 #include "http_server_socket.h"
-#include "http_client_socket.h"
+#include "http_socket_connection.h"
 
 #define BACKLOG_SOCKET 125
 
@@ -64,7 +64,7 @@ int HttpServerSocket::activate()
 
 int HttpServerSocket::handle_read()
 {
-    HttpClientSocket* client_socket = HttpClientSocketPool::acquire();
+    HttpSocketConnection* client_socket = HttpClientSocketPool::acquire();
     client_socket->set_server_fd(fd);
     epoll_base->start_living_system_io_object(client_socket);
 

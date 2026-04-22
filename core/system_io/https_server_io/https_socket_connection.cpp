@@ -1,30 +1,30 @@
-#include "https_client_socket.h"
+#include "https_socket_connection.h"
 
 #define BUFFER_SIZE 2048
 
-void HttpsClientSocket::set_ssl_context(TlsContext* tls_context)
+void HttpsSocketConnection::set_ssl_context(TlsContext* tls_context)
 {
     tls_wrapper = new TlsWrapper(tls_context);
 }
 
-int HttpsClientSocket::generate_fd()
+int HttpsSocketConnection::generate_fd()
 {
-    fd = HttpClientSocket::generate_fd();
+    fd = HttpSocketConnection::generate_fd();
     return fd;
 }
 
-int HttpsClientSocket::activate()
+int HttpsSocketConnection::activate()
 {
     if (tls_wrapper->attach_fd(fd) == false)
     {
-        spdlog::error("HttpsClientSocket::generate_fd - attach_fd failed");
+        spdlog::error("HttpsSocketConnection::generate_fd - attach_fd failed");
         return -1;
     }
 
     return 0;
 }
 
-int HttpsClientSocket::handle_read()
+int HttpsSocketConnection::handle_read()
 {
     // Continue with ssl_accept if it's not finish yet
     if (tls_wrapper->is_handshake_done() == false)
@@ -35,11 +35,11 @@ int HttpsClientSocket::handle_read()
     // If ssl_accept is finished, handle client request
     else
     {
-        return HttpClientSocket::handle_read();
+        return HttpSocketConnection::handle_read();
     }
 }
 
-int HttpsClientSocket::handle_write()
+int HttpsSocketConnection::handle_write()
 {
     // Continue with ssl_accept if it's not finish yet
     if (tls_wrapper->is_handshake_done() == false)
@@ -51,7 +51,7 @@ int HttpsClientSocket::handle_write()
     return 0;
 }
 
-void HttpsClientSocket::release()
+void HttpsSocketConnection::release()
 {
     if (tls_wrapper)
     {
@@ -59,25 +59,25 @@ void HttpsClientSocket::release()
         tls_wrapper = nullptr;
     }
 
-    HttpsClientSocketPool::release(this);
+    HttpsSocketConnectionPool::release(this);
 }
 
-int HttpsClientSocket::read_buffer(char* const buffer)
+int HttpsSocketConnection::read_buffer(char* const buffer)
 {
     if (tls_wrapper == nullptr)
     {
-        spdlog::error("HttpsClientSocket::read_buffer - tls_wrapper is null, socket fd = {}", fd);
+        spdlog::error("HttpsSocketConnection::read_buffer - tls_wrapper is null, socket fd = {}", fd);
         return -1;
     }
 
     return tls_wrapper->read(buffer, BUFFER_SIZE);
 }
 
-int HttpsClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpsSocketConnection::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     if (tls_wrapper == nullptr)
     {
-        spdlog::error("HttpsClientSocket::write_to_socket_io - tls_wrapper is null, socket fd = {}", fd);
+        spdlog::error("HttpsSocketConnection::write_to_socket_io - tls_wrapper is null, socket fd = {}", fd);
         return -1;
     }
 

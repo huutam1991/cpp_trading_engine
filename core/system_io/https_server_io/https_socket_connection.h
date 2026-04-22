@@ -3,10 +3,10 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#include "http_client_socket.h"
+#include "http_socket_connection.h"
 #include <network/tls_wrapper/tls_wrapper.h>
 
-struct HttpsClientSocket : public HttpClientSocket
+struct HttpsSocketConnection : public HttpSocketConnection
 {
     int server_fd;
     TlsWrapper* tls_wrapper = nullptr;
@@ -26,4 +26,4 @@ struct HttpsClientSocket : public HttpClientSocket
     virtual int write_to_socket_io(const char* buffer, std::uint32_t size);
 };
 
-using HttpsClientSocketPool = CachePool<HttpsClientSocket, 100>;
+using HttpsSocketConnectionPool = CachePool<HttpsSocketConnection, 100>;

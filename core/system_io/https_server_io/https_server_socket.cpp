@@ -2,7 +2,7 @@
 #include <utils/constants.h>
 
 #include "https_server_socket.h"
-#include "https_client_socket.h"
+#include "https_socket_connection.h"
 
 #define BACKLOG_SOCKET 125
 
@@ -25,12 +25,12 @@ int HttpsServerSocket::activate()
 
 int HttpsServerSocket::handle_read()
 {
-    HttpsClientSocket* client_socket = HttpsClientSocketPool::acquire();
+    HttpsSocketConnection* client_socket = HttpsSocketConnectionPool::acquire();
     client_socket->set_server_fd(fd);
     client_socket->set_ssl_context(server_ctx);
     epoll_base->start_living_system_io_object(client_socket);
 
-    spdlog::info("Size of HttpsClientSocketPool = {}", HttpsClientSocketPool::size());
+    spdlog::info("Size of HttpsSocketConnectionPool = {}", HttpsSocketConnectionPool::size());
 
     return 0;
 }

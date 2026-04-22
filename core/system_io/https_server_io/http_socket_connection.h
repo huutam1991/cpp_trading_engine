@@ -8,7 +8,7 @@
 #include <network/https_server/route/route_controller.h>
 #include <system_io/system_io_object.h>
 
-struct HttpClientSocket : public NamedIOObject<HttpClientSocket>
+struct HttpSocketConnection : public NamedIOObject<HttpSocketConnection>
 {
     int server_fd;
     std::string save_buffer;
@@ -32,4 +32,4 @@ struct HttpClientSocket : public NamedIOObject<HttpClientSocket>
     Task<void> execute_request(HttpRequest* request);
 };
 
-using HttpClientSocketPool = CachePool<HttpClientSocket, 100>;
+using HttpClientSocketPool = CachePool<HttpSocketConnection, 100>;

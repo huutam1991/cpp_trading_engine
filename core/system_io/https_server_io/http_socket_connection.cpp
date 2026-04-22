@@ -7,34 +7,34 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-#include "http_client_socket.h"
+#include "http_socket_connection.h"
 
 #define BUFFER_SIZE 2048
 
-void HttpClientSocket::set_server_fd(int fd_value)
+void HttpSocketConnection::set_server_fd(int fd_value)
 {
     server_fd = fd_value;
 }
 
-void HttpClientSocket::clear()
+void HttpSocketConnection::clear()
 {
     server_fd = -1;
     save_buffer = "";
 }
 
-int HttpClientSocket::generate_fd()
+int HttpSocketConnection::generate_fd()
 {
     sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
 
     if ((fd = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len)) == -1)
     {
-        spdlog::error("HttpClientSocket::generate_fd - HttpServer - accept: {}", std::strerror(errno));
+        spdlog::error("HttpSocketConnection::generate_fd - HttpServer - accept: {}", std::strerror(errno));
         return -1;
     }
     else
     {
-        spdlog::info("HttpClientSocket::generate_fd - Connection to {}, established (fd = {})", inet_ntoa(client_addr.sin_addr), fd);
+        spdlog::info("HttpSocketConnection::generate_fd - Connection to {}, established (fd = {})", inet_ntoa(client_addr.sin_addr), fd);
 
         // Set non-blocking
         if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
@@ -62,13 +62,13 @@ int HttpClientSocket::generate_fd()
     return fd;
 }
 
-int HttpClientSocket::activate()
+int HttpSocketConnection::activate()
 {
     // Nothing to do for client socket
     return 0;
 }
 
-int HttpClientSocket::handle_read()
+int HttpSocketConnection::handle_read()
 {
     char buffer[BUFFER_SIZE];
     char temp_buffer[BUFFER_SIZE];
@@ -90,7 +90,7 @@ int HttpClientSocket::handle_read()
     }
     else
     {
-        spdlog::debug("HttpClientSocket::handle_io_data - connection lost, fd = {}", fd);
+        spdlog::debug("HttpSocketConnection::handle_io_data - connection lost, fd = {}", fd);
         // Clean save buffer
         save_buffer = "";
         return -1;
@@ -128,25 +128,25 @@ int HttpClientSocket::handle_read()
     return 0;
 }
 
-int HttpClientSocket::handle_write()
+int HttpSocketConnection::handle_write()
 {
     // Nothing to do for write event
     return 0;
 }
 
-void HttpClientSocket::release()
+void HttpSocketConnection::release()
 {
     HttpClientSocketPool::release(this);
 }
 
-Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
+Task<void> HttpSocketConnection::send_404_response(HttpRequest* request)
 {
     std::string response = request->response_not_found_404().get_response_in_string();
 
     int res = write_to_socket_io(response.c_str(), response.size());
     if (res == -1)
     {
-        spdlog::error("HttpClientSocket::send_404_response - write failed, socket fd = {}", fd);
+        spdlog::error("HttpSocketConnection::send_404_response - write failed, socket fd = {}", fd);
         epoll_base->del_fd(fd, this);
     }
 
@@ -156,14 +156,14 @@ Task<void> HttpClientSocket::send_404_response(HttpRequest* request)
     co_return;
 }
 
-Task<void> HttpClientSocket::execute_request(HttpRequest* request)
+Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
 {
     std::string response = co_await RouteController::instance().handle_request_base_on_route(request);
 
     int res = write_to_socket_io(response.c_str(), response.size());
     if (res == -1)
     {
-        spdlog::error("HttpClientSocket::send_404_response - write failed, socket fd = {}", fd);
+        spdlog::error("HttpSocketConnection::send_404_response - write failed, socket fd = {}", fd);
         epoll_base->del_fd(fd, this);
     }
 
@@ -172,12 +172,12 @@ Task<void> HttpClientSocket::execute_request(HttpRequest* request)
     co_return;
 }
 
-int HttpClientSocket::read_buffer(char* const buffer)
+int HttpSocketConnection::read_buffer(char* const buffer)
 {
     return read(fd, buffer, BUFFER_SIZE);
 }
 
-int HttpClientSocket::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpSocketConnection::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     return write(fd, buffer, size);
 }
