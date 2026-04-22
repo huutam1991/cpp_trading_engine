@@ -1,7 +1,11 @@
 #include "tcp_connection.h"
 
 TCPConnection::TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port, std::function<void()> on_connect, std::function<void()> on_disconnect)
-        :   m_epoll_base{epoll_base}, m_hostname{hostname}, m_port{port}, m_on_connect{std::move(on_connect)}, m_on_disconnect{std::move(on_disconnect)}
+    :   m_epoll_base{epoll_base},
+        m_hostname{hostname},
+        m_port{port},
+        m_on_connect{std::move(on_connect)},
+        m_on_disconnect{std::move(on_disconnect)}
 {
     connect();
 }
