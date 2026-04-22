@@ -20,7 +20,7 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
         {"Json Object Pool Size", JsonObjectPool::size()},
         {"Json Value Pool Size", JsonValuePool::size()},
         {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()},
-        {"Https Client Socket Pool Size", HttpsSocketConnectionPool::size()}
+        {"Https Client Socket Connection Pool Size", HttpsSocketConnectionPool::size()}
     };
     response["msg"] = "";
     response["status_code"] = OK_200;
