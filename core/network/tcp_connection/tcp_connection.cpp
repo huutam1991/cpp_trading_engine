@@ -49,7 +49,7 @@ Future<std::string> TCPConnection::wait_for_data()
 
 void TCPConnection::connect()
 {
-    m_io_object = std::make_unique<HttpsClientIO>(m_hostname, m_port);
+    m_io_object = std::make_unique<HttpsClientRequestIO>(m_hostname, m_port);
 
     m_io_object->set_on_connect_callback([this]()
     {

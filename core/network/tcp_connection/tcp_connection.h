@@ -18,7 +18,7 @@ class TCPConnection
     EpollBase* m_epoll_base = nullptr;
     std::string m_hostname;
     int m_port;
-    std::unique_ptr<HttpsClientIO> m_io_object = nullptr;
+    std::unique_ptr<HttpsClientRequestIO> m_io_object = nullptr;
     std::function<void()> m_on_connect = nullptr;
     std::function<void()> m_on_disconnect = nullptr;
     Future<std::string>::FutureValue* m_waiting_data_value = nullptr;

@@ -7,7 +7,7 @@
 #include <network/tls_wrapper/tls_wrapper.h>
 #include <system_io/system_io_object.h>
 
-struct HttpsClientIO : public NamedIOObject<HttpsClientIO>
+struct HttpsClientRequestIO : public NamedIOObject<HttpsClientRequestIO>
 {
     std::string hostname;
     std::string ip;
@@ -29,8 +29,8 @@ struct HttpsClientIO : public NamedIOObject<HttpsClientIO>
     };
     State current_state = State::NONE;
 
-    HttpsClientIO(const std::string& hostname_value, int port_value);
-    ~HttpsClientIO();
+    HttpsClientRequestIO(const std::string& hostname_value, int port_value);
+    ~HttpsClientRequestIO();
 
     // Set callback on connect
     std::function<void()> on_connect_callback = nullptr;
