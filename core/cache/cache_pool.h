@@ -45,9 +45,9 @@ concept has_init = requires
 };
 
 template <typename T>
-concept has_clear = requires
+concept has_refresh = requires
 {
-    { &T::clear };
+    { &T::refresh };
 };
 
 template <class T, size_t Size>
@@ -170,10 +170,10 @@ public:
                 pool_buffer.size.fetch_add(1, std::memory_order_release);
             }
 
-            // Check if the item has clear method and call it
-            if constexpr (has_clear<T>)
+            // Check if the item has refresh method and call it
+            if constexpr (has_refresh<T>)
             {
-                item->clear();
+                item->refresh();
             }
         }
         else
