@@ -118,7 +118,6 @@ int HttpWebsocketConnection::handle_write()
 
 void HttpWebsocketConnection::release()
 {
-    refresh();
     HttpWebsocketConnectionPool::release(this);
 }
 
