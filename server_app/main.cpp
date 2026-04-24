@@ -34,13 +34,13 @@ extern void add_bad_request();
 
 Task<void> test_https_client_request(EpollBase* epoll_base)
 {
+    HttpsClientRequest https_client_request(epoll_base, "fapi.binance.com", 443);
     while (true)
     {
         {
-            HttpsClientRequest https_client_request(epoll_base, "fapi.binance.com", 443);
-            MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
+            // MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
             HttpsClientResponse response_get = co_await https_client_request.get("/fapi/v1/exchangeInfo");
-            spdlog::info("GET fapi.binance.com/fapi/v1/exchangeInfo response: {} - {}", response_get.status_code, response_get.body);
+            // spdlog::info("GET fapi.binance.com/fapi/v1/exchangeInfo response: {} - {}", response_get.status_code, response_get.body);
         }
 
         co_await Timer::sleep_for(1000);
@@ -157,12 +157,11 @@ int main(int argc, char **argv) {
     // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     // epoll_base->start_living_system_io_object(https_server_object);
 
-    HttpWebsocketServer* http_websocket_server_object = new HttpWebsocketServer(port);
-    epoll_base->start_living_system_io_object(http_websocket_server_object);
+    // HttpWebsocketServer* http_websocket_server_object = new HttpWebsocketServer(port);
+    // epoll_base->start_living_system_io_object(http_websocket_server_object);
 
     // Test HTTPS client request
-    // test_https_client_websocket(epoll_base).start_running_on(epoll_base);
-    // test_future().start_running_on(epoll_base);
+    test_https_client_request(epoll_base).start_running_on(epoll_base);
 
     // Main loop, only sleep here
     while (true)
