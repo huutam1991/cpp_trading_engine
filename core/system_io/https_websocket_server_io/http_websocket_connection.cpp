@@ -63,7 +63,8 @@ int HttpWebsocketConnection::generate_fd()
     spdlog::info(
         "HttpWebsocketConnection::generate_fd - Connection to {}, established (fd = {})",
         inet_ntoa(client_addr.sin_addr),
-        fd);
+        fd
+    );
 
     return fd;
 }
@@ -98,7 +99,7 @@ int HttpWebsocketConnection::handle_read()
         if (read_bytes == 0)
         {
             spdlog::debug("HttpWebsocketConnection::handle_read - peer closed connection, fd = {}", fd);
-            return close_connection();
+            return -1;
         }
 
         if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -107,7 +108,7 @@ int HttpWebsocketConnection::handle_read()
         }
 
         spdlog::error("HttpWebsocketConnection::handle_read - read failed, fd = {}, err = {}", fd, std::strerror(errno));
-        return close_connection();
+        return -1;
     }
 }
 
@@ -118,6 +119,11 @@ int HttpWebsocketConnection::handle_write()
 
 void HttpWebsocketConnection::release()
 {
+    if (on_disconnect != nullptr)
+    {
+        on_disconnect(fd);
+    }
+
     HttpWebsocketConnectionPool::release(this);
 }
 
@@ -198,7 +204,7 @@ int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::si
             "Connection: close\r\n\r\n";
 
         write_to_socket_io(bad_request.data(), static_cast<std::uint32_t>(bad_request.size()));
-        return close_connection();
+        return -1;
     }
 
     const std::string sec_websocket_key = get_header_value(request_text, "Sec-WebSocket-Key");
@@ -210,14 +216,14 @@ int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::si
             "Connection: close\r\n\r\n";
 
         write_to_socket_io(bad_request.data(), static_cast<std::uint32_t>(bad_request.size()));
-        return close_connection();
+        return -1;
     }
 
     const std::string response = build_websocket_upgrade_response(sec_websocket_key);
     if (write_to_socket_io(response.data(), static_cast<std::uint32_t>(response.size())) == -1)
     {
         spdlog::error("HttpWebsocketConnection::handle_http_upgrade_bytes - failed to send upgrade response, fd = {}", fd);
-        return close_connection();
+        return -1;
     }
 
     state = State::WebSocketOpen;
@@ -274,19 +280,11 @@ int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_
                 }
             }
 
-            return close_connection();
+            return -1;
         }
     }
 
     return 0;
-}
-
-int HttpWebsocketConnection::close_connection()
-{
-    state = State::Closing;
-    run_on_disconnect().start_running_on((EventBase*)epoll_base);
-    epoll_base->del_fd(fd, this);
-    return -1;
 }
 
 bool HttpWebsocketConnection::try_extract_http_request(std::string& request_text, std::string& leftover_data)
@@ -503,6 +501,6 @@ void HttpWebsocketConnection::write_raw_frame(const std::vector<char>& frame)
     if (result == -1)
     {
         spdlog::error("HttpWebsocketConnection::write_raw_frame - write failed, fd = {}", fd);
-        close_connection();
+        // close_connection();
     }
 }

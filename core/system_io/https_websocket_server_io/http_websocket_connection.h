@@ -60,7 +60,6 @@ private:
 
     int handle_http_upgrade_bytes(const char* data, std::size_t size);
     int handle_websocket_bytes(const char* data, std::size_t size);
-    int close_connection();
 
     bool try_extract_http_request(std::string& request_text, std::string& leftover_data);
     bool is_websocket_upgrade_request(const std::string& request_text) const;
