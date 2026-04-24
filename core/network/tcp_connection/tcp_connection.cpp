@@ -80,12 +80,13 @@ Task<void> TCPConnection::re_connect()
 void TCPConnection::on_disconnect()
 {
     m_io_object = nullptr;
-    re_connect().start_running_on(m_epoll_base);
 
     if (m_on_disconnect != nullptr)
     {
         m_on_disconnect();
     }
+
+    re_connect().start_running_on(m_epoll_base);
 }
 
 void TCPConnection::on_response_received(const char* buffer, std::uint32_t size)
