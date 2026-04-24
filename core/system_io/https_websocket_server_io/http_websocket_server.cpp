@@ -72,7 +72,7 @@ int HttpWebsocketServer::activate()
 int HttpWebsocketServer::handle_read()
 {
     HttpWebsocketConnection* connection = HttpWebsocketConnectionPool::acquire();
-    connection->clear();
+    connection->refresh();
     connection->set_server_fd(fd);
     connection->set_callbacks(on_connect, on_message, on_disconnect);
     epoll_base->start_living_system_io_object(connection);
