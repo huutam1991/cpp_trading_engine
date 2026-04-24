@@ -262,6 +262,7 @@ int HttpsClientRequestIO::handle_read()
 
 int HttpsClientRequestIO::handle_write()
 {
+    spdlog::debug("HttpsClientRequestIO::handle_write - Checking to write, ip: {}, port: {}", ip, port);
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
