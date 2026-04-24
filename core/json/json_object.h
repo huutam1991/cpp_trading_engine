@@ -56,7 +56,7 @@ public:
         reference_count = 1; // Initialize reference count to 1
     }
 
-    void clear()
+    void refresh()
     {
         m_object.clear();
         m_array.clear();

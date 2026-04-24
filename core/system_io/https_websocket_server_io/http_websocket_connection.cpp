@@ -28,7 +28,7 @@ void HttpWebsocketConnection::set_callbacks(
     on_disconnect = std::move(on_disconnect_callback);
 }
 
-void HttpWebsocketConnection::clear()
+void HttpWebsocketConnection::refresh()
 {
     server_fd = -1;
     save_buffer.clear();
@@ -118,7 +118,7 @@ int HttpWebsocketConnection::handle_write()
 
 void HttpWebsocketConnection::release()
 {
-    clear();
+    refresh();
     HttpWebsocketConnectionPool::release(this);
 }
 

@@ -16,7 +16,7 @@ struct TimerIO : public NamedIOObject<TimerIO>
     TimerIO() {};
 
     void set_callback(size_t interval_ns_value, std::function<void()> callback_value);
-    void clear();
+    void refresh();
 
     // SystemIOObject's methods
     virtual int generate_fd() override;

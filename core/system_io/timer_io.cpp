@@ -6,7 +6,7 @@ void TimerIO::set_callback(size_t interval_ns_value, std::function<void()> callb
     callback = std::move(callback_value);
 }
 
-void TimerIO::clear()
+void TimerIO::refresh()
 {
     callback = nullptr;
     interval_ns = 0;

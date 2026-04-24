@@ -36,7 +36,7 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
         std::function<Task<void>(int)> on_connect_callback,
         std::function<Task<void>(int, std::string)> on_message_callback,
         std::function<Task<void>(int)> on_disconnect_callback);
-    void clear();
+    void refresh();
 
     virtual int generate_fd() override;
     virtual int get_io_events() override { return EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP; }

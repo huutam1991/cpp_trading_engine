@@ -1,6 +1,6 @@
 #include <order_book/order_book_snapshot.h>
 
-void OrderBookSnapShot::clear()
+void OrderBookSnapShot::refresh()
 {
     bids_size = 0;
     asks_size = 0;

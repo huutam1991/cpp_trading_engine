@@ -23,7 +23,7 @@ struct TaskInfo : public NamedIOObject<TaskInfo>
     std::chrono::time_point<std::chrono::high_resolution_clock> start;
     bool is_first_time = true;
 
-    void clear()
+    void refresh()
     {
         if (handle != nullptr)
         {

@@ -16,7 +16,7 @@ void HttpSocketConnection::set_server_fd(int fd_value)
     server_fd = fd_value;
 }
 
-void HttpSocketConnection::clear()
+void HttpSocketConnection::refresh()
 {
     server_fd = -1;
     save_buffer = "";

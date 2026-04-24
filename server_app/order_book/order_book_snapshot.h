@@ -36,7 +36,7 @@ public:
         instrument = instr;
     }
 
-    void clear();
+    void refresh();
     void print_order_book();
 
     inline void add_bid(double price, double quantity)

@@ -14,7 +14,7 @@ struct HttpSocketConnection : public NamedIOObject<HttpSocketConnection>
     std::string save_buffer;
 
     void set_server_fd(int fd_value);
-    void clear();
+    void refresh();
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
