@@ -216,6 +216,32 @@ int HttpsClientRequestIO::check_to_write()
     return 0;
 }
 
+void HttpsClientRequestIO::enable_write_event()
+{
+    static constexpr uint32_t READ_WRITE_EVENTS = EPOLLIN | EPOLLOUT | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
+
+    if (m_write_event_enabled)
+    {
+        return;
+    }
+
+    m_write_event_enabled = true;
+    epoll_base->mod_fd_events(fd, this, READ_WRITE_EVENTS);
+}
+
+void HttpsClientRequestIO::disable_write_event()
+{
+    static constexpr uint32_t READ_EVENTS = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
+
+    if (!m_write_event_enabled)
+    {
+        return;
+    }
+
+    m_write_event_enabled = false;
+    epoll_base->mod_fd_events(fd, this, READ_EVENTS);
+}
+
 int HttpsClientRequestIO::generate_fd()
 {
     fd = ::socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
