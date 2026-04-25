@@ -29,6 +29,18 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
         spdlog::error("EpollBase - [add_fd] epoll_ctl ADD error for fd: {}, error: {}", fd, std::strerror(errno));
     }
 }
+void EpollBase::mod_fd_events(int fd, SystemIOObject* ptr, uint32_t events)
+{
+    epoll_event ev;
+    ev.events = events;
+    ev.data.ptr = ptr;
+
+    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, fd, &ev);
+    if (res == -1)
+    {
+        spdlog::error("EpollBase - [mod_fd] epoll_ctl MOD error for fd: {}, error: {}", fd, std::strerror(errno));
+    }
+}
 
 void EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
