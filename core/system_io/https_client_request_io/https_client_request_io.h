@@ -16,9 +16,11 @@ struct HttpsClientRequestIO : public NamedIOObject<HttpsClientRequestIO>
     bool is_connected = false;
 
     // For writing data
-    int current_write_offset = 0;
-    std::queue<std::string> write_queue;
-
+    std::deque<std::string> m_write_queue;
+    std::size_t m_write_offset = 0;
+    bool m_write_event_enabled = false;
+    void enable_write_event();
+    void disable_write_event();
 
     enum State
     {
@@ -56,16 +58,9 @@ struct HttpsClientRequestIO : public NamedIOObject<HttpsClientRequestIO>
     int check_to_write();
     int write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size);
 
-    // Write data methods + variables
-    std::deque<std::string> m_write_queue;
-    std::size_t m_write_offset = 0;
-    bool m_write_event_enabled = false;
-    void enable_write_event();
-    void disable_write_event();
-
     // SystemIOObject's methods
     virtual int generate_fd() override;
-    virtual int get_io_events() override { return EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP; }
+    virtual int get_io_events() override { return EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP; }
     virtual int activate() override;
     virtual int handle_read() override;
     virtual int handle_write() override;

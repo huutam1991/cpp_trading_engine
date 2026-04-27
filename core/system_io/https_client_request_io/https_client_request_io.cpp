@@ -47,8 +47,47 @@ void HttpsClientRequestIO::set_on_response_received_callback(std::function<void(
 
 void HttpsClientRequestIO::write(std::string data)
 {
-    write_queue.push(std::move(data));
-    check_to_write();
+    if (data.empty())
+    {
+        return;
+    }
+
+    // If there is pending data in the queue, push new data to the queue and wait for the turn to write
+    if (!m_write_queue.empty())
+    {
+        m_write_queue.push_back(std::move(data));
+        enable_write_event();
+        return;
+    }
+
+    const int n = write_to_socket_io(data.data(), 0, static_cast<std::uint32_t>(data.size()));
+
+    if (n == static_cast<int>(data.size()))
+    {
+        // Already write full data, return
+        return;
+    }
+
+    if (n > 0)
+    {
+        // Partial write: queue the remaining data
+        data.erase(0, static_cast<std::size_t>(n));
+        m_write_queue.push_back(std::move(data));
+        m_write_offset = 0;
+        enable_write_event();
+        return;
+    }
+
+    if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
+    {
+        // Socket buffer full: queue the whole data and wait for the turn to write
+        m_write_queue.push_back(std::move(data));
+        m_write_offset = 0;
+        enable_write_event();
+        return;
+    }
+
+    spdlog::error("HttpWebsocketConnection::write_raw - write failed fd={}, err={}", fd, std::strerror(errno));
 }
 
 TlsContext* HttpsClientRequestIO::get_tls_context()
@@ -185,34 +224,40 @@ int HttpsClientRequestIO::check_to_write()
         return 0;
     }
 
-    while (write_queue.empty() == false)
+    while (!m_write_queue.empty())
     {
-        const std::string& data = write_queue.front();
-        int written_bytes = write_to_socket_io(data.c_str(), current_write_offset, data.size());
+        std::string& data = m_write_queue.front();
+        const char* ptr = data.data() + m_write_offset;
 
-        current_write_offset += written_bytes;
-        if (current_write_offset == data.size())
+        const int n = write_to_socket_io(ptr, m_write_offset, data.size());
+
+        if (n > 0)
         {
-            // Fully written, pop and continue to next
-            current_write_offset = 0;
-            write_queue.pop();
+            m_write_offset += static_cast<std::size_t>(n);
 
-            continue;
+            if (m_write_offset == data.size())
+            {
+                m_write_queue.pop_front();
+                m_write_offset = 0;
+                continue;
+            }
+
+            // Partial again. Wait for next EPOLLOUT.
+            return 0;
         }
 
-        if (current_write_offset < data.size())
+        if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
         {
-            // Not fully written, wait for next writable event
-            break;
+            // Still not writable enough.
+            return 0;
         }
 
-        if (written_bytes == -1)
-        {
-            spdlog::error("HttpsClientRequestIO::handle_write - write failed, ip: {}, port: {}", ip, port);
-            return -1;
-        }
+        spdlog::error("HttpWebsocketConnection::handle_write - write failed fd = {}, err = {}", fd, std::strerror(errno));
+        return -1;
     }
 
+    // Queue empty => no need to receive EPOLLOUT anymore.
+    disable_write_event();
     return 0;
 }
 
