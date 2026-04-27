@@ -87,7 +87,7 @@ void HttpsClientRequestIO::write(std::string data)
         return;
     }
 
-    spdlog::error("HttpWebsocketConnection::write_raw - write failed fd = {}, err = {}", fd, std::strerror(errno));
+    spdlog::error("HttpsClientRequestIO::write_raw - write failed fd = {}, err = {}", fd, std::strerror(errno));
 }
 
 TlsContext* HttpsClientRequestIO::get_tls_context()
@@ -252,7 +252,7 @@ int HttpsClientRequestIO::check_to_write()
             return 0;
         }
 
-        spdlog::error("HttpWebsocketConnection::handle_write - write failed fd = {}, err = {}", fd, std::strerror(errno));
+        spdlog::error("HttpsClientRequestIO::handle_write - write failed fd = {}, err = {}", fd, std::strerror(errno));
         return -1;
     }
 
