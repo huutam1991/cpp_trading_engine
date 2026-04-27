@@ -267,7 +267,6 @@ int HttpsClientRequestIO::activate()
             return 0;
         }
 
-        close(fd);
         return -1;
     }
     return 0;
