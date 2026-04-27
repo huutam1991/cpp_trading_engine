@@ -220,7 +220,7 @@ void HttpsClientRequestIO::enable_write_event()
 {
     static constexpr uint32_t READ_WRITE_EVENTS = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
 
-    if (m_write_event_enabled)
+    if (m_write_event_enabled == true)
     {
         return;
     }
@@ -233,7 +233,7 @@ void HttpsClientRequestIO::disable_write_event()
 {
     static constexpr uint32_t READ_EVENTS = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
 
-    if (!m_write_event_enabled)
+    if (m_write_event_enabled == false)
     {
         return;
     }
