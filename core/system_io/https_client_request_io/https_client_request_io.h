@@ -25,8 +25,7 @@ struct HttpsClientRequestIO : public NamedIOObject<HttpsClientRequestIO>
     enum State
     {
         CONNECTING_AND_HANDSHAKING,
-        READING,
-        WRITING,
+        READING_AND_WRITING,
         NONE
     };
     State current_state = State::NONE;

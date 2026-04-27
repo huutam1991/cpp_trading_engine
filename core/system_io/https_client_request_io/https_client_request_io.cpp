@@ -53,7 +53,7 @@ void HttpsClientRequestIO::write(std::string data)
     }
 
     // If there is pending data in the queue, push new data to the queue and wait for the turn to write
-    if (!m_write_queue.empty() || current_state != State::WRITING)
+    if (!m_write_queue.empty() || current_state != State::READING_AND_WRITING)
     {
         m_write_queue.push_back(std::move(data));
         enable_write_event();
@@ -172,6 +172,7 @@ int HttpsClientRequestIO::check_connect_and_handshake()
         int connect_result = result != TlsResult::ERROR ? 0 : -1;
         if (result == TlsResult::OK && connect_result == 0 && on_connect_callback != nullptr)
         {
+            current_state = State::READING_AND_WRITING;
             on_connect_callback();
         }
 
@@ -219,17 +220,10 @@ int HttpsClientRequestIO::handle_read_data()
 
 int HttpsClientRequestIO::check_to_write()
 {
-    if (current_state != State::WRITING)
-    {
-        return 0;
-    }
-
     while (!m_write_queue.empty())
     {
         std::string& data = m_write_queue.front();
-        const char* ptr = data.data() + m_write_offset;
-
-        const int n = write_to_socket_io(ptr, m_write_offset, data.size());
+        const int n = write_to_socket_io(data.data(), m_write_offset, data.size());
 
         if (n > 0)
         {
@@ -326,7 +320,6 @@ int HttpsClientRequestIO::handle_read()
     }
 
     // Handle read data
-    current_state = State::READING;
     return handle_read_data();
 }
 
@@ -339,7 +332,6 @@ int HttpsClientRequestIO::handle_write()
     }
 
     // Handle write data
-    current_state = State::WRITING;
     return check_to_write();
 }
 
