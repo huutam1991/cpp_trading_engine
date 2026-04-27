@@ -53,7 +53,7 @@ void HttpsClientRequestIO::write(std::string data)
     }
 
     // If there is pending data in the queue, push new data to the queue and wait for the turn to write
-    if (!m_write_queue.empty())
+    if (!m_write_queue.empty() || current_state != State::WRITING)
     {
         m_write_queue.push_back(std::move(data));
         enable_write_event();
@@ -87,7 +87,7 @@ void HttpsClientRequestIO::write(std::string data)
         return;
     }
 
-    spdlog::error("HttpsClientRequestIO::write_raw - write failed fd = {}, err = {}", fd, std::strerror(errno));
+    spdlog::error("HttpsClientRequestIO::write_raw - write failed fd = {}, err = {}, data = {}", fd, std::strerror(errno), data);
 }
 
 TlsContext* HttpsClientRequestIO::get_tls_context()
@@ -332,7 +332,6 @@ int HttpsClientRequestIO::handle_read()
 
 int HttpsClientRequestIO::handle_write()
 {
-    spdlog::debug("HttpsClientRequestIO::handle_write - Checking to write, ip: {}, port: {}", ip, port);
     // Check connect and handshake
     if (is_connected == false || m_tls_wrapper->is_handshake_done() == false)
     {
