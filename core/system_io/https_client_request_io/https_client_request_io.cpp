@@ -87,7 +87,7 @@ void HttpsClientRequestIO::write(std::string data)
         return;
     }
 
-    spdlog::error("HttpWebsocketConnection::write_raw - write failed fd={}, err={}", fd, std::strerror(errno));
+    spdlog::error("HttpWebsocketConnection::write_raw - write failed fd = {}, err = {}", fd, std::strerror(errno));
 }
 
 TlsContext* HttpsClientRequestIO::get_tls_context()
