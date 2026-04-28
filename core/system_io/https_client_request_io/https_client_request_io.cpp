@@ -45,51 +45,6 @@ void HttpsClientRequestIO::set_on_response_received_callback(std::function<void(
     on_response_received_callback = std::move(callback);
 }
 
-void HttpsClientRequestIO::write(std::string data)
-{
-    if (data.empty())
-    {
-        return;
-    }
-
-    // If there is pending data in the queue, push new data to the queue and wait for the turn to write
-    if (!m_write_queue.empty() || current_state != State::READING_AND_WRITING)
-    {
-        m_write_queue.push_back(std::move(data));
-        enable_write_event();
-        return;
-    }
-
-    const int n = write_to_socket_io(data.data(), 0, static_cast<std::uint32_t>(data.size()));
-
-    if (n == static_cast<int>(data.size()))
-    {
-        // Already write full data, return
-        return;
-    }
-
-    if (n > 0)
-    {
-        // Partial write: queue the remaining data
-        data.erase(0, static_cast<std::size_t>(n));
-        m_write_queue.push_back(std::move(data));
-        m_write_offset = 0;
-        enable_write_event();
-        return;
-    }
-
-    if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
-    {
-        // Socket buffer full: queue the whole data and wait for the turn to write
-        m_write_queue.push_back(std::move(data));
-        m_write_offset = 0;
-        enable_write_event();
-        return;
-    }
-
-    spdlog::error("HttpsClientRequestIO::write_raw - write failed fd = {}, err = {}, data = {}", fd, std::strerror(errno), data);
-}
-
 TlsContext* HttpsClientRequestIO::get_tls_context()
 {
     static TlsClientContext client_ctx{false, ""};
@@ -128,9 +83,9 @@ int HttpsClientRequestIO::read_buffer(char* const buffer)
     return m_tls_wrapper->read(buffer, BUFFER_TEMP_SIZE);
 }
 
-int HttpsClientRequestIO::write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size)
+int HttpsClientRequestIO::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
-    return m_tls_wrapper->write(buffer, current_write_offset, size);
+    return m_tls_wrapper->write(buffer, 0, size);
 }
 
 int HttpsClientRequestIO::check_connect_and_handshake()
@@ -216,69 +171,6 @@ int HttpsClientRequestIO::handle_read_data()
     }
 
     return 0;
-}
-
-int HttpsClientRequestIO::check_to_write()
-{
-    while (!m_write_queue.empty())
-    {
-        std::string& data = m_write_queue.front();
-        const int n = write_to_socket_io(data.data(), m_write_offset, data.size());
-
-        if (n > 0)
-        {
-            m_write_offset += static_cast<std::size_t>(n);
-
-            if (m_write_offset == data.size())
-            {
-                m_write_queue.pop_front();
-                m_write_offset = 0;
-                continue;
-            }
-
-            // Partial again. Wait for next EPOLLOUT.
-            return 0;
-        }
-
-        if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
-        {
-            // Still not writable enough.
-            return 0;
-        }
-
-        spdlog::error("HttpsClientRequestIO::handle_write - write failed fd = {}, err = {}", fd, std::strerror(errno));
-        return -1;
-    }
-
-    // Queue empty => no need to receive EPOLLOUT anymore.
-    disable_write_event();
-    return 0;
-}
-
-void HttpsClientRequestIO::enable_write_event()
-{
-    static constexpr uint32_t READ_WRITE_EVENTS = EPOLLIN | EPOLLOUT | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
-
-    if (m_write_event_enabled == true)
-    {
-        return;
-    }
-
-    m_write_event_enabled = true;
-    epoll_base->mod_fd_events(fd, this, READ_WRITE_EVENTS);
-}
-
-void HttpsClientRequestIO::disable_write_event()
-{
-    static constexpr uint32_t READ_EVENTS = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
-
-    if (m_write_event_enabled == false)
-    {
-        return;
-    }
-
-    m_write_event_enabled = false;
-    epoll_base->mod_fd_events(fd, this, READ_EVENTS);
 }
 
 int HttpsClientRequestIO::generate_fd()

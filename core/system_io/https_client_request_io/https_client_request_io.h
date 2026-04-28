@@ -15,21 +15,6 @@ struct HttpsClientRequestIO : public NamedIOObject<HttpsClientRequestIO>
     std::unique_ptr<TlsWrapper> m_tls_wrapper = nullptr;
     bool is_connected = false;
 
-    // For writing data
-    std::deque<std::string> m_write_queue;
-    std::size_t m_write_offset = 0;
-    bool m_write_event_enabled = false;
-    void enable_write_event();
-    void disable_write_event();
-
-    enum State
-    {
-        CONNECTING_AND_HANDSHAKING,
-        READING_AND_WRITING,
-        NONE
-    };
-    State current_state = State::NONE;
-
     HttpsClientRequestIO(const std::string& hostname_value, int port_value);
     ~HttpsClientRequestIO();
 
@@ -51,11 +36,9 @@ struct HttpsClientRequestIO : public NamedIOObject<HttpsClientRequestIO>
 
     // Handle data methods
     int check_connect_and_handshake();
-    void write(std::string data);
     int handle_read_data();
     int read_buffer(char* const buffer);
-    int check_to_write();
-    int write_to_socket_io(const char* buffer, int current_write_offset, std::uint32_t size);
+    virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
