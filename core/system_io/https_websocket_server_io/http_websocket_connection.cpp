@@ -81,7 +81,6 @@ int HttpWebsocketConnection::handle_read()
     while (true)
     {
         const int read_bytes = read_buffer(buffer.data(), buffer.size());
-
         if (read_bytes > 0)
         {
             const int result = (state == State::WaitingHttpUpgrade)
@@ -114,7 +113,7 @@ int HttpWebsocketConnection::handle_read()
 
 int HttpWebsocketConnection::handle_write()
 {
-    return 0;
+    return check_to_write();
 }
 
 void HttpWebsocketConnection::release()
@@ -129,8 +128,6 @@ void HttpWebsocketConnection::release()
 
 int HttpWebsocketConnection::read_buffer(char* const buffer, std::size_t size)
 {
-    spdlog::debug("HttpWebsocketConnection::read_buffer - Attempting to read from fd {}, size {}", fd, size);
-    spdlog::debug("HttpWebsocketConnection::read_buffer: {}", std::string(buffer, size));
     return ::read(fd, buffer, size);
 }
 
@@ -497,10 +494,5 @@ void HttpWebsocketConnection::write_raw_frame(const std::vector<char>& frame)
         return;
     }
 
-    const int result = write_to_socket_io(frame.data(), static_cast<std::uint32_t>(frame.size()));
-    if (result == -1)
-    {
-        spdlog::error("HttpWebsocketConnection::write_raw_frame - write failed, fd = {}", fd);
-        // close_connection();
-    }
+    write(std::string(frame.data(), frame.size()));
 }
