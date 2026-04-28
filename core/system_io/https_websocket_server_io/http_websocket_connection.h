@@ -46,7 +46,7 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
     virtual void release() override;
 
     virtual int read_buffer(char* const buffer, std::size_t size);
-    virtual int write_to_socket_io(const char* buffer, std::uint32_t size);
+    virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
 
     void write_text(const std::string& message);
     void write_ping(const std::string& payload = "");
