@@ -157,11 +157,31 @@ int main(int argc, char **argv) {
     // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     // epoll_base->start_living_system_io_object(https_server_object);
 
-    // HttpWebsocketServer* http_websocket_server_object = new HttpWebsocketServer(port);
-    // epoll_base->start_living_system_io_object(http_websocket_server_object);
+    HttpWebsocketServer* http_websocket_server_object = new HttpWebsocketServer(
+        port,
+        // on_connect callback
+        [](int fd) -> Task<void>
+        {
+            spdlog::info("New websocket connection, fd = {}", fd);
+            co_return;
+        },
+        // on_message callback
+        [](int fd, std::string message) -> Task<void>
+        {
+            spdlog::info("Received message from websocket connection (fd = {}): {}", fd, message);
+            co_return;
+        },
+        // on_disconnect callback
+        [](int fd) -> Task<void>
+        {
+            spdlog::info("Websocket connection disconnected, fd = {}", fd);
+            co_return;
+        }
+    );
+    epoll_base->start_living_system_io_object(http_websocket_server_object);
 
     // Test HTTPS client request
-    test_https_client_request(epoll_base).start_running_on(epoll_base);
+    // test_https_client_request(epoll_base).start_running_on(epoll_base);
 
     // Main loop, only sleep here
     while (true)
