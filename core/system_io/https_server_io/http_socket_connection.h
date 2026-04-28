@@ -26,7 +26,7 @@ struct HttpSocketConnection : public NamedIOObject<HttpSocketConnection>
 
     // Handle data methods
     virtual int read_buffer(char* const buffer);
-    virtual int write_to_socket_io(const char* buffer, std::uint32_t size);
+    virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
 
     Task<void> send_404_response(HttpRequest* request);
     Task<void> execute_request(HttpRequest* request);

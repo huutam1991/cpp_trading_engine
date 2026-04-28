@@ -174,10 +174,10 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
 
 int HttpSocketConnection::read_buffer(char* const buffer)
 {
-    return read(fd, buffer, BUFFER_SIZE);
+    return ::read(fd, buffer, BUFFER_SIZE);
 }
 
 int HttpSocketConnection::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
-    return write(fd, buffer, size);
+    return ::write(fd, buffer, size);
 }
