@@ -301,7 +301,7 @@ void add_app_route()
             quantity
         );
 
-        spdlog::info("Placing order: {}", order.to_json());
+        spdlog::info("API: /test_place - Placing order: {}", order.to_json());
 
         GatewayManager::instance()
             .get_gateway(ExchangeId::BINANCE)
