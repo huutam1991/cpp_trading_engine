@@ -15,7 +15,7 @@
 
 struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
 {
-    enum class State
+    enum class WebsocketState
     {
         WaitingHttpUpgrade,
         WebSocketOpen,
@@ -25,7 +25,7 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
     int server_fd = -1;
     std::string save_buffer;
     WebSocketFrameParser frame_parser;
-    State state = State::WaitingHttpUpgrade;
+    WebsocketState WebsocketState = WebsocketState::WaitingHttpUpgrade;
 
     std::function<Task<void>(int)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
@@ -54,7 +54,7 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
     void write_close();
     void write_close(std::uint16_t close_code, const std::string& reason = "");
 
-private:
+protected:
     static constexpr std::size_t READ_BUFFER_SIZE = 8192;
     static constexpr const char* WEBSOCKET_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 

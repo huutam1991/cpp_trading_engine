@@ -33,7 +33,7 @@ void HttpWebsocketConnection::refresh()
     server_fd = -1;
     save_buffer.clear();
     frame_parser.clear();
-    state = State::WaitingHttpUpgrade;
+    WebsocketState = WebsocketState::WaitingHttpUpgrade;
     on_connect = nullptr;
     on_message = nullptr;
     on_disconnect = nullptr;
@@ -83,7 +83,7 @@ int HttpWebsocketConnection::handle_read()
         const int read_bytes = read_buffer(buffer.data(), buffer.size());
         if (read_bytes > 0)
         {
-            const int result = (state == State::WaitingHttpUpgrade)
+            const int result = (WebsocketState == WebsocketState::WaitingHttpUpgrade)
                 ? handle_http_upgrade_bytes(buffer.data(), static_cast<std::size_t>(read_bytes))
                 : handle_websocket_bytes(buffer.data(), static_cast<std::size_t>(read_bytes));
 
@@ -138,7 +138,7 @@ int HttpWebsocketConnection::write_to_socket_io(const char* buffer, std::uint32_
 
 void HttpWebsocketConnection::write_text(const std::string& message)
 {
-    if (state != State::WebSocketOpen)
+    if (WebsocketState != WebsocketState::WebSocketOpen)
     {
         return;
     }
@@ -148,7 +148,7 @@ void HttpWebsocketConnection::write_text(const std::string& message)
 
 void HttpWebsocketConnection::write_ping(const std::string& payload)
 {
-    if (state != State::WebSocketOpen)
+    if (WebsocketState != WebsocketState::WebSocketOpen)
     {
         return;
     }
@@ -158,7 +158,7 @@ void HttpWebsocketConnection::write_ping(const std::string& payload)
 
 void HttpWebsocketConnection::write_pong(const std::string& payload)
 {
-    if (state != State::WebSocketOpen)
+    if (WebsocketState != WebsocketState::WebSocketOpen)
     {
         return;
     }
@@ -173,12 +173,12 @@ void HttpWebsocketConnection::write_close()
 
 void HttpWebsocketConnection::write_close(std::uint16_t close_code, const std::string& reason)
 {
-    if (state == State::Closing)
+    if (WebsocketState == WebsocketState::Closing)
     {
         return;
     }
 
-    state = State::Closing;
+    WebsocketState = WebsocketState::Closing;
     write_raw_frame(WebSocketFrameBuilder::build_close(close_code, reason, false));
 }
 
@@ -223,7 +223,7 @@ int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::si
         return -1;
     }
 
-    state = State::WebSocketOpen;
+    WebsocketState = WebsocketState::WebSocketOpen;
     save_buffer.clear();
 
     run_on_connect().start_running_on((EventBase*)epoll_base);
@@ -261,7 +261,7 @@ int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_
         }
         else if (frame.opcode == WebSocketFrameParser::Opcode::Close)
         {
-            if (state != State::Closing)
+            if (WebsocketState != WebsocketState::Closing)
             {
                 if (frame.payload.size() >= 2)
                 {
