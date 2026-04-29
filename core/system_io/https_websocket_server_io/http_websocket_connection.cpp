@@ -77,6 +77,7 @@ int HttpWebsocketConnection::activate()
 int HttpWebsocketConnection::handle_read()
 {
     std::array<char, READ_BUFFER_SIZE> buffer{};
+    bool is_first_read = true;
 
     while (true)
     {
@@ -92,10 +93,11 @@ int HttpWebsocketConnection::handle_read()
                 return result;
             }
 
+            is_first_read = false;
             continue;
         }
 
-        if (read_bytes == 0)
+        if (read_bytes == 0 && is_first_read)
         {
             spdlog::debug("HttpWebsocketConnection::handle_read - peer closed connection, fd = {}", fd);
             return -1;
