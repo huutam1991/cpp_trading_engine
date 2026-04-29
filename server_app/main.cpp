@@ -128,6 +128,7 @@ Task<void> test_future()
 int main(int argc, char **argv) {
 
     const int port = atoi(argv[1]);
+    const int websocket_port = atoi(argv[2]);
 
     // Initialize Google’s logging library
     // google::InitGoogleLogging(argv[0]);
@@ -154,11 +155,11 @@ int main(int argc, char **argv) {
 
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
-    // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
-    // epoll_base->start_living_system_io_object(https_server_object);
+    HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
+    epoll_base->start_living_system_io_object(https_server_object);
 
     HttpsWebsocketServer* https_websocket_server_object = new HttpsWebsocketServer(
-        port,
+        websocket_port,
         // on_connect callback
         [](int fd) -> Task<void>
         {
