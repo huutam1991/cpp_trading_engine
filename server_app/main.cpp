@@ -181,8 +181,6 @@ int main(int argc, char **argv) {
     );
     epoll_base->start_living_system_io_object(https_websocket_server_object);
 
-    spdlog::info("Starting server_app on port: {} and websocket port: {}", port, websocket_port);
-
     // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
 
