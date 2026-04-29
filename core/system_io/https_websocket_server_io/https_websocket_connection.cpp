@@ -75,7 +75,10 @@ void HttpsWebsocketConnection::release()
         tls_wrapper = nullptr;
     }
 
-    run_on_disconnect().start_running_on((EventBase*)epoll_base);
+    if (on_disconnect != nullptr)
+    {
+        on_disconnect(fd).start_running_on(epoll_base);
+    }
 
     HttpsWebsocketConnectionPool::release(this);
 }

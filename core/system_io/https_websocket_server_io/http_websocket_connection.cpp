@@ -120,7 +120,10 @@ int HttpWebsocketConnection::handle_write()
 
 void HttpWebsocketConnection::release()
 {
-    run_on_disconnect().start_running_on(epoll_base);
+    if (on_disconnect != nullptr)
+    {
+        on_disconnect(fd).start_running_on(epoll_base);
+    }
 
     HttpWebsocketConnectionPool::release(this);
 }
