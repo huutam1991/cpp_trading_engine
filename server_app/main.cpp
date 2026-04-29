@@ -23,7 +23,7 @@
 #include <strategy/strategy_manager.h>
 
 #include <system_io/https_server_io/https_server_socket.h>
-#include <system_io/https_websocket_server_io/http_websocket_server.h>
+#include <system_io/https_websocket_server_io/https_websocket_server.h>
 #include <coroutine/epoll_base.h>
 
 #include <network/https_client_request/https_client_request.h>
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
     // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     // epoll_base->start_living_system_io_object(https_server_object);
 
-    HttpWebsocketServer* http_websocket_server_object = new HttpWebsocketServer(
+    HttpsWebsocketServer* https_websocket_server_object = new HttpsWebsocketServer(
         port,
         // on_connect callback
         [](int fd) -> Task<void>
@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
             co_return;
         }
     );
-    epoll_base->start_living_system_io_object(http_websocket_server_object);
+    epoll_base->start_living_system_io_object(https_websocket_server_object);
 
     // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
