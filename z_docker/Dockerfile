@@ -26,7 +26,7 @@ RUN chmod 777 run_bash.sh
 RUN ./build_bash.sh
 
 # tell the port number the container should expose
-EXPOSE 443 80 8081
+EXPOSE 443 8443 80 8081 8083
 
 # run the command
 CMD ["./run_bash.sh"]

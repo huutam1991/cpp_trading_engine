@@ -12,13 +12,15 @@ ulimit -c unlimited
 # Detect port
 if [[ "$PROD" == "true" ]]; then
     PORT=443
+    WEBSOCKET_PORT=8443
 else
     PORT=8080
+    WEBSOCKET_PORT=8083
 fi
 
 echo "Starting http_server_cpp on port ${PORT} - $(date '+%F %T')"
 echo "---------------------------------------------------------------"
 echo "---------------------------------------------------------------"
 
-# perf stat -e cycles,instructions,task-clock,context-switches ./http_server_cpp "$PORT" web_data
-exec ./http_server_cpp "$PORT" web_data
+# perf stat -e cycles,instructions,task-clock,context-switches ./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
+exec ./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
