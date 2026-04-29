@@ -120,10 +120,7 @@ int HttpWebsocketConnection::handle_write()
 
 void HttpWebsocketConnection::release()
 {
-    if (on_disconnect != nullptr)
-    {
-        on_disconnect(fd);
-    }
+    run_on_disconnect().start_running_on(epoll_base);
 
     HttpWebsocketConnectionPool::release(this);
 }
@@ -228,7 +225,7 @@ int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::si
     WebsocketState = WebsocketState::WebSocketOpen;
     save_buffer.clear();
 
-    run_on_connect().start_running_on((EventBase*)epoll_base);
+    run_on_connect().start_running_on(epoll_base);
 
     if (!leftover_data.empty())
     {
@@ -247,7 +244,7 @@ int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_
     {
         if (frame.opcode == WebSocketFrameParser::Opcode::Text)
         {
-            run_on_message(frame.payload_as_string()).start_running_on((EventBase*)epoll_base);
+            run_on_message(frame.payload_as_string()).start_running_on(epoll_base);
         }
         else if (frame.opcode == WebSocketFrameParser::Opcode::Binary)
         {
