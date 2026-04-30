@@ -1,4 +1,4 @@
-#include "https_websoket_server_route.h"
+#include "https_websocket_server_route.h"
 
 WebsocketRouteName HttpsWebsocketServerRoute::get_route_from_path(const std::string& path)
 {
