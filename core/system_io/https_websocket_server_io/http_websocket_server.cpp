@@ -14,6 +14,16 @@ HttpWebsocketServer::HttpWebsocketServer(int port_value) : port{port_value}
 {
 }
 
+void HttpWebsocketServer::set_callbacks(
+    std::function<Task<void>(int, std::string)> on_connect_callback,
+    std::function<Task<void>(int, std::string)> on_message_callback,
+    std::function<Task<void>(int)> on_disconnect_callback)
+{
+    on_connect = std::move(on_connect_callback);
+    on_message = std::move(on_message_callback);
+    on_disconnect = std::move(on_disconnect_callback);
+}
+
 void HttpWebsocketServer::write_to_connection(int fd, std::string message)
 {
     if (fd < 0)
@@ -116,11 +126,9 @@ void HttpWebsocketServer::establish_connection(HttpWebsocketConnection* connecti
         {
             m_websocket_connections_by_fd[fd] = connection;
 
-            spdlog::info("New WebSocket connection established, fd = {}, path = {}", fd, connection->path);
-
             if (on_connect != nullptr)
             {
-                co_await on_connect(fd);
+                co_await on_connect(fd, connection->path);
             }
 
             co_return;

@@ -14,21 +14,16 @@ struct HttpWebsocketConnection;
 struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
 {
     int port;
-    std::function<Task<void>(int)> on_connect = nullptr;
+    std::function<Task<void>(int, std::string)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
     std::function<Task<void>(int)> on_disconnect = nullptr;
 
     HttpWebsocketServer(int port_value);
 
     void set_callbacks(
-        std::function<Task<void>(int)> on_connect_callback = nullptr,
+        std::function<Task<void>(int, std::string)> on_connect_callback = nullptr,
         std::function<Task<void>(int, std::string)> on_message_callback = nullptr,
-        std::function<Task<void>(int)> on_disconnect_callback = nullptr)
-    {
-        on_connect = std::move(on_connect_callback);
-        on_message = std::move(on_message_callback);
-        on_disconnect = std::move(on_disconnect_callback);
-    }
+        std::function<Task<void>(int)> on_disconnect_callback = nullptr);
     void write_to_connection(int fd, std::string message);
 
     virtual int generate_fd() override;
