@@ -62,6 +62,8 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
 
 void HttpsWebsocketServer::add_route(std::unique_ptr<HttpsWebsocketServerRoute> route)
 {
+    spdlog::info("Adding websocket route [/{}]", route->get_route_name());
+
     route->set_server(this);
     m_routes[static_cast<int>(route->get_route_enum())] = std::move(route);
 }
