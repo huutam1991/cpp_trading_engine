@@ -24,7 +24,10 @@ Task<void> HttpsWebsocketServerRoute::on_message(int fd, std::string message)
         {"message", "Route [none] is default route, no specific logic for this route. Please implement your own route by inheriting HttpsWebsocketServerRoute and override on_message function."}
     };
 
-    m_server->write_to_connection(fd, response);
+    if (m_server != nullptr)
+    {
+        m_server->write_to_connection(fd, response);
+    }
 
     co_return;
 }
