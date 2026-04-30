@@ -5,7 +5,17 @@
 
 WebsocketRouteName HttpsWebsocketServerRoute::get_route_from_path(const std::string& path)
 {
-    return enum_reflect::enum_value<WebsocketRouteName>(path);
+    std::string_view sv = path;
+
+    // Remove leading '/' if exists
+    if (!sv.empty() && sv.front() == '/')
+    {
+        sv.remove_prefix(1);
+    }
+
+    std::string_view result = sv;
+
+    return enum_reflect::enum_value<WebsocketRouteName>(result);
 }
 
 Task<void> HttpsWebsocketServerRoute::on_connect(int fd)
