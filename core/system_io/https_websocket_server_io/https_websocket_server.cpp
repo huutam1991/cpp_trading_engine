@@ -21,7 +21,7 @@ int HttpsWebsocketServer::generate_fd()
 int HttpsWebsocketServer::handle_read()
 {
     HttpsWebsocketConnection* connection = HttpsWebsocketConnectionPool::acquire();
-    connection->set_server_fd(fd);
+    connection->set_ssl_context(server_ctx);
     establish_connection(connection);
 
     spdlog::debug("Size of HttpsWebsocketConnectionPool = {}", HttpWebsocketConnectionPool::size());
