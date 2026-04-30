@@ -8,8 +8,6 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
         // on_connect callback
         [this](int fd, std::string path) -> Task<void>
         {
-            spdlog::info("New websocket connection, fd = {}, path = {}", fd, path);
-
             WebsocketRouteName route = HttpsWebsocketServerRoute::get_route_from_path(path);
             m_websocket_routes_by_fd[fd] = m_routes[static_cast<int>(route)].get();
 
@@ -19,6 +17,8 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
                 spdlog::warn("HttpsWebsocketServer - no route found for path: [{}], cannot handle connection", path);
                 co_return;
             }
+
+            spdlog::info("New websocket connection, fd = {}, path = {}", fd, path);
 
             co_await route_ptr->on_connect(fd);
 
@@ -41,14 +41,14 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
         // on_disconnect callback
         [this](int fd) -> Task<void>
         {
-            spdlog::info("Websocket disconnected, fd = {}", fd);
-
             HttpsWebsocketServerRoute* route_ptr = m_websocket_routes_by_fd[fd];
             if (route_ptr == nullptr)
             {
                 spdlog::warn("HttpsWebsocketServer - no route found for fd: {}, cannot handle disconnect", fd);
                 co_return;
             }
+
+            spdlog::info("Websocket disconnected, fd = {}, route = [{}]", fd, route_ptr->get_route_name());
 
             co_await route_ptr->on_disconnect(fd);
             m_websocket_routes_by_fd[fd] = nullptr;
