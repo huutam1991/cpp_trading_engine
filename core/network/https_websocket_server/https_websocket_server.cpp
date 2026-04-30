@@ -25,3 +25,8 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port)
         }
     );
 }
+
+void HttpsWebsocketServer::add_route(WebsocketServerRouteEnum route_enum, std::unique_ptr<HttpsWebsocketServerRoute> route)
+{
+    m_routes[static_cast<int>(route_enum)] = std::move(route);
+}
