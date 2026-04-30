@@ -4,6 +4,17 @@
 
 #include <time/measure_time.h>
 
+TEST(JsonTestFeature, GetStringValue)
+{
+    Json a;
+    a["name"] = "Nguyen Huu Tam";
+    std::string info = a;
+
+    spdlog::warn("Json string value: {}", info);
+
+    ASSERT_EQ(info == "{\"name\":\"Nguyen Huu Tam\"}", true);
+}
+
 TEST(JsonTestFeature, Operator_Compare_EqualJsonNew)
 {
     Json a;

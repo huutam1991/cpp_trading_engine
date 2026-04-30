@@ -220,3 +220,16 @@ void Json::check_create_json_object()
         m_value = JsonObjectPool::acquire();
     }
 }
+
+template<>
+Json::operator std::string()
+{
+    if (m_value == nullptr || m_value->is_json_value() == false)
+    {
+        return get_string_value(); // Return the JSON string representation if it's not a JsonValue
+    }
+    else
+    {
+        return static_cast<JsonValue*>(m_value)->operator std::string();
+    }
+}
