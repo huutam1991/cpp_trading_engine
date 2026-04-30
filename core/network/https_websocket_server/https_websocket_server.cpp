@@ -41,6 +41,8 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
         // on_disconnect callback
         [this](int fd) -> Task<void>
         {
+            spdlog::info("Websocket disconnected, fd = {}", fd);
+
             HttpsWebsocketServerRoute* route_ptr = m_websocket_routes_by_fd[fd];
             if (route_ptr == nullptr)
             {
