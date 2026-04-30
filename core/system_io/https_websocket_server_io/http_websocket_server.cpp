@@ -24,14 +24,27 @@ HttpWebsocketServer::HttpWebsocketServer(
 
 void HttpWebsocketServer::write_to_connection(int fd, std::string message)
 {
-    HttpWebsocketConnection* connection = m_websocket_connections_by_fd[fd];
+    if (fd < 0)
+    {
+        spdlog::error("HttpWebsocketServer::write_to_connection - Invalid fd: {}", fd);
+        return;
+    }
+
+    const std::size_t index = static_cast<std::size_t>(fd);
+    if (index >= m_websocket_connections_by_fd.size())
+    {
+        spdlog::error("HttpWebsocketServer::write_to_connection - fd {} is out of bounds for m_websocket_connections_by_fd", fd);
+        return;
+    }
+
+    HttpWebsocketConnection* connection = m_websocket_connections_by_fd[index];
     if (connection != nullptr)
     {
         connection->write_text(message);
     }
     else
     {
-        spdlog::warn("HttpWebsocketServer::write_to_connection - No active connection found for fd {}", fd);
+        spdlog::warn("HttpWebsocketServer::write_to_connection - No active connection found for fd {}", index);
     }
 }
 

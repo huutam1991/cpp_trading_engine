@@ -35,7 +35,7 @@ struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
     virtual void release() override;
 
 private:
-    std::array<HttpWebsocketConnection*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_connections_by_fd;
+    std::array<HttpWebsocketConnection*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_connections_by_fd{nullptr};
 
 protected:
     void establish_connection(HttpWebsocketConnection* connection);
