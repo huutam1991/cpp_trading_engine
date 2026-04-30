@@ -19,7 +19,7 @@ void HttpWebsocketConnection::set_server_fd(int fd_value)
 }
 
 void HttpWebsocketConnection::set_callbacks(
-    std::function<Task<void>(int)> on_connect_callback,
+    std::function<Task<void>(int, HttpWebsocketConnection*)> on_connect_callback,
     std::function<Task<void>(int, std::string)> on_message_callback,
     std::function<Task<void>(int)> on_disconnect_callback)
 {
@@ -463,7 +463,7 @@ Task<void> HttpWebsocketConnection::run_on_connect()
 {
     if (on_connect != nullptr)
     {
-        co_await on_connect(fd);
+        co_await on_connect(fd, this);
     }
 
     co_return;

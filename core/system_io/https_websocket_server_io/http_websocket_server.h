@@ -7,6 +7,10 @@
 #include <coroutine/task.h>
 #include <system_io/system_io_object.h>
 
+#define MAX_WEBSOCKET_CONNECTIONS 1000
+
+struct HttpWebsocketConnection;
+
 struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
 {
     int port;
@@ -26,4 +30,10 @@ struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
     virtual int handle_read() override;
     virtual int handle_write() override;
     virtual void release() override;
+
+private:
+    std::array<HttpWebsocketConnection*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_connections_by_fd;
+
+protected:
+    void establish_connection(HttpWebsocketConnection* connection);
 };

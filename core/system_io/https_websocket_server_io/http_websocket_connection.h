@@ -27,13 +27,13 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
     WebSocketFrameParser frame_parser;
     WebsocketState WebsocketState = WebsocketState::WaitingHttpUpgrade;
 
-    std::function<Task<void>(int)> on_connect = nullptr;
+    std::function<Task<void>(int, HttpWebsocketConnection*)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
     std::function<Task<void>(int)> on_disconnect = nullptr;
 
     void set_server_fd(int fd_value);
     void set_callbacks(
-        std::function<Task<void>(int)> on_connect_callback,
+        std::function<Task<void>(int, HttpWebsocketConnection*)> on_connect_callback,
         std::function<Task<void>(int, std::string)> on_message_callback,
         std::function<Task<void>(int)> on_disconnect_callback);
     void refresh();
