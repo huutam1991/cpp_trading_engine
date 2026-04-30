@@ -19,9 +19,7 @@ Task<void> HttpsWebsocketServerRoute::on_message(int fd, std::string message)
     spdlog::info("Received message from websocket connection (fd = {}) on route [{}]: {}", fd, enum_reflect::enum_name(m_route_enum), message);
 
     Json response = {
-        {"status", "ok"},
-        {"route", m_route_name},
-        {"message", "Route [none] is default route, no specific logic for this route. Please implement your own route by inheriting HttpsWebsocketServerRoute and override on_message function."}
+        {"message", "Route [none] is default route, please check your path and make sure it's correct"}
     };
 
     if (m_server != nullptr)

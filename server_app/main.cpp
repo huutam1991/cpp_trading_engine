@@ -191,6 +191,8 @@ int main(int argc, char **argv) {
     // epoll_base->start_living_system_io_object(https_websocket_server_object);
 
     HttpsWebsocketServer* websocket_server = new HttpsWebsocketServer(websocket_port, epoll_base);
+    // Add default route
+    websocket_server->add_route(std::make_unique<HttpsWebsocketServerRoute>());
 
     // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
