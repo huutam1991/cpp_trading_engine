@@ -161,9 +161,9 @@ int main(int argc, char **argv) {
     HttpsWebsocketServer* https_websocket_server_object = new HttpsWebsocketServer(websocket_port);
     https_websocket_server_object->set_callbacks(
         // on_connect callback
-        [](int fd) -> Task<void>
+        [](int fd, std::string path) -> Task<void>
         {
-            spdlog::info("New websocket connection, fd = {}", fd);
+            spdlog::info("New websocket connection, fd = {}, path = {}", fd, path);
             co_return;
         },
         // on_message callback
