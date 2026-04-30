@@ -1,7 +1,7 @@
 #include "https_websocket_server.h"
 
 
-HttpsWebsocketServer::HttpsWebsocketServer(int port)
+HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
     : m_https_websocket_server_io(std::make_unique<HttpsWebsocketServerIO>(port))
 {
     m_https_websocket_server_io->set_callbacks(
@@ -20,7 +20,7 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port)
         // on_message callback
         [this](int fd, std::string message) -> Task<void>
         {
-            spdlog::info("Received message from websocket connection (fd = {}) on route {}: {}",
+            spdlog::info("Received message from websocket connection (fd = {}) on route [{}]: {}",
                 fd,
                 enum_reflect::enum_name(m_websocket_routes_by_fd[fd]->get_route_enum()), message
             );
@@ -32,7 +32,7 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port)
         // on_disconnect callback
         [this](int fd) -> Task<void>
         {
-            spdlog::info("Websocket connection disconnected, fd = {}, route = {}",
+            spdlog::info("Websocket connection disconnected, fd = {}, on route [{}]",
                 fd,
                 enum_reflect::enum_name(m_websocket_routes_by_fd[fd]->get_route_enum())
             );
@@ -43,6 +43,8 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port)
             co_return;
         }
     );
+
+    epoll_base->start_living_system_io_object(m_https_websocket_server_io.get());
 }
 
 void HttpsWebsocketServer::add_route(std::unique_ptr<HttpsWebsocketServerRoute> route)

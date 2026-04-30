@@ -2,8 +2,10 @@
 
 #include <memory>
 
-#include "https_websoket_server_route.h"
+#include <coroutine/epoll_base.h>
 #include <system_io/https_websocket_server_io/https_websocket_server_io.h>
+
+#include "https_websocket_server_route.h"
 
 class HttpsWebsocketServer
 {
@@ -12,7 +14,7 @@ class HttpsWebsocketServer
     std::array<HttpsWebsocketServerRoute*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_routes_by_fd{nullptr};
 
 public:
-    HttpsWebsocketServer(int port);
+    HttpsWebsocketServer(int port, EpollBase* epoll_base);
 
     void add_route(std::unique_ptr<HttpsWebsocketServerRoute> route);
 };
