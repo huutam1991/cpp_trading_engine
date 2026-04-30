@@ -24,6 +24,9 @@ struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
         std::function<Task<void>(int, std::string)> on_message_callback = nullptr,
         std::function<Task<void>(int)> on_disconnect_callback = nullptr);
 
+    // Public method to send message to a specific websocket connection by fd
+    void write_to_connection(int fd, std::string message);
+
     virtual int generate_fd() override;
     virtual int get_io_events() override { return EPOLLIN; }
     virtual int activate() override;

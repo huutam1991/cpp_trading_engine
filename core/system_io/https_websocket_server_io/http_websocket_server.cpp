@@ -22,6 +22,19 @@ HttpWebsocketServer::HttpWebsocketServer(
 {
 }
 
+void HttpWebsocketServer::write_to_connection(int fd, std::string message)
+{
+    HttpWebsocketConnection* connection = m_websocket_connections_by_fd[fd];
+    if (connection != nullptr)
+    {
+        connection->write_text(message);
+    }
+    else
+    {
+        spdlog::warn("HttpWebsocketServer::write_to_connection - No active connection found for fd {}", fd);
+    }
+}
+
 int HttpWebsocketServer::generate_fd()
 {
     sockaddr_in addr;
