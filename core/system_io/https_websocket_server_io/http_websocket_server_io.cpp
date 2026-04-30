@@ -5,8 +5,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#include "http_websocket_server.h"
-#include "http_websocket_connection.h"
+#include "http_websocket_server_io.h"
+#include "http_websocket_connection_io.h"
 
 #define BACKLOG_SOCKET 125
 

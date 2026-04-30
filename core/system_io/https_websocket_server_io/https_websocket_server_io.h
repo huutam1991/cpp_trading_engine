@@ -1,6 +1,6 @@
 #pragma once
 
-#include "http_websocket_server.h"
+#include "http_websocket_server_io.h"
 #include <network/tls_wrapper/tls_wrapper.h>
 
 struct HttpsWebsocketServerIO : public HttpWebsocketServerIO
