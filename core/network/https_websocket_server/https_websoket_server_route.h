@@ -20,7 +20,7 @@ class HttpsWebsocketServerRoute
     WebsocketRouteName m_route_enum = WebsocketRouteName::none;
 
 public:
-    HttpsWebsocketServerRoute(WebsocketRouteName route_enum) : m_route_enum(route_enum) {};
+    HttpsWebsocketServerRoute(WebsocketRouteName route_enum = WebsocketRouteName::none) : m_route_enum(route_enum) {};
 
     WebsocketRouteName get_route_enum() const { return m_route_enum; }
 
