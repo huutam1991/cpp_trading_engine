@@ -9,16 +9,16 @@
 
 #define MAX_WEBSOCKET_CONNECTIONS 1000
 
-struct HttpWebsocketConnection;
+struct HttpWebsocketConnectionIO;
 
-struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
+struct HttpWebsocketServerIO : public NamedIOObject<HttpWebsocketServerIO>
 {
     int port;
     std::function<Task<void>(int, std::string)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
     std::function<Task<void>(int)> on_disconnect = nullptr;
 
-    HttpWebsocketServer(int port_value);
+    HttpWebsocketServerIO(int port_value);
 
     void set_callbacks(
         std::function<Task<void>(int, std::string)> on_connect_callback = nullptr,
@@ -34,8 +34,8 @@ struct HttpWebsocketServer : public NamedIOObject<HttpWebsocketServer>
     virtual void release() override;
 
 private:
-    std::array<HttpWebsocketConnection*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_connections_by_fd{nullptr};
+    std::array<HttpWebsocketConnectionIO*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_connections_by_fd{nullptr};
 
 protected:
-    void establish_connection(HttpWebsocketConnection* connection);
+    void establish_connection(HttpWebsocketConnectionIO* connection);
 };

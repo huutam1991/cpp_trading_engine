@@ -3,23 +3,23 @@
 
 #include <utils/constants.h>
 
-HttpsWebsocketServer::HttpsWebsocketServer(int port_value) : HttpWebsocketServer(port_value)
+HttpsWebsocketServerIO::HttpsWebsocketServerIO(int port_value) : HttpWebsocketServerIO(port_value)
 {
     server_ctx = new TlsServerContext(SSL_SERVER_CERTIFICATE, SSL_PRIVATE_KEY);
 }
 
-int HttpsWebsocketServer::generate_fd()
+int HttpsWebsocketServerIO::generate_fd()
 {
-    return HttpWebsocketServer::generate_fd();
+    return HttpWebsocketServerIO::generate_fd();
 }
 
-int HttpsWebsocketServer::handle_read()
+int HttpsWebsocketServerIO::handle_read()
 {
-    HttpsWebsocketConnection* connection = HttpsWebsocketConnectionPool::acquire();
+    HttpsWebsocketConnectionIO* connection = HttpsWebsocketConnectionIOPool::acquire();
     connection->set_ssl_context(server_ctx);
     establish_connection(connection);
 
-    spdlog::debug("Size of HttpsWebsocketConnectionPool = {}", HttpWebsocketConnectionPool::size());
+    spdlog::debug("Size of HttpsWebsocketConnectionIOPool = {}", HttpWebsocketConnectionIOPool::size());
 
     return 0;
 }

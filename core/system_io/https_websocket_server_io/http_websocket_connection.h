@@ -13,7 +13,7 @@
 #include <network/https_client_websocket/websocket_frame_builder.h>
 #include <network/https_client_websocket/websocket_frame_parser.h>
 
-struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
+struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionIO>
 {
     enum class WebsocketState
     {
@@ -28,13 +28,13 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
     WebSocketFrameParser frame_parser;
     WebsocketState WebsocketState = WebsocketState::WaitingHttpUpgrade;
 
-    std::function<Task<void>(int, HttpWebsocketConnection*)> on_connect = nullptr;
+    std::function<Task<void>(int, HttpWebsocketConnectionIO*)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
     std::function<Task<void>(int)> on_disconnect = nullptr;
 
     void set_server_fd(int fd_value);
     void set_callbacks(
-        std::function<Task<void>(int, HttpWebsocketConnection*)> on_connect_callback,
+        std::function<Task<void>(int, HttpWebsocketConnectionIO*)> on_connect_callback,
         std::function<Task<void>(int, std::string)> on_message_callback,
         std::function<Task<void>(int)> on_disconnect_callback);
     void refresh();
@@ -77,4 +77,4 @@ protected:
     void write_raw_frame(const std::vector<char>& frame);
 };
 
-using HttpWebsocketConnectionPool = CachePool<HttpWebsocketConnection, 100>;
+using HttpWebsocketConnectionIOPool = CachePool<HttpWebsocketConnectionIO, 100>;

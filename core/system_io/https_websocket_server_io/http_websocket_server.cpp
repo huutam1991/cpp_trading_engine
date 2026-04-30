@@ -10,11 +10,11 @@
 
 #define BACKLOG_SOCKET 125
 
-HttpWebsocketServer::HttpWebsocketServer(int port_value) : port{port_value}
+HttpWebsocketServerIO::HttpWebsocketServerIO(int port_value) : port{port_value}
 {
 }
 
-void HttpWebsocketServer::set_callbacks(
+void HttpWebsocketServerIO::set_callbacks(
     std::function<Task<void>(int, std::string)> on_connect_callback,
     std::function<Task<void>(int, std::string)> on_message_callback,
     std::function<Task<void>(int)> on_disconnect_callback)
@@ -24,46 +24,46 @@ void HttpWebsocketServer::set_callbacks(
     on_disconnect = std::move(on_disconnect_callback);
 }
 
-void HttpWebsocketServer::write_to_connection(int fd, std::string message)
+void HttpWebsocketServerIO::write_to_connection(int fd, std::string message)
 {
     if (fd < 0)
     {
-        spdlog::error("HttpWebsocketServer::write_to_connection - Invalid fd: {}", fd);
+        spdlog::error("HttpWebsocketServerIO::write_to_connection - Invalid fd: {}", fd);
         return;
     }
 
     const std::size_t index = static_cast<std::size_t>(fd);
     if (index >= m_websocket_connections_by_fd.size())
     {
-        spdlog::error("HttpWebsocketServer::write_to_connection - fd {} is out of bounds for m_websocket_connections_by_fd", fd);
+        spdlog::error("HttpWebsocketServerIO::write_to_connection - fd {} is out of bounds for m_websocket_connections_by_fd", fd);
         return;
     }
 
-    HttpWebsocketConnection* connection = m_websocket_connections_by_fd[index];
+    HttpWebsocketConnectionIO* connection = m_websocket_connections_by_fd[index];
     if (connection != nullptr)
     {
         connection->write_text(message);
     }
     else
     {
-        spdlog::warn("HttpWebsocketServer::write_to_connection - No active connection found for fd {}", index);
+        spdlog::warn("HttpWebsocketServerIO::write_to_connection - No active connection found for fd {}", index);
     }
 }
 
-int HttpWebsocketServer::generate_fd()
+int HttpWebsocketServerIO::generate_fd()
 {
     sockaddr_in addr;
     int reuse = 1;
 
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
-        spdlog::error("HttpWebsocketServer::generate_fd - socket failed: {}", std::strerror(errno));
+        spdlog::error("HttpWebsocketServerIO::generate_fd - socket failed: {}", std::strerror(errno));
         return -1;
     }
 
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1)
     {
-        spdlog::error("HttpWebsocketServer::generate_fd - setsockopt(SO_REUSEADDR) failed: {}", std::strerror(errno));
+        spdlog::error("HttpWebsocketServerIO::generate_fd - setsockopt(SO_REUSEADDR) failed: {}", std::strerror(errno));
         return -1;
     }
 
@@ -78,51 +78,51 @@ int HttpWebsocketServer::generate_fd()
 
     if (bind(fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1)
     {
-        spdlog::error("HttpWebsocketServer::generate_fd - bind failed on port {}: {}", port, std::strerror(errno));
+        spdlog::error("HttpWebsocketServerIO::generate_fd - bind failed on port {}: {}", port, std::strerror(errno));
         return -1;
     }
 
     if (listen(fd, BACKLOG_SOCKET) == -1)
     {
-        spdlog::error("HttpWebsocketServer::generate_fd - listen failed on port {}: {}", port, std::strerror(errno));
+        spdlog::error("HttpWebsocketServerIO::generate_fd - listen failed on port {}: {}", port, std::strerror(errno));
         return -1;
     }
 
-    spdlog::info("HttpWebsocketServer is listening on port {}", port);
+    spdlog::info("HttpWebsocketServerIO is listening on port {}", port);
     return fd;
 }
 
-int HttpWebsocketServer::activate()
+int HttpWebsocketServerIO::activate()
 {
     return 0;
 }
 
-int HttpWebsocketServer::handle_read()
+int HttpWebsocketServerIO::handle_read()
 {
-    HttpWebsocketConnection* connection = HttpWebsocketConnectionPool::acquire();
+    HttpWebsocketConnectionIO* connection = HttpWebsocketConnectionIOPool::acquire();
     establish_connection(connection);
 
-    spdlog::debug("Size of HttpWebsocketConnectionPool = {}", HttpWebsocketConnectionPool::size());
+    spdlog::debug("Size of HttpWebsocketConnectionIOPool = {}", HttpWebsocketConnectionIOPool::size());
     return 0;
 }
 
-int HttpWebsocketServer::handle_write()
+int HttpWebsocketServerIO::handle_write()
 {
-    spdlog::warn("HttpWebsocketServer::handle_write - unexpected write event on server socket");
+    spdlog::warn("HttpWebsocketServerIO::handle_write - unexpected write event on server socket");
     return 0;
 }
 
-void HttpWebsocketServer::release()
+void HttpWebsocketServerIO::release()
 {
 }
 
-void HttpWebsocketServer::establish_connection(HttpWebsocketConnection* connection)
+void HttpWebsocketServerIO::establish_connection(HttpWebsocketConnectionIO* connection)
 {
     connection->refresh();
     connection->set_server_fd(fd);
     connection->set_callbacks(
         // on_connect callback
-        [this](int fd, HttpWebsocketConnection* connection) -> Task<void>
+        [this](int fd, HttpWebsocketConnectionIO* connection) -> Task<void>
         {
             m_websocket_connections_by_fd[fd] = connection;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-class HttpsWebsocketServerTemp
+class HttpsWebsocketServerIOTemp
 {
 
 };

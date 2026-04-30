@@ -13,13 +13,13 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-void HttpWebsocketConnection::set_server_fd(int fd_value)
+void HttpWebsocketConnectionIO::set_server_fd(int fd_value)
 {
     server_fd = fd_value;
 }
 
-void HttpWebsocketConnection::set_callbacks(
-    std::function<Task<void>(int, HttpWebsocketConnection*)> on_connect_callback,
+void HttpWebsocketConnectionIO::set_callbacks(
+    std::function<Task<void>(int, HttpWebsocketConnectionIO*)> on_connect_callback,
     std::function<Task<void>(int, std::string)> on_message_callback,
     std::function<Task<void>(int)> on_disconnect_callback)
 {
@@ -28,7 +28,7 @@ void HttpWebsocketConnection::set_callbacks(
     on_disconnect = std::move(on_disconnect_callback);
 }
 
-void HttpWebsocketConnection::refresh()
+void HttpWebsocketConnectionIO::refresh()
 {
     server_fd = -1;
     path = "/";
@@ -40,20 +40,20 @@ void HttpWebsocketConnection::refresh()
     on_disconnect = nullptr;
 }
 
-int HttpWebsocketConnection::generate_fd()
+int HttpWebsocketConnectionIO::generate_fd()
 {
     sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
 
     if ((fd = accept(server_fd, reinterpret_cast<struct sockaddr*>(&client_addr), &client_addr_len)) == -1)
     {
-        spdlog::error("HttpWebsocketConnection::generate_fd - accept failed: {}", std::strerror(errno));
+        spdlog::error("HttpWebsocketConnectionIO::generate_fd - accept failed: {}", std::strerror(errno));
         return -1;
     }
 
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
     {
-        spdlog::error("HttpWebsocketConnection::generate_fd - fcntl failed for fd {}: {}", fd, std::strerror(errno));
+        spdlog::error("HttpWebsocketConnectionIO::generate_fd - fcntl failed for fd {}: {}", fd, std::strerror(errno));
         return -1;
     }
 
@@ -62,7 +62,7 @@ int HttpWebsocketConnection::generate_fd()
     setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &buffer_size, sizeof(buffer_size));
 
     spdlog::info(
-        "HttpWebsocketConnection::generate_fd - Connection to {}, established (fd = {})",
+        "HttpWebsocketConnectionIO::generate_fd - Connection to {}, established (fd = {})",
         inet_ntoa(client_addr.sin_addr),
         fd
     );
@@ -70,12 +70,12 @@ int HttpWebsocketConnection::generate_fd()
     return fd;
 }
 
-int HttpWebsocketConnection::activate()
+int HttpWebsocketConnectionIO::activate()
 {
     return 0;
 }
 
-int HttpWebsocketConnection::handle_read()
+int HttpWebsocketConnectionIO::handle_read()
 {
     std::array<char, READ_BUFFER_SIZE> buffer{};
     bool is_first_read = true;
@@ -100,7 +100,7 @@ int HttpWebsocketConnection::handle_read()
 
         if (read_bytes == 0 && is_first_read)
         {
-            spdlog::debug("HttpWebsocketConnection::handle_read - peer closed connection, fd = {}", fd);
+            spdlog::debug("HttpWebsocketConnectionIO::handle_read - peer closed connection, fd = {}", fd);
             return -1;
         }
 
@@ -109,37 +109,37 @@ int HttpWebsocketConnection::handle_read()
             return 0;
         }
 
-        spdlog::error("HttpWebsocketConnection::handle_read - read failed, fd = {}, err = {}", fd, std::strerror(errno));
+        spdlog::error("HttpWebsocketConnectionIO::handle_read - read failed, fd = {}, err = {}", fd, std::strerror(errno));
         return -1;
     }
 }
 
-int HttpWebsocketConnection::handle_write()
+int HttpWebsocketConnectionIO::handle_write()
 {
     return check_to_write();
 }
 
-void HttpWebsocketConnection::release()
+void HttpWebsocketConnectionIO::release()
 {
     if (on_disconnect != nullptr)
     {
         on_disconnect(fd).start_running_on(epoll_base);
     }
 
-    HttpWebsocketConnectionPool::release(this);
+    HttpWebsocketConnectionIOPool::release(this);
 }
 
-int HttpWebsocketConnection::read_buffer(char* const buffer, std::size_t size)
+int HttpWebsocketConnectionIO::read_buffer(char* const buffer, std::size_t size)
 {
     return ::read(fd, buffer, size);
 }
 
-int HttpWebsocketConnection::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpWebsocketConnectionIO::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     return ::write(fd, buffer, size);
 }
 
-void HttpWebsocketConnection::write_text(const std::string& message)
+void HttpWebsocketConnectionIO::write_text(const std::string& message)
 {
     if (WebsocketState != WebsocketState::WebSocketOpen)
     {
@@ -149,7 +149,7 @@ void HttpWebsocketConnection::write_text(const std::string& message)
     write_raw_frame(WebSocketFrameBuilder::build_text(message, true, false));
 }
 
-void HttpWebsocketConnection::write_ping(const std::string& payload)
+void HttpWebsocketConnectionIO::write_ping(const std::string& payload)
 {
     if (WebsocketState != WebsocketState::WebSocketOpen)
     {
@@ -159,7 +159,7 @@ void HttpWebsocketConnection::write_ping(const std::string& payload)
     write_raw_frame(WebSocketFrameBuilder::build_ping(payload, false));
 }
 
-void HttpWebsocketConnection::write_pong(const std::string& payload)
+void HttpWebsocketConnectionIO::write_pong(const std::string& payload)
 {
     if (WebsocketState != WebsocketState::WebSocketOpen)
     {
@@ -169,12 +169,12 @@ void HttpWebsocketConnection::write_pong(const std::string& payload)
     write_raw_frame(WebSocketFrameBuilder::build_pong(payload, false));
 }
 
-void HttpWebsocketConnection::write_close()
+void HttpWebsocketConnectionIO::write_close()
 {
     write_close(1000, "");
 }
 
-void HttpWebsocketConnection::write_close(std::uint16_t close_code, const std::string& reason)
+void HttpWebsocketConnectionIO::write_close(std::uint16_t close_code, const std::string& reason)
 {
     if (WebsocketState == WebsocketState::Closing)
     {
@@ -185,7 +185,7 @@ void HttpWebsocketConnection::write_close(std::uint16_t close_code, const std::s
     write_raw_frame(WebSocketFrameBuilder::build_close(close_code, reason, false));
 }
 
-int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::size_t size)
+int HttpWebsocketConnectionIO::handle_http_upgrade_bytes(const char* data, std::size_t size)
 {
     save_buffer.append(data, size);
 
@@ -222,7 +222,7 @@ int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::si
     const std::string response = build_websocket_upgrade_response(sec_websocket_key);
     if (write_to_socket_io(response.data(), static_cast<std::uint32_t>(response.size())) == -1)
     {
-        spdlog::error("HttpWebsocketConnection::handle_http_upgrade_bytes - failed to send upgrade response, fd = {}", fd);
+        spdlog::error("HttpWebsocketConnectionIO::handle_http_upgrade_bytes - failed to send upgrade response, fd = {}", fd);
         return -1;
     }
 
@@ -239,7 +239,7 @@ int HttpWebsocketConnection::handle_http_upgrade_bytes(const char* data, std::si
     return 0;
 }
 
-int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_t size)
+int HttpWebsocketConnectionIO::handle_websocket_bytes(const char* data, std::size_t size)
 {
     frame_parser.feed(data, size);
     std::vector<WebSocketFrameParser::Frame> frames = frame_parser.parse_frames();
@@ -252,7 +252,7 @@ int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_
         }
         else if (frame.opcode == WebSocketFrameParser::Opcode::Binary)
         {
-            spdlog::debug("HttpWebsocketConnection::handle_websocket_bytes - binary frame received, fd = {}, size = {}", fd, frame.payload.size());
+            spdlog::debug("HttpWebsocketConnectionIO::handle_websocket_bytes - binary frame received, fd = {}, size = {}", fd, frame.payload.size());
         }
         else if (frame.opcode == WebSocketFrameParser::Opcode::Ping)
         {
@@ -260,7 +260,7 @@ int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_
         }
         else if (frame.opcode == WebSocketFrameParser::Opcode::Pong)
         {
-            spdlog::debug("HttpWebsocketConnection::handle_websocket_bytes - pong received, fd = {}, size = {}", fd, frame.payload.size());
+            spdlog::debug("HttpWebsocketConnectionIO::handle_websocket_bytes - pong received, fd = {}, size = {}", fd, frame.payload.size());
         }
         else if (frame.opcode == WebSocketFrameParser::Opcode::Close)
         {
@@ -287,7 +287,7 @@ int HttpWebsocketConnection::handle_websocket_bytes(const char* data, std::size_
     return 0;
 }
 
-bool HttpWebsocketConnection::try_extract_http_request(std::string& request_text, std::string& leftover_data)
+bool HttpWebsocketConnectionIO::try_extract_http_request(std::string& request_text, std::string& leftover_data)
 {
     const std::size_t header_end = save_buffer.find("\r\n\r\n");
     if (header_end == std::string::npos)
@@ -301,7 +301,7 @@ bool HttpWebsocketConnection::try_extract_http_request(std::string& request_text
     return true;
 }
 
-bool HttpWebsocketConnection::is_websocket_upgrade_request(const std::string& request_text)
+bool HttpWebsocketConnectionIO::is_websocket_upgrade_request(const std::string& request_text)
 {
     std::istringstream stream(request_text);
     std::string request_line;
@@ -342,7 +342,7 @@ bool HttpWebsocketConnection::is_websocket_upgrade_request(const std::string& re
     return true;
 }
 
-std::string HttpWebsocketConnection::get_header_value(const std::string& request_text, const std::string& header_name) const
+std::string HttpWebsocketConnectionIO::get_header_value(const std::string& request_text, const std::string& header_name) const
 {
     const std::string lower_header_name = to_lower(header_name);
     std::istringstream stream(request_text);
@@ -377,7 +377,7 @@ std::string HttpWebsocketConnection::get_header_value(const std::string& request
     return "";
 }
 
-std::string HttpWebsocketConnection::trim(const std::string& value) const
+std::string HttpWebsocketConnectionIO::trim(const std::string& value) const
 {
     std::size_t begin = 0;
     while (begin < value.size() && std::isspace(static_cast<unsigned char>(value[begin])) != 0)
@@ -394,7 +394,7 @@ std::string HttpWebsocketConnection::trim(const std::string& value) const
     return value.substr(begin, end - begin);
 }
 
-std::string HttpWebsocketConnection::to_lower(std::string value) const
+std::string HttpWebsocketConnectionIO::to_lower(std::string value) const
 {
     std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c)
     {
@@ -403,7 +403,7 @@ std::string HttpWebsocketConnection::to_lower(std::string value) const
     return value;
 }
 
-std::string HttpWebsocketConnection::build_websocket_upgrade_response(const std::string& sec_websocket_key) const
+std::string HttpWebsocketConnectionIO::build_websocket_upgrade_response(const std::string& sec_websocket_key) const
 {
     const std::string sec_websocket_accept = compute_websocket_accept_key(sec_websocket_key);
 
@@ -415,7 +415,7 @@ std::string HttpWebsocketConnection::build_websocket_upgrade_response(const std:
     return response.str();
 }
 
-std::string HttpWebsocketConnection::compute_websocket_accept_key(const std::string& sec_websocket_key) const
+std::string HttpWebsocketConnectionIO::compute_websocket_accept_key(const std::string& sec_websocket_key) const
 {
     const std::string input = trim(sec_websocket_key) + WEBSOCKET_GUID;
 
@@ -425,7 +425,7 @@ std::string HttpWebsocketConnection::compute_websocket_accept_key(const std::str
     return base64_encode(sha1_result, sizeof(sha1_result));
 }
 
-std::string HttpWebsocketConnection::base64_encode(const unsigned char* data, std::size_t size) const
+std::string HttpWebsocketConnectionIO::base64_encode(const unsigned char* data, std::size_t size) const
 {
     static constexpr char table[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -465,7 +465,7 @@ std::string HttpWebsocketConnection::base64_encode(const unsigned char* data, st
     return out;
 }
 
-Task<void> HttpWebsocketConnection::run_on_connect()
+Task<void> HttpWebsocketConnectionIO::run_on_connect()
 {
     if (on_connect != nullptr)
     {
@@ -475,7 +475,7 @@ Task<void> HttpWebsocketConnection::run_on_connect()
     co_return;
 }
 
-Task<void> HttpWebsocketConnection::run_on_message(std::string message)
+Task<void> HttpWebsocketConnectionIO::run_on_message(std::string message)
 {
     if (on_message != nullptr)
     {
@@ -485,7 +485,7 @@ Task<void> HttpWebsocketConnection::run_on_message(std::string message)
     co_return;
 }
 
-Task<void> HttpWebsocketConnection::run_on_disconnect()
+Task<void> HttpWebsocketConnectionIO::run_on_disconnect()
 {
     if (on_disconnect != nullptr)
     {
@@ -495,7 +495,7 @@ Task<void> HttpWebsocketConnection::run_on_disconnect()
     co_return;
 }
 
-void HttpWebsocketConnection::write_raw_frame(const std::vector<char>& frame)
+void HttpWebsocketConnectionIO::write_raw_frame(const std::vector<char>& frame)
 {
     if (frame.empty())
     {

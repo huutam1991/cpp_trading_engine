@@ -3,7 +3,7 @@
 #include "http_websocket_connection.h"
 #include <network/tls_wrapper/tls_wrapper.h>
 
-struct HttpsWebsocketConnection : public HttpWebsocketConnection
+struct HttpsWebsocketConnectionIO : public HttpWebsocketConnectionIO
 {
     TlsWrapper* tls_wrapper = nullptr;
 
@@ -21,4 +21,4 @@ struct HttpsWebsocketConnection : public HttpWebsocketConnection
     virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
 };
 
-using HttpsWebsocketConnectionPool = CachePool<HttpsWebsocketConnection, 100>;
+using HttpsWebsocketConnectionIOPool = CachePool<HttpsWebsocketConnectionIO, 100>;

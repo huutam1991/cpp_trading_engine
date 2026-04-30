@@ -1,10 +1,10 @@
 #include "https_websocket_connection.h"
 
-int HttpsWebsocketConnection::activate()
+int HttpsWebsocketConnectionIO::activate()
 {
     if (!tls_wrapper || !tls_wrapper->attach_fd(fd))
     {
-        spdlog::error("HttpsWebsocketConnection::activate - attach_fd failed");
+        spdlog::error("HttpsWebsocketConnectionIO::activate - attach_fd failed");
         return -1;
     }
 
@@ -12,7 +12,7 @@ int HttpsWebsocketConnection::activate()
     return 0;
 }
 
-int HttpsWebsocketConnection::handle_read()
+int HttpsWebsocketConnectionIO::handle_read()
 {
     // TLS handshake first
     if (!tls_wrapper->is_handshake_done())
@@ -33,10 +33,10 @@ int HttpsWebsocketConnection::handle_read()
     }
 
     // After TLS handshake → behave like normal websocket
-    return HttpWebsocketConnection::handle_read();
+    return HttpWebsocketConnectionIO::handle_read();
 }
 
-int HttpsWebsocketConnection::handle_write()
+int HttpsWebsocketConnectionIO::handle_write()
 {
     if (!tls_wrapper->is_handshake_done())
     {
@@ -47,7 +47,7 @@ int HttpsWebsocketConnection::handle_write()
     return check_to_write();
 }
 
-int HttpsWebsocketConnection::read_buffer(char* const buffer, std::size_t size)
+int HttpsWebsocketConnectionIO::read_buffer(char* const buffer, std::size_t size)
 {
     if (!tls_wrapper)
     {
@@ -57,7 +57,7 @@ int HttpsWebsocketConnection::read_buffer(char* const buffer, std::size_t size)
     return tls_wrapper->read(buffer, size);
 }
 
-int HttpsWebsocketConnection::write_to_socket_io(const char* buffer, std::uint32_t size)
+int HttpsWebsocketConnectionIO::write_to_socket_io(const char* buffer, std::uint32_t size)
 {
     if (!tls_wrapper)
     {
@@ -67,7 +67,7 @@ int HttpsWebsocketConnection::write_to_socket_io(const char* buffer, std::uint32
     return tls_wrapper->write(buffer, 0, size);
 }
 
-void HttpsWebsocketConnection::release()
+void HttpsWebsocketConnectionIO::release()
 {
     if (tls_wrapper)
     {
@@ -80,5 +80,5 @@ void HttpsWebsocketConnection::release()
         on_disconnect(fd).start_running_on(epoll_base);
     }
 
-    HttpsWebsocketConnectionPool::release(this);
+    HttpsWebsocketConnectionIOPool::release(this);
 }

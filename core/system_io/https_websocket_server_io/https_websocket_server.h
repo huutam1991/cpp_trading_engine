@@ -3,11 +3,11 @@
 #include "http_websocket_server.h"
 #include <network/tls_wrapper/tls_wrapper.h>
 
-struct HttpsWebsocketServer : public HttpWebsocketServer
+struct HttpsWebsocketServerIO : public HttpWebsocketServerIO
 {
     TlsContext* server_ctx;
 
-    HttpsWebsocketServer(int port_value);
+    HttpsWebsocketServerIO(int port_value);
 
     virtual int generate_fd() override;
     virtual int handle_read() override;
