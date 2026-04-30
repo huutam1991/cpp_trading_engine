@@ -29,6 +29,7 @@
 #include <network/https_client_request/https_client_request.h>
 #include <network/https_client_websocket/https_client_websocket.h>
 #include <network/https_websocket_server/https_websocket_server.h>
+#include <websocket_server_route/websocket_server_routes.h>
 
 extern void add_app_route();
 extern void add_bad_request();
@@ -190,9 +191,7 @@ int main(int argc, char **argv) {
     // );
     // epoll_base->start_living_system_io_object(https_websocket_server_object);
 
-    HttpsWebsocketServer* websocket_server = new HttpsWebsocketServer(websocket_port, epoll_base);
-    // Add default route
-    websocket_server->add_route(std::make_unique<HttpsWebsocketServerRoute>());
+    WebsocketServerRoutes* websocket_server_routes = new WebsocketServerRoutes(websocket_port, epoll_base);
 
     // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
