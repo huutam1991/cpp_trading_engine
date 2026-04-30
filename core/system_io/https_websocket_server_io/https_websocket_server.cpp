@@ -3,12 +3,7 @@
 
 #include <utils/constants.h>
 
-HttpsWebsocketServer::HttpsWebsocketServer(
-    int port_value,
-    std::function<Task<void>(int)> on_connect_callback,
-    std::function<Task<void>(int, std::string)> on_message_callback,
-    std::function<Task<void>(int)> on_disconnect_callback)
-    : HttpWebsocketServer(port_value, on_connect_callback, on_message_callback, on_disconnect_callback)
+HttpsWebsocketServer::HttpsWebsocketServer(int port_value) : HttpWebsocketServer(port_value)
 {
     server_ctx = new TlsServerContext(SSL_SERVER_CERTIFICATE, SSL_PRIVATE_KEY);
 }

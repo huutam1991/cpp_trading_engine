@@ -158,8 +158,8 @@ int main(int argc, char **argv) {
     HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     epoll_base->start_living_system_io_object(https_server_object);
 
-    HttpsWebsocketServer* https_websocket_server_object = new HttpsWebsocketServer(
-        websocket_port,
+    HttpsWebsocketServer* https_websocket_server_object = new HttpsWebsocketServer(websocket_port);
+    https_websocket_server_object->set_callbacks(
         // on_connect callback
         [](int fd) -> Task<void>
         {

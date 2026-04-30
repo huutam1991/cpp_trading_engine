@@ -10,15 +10,7 @@
 
 #define BACKLOG_SOCKET 125
 
-HttpWebsocketServer::HttpWebsocketServer(
-    int port_value,
-    std::function<Task<void>(int)> on_connect_callback,
-    std::function<Task<void>(int, std::string)> on_message_callback,
-    std::function<Task<void>(int)> on_disconnect_callback)
-    :   port{port_value},
-        on_connect{std::move(on_connect_callback)},
-        on_message{std::move(on_message_callback)},
-        on_disconnect{std::move(on_disconnect_callback)}
+HttpWebsocketServer::HttpWebsocketServer(int port_value) : port{port_value}
 {
 }
 

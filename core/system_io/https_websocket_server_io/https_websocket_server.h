@@ -7,11 +7,7 @@ struct HttpsWebsocketServer : public HttpWebsocketServer
 {
     TlsContext* server_ctx;
 
-    HttpsWebsocketServer(
-        int port_value,
-        std::function<Task<void>(int)> on_connect_callback = nullptr,
-        std::function<Task<void>(int, std::string)> on_message_callback = nullptr,
-        std::function<Task<void>(int)> on_disconnect_callback = nullptr);
+    HttpsWebsocketServer(int port_value);
 
     virtual int generate_fd() override;
     virtual int handle_read() override;
