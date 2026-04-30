@@ -20,11 +20,6 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
         // on_message callback
         [this](int fd, std::string message) -> Task<void>
         {
-            spdlog::info("Received message from websocket connection (fd = {}) on route [{}]: {}",
-                fd,
-                enum_reflect::enum_name(m_websocket_routes_by_fd[fd]->get_route_enum()), message
-            );
-
             co_await m_websocket_routes_by_fd[fd]->on_message(fd, message);
 
             co_return;
@@ -32,11 +27,6 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
         // on_disconnect callback
         [this](int fd) -> Task<void>
         {
-            spdlog::info("Websocket connection disconnected, fd = {}, on route [{}]",
-                fd,
-                enum_reflect::enum_name(m_websocket_routes_by_fd[fd]->get_route_enum())
-            );
-
             co_await m_websocket_routes_by_fd[fd]->on_disconnect(fd);
             m_websocket_routes_by_fd[fd] = nullptr;
 
@@ -49,5 +39,11 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
 
 void HttpsWebsocketServer::add_route(std::unique_ptr<HttpsWebsocketServerRoute> route)
 {
+    route->set_server(this);
     m_routes[static_cast<int>(route->get_route_enum())] = std::move(route);
+}
+
+void HttpsWebsocketServer::write_to_connection(int fd, std::string message)
+{
+    m_https_websocket_server_io->write_to_connection(fd, message);
 }

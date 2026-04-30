@@ -17,4 +17,5 @@ public:
     HttpsWebsocketServer(int port, EpollBase* epoll_base);
 
     void add_route(std::unique_ptr<HttpsWebsocketServerRoute> route);
+    void write_to_connection(int fd, std::string message);
 };
