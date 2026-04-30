@@ -10,7 +10,7 @@
 class HttpsWebsocketServer
 {
     std::unique_ptr<HttpsWebsocketServerIO> m_https_websocket_server_io = nullptr;
-    std::array<std::unique_ptr<HttpsWebsocketServerRoute>, 20> m_routes{std::make_unique<HttpsWebsocketServerRoute>()};
+    std::array<std::unique_ptr<HttpsWebsocketServerRoute>, 20> m_routes{nullptr};
     std::array<HttpsWebsocketServerRoute*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_routes_by_fd{nullptr};
 
 public:
