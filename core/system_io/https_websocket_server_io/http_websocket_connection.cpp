@@ -301,7 +301,7 @@ bool HttpWebsocketConnection::try_extract_http_request(std::string& request_text
     return true;
 }
 
-bool HttpWebsocketConnection::is_websocket_upgrade_request(const std::string& request_text) const
+bool HttpWebsocketConnection::is_websocket_upgrade_request(const std::string& request_text)
 {
     std::istringstream stream(request_text);
     std::string request_line;
@@ -309,6 +309,11 @@ bool HttpWebsocketConnection::is_websocket_upgrade_request(const std::string& re
     {
         return false;
     }
+
+    std::istringstream line_stream(request_line);
+    std::string method;
+    std::string version_line;
+    line_stream >> method >> this->path >> version_line;
 
     if (request_line.find("GET ") != 0)
     {

@@ -63,7 +63,7 @@ protected:
     int handle_websocket_bytes(const char* data, std::size_t size);
 
     bool try_extract_http_request(std::string& request_text, std::string& leftover_data);
-    bool is_websocket_upgrade_request(const std::string& request_text) const;
+    bool is_websocket_upgrade_request(const std::string& request_text);
     std::string get_header_value(const std::string& request_text, const std::string& header_name) const;
     std::string trim(const std::string& value) const;
     std::string to_lower(std::string value) const;
