@@ -167,9 +167,17 @@ int main(int argc, char **argv) {
             co_return;
         },
         // on_message callback
-        [](int fd, std::string message) -> Task<void>
+        [https_websocket_server_object](int fd, std::string message) -> Task<void>
         {
             spdlog::info("Received message from websocket connection (fd = {}): {}", fd, message);
+
+            Json json_message = {
+                {"status", "ok"},
+                {"received_message", message}
+            };
+
+            https_websocket_server_object->write_to_connection(fd, json_message);
+
             co_return;
         },
         // on_disconnect callback
