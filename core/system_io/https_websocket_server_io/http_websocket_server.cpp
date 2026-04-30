@@ -116,6 +116,8 @@ void HttpWebsocketServer::establish_connection(HttpWebsocketConnection* connecti
         {
             m_websocket_connections_by_fd[fd] = connection;
 
+            spdlog::info("New WebSocket connection established, fd = {}, path = {}", fd, connection->path);
+
             if (on_connect != nullptr)
             {
                 co_await on_connect(fd);

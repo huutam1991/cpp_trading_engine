@@ -23,6 +23,7 @@ struct HttpWebsocketConnection : public NamedIOObject<HttpWebsocketConnection>
     };
 
     int server_fd = -1;
+    std::string path = "/";
     std::string save_buffer;
     WebSocketFrameParser frame_parser;
     WebsocketState WebsocketState = WebsocketState::WaitingHttpUpgrade;

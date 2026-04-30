@@ -31,6 +31,7 @@ void HttpWebsocketConnection::set_callbacks(
 void HttpWebsocketConnection::refresh()
 {
     server_fd = -1;
+    path = "/";
     save_buffer.clear();
     frame_parser.clear();
     WebsocketState = WebsocketState::WaitingHttpUpgrade;
