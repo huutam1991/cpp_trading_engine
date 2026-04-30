@@ -9,6 +9,8 @@ Task<void> WebsocketOrderbookRoute::on_connect(int fd)
 
 Task<void> WebsocketOrderbookRoute::on_message(int fd, std::string message)
 {
+    spdlog::info("Received message from websocket connection (fd = {}) on route [{}]: {}", fd, m_route_name, message);
+
     Json response = {
         {"message", "This is orderbook route"}
     };

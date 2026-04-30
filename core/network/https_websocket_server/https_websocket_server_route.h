@@ -19,10 +19,9 @@ class HttpsWebsocketServer;
 
 class HttpsWebsocketServerRoute
 {
+protected:
     WebsocketRouteName m_route_enum = WebsocketRouteName::none;
     std::string m_route_name = "none";
-
-protected:
     HttpsWebsocketServer* m_server = nullptr;
 
 public:
