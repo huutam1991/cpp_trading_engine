@@ -24,7 +24,10 @@ struct HttpWebsocketServerIO : public NamedIOObject<HttpWebsocketServerIO>
         std::function<Task<void>(int, std::string)> on_connect_callback = nullptr,
         std::function<Task<void>(int, std::string)> on_message_callback = nullptr,
         std::function<Task<void>(int)> on_disconnect_callback = nullptr);
+
+    // Write message to a specific connection by fd
     void write_to_connection(int fd, std::string message);
+    Task<void> write_to_connection_task(int fd, std::string message);
 
     virtual int generate_fd() override;
     virtual int get_io_events() override { return EPOLLIN; }

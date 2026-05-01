@@ -26,17 +26,23 @@ void HttpWebsocketServerIO::set_callbacks(
 
 void HttpWebsocketServerIO::write_to_connection(int fd, std::string message)
 {
+    write_to_connection_task(fd, std::move(message)).start_running_on(epoll_base);
+}
+
+Task<void> HttpWebsocketServerIO::write_to_connection_task(int fd, std::string message)
+{
     if (fd < 0)
     {
         spdlog::error("HttpWebsocketServerIO::write_to_connection - Invalid fd: {}", fd);
-        return;
+        co_return;
+
     }
 
     const std::size_t index = static_cast<std::size_t>(fd);
     if (index >= m_websocket_connections_by_fd.size())
     {
         spdlog::error("HttpWebsocketServerIO::write_to_connection - fd {} is out of bounds for m_websocket_connections_by_fd", fd);
-        return;
+        co_return;
     }
 
     HttpWebsocketConnectionIO* connection = m_websocket_connections_by_fd[index];
@@ -48,6 +54,8 @@ void HttpWebsocketServerIO::write_to_connection(int fd, std::string message)
     {
         spdlog::warn("HttpWebsocketServerIO::write_to_connection - No active connection found for fd {}", index);
     }
+
+    co_return;
 }
 
 int HttpWebsocketServerIO::generate_fd()
