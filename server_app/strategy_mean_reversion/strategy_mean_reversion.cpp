@@ -15,6 +15,7 @@
 std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::init_states()
 {
     // Re-init [m_spread_captures] from config
+    spdlog::warn("StrategyMeanReversion::init_states - Re-initializing SpreadCaptureConfigManager from config");
     m_spread_captures.init_from_config(get_config_reference().spread_capture_config);
     m_spread_captures.reset();
 
@@ -33,8 +34,9 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::ini
 
 void StrategyMeanReversion::on_config_change(StrategyMeanReversionConfig new_config)
 {
+    spdlog::warn("StrategyMeanReversion::on_config_change - Config changed for strategy [{}], new config: {}", m_strategy_name, new_config.to_json());
     // Re-init config
-    init();
+    init().start_running_on(event_base);
 
     // Check start-stop
     if (new_config.is_running)
