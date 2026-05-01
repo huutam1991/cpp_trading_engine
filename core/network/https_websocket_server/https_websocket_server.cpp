@@ -70,5 +70,5 @@ void HttpsWebsocketServer::add_route(std::unique_ptr<HttpsWebsocketServerRoute> 
 
 void HttpsWebsocketServer::write_to_connection(int fd, std::string message)
 {
-    m_https_websocket_server_io->write_to_connection(fd, message);
+    m_https_websocket_server_io->write_to_connection(fd, std::move(message));
 }
