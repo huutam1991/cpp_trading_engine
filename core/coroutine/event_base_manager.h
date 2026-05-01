@@ -19,6 +19,7 @@ enum EpollBaseID
 enum EventBaseID
 {
     ORDER = 2,                // OrderManager
+    ORDER_BOOK,               // OrderBookManager
 
     MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
