@@ -2,7 +2,7 @@
 
 void OrderBookManager::register_update(std::function<void(OrderBookSnapShot*)> callback)
 {
-    m_update_callback = std::move(callback);
+    m_update_callbacks.push_back(std::move(callback));
 }
 
 void OrderBookManager::publish_order_book_snapshot(OrderBookSnapShot* snapshot)
@@ -13,9 +13,9 @@ void OrderBookManager::publish_order_book_snapshot(OrderBookSnapShot* snapshot)
 
 Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    if (m_update_callback)
+    for (auto& callback : m_update_callbacks)
     {
-        m_update_callback(snapshot);
+        callback(snapshot);
     }
 
     co_return;

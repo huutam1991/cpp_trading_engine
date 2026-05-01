@@ -9,12 +9,12 @@ class OrderBookManager
 {
     Singleton(OrderBookManager);
 
-    EventBase* m_event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
-    std::function<void(OrderBookSnapShot*)> m_update_callback = nullptr;
+    EventBase* m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_BOOK);
+    std::vector<std::function<void(OrderBookSnapShot*)>> m_update_callbacks;
 
     Task<void> run_update_order_book_snapshot(OrderBookSnapShot* snapshot);
 
 public:
-    void register_update(std::function<void(OrderBookSnapShot*)>);
+    void register_update(std::function<void(OrderBookSnapShot*)> callback);
     void publish_order_book_snapshot(OrderBookSnapShot* snapshot);
 };
