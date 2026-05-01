@@ -21,6 +21,8 @@ WebsocketOrderbookRoute::WebsocketOrderbookRoute() : HttpsWebsocketServerRoute(W
         {
             m_server->write_to_connection(fd, response);
         }
+
+        OrderBookSnapShotPool::release(snapshot);
     });
 }
 
