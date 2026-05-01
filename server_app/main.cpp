@@ -152,8 +152,8 @@ int main(int argc, char **argv) {
     OrderManager::instance().init();
     SimulatorOrder::init();
 
-    // // Strategy
-    // StrategyManager::instance().init();
+    // Strategy
+    StrategyManager::instance().init();
 
     // Start HTTPS server - running on EpollBase
     EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
