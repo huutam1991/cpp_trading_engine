@@ -49,7 +49,7 @@ public:
         else if (std::holds_alternative<OrderBookSnapShotObject>(data))
         {
             OrderBookSnapShotObject snapshot = std::get<OrderBookSnapShotObject>(data);
-            handle_order_book_snapshot(snapshot.object);
+            handle_order_book_snapshot(snapshot.get());
         }
         else
         {
