@@ -10,8 +10,6 @@ TEST(JsonTestFeature, GetStringValue)
     a["name"] = "Nguyen Huu Tam";
     std::string info = a;
 
-    spdlog::warn("Json string value: {}", info);
-
     ASSERT_EQ(info == "{\"name\":\"Nguyen Huu Tam\"}", true);
 }
 
