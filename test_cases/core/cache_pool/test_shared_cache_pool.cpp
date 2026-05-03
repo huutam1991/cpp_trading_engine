@@ -332,3 +332,73 @@ TEST(SharedCachePoolStringTest, ConcurrentAcquireReleaseBasicStress)
 
     EXPECT_EQ(StringPool::size(), before);
 }
+
+TEST(SharedCachePoolStringTest, ConcurrentSharedObjectCopyMoveAcrossThreads)
+{
+    constexpr size_t THREAD_COUNT = 8;
+    constexpr size_t LOOP_COUNT = 1000;
+
+    size_t before = StringPool::size();
+
+    {
+        auto shared_obj = StringPool::acquire();
+        *shared_obj.object = "initial";
+
+        EXPECT_EQ(StringPool::size(), before - 1);
+        EXPECT_EQ(shared_obj.reference_counter->load(std::memory_order_acquire), 1);
+
+        std::vector<std::thread> threads;
+        threads.reserve(THREAD_COUNT);
+
+        for (size_t t = 0; t < THREAD_COUNT; ++t)
+        {
+            // copy into thread capture => refcount +1
+            threads.emplace_back([shared_obj, t]()
+            {
+                for (size_t i = 0; i < LOOP_COUNT; ++i)
+                {
+                    // copy local => refcount +1
+                    StringObject local_copy = shared_obj;
+
+                    EXPECT_NE(local_copy.object, nullptr);
+                    EXPECT_NE(local_copy.reference_counter, nullptr);
+
+                    // move local => refcount unchanged
+                    StringObject local_moved = std::move(local_copy);
+
+                    EXPECT_EQ(local_copy.object, nullptr);
+                    EXPECT_EQ(local_copy.reference_counter, nullptr);
+
+                    EXPECT_NE(local_moved.object, nullptr);
+                    EXPECT_NE(local_moved.reference_counter, nullptr);
+
+                    // read/write shared object
+                    // WARNING: std::string write itself is not thread-safe.
+                    // For safety, only write deterministic same value rarely or use mutex.
+                    if (i == 0)
+                    {
+                        *local_moved.object = "thread_" + std::to_string(t);
+                    }
+
+                    EXPECT_GE(
+                        local_moved.reference_counter->load(std::memory_order_acquire),
+                        2
+                    );
+                }
+            });
+        }
+
+        for (auto& thread : threads)
+        {
+            thread.join();
+        }
+
+        // All thread copies destroyed.
+        // Only shared_obj should remain.
+        EXPECT_EQ(shared_obj.reference_counter->load(std::memory_order_acquire), 1);
+        EXPECT_EQ(StringPool::size(), before - 1);
+    }
+
+    // shared_obj destroyed, object released back to pool.
+    EXPECT_EQ(StringPool::size(), before);
+}
