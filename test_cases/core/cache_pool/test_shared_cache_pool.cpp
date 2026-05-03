@@ -241,6 +241,69 @@ TEST(SharedCachePoolStringTest, TailMovesAfterRelease)
     EXPECT_NE(StringPool::tail(), before_tail);
 }
 
+TEST(SharedCachePoolStringTest, ReleaseOnlyAfterAllCopiesDestroyed)
+{
+    size_t before = StringPool::size();
+
+    {
+        auto obj1 = StringPool::acquire();
+        EXPECT_EQ(StringPool::size(), before - 1);
+
+        {
+            StringObject obj2 = obj1;
+            StringObject obj3 = obj1;
+
+            EXPECT_EQ(obj1.reference_counter->load(std::memory_order_acquire), 3);
+            EXPECT_EQ(StringPool::size(), before - 1);
+        }
+
+        EXPECT_EQ(obj1.reference_counter->load(std::memory_order_acquire), 1);
+        EXPECT_EQ(StringPool::size(), before - 1);
+    }
+
+    EXPECT_EQ(StringPool::size(), before);
+}
+
+TEST(SharedCachePoolStringTest, MoveDoesNotIncreaseReferenceCounterAndReleaseOnce)
+{
+    size_t before = StringPool::size();
+
+    {
+        auto obj1 = StringPool::acquire();
+        auto* counter = obj1.reference_counter;
+
+        EXPECT_EQ(counter->load(std::memory_order_acquire), 1);
+
+        StringObject obj2 = std::move(obj1);
+
+        EXPECT_EQ(obj1.reference_counter, nullptr);
+        EXPECT_EQ(counter->load(std::memory_order_acquire), 1);
+        EXPECT_EQ(StringPool::size(), before - 1);
+    }
+
+    EXPECT_EQ(StringPool::size(), before);
+}
+
+TEST(SharedCachePoolStringTest, CopyThenMoveThenReleaseAfterLastOwner)
+{
+    size_t before = StringPool::size();
+
+    {
+        auto obj1 = StringPool::acquire();
+
+        StringObject obj2 = obj1;
+        EXPECT_EQ(obj1.reference_counter->load(std::memory_order_acquire), 2);
+
+        StringObject obj3 = std::move(obj2);
+
+        EXPECT_EQ(obj2.reference_counter, nullptr);
+        EXPECT_EQ(obj1.reference_counter->load(std::memory_order_acquire), 2);
+        EXPECT_EQ(StringPool::size(), before - 1);
+    }
+
+    EXPECT_EQ(StringPool::size(), before);
+}
+
 TEST(SharedCachePoolStringTest, ConcurrentAcquireReleaseBasicStress)
 {
     constexpr size_t THREAD_COUNT = 8;
