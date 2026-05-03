@@ -12,7 +12,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyTrendFollow::init_
 
     // For now, only use Binance
     m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
     m_gateway->subscribe_instruments({instrument});
 
     strategy_states[StrategyState::RUN] = new StrategyTrendFollowStateRun(m_gateway, get_config_reference());
@@ -39,12 +39,12 @@ void StrategyTrendFollow::on_config_change(StrategyTrendFollowConfig new_config)
     }
 
     // Re-subscribe symbols
-    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
     m_gateway->subscribe_instruments({instrument});
 }
 
 Json StrategyTrendFollow::get_info(Json& params)
 {
-    return m_states[m_current_state.object.state]->get_info();
+    return m_states[m_current_state->state]->get_info();
 }
 

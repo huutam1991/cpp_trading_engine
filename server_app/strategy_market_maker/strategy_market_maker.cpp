@@ -12,7 +12,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMarketMaker::init_
 
     // For now, only use Binance
     m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
     m_gateway->subscribe_instruments({instrument});
 
     strategy_states[StrategyState::RUN] = new StrategyMarketMakerStateRun(m_gateway, get_config_reference(), m_volume_stat, m_pnl);
@@ -39,12 +39,12 @@ void StrategyMarketMaker::on_config_change(StrategyMarketMakerConfig new_config)
     }
 
     // Re-subscribe symbols
-    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    auto instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
     m_gateway->subscribe_instruments({instrument});
 }
 
 Json StrategyMarketMaker::get_info(Json& params)
 {
-    return m_states[m_current_state.object.state]->get_info();
+    return m_states[m_current_state->state]->get_info();
 }
 

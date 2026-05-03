@@ -22,8 +22,8 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyPriceArbitrage::in
 void StrategyPriceArbitrage::start()
 {
     // Subscribe symbols
-    // auto ins1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1);
-    // auto ins2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2);
+    // auto ins1 = m_gateway->get_instrument_by_symbol(m_config->symbol_1);
+    // auto ins2 = m_gateway->get_instrument_by_symbol(m_config->symbol_2);
     Instrument* ins1 = nullptr;
     Instrument* ins2 = nullptr;
     m_gateway->subscribe_instruments({ins1, ins2});
@@ -55,12 +55,12 @@ Json StrategyPriceArbitrage::get_info(Json& params)
 
 Json StrategyPriceArbitrage::get_orders_chain()
 {
-    // std::string symbol_1 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_1)->exchange_symbol;
-    // std::string symbol_2 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_2)->exchange_symbol;
-    // std::string symbol_3 = m_gateway->get_instrument_by_symbol(m_config.object.symbol_3)->exchange_symbol;
-    std::string symbol_1 = m_config.object.symbol_1;
-    std::string symbol_2 = m_config.object.symbol_2;
-    std::string symbol_3 = m_config.object.symbol_3;
+    // std::string symbol_1 = m_gateway->get_instrument_by_symbol(m_config->symbol_1)->exchange_symbol;
+    // std::string symbol_2 = m_gateway->get_instrument_by_symbol(m_config->symbol_2)->exchange_symbol;
+    // std::string symbol_3 = m_gateway->get_instrument_by_symbol(m_config->symbol_3)->exchange_symbol;
+    std::string symbol_1 = m_config->symbol_1;
+    std::string symbol_2 = m_config->symbol_2;
+    std::string symbol_3 = m_config->symbol_3;
 
     Json orders;
 
@@ -116,7 +116,7 @@ Json StrategyPriceArbitrage::get_orders_chain()
 // Json StrategyPriceArbitrage::get_open_orders()
 // {
 //     std::unordered_map<PAState, StrategyPriceArbitrageState*>* strategy_states = get_strategy_states();
-//     PAState state = m_current_state.object.state;
+//     PAState state = m_current_state->state;
 
 //     // Run get_open_orders() method of new state
 //     if ((*strategy_states).find(state) != (*strategy_states).end())

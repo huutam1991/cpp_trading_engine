@@ -18,6 +18,7 @@ public:
 template<class T>
 class SavableObject
 {
+    T object;
     std::shared_ptr<DataModel> m_data_model = nullptr;
 
     std::string m_db;
@@ -26,8 +27,6 @@ class SavableObject
     SavableObject() : m_data_model{std::make_shared<DataModel>()} {}
 
 public:
-    T object;
-
     SavableObject(const std::string& db, const std::string& collection)
         : m_data_model{std::make_shared<DataModel>()}, m_db{db}, m_collection{collection}
     {
@@ -77,6 +76,16 @@ public:
     {
         data_model->remove();
         co_return;
+    }
+
+    T* operator->()
+    {
+        return &object;
+    }
+
+    const T* operator->() const
+    {
+        return &object;
     }
 
     operator const T&()

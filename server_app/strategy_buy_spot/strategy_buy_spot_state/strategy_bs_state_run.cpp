@@ -25,9 +25,9 @@ void StrategyBuySpotStateRun::end()
     spdlog::debug("StrategyBuySpotStateRun - update all not HOLD buy points to AVAILABLE or HOLD");
     for (auto& [price, buy_point] : m_buy_points)
     {
-        if (buy_point.object.status != BuyPoint::Status::HOLD)
+        if (buy_point->status != BuyPoint::Status::HOLD)
         {
-            BuyPoint buy_point_data = buy_point.object;
+            BuyPoint buy_point_data = buy_point;
             buy_point_data.status = buy_point_data.quantity == 0 ? BuyPoint::Status::AVAILABLE : BuyPoint::Status::HOLD;
             buy_point_data.current_order_id = 0;
             buy_point = buy_point_data;
@@ -166,7 +166,7 @@ void StrategyBuySpotStateRun::update_buy_orders()
     {
         double price = m_lower_nearest_price - m_config.move_price * i;
         auto* buy_point = get_buy_point_by_price(price);
-        BuyPoint buy_point_data = buy_point->object;
+        BuyPoint buy_point_data = *buy_point;
 
         if (buy_point_data.status == BuyPoint::Status::AVAILABLE)
         {
@@ -183,7 +183,7 @@ void StrategyBuySpotStateRun::update_buy_orders()
     double min_price_to_place = m_lower_nearest_price - (m_config.max_open_orders - 1) * m_config.move_price;
     for (auto& [price, buy_point] : m_buy_points)
     {
-        BuyPoint buy_point_data = buy_point.object;
+        BuyPoint buy_point_data = buy_point;
 
         if (price < min_price_to_place && buy_point_data.status == BuyPoint::Status::PLACED && buy_point_data.quantity == 0.0)
         {
@@ -203,7 +203,7 @@ void StrategyBuySpotStateRun::update_sell_orders()
     std::vector<double> hold_buy_points_prices;
     for (auto& [price, buy_point] : m_buy_points)
     {
-        if (buy_point.object.status == BuyPoint::Status::HOLD)
+        if (buy_point->status == BuyPoint::Status::HOLD)
         {
             hold_buy_points_prices.push_back(price);
         }
@@ -230,7 +230,7 @@ void StrategyBuySpotStateRun::update_sell_orders()
     // Check to place sell orders, base on [m_config.max_open_orders]
     for (auto& [price, buy_point] : m_buy_points)
     {
-        BuyPoint buy_point_data = buy_point.object;
+        BuyPoint buy_point_data = buy_point;
 
         // If buy point is HOLD and its price is in range of [min_hold_price, max_hold_price]
         if (buy_point_data.status == BuyPoint::Status::HOLD && price >= min_hold_price && price <= max_hold_price)
@@ -294,7 +294,7 @@ void StrategyBuySpotStateRun::handle_order_update(Order& order)
     }
 
     // Get [buy_point_data]
-    BuyPoint buy_point_data = buy_point->object;
+    BuyPoint buy_point_data = *buy_point;
 
     // NEW - update buy point's status to PLACED
     if (order.status == Order::Status::NEW && order.type == Order::OrderType::LIMIT)

@@ -22,7 +22,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::ini
 
     // For now, only use Binance
     m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.object.symbol);
+    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
     m_gateway->subscribe_instruments({instrument});
 
     strategy_states[StrategyState::RUN] = new StrategyMeanReversionStateRun(m_gateway, get_config_reference(), m_spread_captures);
@@ -50,7 +50,7 @@ void StrategyMeanReversion::on_config_change(StrategyMeanReversionConfig new_con
 
 Json StrategyMeanReversion::get_info(Json& params)
 {
-    return m_states[m_current_state.object.state]->get_info();
+    return m_states[m_current_state->state]->get_info();
 }
 
 void StrategyMeanReversion::run()

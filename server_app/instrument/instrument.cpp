@@ -90,7 +90,7 @@ Instrument::CacheInstruments& Instrument::load_cache_instruments(ExchangeId exch
     // Add instruments to the static list
     for (auto& [_, instrument] : cache_instruments)
     {
-        add_instrument_to_list(exchange_id, instrument.object);
+        add_instrument_to_list(exchange_id, instrument);
     }
 
     return cache_instruments;
@@ -114,7 +114,7 @@ void Instrument::add_instrument_to_cache(ExchangeId exchange_id, const Instrumen
     }
 
     // Add to static list
-    add_instrument_to_list(exchange_id, it->second.object);
+    add_instrument_to_list(exchange_id, it->second);
 }
 
 void Instrument::clear_instrument_by_exchange(ExchangeId exchange_id)

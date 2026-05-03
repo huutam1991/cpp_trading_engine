@@ -38,7 +38,7 @@ public:
 
     Task<void> update(StrategyUpdateData data) override final
     {
-        StrategyState current_state = m_current_state.object.state;
+        StrategyState current_state = m_current_state->state;
 
         // Check change state
         if (m_previous_state != current_state)
