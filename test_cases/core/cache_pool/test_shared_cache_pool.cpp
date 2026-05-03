@@ -402,3 +402,112 @@ TEST(SharedCachePoolStringTest, ConcurrentSharedObjectCopyMoveAcrossThreads)
     // shared_obj destroyed, object released back to pool.
     EXPECT_EQ(StringPool::size(), before);
 }
+
+#include <barrier>
+#include <array>
+#include <vector>
+#include <thread>
+#include <atomic>
+
+TEST(SharedCachePoolStringTest, ConcurrentCopyMoveAcrossEightThreadsManyObjects)
+{
+    constexpr size_t THREAD_COUNT = 8;
+    constexpr size_t LOOP_COUNT = 1000;
+    constexpr size_t OBJECT_COUNT = 40;
+
+    size_t before = StringPool::size();
+
+    {
+        auto root = StringPool::acquire();
+        *root.object = "shared_object";
+
+        EXPECT_EQ(StringPool::size(), before - 1);
+        EXPECT_EQ(root.reference_counter->load(std::memory_order_acquire), 1);
+
+        std::array<std::vector<StringObject>, THREAD_COUNT> thread_objects;
+
+        for (auto& vec : thread_objects)
+        {
+            vec.reserve(OBJECT_COUNT);
+        }
+
+        std::barrier sync_point(THREAD_COUNT);
+
+        std::vector<std::thread> threads;
+        threads.reserve(THREAD_COUNT);
+
+        for (size_t tid = 0; tid < THREAD_COUNT; ++tid)
+        {
+            threads.emplace_back([&, tid]()
+            {
+                for (size_t loop = 0; loop < LOOP_COUNT; ++loop)
+                {
+                    auto& my_vec = thread_objects[tid];
+
+                    my_vec.clear();
+
+                    // Each thread creates 40 copies from root.
+                    for (size_t i = 0; i < OBJECT_COUNT; ++i)
+                    {
+                        my_vec.emplace_back(root);
+                    }
+
+                    sync_point.arrive_and_wait();
+
+                    // Copy objects from previous thread.
+                    size_t prev = (tid + THREAD_COUNT - 1) % THREAD_COUNT;
+
+                    std::vector<StringObject> copied_from_prev;
+                    copied_from_prev.reserve(OBJECT_COUNT);
+
+                    for (size_t i = 0; i < OBJECT_COUNT; ++i)
+                    {
+                        copied_from_prev.emplace_back(thread_objects[prev][i]);
+                    }
+
+                    sync_point.arrive_and_wait();
+
+                    // Move copied objects into another local vector.
+                    std::vector<StringObject> moved_objects;
+                    moved_objects.reserve(OBJECT_COUNT);
+
+                    for (size_t i = 0; i < OBJECT_COUNT; ++i)
+                    {
+                        moved_objects.emplace_back(std::move(copied_from_prev[i]));
+                    }
+
+                    for (size_t i = 0; i < OBJECT_COUNT; ++i)
+                    {
+                        EXPECT_EQ(copied_from_prev[i].object, nullptr);
+                        EXPECT_EQ(copied_from_prev[i].reference_counter, nullptr);
+                    }
+
+                    for (size_t i = 0; i < OBJECT_COUNT; ++i)
+                    {
+                        EXPECT_NE(moved_objects[i].object, nullptr);
+                        EXPECT_NE(moved_objects[i].reference_counter, nullptr);
+                        EXPECT_EQ(*moved_objects[i].object, "shared_object");
+                    }
+
+                    sync_point.arrive_and_wait();
+
+                    my_vec.clear();
+                    moved_objects.clear();
+
+                    sync_point.arrive_and_wait();
+                }
+            });
+        }
+
+        for (auto& thread : threads)
+        {
+            thread.join();
+        }
+
+        EXPECT_EQ(root.reference_counter->load(std::memory_order_acquire), 1);
+        EXPECT_EQ(*root.object, "shared_object");
+        EXPECT_EQ(StringPool::size(), before - 1);
+    }
+
+    EXPECT_EQ(StringPool::size(), before);
+}
