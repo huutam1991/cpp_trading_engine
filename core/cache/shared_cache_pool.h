@@ -40,14 +40,12 @@ class SharedCachePool
 public:
     class ObjectPointer
     {
-    public:
         T* object;
-        std::atomic<size_t>* reference_counter;
-
-    private:
         ObjectWrapper* wrapper;
 
     public:
+        std::atomic<size_t>* reference_counter;
+
         ObjectPointer(ObjectWrapper* p) : object(&p->object), reference_counter(&p->reference_counter), wrapper(p)
         {
             reference_counter->store(1, std::memory_order_release);
@@ -126,6 +124,16 @@ public:
             }
 
             return *this;
+        }
+
+        T* get()
+        {
+            return object;
+        }
+
+        const T* get() const
+        {
+            return object;
         }
 
         T* operator->()
