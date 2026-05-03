@@ -91,16 +91,16 @@ void OrderBook::OnOrderbookWs(std::string data)
 
     // Get a snapshot
     OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
-    snapshot.object->update_instrument(m_instrument);
+    snapshot->update_instrument(m_instrument);
 
     // Apply asks
-    update["a"].for_each([this, snapshot](Json& level)
+    update["a"].for_each([this, snapshot](Json& level) mutable
     {
         // MeasureTime t("OrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        snapshot.object->add_ask(price, quantity);
+        snapshot->add_ask(price, quantity);
 
         // if (quantity == 0.0)
         // {
@@ -113,13 +113,13 @@ void OrderBook::OnOrderbookWs(std::string data)
     });
 
     // Apply bids
-    update["b"].for_each([this, snapshot](Json& level)
+    update["b"].for_each([this, snapshot](Json& level) mutable
     {
         // MeasureTime t("OrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        snapshot.object->add_bid(price, quantity);
+        snapshot->add_bid(price, quantity);
 
         // if (quantity == 0.0)
         // {
@@ -188,15 +188,15 @@ void OrderBook::apply_snapshot(Json& snapshsot)
 void OrderBook::export_snapshot()
 {
     OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
-    snapshot.object->update_instrument(m_instrument);
+    snapshot->update_instrument(m_instrument);
 
     for (const auto& [price, quantity] : m_bids)
     {
-        snapshot.object->add_bid(price, quantity);
+        snapshot->add_bid(price, quantity);
     }
     for (const auto& [price, quantity] : m_asks)
     {
-        snapshot.object->add_ask(price, quantity);
+        snapshot->add_ask(price, quantity);
     }
 
     OrderBookManager::instance().publish_order_book_snapshot(snapshot);

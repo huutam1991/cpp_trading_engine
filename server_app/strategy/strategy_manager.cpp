@@ -43,8 +43,8 @@ void StrategyManager::subscribe_data_update()
         if (SimulatorOrder::get_active())
         {
             SimulatorOrder::price_update(PriceUpdate{
-                snapshot.object->instrument,
-                snapshot.object->get_mid_price()
+                snapshot->instrument,
+                snapshot->get_mid_price()
             });
         }
 
