@@ -26,8 +26,8 @@ TEST(SharedCachePoolStringTest, ObjectPointerCanWriteString)
 {
     auto obj = StringPool::acquire();
 
-    *obj.get() = "hello";
-    EXPECT_EQ(*obj.get(), "hello");
+    *obj = "hello";
+    EXPECT_EQ(*obj, "hello");
 }
 
 TEST(SharedCachePoolStringTest, ObjectPointerCopyIncrementsReferenceCounter)
@@ -55,15 +55,15 @@ TEST(SharedCachePoolStringTest, ObjectPointerMultipleCopiesIncrementCorrectly)
 TEST(SharedCachePoolStringTest, ObjectPointerCopySharesSameObject)
 {
     auto obj1 = StringPool::acquire();
-    *obj1.get() = "shared";
+    *obj1 = "shared";
 
     StringObject obj2 = obj1;
 
     EXPECT_EQ(obj1.get(), obj2.get());
-    EXPECT_EQ(*obj2.get(), "shared");
+    EXPECT_EQ(*obj2, "shared");
 
-    *obj2.get() = "changed";
-    EXPECT_EQ(*obj1.get(), "changed");
+    *obj2 = "changed";
+    EXPECT_EQ(*obj1, "changed");
 }
 
 TEST(SharedCachePoolStringTest, ObjectPointerMoveTransfersOwnership)
@@ -169,7 +169,7 @@ TEST(SharedCachePoolStringTest, ReleasedStringIsRefreshedToEmpty)
 {
     {
         auto obj = StringPool::acquire();
-        *obj.get() = "temporary data";
+        *obj = "temporary data";
     }
 
     auto obj2 = StringPool::acquire();
@@ -334,7 +334,7 @@ TEST(SharedCachePoolStringTest, ConcurrentEightThreadsConsumeFortyThousandElemen
                 }
 
                 auto obj = StringPool::acquire();
-                *obj.get() = "consume_" + std::to_string(index);
+                *obj = "consume_" + std::to_string(index);
 
                 in_flight.emplace_back(std::move(obj));
 
@@ -373,7 +373,7 @@ TEST(SharedCachePoolStringTest, ConcurrentAcquireReleaseBasicStress)
             for (size_t i = 0; i < LOOP_COUNT; ++i)
             {
                 auto obj = StringPool::acquire();
-                *obj.get() = "test";
+                *obj = "test";
             }
         });
     }
@@ -395,7 +395,7 @@ TEST(SharedCachePoolStringTest, ConcurrentSharedObjectCopyMoveAcrossThreads)
 
     {
         auto shared_obj = StringPool::acquire();
-        *shared_obj.get() = "initial";
+        *shared_obj = "initial";
 
         EXPECT_EQ(StringPool::size(), before - 1);
         EXPECT_EQ(shared_obj.reference_counter->load(std::memory_order_acquire), 1);
