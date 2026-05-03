@@ -304,6 +304,59 @@ TEST(SharedCachePoolStringTest, CopyThenMoveThenReleaseAfterLastOwner)
     EXPECT_EQ(StringPool::size(), before);
 }
 
+TEST(SharedCachePoolStringTest, ConcurrentEightThreadsConsumeFortyThousandElementsWithLimitedInFlight)
+{
+    constexpr size_t THREAD_COUNT = 8;
+    constexpr size_t TOTAL_CONSUME_COUNT = 40000;
+    constexpr size_t MAX_IN_FLIGHT_PER_THREAD = 125; // 8 * 125 = 1000
+
+    size_t before = StringPool::size();
+
+    std::atomic<size_t> consumed_count{0};
+
+    std::vector<std::thread> threads;
+    threads.reserve(THREAD_COUNT);
+
+    for (size_t tid = 0; tid < THREAD_COUNT; ++tid)
+    {
+        threads.emplace_back([&]()
+        {
+            std::vector<StringObject> in_flight;
+            in_flight.reserve(MAX_IN_FLIGHT_PER_THREAD);
+
+            while (true)
+            {
+                size_t index = consumed_count.fetch_add(1, std::memory_order_relaxed);
+
+                if (index >= TOTAL_CONSUME_COUNT)
+                {
+                    break;
+                }
+
+                auto obj = StringPool::acquire();
+                *obj.object = "consume_" + std::to_string(index);
+
+                in_flight.emplace_back(std::move(obj));
+
+                if (in_flight.size() >= MAX_IN_FLIGHT_PER_THREAD)
+                {
+                    in_flight.clear(); // release 125 objects
+                }
+            }
+
+            in_flight.clear(); // release remaining objects
+        });
+    }
+
+    for (auto& thread : threads)
+    {
+        thread.join();
+    }
+
+    EXPECT_EQ(StringPool::size(), before);
+    EXPECT_EQ(StringPool::total_released_items(), 0);
+}
+
 TEST(SharedCachePoolStringTest, ConcurrentAcquireReleaseBasicStress)
 {
     constexpr size_t THREAD_COUNT = 8;
