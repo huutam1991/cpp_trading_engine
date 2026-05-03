@@ -46,12 +46,10 @@ public:
         {
             handle_trade_update(std::get<TradeUpdate>(data));
         }
-        else if (std::holds_alternative<OrderBookSnapShot*>(data))
+        else if (std::holds_alternative<OrderBookSnapShotObject>(data))
         {
-            OrderBookSnapShot* snapshot = std::get<OrderBookSnapShot*>(data);
-            handle_order_book_snapshot(snapshot);
-
-            OrderBookSnapShotPool::release(snapshot);
+            OrderBookSnapShotObject snapshot = std::get<OrderBookSnapShotObject>(data);
+            handle_order_book_snapshot(snapshot.object);
         }
         else
         {

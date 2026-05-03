@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <cache/cache_pool.h>
+#include <cache/shared_cache_pool.h>
 #include <instrument/instrument.h>
 
 struct OrderBookLevel
@@ -60,4 +60,5 @@ public:
     double get_ask_volume();
 };
 
-using OrderBookSnapShotPool = CachePool<OrderBookSnapShot, 1000>;
+using OrderBookSnapShotPool = SharedCachePool<OrderBookSnapShot, 1000>;
+using OrderBookSnapShotObject = OrderBookSnapShotPool::ObjectPointer;

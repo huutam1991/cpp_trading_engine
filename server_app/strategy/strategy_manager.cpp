@@ -38,13 +38,13 @@ void StrategyManager::subscribe_data_update()
     });
 
     // Subscribe order book update from OrderBookManager
-    OrderBookManager::instance().register_update([this](OrderBookSnapShot* snapshot)
+    OrderBookManager::instance().register_update([this](OrderBookSnapShotObject snapshot)
     {
         if (SimulatorOrder::get_active())
         {
             SimulatorOrder::price_update(PriceUpdate{
-                snapshot->instrument,
-                snapshot->get_mid_price()
+                snapshot.object->instrument,
+                snapshot.object->get_mid_price()
             });
         }
 

@@ -90,8 +90,8 @@ void OrderBook::OnOrderbookWs(std::string data)
     }
 
     // Get a snapshot
-    OrderBookSnapShot* snapshot = OrderBookSnapShotPool::acquire();
-    snapshot->update_instrument(m_instrument);
+    OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+    snapshot.object->update_instrument(m_instrument);
 
     // Apply asks
     update["a"].for_each([this, snapshot](Json& level)
@@ -100,7 +100,7 @@ void OrderBook::OnOrderbookWs(std::string data)
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        snapshot->add_ask(price, quantity);
+        snapshot.object->add_ask(price, quantity);
 
         // if (quantity == 0.0)
         // {
@@ -119,7 +119,7 @@ void OrderBook::OnOrderbookWs(std::string data)
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        snapshot->add_bid(price, quantity);
+        snapshot.object->add_bid(price, quantity);
 
         // if (quantity == 0.0)
         // {
@@ -187,16 +187,16 @@ void OrderBook::apply_snapshot(Json& snapshsot)
 
 void OrderBook::export_snapshot()
 {
-    OrderBookSnapShot* snapshot = OrderBookSnapShotPool::acquire();
-    snapshot->update_instrument(m_instrument);
+    OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+    snapshot.object->update_instrument(m_instrument);
 
     for (const auto& [price, quantity] : m_bids)
     {
-        snapshot->add_bid(price, quantity);
+        snapshot.object->add_bid(price, quantity);
     }
     for (const auto& [price, quantity] : m_asks)
     {
-        snapshot->add_ask(price, quantity);
+        snapshot.object->add_ask(price, quantity);
     }
 
     OrderBookManager::instance().publish_order_book_snapshot(snapshot);

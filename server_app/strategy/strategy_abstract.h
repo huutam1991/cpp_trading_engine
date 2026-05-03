@@ -23,7 +23,7 @@ struct TradeUpdate
     size_t timestamp; // In nanoseconds
 };
 
-using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShot*, TradeUpdate>;
+using StrategyUpdateData = std::variant<PriceUpdate, Order, OrderBookSnapShotObject, TradeUpdate>;
 
 class StrategyAbstract
 {

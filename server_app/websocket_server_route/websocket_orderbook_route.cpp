@@ -5,15 +5,15 @@
 
 WebsocketOrderbookRoute::WebsocketOrderbookRoute() : HttpsWebsocketServerRoute(WebsocketRouteName::orderbook)
 {
-    OrderBookManager::instance().register_update([this](OrderBookSnapShot* snapshot)
+    OrderBookManager::instance().register_update([this](OrderBookSnapShotObject snapshot)
     {
         Json response = {
             {"route", m_route_name},
-            {"instrument", snapshot->instrument->symbol},
-            {"best_bid_price", snapshot->get_best_bid()},
-            {"best_bid_quantity", snapshot->get_best_bid_quantity()},
-            {"best_ask_price", snapshot->get_best_ask()},
-            {"best_ask_quantity", snapshot->get_best_ask_quantity()}
+            {"instrument", snapshot.object->instrument->symbol},
+            {"best_bid_price", snapshot.object->get_best_bid()},
+            {"best_bid_quantity", snapshot.object->get_best_bid_quantity()},
+            {"best_ask_price", snapshot.object->get_best_ask()},
+            {"best_ask_quantity", snapshot.object->get_best_ask_quantity()}
         };
 
         // Broadcast order book update to all connected clients on this route
@@ -21,8 +21,6 @@ WebsocketOrderbookRoute::WebsocketOrderbookRoute() : HttpsWebsocketServerRoute(W
         {
             m_server->write_to_connection(fd, response);
         }
-
-        OrderBookSnapShotPool::release(snapshot);
     });
 }
 
