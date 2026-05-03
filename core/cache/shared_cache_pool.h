@@ -99,7 +99,10 @@ public:
                 wrapper = other.wrapper;
 
                 // Increase reference count of new object
-                reference_counter->fetch_add(1, std::memory_order_acq_rel);
+                if (reference_counter != nullptr)
+                {
+                    reference_counter->fetch_add(1, std::memory_order_acq_rel);
+                }
             }
             return *this;
         }
@@ -222,6 +225,12 @@ public:
                 // MeasureTime measure_time("SharedCachePool::release, name: " + name, MeasureUnit::NANOSECOND);
                 // MeasureTime measure_time("SharedCachePool::release", MeasureUnit::NANOSECOND);
 
+                // Check if the item has refresh method and call it
+                if constexpr (has_refresh<T>)
+                {
+                    item->object.refresh();
+                }
+
                 // Add item back to the pool
                 PoolBuffer& pool_buffer = get_pool_buffer();
                 size_t tail_index = pool_buffer.get_current_tail();
@@ -229,12 +238,6 @@ public:
 
                 // Increase size only after successfully moving tail
                 pool_buffer.size.fetch_add(1, std::memory_order_release);
-            }
-
-            // Check if the item has refresh method and call it
-            if constexpr (has_refresh<T>)
-            {
-                item->object.refresh();
             }
         }
         else
