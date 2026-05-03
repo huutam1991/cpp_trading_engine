@@ -127,6 +127,36 @@ public:
 
             return *this;
         }
+
+        T* operator->()
+        {
+            return object;
+        }
+
+        const T* operator->() const
+        {
+            return object;
+        }
+
+        T& operator*()
+        {
+            return *object;
+        }
+
+        const T& operator*() const
+        {
+            return *object;
+        }
+
+        operator bool() const
+        {
+            return object != nullptr;
+        }
+
+        bool operator==(std::nullptr_t) const
+        {
+            return object == nullptr;
+        }
     };
 
 private:
