@@ -33,6 +33,7 @@ Task<void> WebsocketOrderbookRoute::on_connect(int fd)
 
 Task<void> WebsocketOrderbookRoute::on_message(int fd, std::string message)
 {
+    // TBD
     spdlog::info("Received message from websocket connection (fd = {}) on route [{}]: {}", fd, m_route_name, message);
 
     co_return;
