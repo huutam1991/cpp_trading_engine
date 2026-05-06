@@ -206,8 +206,7 @@ int HttpWebsocketConnectionIO::handle_http_upgrade_bytes(const char* data, std::
         return -1;
     }
 
-    const std::string sec_websocket_key = get_header_value(request_text, "Sec-WebSocket-Key");
-    if (sec_websocket_key.empty())
+    if (websocket_upgrade_request.websocket_key.empty())
     {
         const std::string bad_request =
             "HTTP/1.1 400 Bad Request\r\n"
@@ -218,7 +217,7 @@ int HttpWebsocketConnectionIO::handle_http_upgrade_bytes(const char* data, std::
         return -1;
     }
 
-    const std::string response = build_websocket_upgrade_response(sec_websocket_key);
+    const std::string response = build_websocket_upgrade_response(websocket_upgrade_request.websocket_key);
     if (write_to_socket_io(response.data(), static_cast<std::uint32_t>(response.size())) == -1)
     {
         spdlog::error("HttpWebsocketConnectionIO::handle_http_upgrade_bytes - failed to send upgrade response, fd = {}", fd);
