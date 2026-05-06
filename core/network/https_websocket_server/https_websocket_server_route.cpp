@@ -26,7 +26,7 @@ Task<void> HttpsWebsocketServerRoute::on_connect(int fd)
 Task<void> HttpsWebsocketServerRoute::on_message(int fd, std::string message)
 {
     Json response = {
-        {"message", "Route [none] is default route, please check your path and make sure it's correct"}
+        {"message", "This path is not available, please check your path and make sure it's correct"}
     };
 
     if (m_server != nullptr)

@@ -23,14 +23,16 @@ protected:
     WebsocketRouteName m_route_enum = WebsocketRouteName::none;
     std::string m_route_name = "none";
     HttpsWebsocketServer* m_server = nullptr;
+    bool m_need_check_authentication = false;
 
 public:
-    HttpsWebsocketServerRoute(WebsocketRouteName route_enum = WebsocketRouteName::none)
-        : m_route_enum(route_enum), m_route_name(enum_reflect::enum_name(route_enum))
+    HttpsWebsocketServerRoute(WebsocketRouteName route_enum = WebsocketRouteName::none, bool need_check_authentication = false)
+        : m_route_enum(route_enum), m_route_name(enum_reflect::enum_name(route_enum)), m_need_check_authentication(need_check_authentication)
     {}
 
     WebsocketRouteName get_route_enum() const { return m_route_enum; }
     std::string get_route_name() const { return m_route_name; }
+    bool need_check_authentication() const { return m_need_check_authentication; }
     void set_server(HttpsWebsocketServer* server) { m_server = server; }
 
     virtual Task<void> on_connect(int fd);
