@@ -85,6 +85,7 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
     virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
 
     std::string get_path() const { return websocket_upgrade_request.path; }
+    std::string get_bearer_token() const { return websocket_upgrade_request.bearer_token; }
 
     void write_text(const std::string& message);
     void write_ping(const std::string& payload = "");

@@ -14,14 +14,14 @@ struct HttpWebsocketConnectionIO;
 struct HttpWebsocketServerIO : public NamedIOObject<HttpWebsocketServerIO>
 {
     int port;
-    std::function<Task<void>(int, std::string)> on_connect = nullptr;
+    std::function<Task<void>(int, std::string, std::string)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
     std::function<Task<void>(int)> on_disconnect = nullptr;
 
     HttpWebsocketServerIO(int port_value);
 
     void set_callbacks(
-        std::function<Task<void>(int, std::string)> on_connect_callback = nullptr,
+        std::function<Task<void>(int, std::string, std::string)> on_connect_callback = nullptr,
         std::function<Task<void>(int, std::string)> on_message_callback = nullptr,
         std::function<Task<void>(int)> on_disconnect_callback = nullptr);
 

@@ -6,7 +6,7 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
 {
     m_https_websocket_server_io->set_callbacks(
         // on_connect callback
-        [this](int fd, std::string path) -> Task<void>
+        [this](int fd, std::string path, std::string bearer_token) -> Task<void>
         {
             WebsocketRouteName route = HttpsWebsocketServerRoute::get_route_from_path(path);
             m_websocket_routes_by_fd[fd] = m_routes[static_cast<int>(route)].get();
@@ -18,7 +18,7 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
                 co_return;
             }
 
-            spdlog::info("New websocket connection, fd = {}, path = {}", fd, path);
+            spdlog::info("New websocket connection, fd = {}, path = {}, bearer_token = {}", fd, path, bearer_token);
 
             co_await route_ptr->on_connect(fd);
 
