@@ -22,7 +22,11 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
 
             if (route_ptr->need_check_authentication())
             {
-                // TBD: check authentication with bearer token
+                if (check_is_valid_token(bearer_token) == false)
+                {
+                    spdlog::warn("HttpsWebsocketServer - invalid token for fd: {}, path: [{}], rejecting connection", fd, path);
+                    co_return;
+                }
             }
 
             co_await route_ptr->on_connect(fd);
