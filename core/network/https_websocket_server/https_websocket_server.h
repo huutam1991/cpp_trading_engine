@@ -13,6 +13,8 @@ class HttpsWebsocketServer
     std::array<std::unique_ptr<HttpsWebsocketServerRoute>, 20> m_routes{nullptr};
     std::array<HttpsWebsocketServerRoute*, MAX_WEBSOCKET_CONNECTIONS> m_websocket_routes_by_fd{nullptr};
 
+    bool check_is_valid_token(const std::string& token);
+
 public:
     HttpsWebsocketServer(int port, EpollBase* epoll_base);
 

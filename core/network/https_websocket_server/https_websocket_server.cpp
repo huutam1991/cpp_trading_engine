@@ -1,5 +1,5 @@
 #include "https_websocket_server.h"
-
+#include <jwt/jwt_manager.h>
 
 HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
     : m_https_websocket_server_io(std::make_unique<HttpsWebsocketServerIO>(port))
@@ -19,6 +19,11 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
             }
 
             spdlog::info("New websocket connection, fd = {}, path = {}, bearer_token = {}", fd, path, bearer_token);
+
+            if (route_ptr->need_check_authentication())
+            {
+                // TBD: check authentication with bearer token
+            }
 
             co_await route_ptr->on_connect(fd);
 
@@ -58,6 +63,34 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
     );
 
     epoll_base->start_living_system_io_object(m_https_websocket_server_io.get());
+}
+
+bool HttpsWebsocketServer::check_is_valid_token(const std::string& token)
+{
+    std::string check_valid_token = JWTManager::instance().verify_token(token);
+    if (check_valid_token != VALID_TOKEN)
+    {
+        return false;
+    }
+
+    Json payload = JWTManager::instance().get_payload(token);
+    std::string type = payload["type"];
+
+    if (type != "user")
+    {
+        return false;
+    }
+
+    // Get User from user_id
+    std::string user_id = payload["user_id"];
+    // m_user = UserManager::instance().get_user_by_id(user_id);
+
+    if (user_id != "root")
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void HttpsWebsocketServer::add_route(std::unique_ptr<HttpsWebsocketServerRoute> route)
