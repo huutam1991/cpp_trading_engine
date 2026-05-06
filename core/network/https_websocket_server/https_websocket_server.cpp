@@ -17,16 +17,16 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
 {
     m_https_websocket_server_io->set_callbacks(
         // on_connect callback
-        [this](int fd, std::string path, std::string bearer_token) -> Task<bool>
+        [this](int fd, std::string path, std::string bearer_token) -> Task<std::expected<bool, std::string>>
         {
             WebsocketRouteName route = HttpsWebsocketServerRoute::get_route_from_path(path);
             m_websocket_routes_by_fd[fd] = m_routes[static_cast<int>(route)].get();
             HttpsWebsocketServerRoute* route_ptr = m_websocket_routes_by_fd[fd];
 
-            if (route_ptr == nullptr)
+            if (route_ptr == nullptr || route == WebsocketRouteName::none)
             {
                 spdlog::warn("HttpsWebsocketServer - no route found for path: [{}], cannot handle connection", path);
-                co_return false;
+                co_return std::unexpected("No route found for path: " + path);
             }
 
             spdlog::info("New websocket connection, fd = {}, path = {}, bearer_token = {}", fd, path, bearer_token);
@@ -35,8 +35,8 @@ HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
             {
                 if (check_is_valid_token(bearer_token) == false)
                 {
-                    spdlog::warn("HttpsWebsocketServer - invalid token for fd: {}, path: [{}], rejecting connection", fd, path);
-                    co_return false;
+                    spdlog::warn("HttpsWebsocketServer - invalid token for path: [{}], rejecting connection", path);
+                    co_return std::unexpected("Invalid token for path: " + path);
                 }
             }
 

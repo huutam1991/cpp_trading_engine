@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <expected>
 
 #include <spdlog/spdlog.h>
 #include <coroutine/task.h>
@@ -63,13 +64,13 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
     WebSocketFrameParser frame_parser;
     WebsocketState WebsocketState = WebsocketState::WaitingHttpUpgrade;
 
-    std::function<Task<bool>(int, HttpWebsocketConnectionIO*)> on_connect = nullptr;
+    std::function<Task<std::expected<bool, std::string>>(int, HttpWebsocketConnectionIO*)> on_connect = nullptr;
     std::function<Task<void>(int, std::string)> on_message = nullptr;
     std::function<Task<void>(int)> on_disconnect = nullptr;
 
     void set_server_fd(int fd_value);
     void set_callbacks(
-        std::function<Task<bool>(int, HttpWebsocketConnectionIO*)> on_connect_callback,
+        std::function<Task<std::expected<bool, std::string>>(int, HttpWebsocketConnectionIO*)> on_connect_callback,
         std::function<Task<void>(int, std::string)> on_message_callback,
         std::function<Task<void>(int)> on_disconnect_callback);
     void refresh();
