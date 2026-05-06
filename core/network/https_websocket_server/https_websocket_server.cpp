@@ -1,5 +1,16 @@
 #include "https_websocket_server.h"
 #include <jwt/jwt_manager.h>
+#include <expected>
+
+std::expected<void, std::string> validate_websocket_path(std::string path)
+{
+    if (path.empty() || path[0] != '/')
+    {
+        return std::unexpected("Invalid path: " + path);
+    }
+
+    return {};
+}
 
 HttpsWebsocketServer::HttpsWebsocketServer(int port, EpollBase* epoll_base)
     : m_https_websocket_server_io(std::make_unique<HttpsWebsocketServerIO>(port))
