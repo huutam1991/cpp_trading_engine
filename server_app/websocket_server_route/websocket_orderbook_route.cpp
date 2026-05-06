@@ -3,7 +3,8 @@
 #include "websocket_orderbook_route.h"
 #include <order_book/order_book_manager.h>
 
-WebsocketOrderbookRoute::WebsocketOrderbookRoute() : HttpsWebsocketServerRoute(WebsocketRouteName::orderbook)
+WebsocketOrderbookRoute::WebsocketOrderbookRoute()
+    :   HttpsWebsocketServerRoute(WebsocketRouteName::orderbook, true)
 {
     OrderBookManager::instance().register_update([this](OrderBookSnapShotObject snapshot)
     {
