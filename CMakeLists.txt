@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(http_server_cpp)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines")
 
@@ -41,3 +41,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE mongo::mongocxx_shared)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto OpenSSL::SSL)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 # target_link_libraries(${PROJECT_NAME} PRIVATE glog::glog)
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
