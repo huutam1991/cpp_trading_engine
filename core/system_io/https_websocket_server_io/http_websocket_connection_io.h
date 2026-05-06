@@ -15,6 +15,41 @@
 
 struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionIO>
 {
+    enum class HttpMethod
+    {
+        UNKNOWN,
+        GET,
+        POST
+    };
+
+    enum class HttpVersion
+    {
+        UNKNOWN,
+        HTTP_1_0,
+        HTTP_1_1,
+        HTTP_2_0
+    };
+
+    struct WebsocketUpgradeRequest
+    {
+        HttpMethod method = HttpMethod::UNKNOWN;
+        HttpVersion http_version = HttpVersion::UNKNOWN;
+
+        std::string path;
+
+        bool is_websocket_upgrade = false;
+        bool connection_upgrade = false;
+
+        int websocket_version = -1;
+
+        std::string websocket_key;
+
+        std::string host;
+
+        std::string authorization;
+        std::string bearer_token;
+    };
+
     enum class WebsocketState
     {
         WaitingHttpUpgrade,
@@ -25,6 +60,7 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
     int server_fd = -1;
     std::string path = "/";
     std::string save_buffer;
+    WebsocketUpgradeRequest websocket_upgrade_request;
     WebSocketFrameParser frame_parser;
     WebsocketState WebsocketState = WebsocketState::WaitingHttpUpgrade;
 

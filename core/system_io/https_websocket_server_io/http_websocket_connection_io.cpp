@@ -301,40 +301,143 @@ bool HttpWebsocketConnectionIO::try_extract_http_request(std::string& request_te
     return true;
 }
 
-bool HttpWebsocketConnectionIO::is_websocket_upgrade_request(const std::string& request_text)
+bool HttpWebsocketConnectionIO::is_websocket_upgrade_request(
+    const std::string& request_text)
 {
+    websocket_upgrade_request = {};
+
     std::istringstream stream(request_text);
+
+    // Parse request line
     std::string request_line;
-    if (!std::getline(stream, request_line))
+
+    if (std::getline(stream, request_line))
+    {
+        if (!request_line.empty() && request_line.back() == '\r')
+        {
+            request_line.pop_back();
+        }
+
+        std::istringstream line_stream(request_line);
+
+        std::string method_string;
+        std::string version_string;
+
+        if (line_stream >> method_string
+                        >> websocket_upgrade_request.path
+                        >> version_string)
+        {
+            // Parse HTTP method
+            if (method_string == "GET")
+            {
+                websocket_upgrade_request.method = HttpMethod::GET;
+            }
+            else if (method_string == "POST")
+            {
+                websocket_upgrade_request.method = HttpMethod::POST;
+            }
+
+            // Parse HTTP version
+            if (version_string == "HTTP/1.0")
+            {
+                websocket_upgrade_request.http_version = HttpVersion::HTTP_1_0;
+            }
+            else if (version_string == "HTTP/1.1")
+            {
+                websocket_upgrade_request.http_version = HttpVersion::HTTP_1_1;
+            }
+            else if (version_string == "HTTP/2.0")
+            {
+                websocket_upgrade_request.http_version = HttpVersion::HTTP_2_0;
+            }
+        }
+    }
+
+    // Parse headers
+    websocket_upgrade_request.host =
+        trim(get_header_value(request_text, "Host"));
+
+    websocket_upgrade_request.websocket_key =
+        trim(get_header_value(request_text, "Sec-WebSocket-Key"));
+
+    // Parse Upgrade header
+    {
+        const std::string upgrade =
+            to_lower(trim(get_header_value(request_text, "Upgrade")));
+
+        websocket_upgrade_request.is_websocket_upgrade =
+            (upgrade == "websocket");
+    }
+
+    // Parse Connection header
+    {
+        const std::string connection =
+            to_lower(trim(get_header_value(request_text, "Connection")));
+
+        websocket_upgrade_request.connection_upgrade =
+            (connection.find("upgrade") != std::string::npos);
+    }
+
+    // Parse websocket version
+    {
+        const std::string version =
+            trim(get_header_value(request_text, "Sec-WebSocket-Version"));
+
+        if (!version.empty())
+        {
+            websocket_upgrade_request.websocket_version =
+                std::atoi(version.c_str());
+        }
+    }
+
+    // Parse authorization
+    websocket_upgrade_request.authorization =
+        trim(get_header_value(request_text, "Authorization"));
+
+    // Parse bearer token
+    static constexpr std::string_view BEARER_PREFIX = "Bearer ";
+
+    if (websocket_upgrade_request.authorization.rfind(BEARER_PREFIX, 0) == 0)
+    {
+        websocket_upgrade_request.bearer_token =
+            trim(websocket_upgrade_request.authorization.substr(
+                BEARER_PREFIX.size()));
+    }
+
+    // Validate required fields for websocket upgrade
+
+    // Method must be GET
+    if (websocket_upgrade_request.method != HttpMethod::GET)
     {
         return false;
     }
 
-    std::istringstream line_stream(request_line);
-    std::string method;
-    std::string version_line;
-    line_stream >> method >> this->path >> version_line;
-
-    if (request_line.find("GET ") != 0)
+    // HTTP version must be HTTP/1.1
+    if (websocket_upgrade_request.http_version != HttpVersion::HTTP_1_1)
     {
         return false;
     }
 
-    const std::string upgrade = to_lower(get_header_value(request_text, "Upgrade"));
-    const std::string connection = to_lower(get_header_value(request_text, "Connection"));
-    const std::string version = trim(get_header_value(request_text, "Sec-WebSocket-Version"));
-
-    if (upgrade != "websocket")
+    // Must contain Upgrade: websocket
+    if (!websocket_upgrade_request.is_websocket_upgrade)
     {
         return false;
     }
 
-    if (connection.find("upgrade") == std::string::npos)
+    // Must contain Connection: Upgrade
+    if (!websocket_upgrade_request.connection_upgrade)
     {
         return false;
     }
 
-    if (!version.empty() && version != "13")
+    // Must be websocket version 13
+    if (websocket_upgrade_request.websocket_version != 13)
+    {
+        return false;
+    }
+
+    // Must contain websocket key
+    if (websocket_upgrade_request.websocket_key.empty())
     {
         return false;
     }
