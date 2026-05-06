@@ -19,7 +19,7 @@ void HttpWebsocketConnectionIO::set_server_fd(int fd_value)
 }
 
 void HttpWebsocketConnectionIO::set_callbacks(
-    std::function<Task<void>(int, HttpWebsocketConnectionIO*)> on_connect_callback,
+    std::function<Task<bool>(int, HttpWebsocketConnectionIO*)> on_connect_callback,
     std::function<Task<void>(int, std::string)> on_message_callback,
     std::function<Task<void>(int)> on_disconnect_callback)
 {
@@ -570,7 +570,12 @@ Task<void> HttpWebsocketConnectionIO::run_on_connect()
 {
     if (on_connect != nullptr)
     {
-        co_await on_connect(fd, this);
+        bool result = co_await on_connect(fd, this);
+        if (result == false)
+        {
+            write_close(1008, "Connection rejected by server");
+            co_return;
+        }
     }
 
     co_return;

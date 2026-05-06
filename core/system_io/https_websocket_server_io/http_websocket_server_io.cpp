@@ -15,7 +15,7 @@ HttpWebsocketServerIO::HttpWebsocketServerIO(int port_value) : port{port_value}
 }
 
 void HttpWebsocketServerIO::set_callbacks(
-    std::function<Task<void>(int, std::string, std::string)> on_connect_callback,
+    std::function<Task<bool>(int, std::string, std::string)> on_connect_callback,
     std::function<Task<void>(int, std::string)> on_message_callback,
     std::function<Task<void>(int)> on_disconnect_callback)
 {
@@ -130,16 +130,16 @@ void HttpWebsocketServerIO::establish_connection(HttpWebsocketConnectionIO* conn
     connection->set_server_fd(fd);
     connection->set_callbacks(
         // on_connect callback
-        [this](int fd, HttpWebsocketConnectionIO* connection) -> Task<void>
+        [this](int fd, HttpWebsocketConnectionIO* connection) -> Task<bool>
         {
             m_websocket_connections_by_fd[fd] = connection;
 
             if (on_connect != nullptr)
             {
-                co_await on_connect(fd, connection->get_path(), connection->get_bearer_token());
+                co_return co_await on_connect(fd, connection->get_path(), connection->get_bearer_token());
             }
 
-            co_return;
+            co_return false;
         },
         // on_message callback
         [this](int fd, std::string message) -> Task<void>
