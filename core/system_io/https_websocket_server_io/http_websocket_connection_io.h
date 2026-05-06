@@ -58,7 +58,6 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
     };
 
     int server_fd = -1;
-    std::string path = "/";
     std::string save_buffer;
     WebsocketUpgradeRequest websocket_upgrade_request;
     WebSocketFrameParser frame_parser;
@@ -84,6 +83,8 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
 
     virtual int read_buffer(char* const buffer, std::size_t size);
     virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
+
+    std::string get_path() const { return websocket_upgrade_request.path; }
 
     void write_text(const std::string& message);
     void write_ping(const std::string& payload = "");

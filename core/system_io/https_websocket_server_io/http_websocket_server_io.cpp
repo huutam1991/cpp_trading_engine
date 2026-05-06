@@ -136,7 +136,7 @@ void HttpWebsocketServerIO::establish_connection(HttpWebsocketConnectionIO* conn
 
             if (on_connect != nullptr)
             {
-                co_await on_connect(fd, connection->path);
+                co_await on_connect(fd, connection->get_path());
             }
 
             co_return;
