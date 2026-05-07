@@ -62,7 +62,7 @@ Task<HttpResponse> APIHandlerUserLogin::child_handle()
         response["status_code"] = OK_200;
         response["error"] = false;
 
-        custom_header["Set-Cookie"] = "accessToken=" + token + "; HttpOnly; Max-Age=86400;";
+        custom_header["Set-Cookie"] = "accessToken=" + token + "; HttpOnly; Max-Age=86400; Path=/; SameSite=None; Secure";
         custom_header["Set-Cookie"].set_is_string_format(false);
 
     }
