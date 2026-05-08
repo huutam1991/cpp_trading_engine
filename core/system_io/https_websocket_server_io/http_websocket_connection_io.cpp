@@ -402,6 +402,12 @@ bool HttpWebsocketConnectionIO::is_websocket_upgrade_request(
                 BEARER_PREFIX.size()));
     }
 
+    // Parse cookie
+    websocket_upgrade_request.cookie =
+        trim(get_header_value(request_text, "Cookie"));
+
+    spdlog::warn("Cookie header value: [{}]", websocket_upgrade_request.cookie);
+
     // Validate required fields for websocket upgrade
 
     // Method must be GET
@@ -478,21 +484,53 @@ std::string HttpWebsocketConnectionIO::get_header_value(const std::string& reque
     return "";
 }
 
-std::string HttpWebsocketConnectionIO::trim(const std::string& value) const
+std::string HttpWebsocketConnectionIO::trim(std::string_view sv)
 {
-    std::size_t begin = 0;
-    while (begin < value.size() && std::isspace(static_cast<unsigned char>(value[begin])) != 0)
+    size_t start = 0;
+
+    while (start < sv.size() && std::isspace(static_cast<unsigned char>(sv[start])))
     {
-        ++begin;
+        ++start;
     }
 
-    std::size_t end = value.size();
-    while (end > begin && std::isspace(static_cast<unsigned char>(value[end - 1])) != 0)
+    size_t end = sv.size();
+
+    while (end > start && std::isspace(static_cast<unsigned char>(sv[end - 1])))
     {
         --end;
     }
 
-    return value.substr(begin, end - begin);
+    return std::string(sv.substr(start, end - start));
+}
+
+std::unordered_map<std::string, std::string> HttpWebsocketConnectionIO::parse_cookie_header(std::string_view cookie_header) const
+{
+    std::unordered_map<std::string, std::string> cookies;
+    size_t start = 0;
+
+    while (start < cookie_header.size())
+    {
+        size_t end = cookie_header.find(';', start);
+
+        if (end == std::string_view::npos)
+        {
+            end = cookie_header.size();
+        }
+
+        std::string_view pair = cookie_header.substr(start, end - start);
+        size_t eq = pair.find('=');
+
+        if (eq != std::string_view::npos)
+        {
+            std::string key = trim(pair.substr(0, eq));
+            std::string value = trim(pair.substr(eq + 1));
+            cookies[std::move(key)] = std::move(value);
+        }
+
+        start = end + 1;
+    }
+
+    return cookies;
 }
 
 std::string HttpWebsocketConnectionIO::to_lower(std::string value) const

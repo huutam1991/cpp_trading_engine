@@ -49,6 +49,7 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
 
         std::string authorization;
         std::string bearer_token;
+        std::string cookie;
     };
 
     enum class WebsocketState
@@ -104,7 +105,8 @@ protected:
     bool try_extract_http_request(std::string& request_text, std::string& leftover_data);
     bool is_websocket_upgrade_request(const std::string& request_text);
     std::string get_header_value(const std::string& request_text, const std::string& header_name) const;
-    std::string trim(const std::string& value) const;
+    static inline std::string trim(std::string_view sv);
+    std::unordered_map<std::string, std::string> parse_cookie_header(std::string_view cookie_header) const;
     std::string to_lower(std::string value) const;
     std::string build_websocket_upgrade_response(const std::string& sec_websocket_key) const;
     std::string compute_websocket_accept_key(const std::string& sec_websocket_key) const;
