@@ -8,6 +8,12 @@ WebsocketOrderbookRoute::WebsocketOrderbookRoute()
 {
     OrderBookManager::instance().register_update([this](OrderBookSnapShotObject snapshot)
     {
+        // Skip if no clients connected to this route
+        if (m_connected_fds.size() == 0)
+        {
+            return;
+        }
+
         Json response = {
             {"route", m_route_name},
             {"instrument", snapshot->instrument->symbol},
