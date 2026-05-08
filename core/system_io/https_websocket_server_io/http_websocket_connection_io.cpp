@@ -403,10 +403,13 @@ bool HttpWebsocketConnectionIO::is_websocket_upgrade_request(
     }
 
     // Parse cookie
-    websocket_upgrade_request.cookie =
-        trim(get_header_value(request_text, "Cookie"));
+    websocket_upgrade_request.cookies =
+        parse_cookie_header(trim(get_header_value(request_text, "Cookie")));
 
-    spdlog::warn("Cookie header value: [{}]", websocket_upgrade_request.cookie);
+    for (const auto& [key, value] : websocket_upgrade_request.cookies)
+    {
+        spdlog::warn("Cookie: [{}] = [{}]", key, value);
+    }
 
     // Validate required fields for websocket upgrade
 

@@ -49,7 +49,7 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
 
         std::string authorization;
         std::string bearer_token;
-        std::string cookie;
+        std::unordered_map<std::string, std::string> cookies;
     };
 
     enum class WebsocketState
