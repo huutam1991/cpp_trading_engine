@@ -411,6 +411,8 @@ bool HttpWebsocketConnectionIO::is_websocket_upgrade_request(
         spdlog::warn("Cookie: [{}] = [{}]", key, value);
     }
 
+    websocket_upgrade_request.access_token = websocket_upgrade_request.cookies["accessToken"];
+
     // Validate required fields for websocket upgrade
 
     // Method must be GET

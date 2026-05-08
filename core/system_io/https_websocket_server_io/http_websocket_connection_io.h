@@ -49,6 +49,7 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
 
         std::string authorization;
         std::string bearer_token;
+        std::string access_token;
         std::unordered_map<std::string, std::string> cookies;
     };
 
@@ -88,6 +89,7 @@ struct HttpWebsocketConnectionIO : public NamedIOObject<HttpWebsocketConnectionI
 
     std::string get_path() const { return websocket_upgrade_request.path; }
     std::string get_bearer_token() const { return websocket_upgrade_request.bearer_token; }
+    std::string get_access_token() const { return websocket_upgrade_request.access_token; }
 
     void write_text(const std::string& message);
     void write_ping(const std::string& payload = "");

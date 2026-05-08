@@ -136,7 +136,7 @@ void HttpWebsocketServerIO::establish_connection(HttpWebsocketConnectionIO* conn
 
             if (on_connect != nullptr)
             {
-                co_return co_await on_connect(fd, connection->get_path(), connection->get_bearer_token());
+                co_return co_await on_connect(fd, connection->get_path(), connection->get_access_token());
             }
 
             co_return std::unexpected("Callback [on_connect] is not set for HttpWebsocketServerIO");
