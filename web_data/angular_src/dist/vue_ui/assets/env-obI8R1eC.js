@@ -1,0 +1,1 @@
+import{r as e,t}from"./index-95XocNVk.js";var n=e(`auth`,{state:()=>({token:localStorage.getItem(`auth_token`)??``}),actions:{setToken(e){this.token=e,localStorage.setItem(`auth_token`,e)},logout(){this.token=``,localStorage.removeItem(`auth_token`),t.push(`/login`)}}}),r=`https://tam-tradingengine-test.com`,i=`wss://tam-tradingengine-test.com:8443`;export{i as n,n as r,r as t};
