@@ -50,6 +50,9 @@ web_data/excel/strategy_report.xls
 web_data/angular_src/node_modules
 web_data/angular_src/.angular
 
+# file .Identifier
+*Zone.Identifier
+
 # Targets log
 .vscode/targets.log
 
