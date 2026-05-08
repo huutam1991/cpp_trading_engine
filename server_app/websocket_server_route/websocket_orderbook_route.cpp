@@ -14,13 +14,28 @@ WebsocketOrderbookRoute::WebsocketOrderbookRoute()
             return;
         }
 
+        Json asks;
+        for (size_t i = 0; i < snapshot->asks_size; i++)
+        {
+            asks.push_back({
+                {"price", snapshot->asks[i].price},
+                {"quantity", snapshot->asks[i].quantity}
+            });
+        }
+        Json bids;
+        for (size_t i = 0; i < snapshot->bids_size; i++)
+        {
+            bids.push_back({
+                {"price", snapshot->bids[i].price},
+                {"quantity", snapshot->bids[i].quantity}
+            });
+        }
+
         Json response = {
             {"route", m_route_name},
             {"instrument", snapshot->instrument->symbol},
-            {"best_bid_price", snapshot->get_best_bid()},
-            {"best_bid_quantity", snapshot->get_best_bid_quantity()},
-            {"best_ask_price", snapshot->get_best_ask()},
-            {"best_ask_quantity", snapshot->get_best_ask_quantity()}
+            {"bids", bids},
+            {"asks", asks}
         };
 
         // Broadcast order book update to all connected clients on this route
