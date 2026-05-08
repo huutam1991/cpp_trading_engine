@@ -120,6 +120,7 @@ async function login() {
 <style scoped>
 .login-page {
   min-height: 100vh;
+  width: 100%;
 
   display: flex;
   align-items: center;
@@ -129,18 +130,26 @@ async function login() {
   color: white;
 
   font-family: Arial, sans-serif;
+
+  padding: 24px;
+
+  box-sizing: border-box;
 }
 
 .login-card {
-  width: 320px;
+  width: 100%;
+  max-width: 420px;
 
   background: #1f2937;
 
-  padding: 32px;
+  padding: 40px;
 
-  border-radius: 12px;
+  border-radius: 16px;
 
   border: 1px solid #374151;
+
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.4);
 }
 
 h1 {
