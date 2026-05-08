@@ -41,13 +41,13 @@ public:
 
     inline void add_bid(double price, double quantity)
     {
-        bids[bids_size++].price = price;
+        bids[bids_size].price = price;
         bids[bids_size++].quantity = quantity;
     }
 
     inline void add_ask(double price, double quantity)
     {
-        asks[asks_size++].price = price;
+        asks[asks_size].price = price;
         asks[asks_size++].quantity = quantity;
     }
 
