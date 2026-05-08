@@ -26,7 +26,7 @@
 
 #include <gateways/gateway_manager.h>
 
-std::string CLIENT_DEPLOY_FOLDER = "angular_src/dist/vue_ui";
+std::string CLIENT_DEPLOY_FOLDER = "vuejs_ui/dist";
 
 using namespace std;
 
