@@ -55,8 +55,8 @@ public:
 
     // Subscribed instruments
     static std::vector<const Instrument*> get_subscribed_instruments();
-    static void add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol);
-    static void remove_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol);
+    static bool add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol);
+    static bool remove_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol);
 
 private:
     enum StoreType

@@ -194,7 +194,7 @@ std::vector<const Instrument*> Instrument::get_subscribed_instruments()
     return res;
 }
 
-void Instrument::add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
+bool Instrument::add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
 {
     auto& subscribed_instruments = get_cache_subscribed_instruments();
 
@@ -202,17 +202,28 @@ void Instrument::add_subscribed_instrument(ExchangeId exchange_id, const std::st
     {
         if (ins->symbol == symbol && ins->exchange_id == exchange_id)
         {
-            return; // Already exist, no need to add
+            return false; // Already exist, no need to add
         }
     }
 
-    const Instrument* instrument = get_instrument_by_symbol(exchange_id, symbol);
-    std::string key = std::string(enum_reflect::enum_name(instrument->exchange_id)) + "-" + symbol;
+    const Instrument* instrument;
+    try
+    {
+        instrument = get_instrument_by_symbol(exchange_id, symbol);
+    }
+    catch (const std::exception& e)
+    {
+        spdlog::error("Instrument::add_subscribed_instrument - Cannot find instrument with symbol: [{}], exchange_id: [{}]", symbol, enum_reflect::enum_name(exchange_id));
+        return false;
+    }
 
+    std::string key = std::string(enum_reflect::enum_name(instrument->exchange_id)) + "-" + symbol;
     subscribed_instruments.emplace(key, SavableObject<Instrument>(INSTRUMENT_DB_NAME, "subscribed_instruments", *instrument));
+
+    return true;
 }
 
-void Instrument::remove_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
+bool Instrument::remove_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
 {
     auto& subscribed_instruments = get_cache_subscribed_instruments();
 
@@ -222,7 +233,9 @@ void Instrument::remove_subscribed_instrument(ExchangeId exchange_id, const std:
         {
             it->second.remove();
             subscribed_instruments.erase(it);
-            return;
+            return true;
         }
     }
+
+    return false; // Cannot find the subscribed instrument with this symbol and exchange_id
 }
