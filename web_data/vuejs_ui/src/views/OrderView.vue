@@ -52,11 +52,16 @@ type OrderTab = {
   tone: 'all' | 'open' | 'partial' | 'filled' | 'cancel' | 'reject'
 }
 
+type SortKey = 'instrument' | 'status' | 'order_id' | 'side' | 'type' | 'price' | 'quantity'
+type SortDirection = 'asc' | 'desc'
+
 const loading = ref(false)
 const errorMessage = ref('')
 const orders = ref<Order[]>([])
 const selectedOrder = ref<Order | null>(null)
 const activeTab = ref('all')
+const sortKey = ref<SortKey | null>(null)
+const sortDirection = ref<SortDirection>('asc')
 
 const tabs: OrderTab[] = [
   { label: 'All', value: 'all', statuses: [], icon: '◇', tone: 'all' },
@@ -82,6 +87,61 @@ const filteredOrders = computed(() => {
 
   return orders.value.filter((order) => tab.statuses.includes(order.status.toUpperCase()))
 })
+
+
+const sortedOrders = computed(() => {
+  if (!sortKey.value) {
+    return filteredOrders.value
+  }
+
+  return [...filteredOrders.value].sort((left, right) => {
+    const leftValue = getSortValue(left, sortKey.value!)
+    const rightValue = getSortValue(right, sortKey.value!)
+
+    const result = compareSortValues(leftValue, rightValue)
+    return sortDirection.value === 'asc' ? result : -result
+  })
+})
+
+function getSortValue(order: Order, key: SortKey): string | number {
+  switch (key) {
+    case 'instrument':
+      return order.instrument.symbol
+    case 'status':
+      return order.status
+    case 'order_id':
+      return order.order_id
+    case 'side':
+      return order.side
+    case 'type':
+      return order.type
+    case 'price':
+      return order.price
+    case 'quantity':
+      return order.quantity
+  }
+}
+
+function compareSortValues(left: string | number, right: string | number) {
+  const leftNumber = Number(left)
+  const rightNumber = Number(right)
+
+  if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) {
+    return leftNumber - rightNumber
+  }
+
+  return String(left).localeCompare(String(right), undefined, { numeric: true, sensitivity: 'base' })
+}
+
+function sortOrders(key: SortKey) {
+  if (sortKey.value === key) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+    return
+  }
+
+  sortKey.value = key
+  sortDirection.value = 'asc'
+}
 
 const activeTabInfo = computed<OrderTab>(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -271,19 +331,19 @@ onMounted(() => {
           <table v-if="filteredOrders.length > 0">
             <thead>
               <tr>
-                <th>Instrument</th>
-                <th>Status</th>
-                <th>Order ID</th>
-                <th>Side</th>
-                <th>Type</th>
-                <th>Price</th>
-                <th>Quantity</th>
+                <th class="sortable-header" @click="sortOrders('instrument')">Instrument</th>
+                <th class="sortable-header" @click="sortOrders('status')">Status</th>
+                <th class="sortable-header" @click="sortOrders('order_id')">Order ID</th>
+                <th class="sortable-header" @click="sortOrders('side')">Side</th>
+                <th class="sortable-header" @click="sortOrders('type')">Type</th>
+                <th class="sortable-header" @click="sortOrders('price')">Price</th>
+                <th class="sortable-header" @click="sortOrders('quantity')">Quantity</th>
               </tr>
             </thead>
 
             <tbody>
               <tr
-                v-for="order in filteredOrders"
+                v-for="order in sortedOrders"
                 :key="order.order_id"
                 class="order-row"
                 :class="{
@@ -756,6 +816,21 @@ th {
   background: #1f2937;
   font-size: 13px;
   font-weight: 800;
+}
+
+th.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: none;
+}
+
+th.sortable-header:hover {
+  color: #ffffff;
+  background: #273449;
+}
+
+th.sortable-header:active {
+  background: #1e3a5f;
 }
 
 td {
