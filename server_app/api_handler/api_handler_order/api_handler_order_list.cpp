@@ -9,18 +9,18 @@ APIHandlerOrderList::APIHandlerOrderList(HttpRequest* request) : APIHandler(requ
 
 Task<HttpResponse> APIHandlerOrderList::child_handle()
 {
-    Json response;
+    Json orders_json;
+    orders_json.set_size(0);
 
     // Get all orders
     std::vector<Order> orders = OrderManager::instance().get_all_orders();
-
-    Json orders_json;
     for (auto& order : orders)
     {
         orders_json.push_back(order.to_json());
     }
 
     // Response
+    Json response;
     response["orders"] = orders_json;
     response["msg"] = "Get order list successfully";
     response["status_code"] = OK_200;
