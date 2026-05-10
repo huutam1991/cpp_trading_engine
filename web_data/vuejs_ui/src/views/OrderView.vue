@@ -212,6 +212,7 @@ onMounted(() => {
           :class="[`tone-${tab.tone}`, { active: activeTab === tab.value }]"
           @click="selectTab(tab.value)"
         >
+          <!-- <span class="filter-icon">{{ tab.icon }}</span> -->
 
           <span class="filter-content">
             <strong>{{ tab.label }}</strong>
@@ -235,6 +236,19 @@ onMounted(() => {
             ↻
           </button>
         </div>
+
+        <!-- <div class="top-tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            class="top-tab"
+            :class="[`tone-${tab.tone}`, { active: activeTab === tab.value }]"
+            @click="selectTab(tab.value)"
+          >
+            <span>{{ tab.label }}</span>
+            <strong>{{ getTabCount(tab) }}</strong>
+          </button>
+        </div> -->
 
         <div
           v-if="loading"
@@ -509,46 +523,45 @@ onMounted(() => {
   padding: 13px 16px;
   margin-bottom: 10px;
   color: #e5e7eb;
-  background: linear-gradient(135deg, rgba(31, 41, 55, 0.92), rgba(17, 24, 39, 0.72));
+  background: #1f2937;
   border: 1px solid rgba(71, 85, 105, 0.72);
   border-radius: 12px;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+  transition: border-color 0.12s ease;
 }
 
 .filter-card:hover {
-  transform: translateY(-1px);
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.92));
+  border-color: #4b5563;
 }
 
 .filter-card.active.tone-all {
-  background: linear-gradient(135deg, rgba(71, 85, 105, 0.28), rgba(30, 41, 59, 0.72));
-  border-color: #94a3b8;
+  background: #273449;
+  border-color: #64748b;
 }
 
 .filter-card.active.tone-open {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.34), rgba(30, 58, 138, 0.56));
+  background: #1e3a5f;
   border-color: #3b82f6;
 }
 
 .filter-card.active.tone-partial {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.26), rgba(120, 53, 15, 0.42));
+  background: #374151;
   border-color: #f59e0b;
 }
 
 .filter-card.active.tone-filled {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(6, 78, 59, 0.42));
+  background: #1f3a35;
   border-color: #34d399;
 }
 
 .filter-card.active.tone-cancel {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.24), rgba(127, 29, 29, 0.44));
+  background: #3b2b2b;
   border-color: #ef4444;
 }
 
 .filter-card.active.tone-reject {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(88, 28, 135, 0.44));
+  background: #31263d;
   border-color: #a855f7;
 }
 
@@ -669,7 +682,7 @@ onMounted(() => {
   gap: 22px;
   padding: 14px 20px;
   margin-bottom: 18px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.92));
+  background: #111827;
   border: 1px solid rgba(51, 65, 85, 0.9);
   border-radius: 10px;
 }
@@ -734,9 +747,7 @@ onMounted(() => {
 .orders-table-card {
   min-height: 360px;
   overflow: auto;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 42%),
-    rgba(15, 23, 42, 0.72);
+  background: #1f2937;
   border: 1px solid rgba(51, 65, 85, 0.85);
   border-radius: 10px;
 }
@@ -776,19 +787,19 @@ td {
 }
 
 .order-row:hover {
-  background: rgba(59, 130, 246, 0.07);
+  background: #243244;
 }
 
 .order-row.selected {
-  background: rgba(37, 99, 235, 0.16);
+  background: #233554;
 }
 
 .order-row.buy:hover {
-  background: rgba(16, 185, 129, 0.08);
+  background: #20363a;
 }
 
 .order-row.sell:hover {
-  background: rgba(248, 113, 113, 0.08);
+  background: #3a2626;
 }
 
 .instrument-cell {
@@ -942,7 +953,7 @@ td {
 
 .detail-card {
   padding: 14px 16px;
-  background: rgba(15, 23, 42, 0.58);
+  background: #1f2937;
   border: 1px solid rgba(51, 65, 85, 0.9);
   border-radius: 10px;
 }
