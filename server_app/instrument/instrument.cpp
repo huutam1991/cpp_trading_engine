@@ -181,28 +181,31 @@ std::unordered_map<std::string, SavableObject<Instrument>>& Instrument::get_cach
     return cache_subscribed_instruments;
 }
 
-void Instrument::add_subscribed_instrument(const Instrument* instrument)
+void Instrument::add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
 {
     auto& subscribed_instruments = get_cache_subscribed_instruments();
 
     for (auto& [_, ins] : subscribed_instruments)
     {
-        if (ins->symbol == instrument->symbol && ins->exchange_id == instrument->exchange_id && ins->instrument_type == instrument->instrument_type)
+        if (ins->symbol == symbol && ins->exchange_id == exchange_id)
         {
             return; // Already exist, no need to add
         }
     }
 
-    subscribed_instruments.emplace(instrument->symbol.to_string(), SavableObject<Instrument>(INSTRUMENT_DB_NAME, "subscribed_instruments", *instrument));
+    const Instrument* instrument = get_instrument_by_symbol(exchange_id, symbol);
+    std::string key = std::string(enum_reflect::enum_name(instrument->exchange_id)) + "-" + symbol;
+
+    subscribed_instruments.emplace(key, SavableObject<Instrument>(INSTRUMENT_DB_NAME, "subscribed_instruments", *instrument));
 }
 
-void Instrument::remove_subscribed_instrument(const Instrument* instrument)
+void Instrument::remove_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
 {
     auto& subscribed_instruments = get_cache_subscribed_instruments();
 
     for (auto it = subscribed_instruments.begin(); it != subscribed_instruments.end(); it++)
     {
-        if (it->second->symbol == instrument->symbol && it->second->exchange_id == instrument->exchange_id && it->second->instrument_type == instrument->instrument_type)
+        if (it->second->symbol == symbol && it->second->exchange_id == exchange_id)
         {
             it->second.remove();
             subscribed_instruments.erase(it);
