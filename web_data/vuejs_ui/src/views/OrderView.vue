@@ -253,28 +253,40 @@ function sideClass(side: string) {
 
 const formatCreateTime = (orderId: string | number | bigint): string =>
 {
-    // orderId = UTC nanoseconds timestamp
+  // orderId = UTC nanoseconds timestamp
 
-    const milliseconds =
-        Number(BigInt(orderId) / 1000000n);
+  const milliseconds =
+      Number(BigInt(orderId) / 1000000n);
 
-    const date = new Date(milliseconds);
+  const utcDate = new Date(milliseconds);
 
-    const pad = (value: number, size: number = 2): string =>
-        String(value).padStart(size, "0");
+  // convert UTC -> local timezone
+  // Singapore => UTC+8
 
-    const day = pad(date.getUTCDate());
-    const month = pad(date.getUTCMonth() + 1);
-    const year = date.getUTCFullYear();
+  const localTimestamp =
+      utcDate.getTime() -
+      utcDate.getTimezoneOffset() * 60 * 1000;
 
-    const hours = pad(date.getUTCHours());
-    const minutes = pad(date.getUTCMinutes());
-    const seconds = pad(date.getUTCSeconds());
+  const localDate = new Date(localTimestamp);
 
-    const millis =
-        pad(date.getUTCMilliseconds(), 3);
+  const pad = (
+      value: number,
+      size: number = 2
+  ): string =>
+      String(value).padStart(size, "0");
 
-    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}:${millis}`;
+  const day = pad(localDate.getDate());
+  const month = pad(localDate.getMonth() + 1);
+  const year = localDate.getFullYear();
+
+  const hours = pad(localDate.getHours());
+  const minutes = pad(localDate.getMinutes());
+  const seconds = pad(localDate.getSeconds());
+
+  const millis =
+      pad(localDate.getMilliseconds(), 3);
+
+  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}:${millis}`;
 };
 
 onMounted(() => {
