@@ -12,6 +12,9 @@
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 
+// Instrument
+#include <api_handler/api_handler_instrument/api_handler_instrument_subscribe.h>
+
 // Simulator Order
 #include <api_handler/api_handler_simulator_order/api_handler_simulator_order.h>
 
@@ -338,6 +341,18 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
     {
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
+    };
+
+    // Update instrument - subscribe/unsubscribe
+    ADD_ROUTE(RequestMethod::POST, "/instrument_subscribe")
+    {
+        co_return co_await APIHandlerInstrumentSubscribe(request).handle();
+    };
+
+    // Get subscribed instruments
+    ADD_ROUTE(RequestMethod::GET, "/instrument_subscribe")
+    {
+        co_return co_await APIHandlerInstrumentSubscribe(request).handle();
     };
 
     // Simulator order - GET
