@@ -17,6 +17,8 @@ private:
     std::vector<std::string> m_mandatory_params;
     std::vector<std::string> m_mandatory_body_params;
 
+    std::unordered_map<std::string, std::string> parse_cookie_header(std::string_view cookie_header) const;
+
 protected:
     HttpRequest* m_request;
     bool m_need_check_authentication = false;

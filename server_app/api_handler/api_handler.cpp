@@ -16,6 +16,36 @@ void APIHandler::add_mandatory_body_params(const std::vector<std::string>& param
     m_mandatory_body_params = params;
 }
 
+std::unordered_map<std::string, std::string> APIHandler::parse_cookie_header(std::string_view cookie_header) const
+{
+    std::unordered_map<std::string, std::string> cookies;
+    size_t start = 0;
+
+    while (start < cookie_header.size())
+    {
+        size_t end = cookie_header.find(';', start);
+
+        if (end == std::string_view::npos)
+        {
+            end = cookie_header.size();
+        }
+
+        std::string_view pair = cookie_header.substr(start, end - start);
+        size_t eq = pair.find('=');
+
+        if (eq != std::string_view::npos)
+        {
+            std::string key = std::string(pair.substr(0, eq));
+            std::string value = std::string(pair.substr(eq + 1));
+            cookies[std::move(key)] = std::move(value);
+        }
+
+        start = end + 1;
+    }
+
+    return cookies;
+}
+
 std::string APIHandler::check_authentication()
 {
     std::string res = VALID_TOKEN;
@@ -26,7 +56,15 @@ std::string APIHandler::check_authentication()
         token = m_request->get_header_param("Authorization");
         if (token == PARAM_NOT_FOUND)
         {
-            token = m_request->get_header_param("Cookie");
+            std::string cookies_header = m_request->get_header_param("Cookie");
+            auto cookies = parse_cookie_header(cookies_header);
+            for (const auto& [key, value] : cookies)
+            {
+                spdlog::warn("Cookie: [{}] = [{}]", key, value);
+            }
+
+            token = cookies.find("accessToken") != cookies.end() ? cookies["accessToken"] : PARAM_NOT_FOUND;
+
             if (token == PARAM_NOT_FOUND)
             {
                 return "Missing token";
