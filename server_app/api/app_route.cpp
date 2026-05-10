@@ -56,7 +56,7 @@ void add_app_route()
 
     ADD_ROUTE(RequestMethod::GET, "/favicon.ico")
     {
-        co_return request->send_file_from_directory("templates/favicon.ico");
+        co_return request->send_file_from_directory(CLIENT_DEPLOY_FOLDER + "/favicon.ico");
     };
 
     ADD_ROUTE(RequestMethod::GET, "/websocket_client")
