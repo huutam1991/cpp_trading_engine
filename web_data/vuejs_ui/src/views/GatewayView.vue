@@ -1,4 +1,8 @@
 <script setup lang="ts">
+
+import InstrumentPanel from '@/components/instrument/InstrumentPanel.vue'
+import type { Instrument } from '@/components/instrument/InstrumentRow.vue'
+
 type GatewayStatus = 'connected' | 'disconnected' | 'reconnecting'
 
 type Gateway = {
@@ -59,6 +63,33 @@ const gateways: Gateway[] = [
     ],
   },
 ]
+
+const instruments: Instrument[] = [
+  {
+    symbol: 'BTC-USDC-PERPETUAL',
+    base: 'BTC',
+    quote: 'USDC',
+    type: 'perpetual',
+    status: 'active',
+    tickSize: 0.1,
+    lotSize: 0.001,
+    minQty: 0.001,
+  },
+  {
+    symbol: 'ETH-USDT-PERPETUAL',
+    base: 'ETH',
+    quote: 'USDT',
+    type: 'perpetual',
+    status: 'active',
+    tickSize: 0.01,
+    lotSize: 0.01,
+    minQty: 0.01,
+  },
+]
+
+function openOrderBook(instrument: Instrument) {
+  console.log('open orderbook:', instrument.symbol)
+}
 
 function statusText(status: GatewayStatus) {
   if (status === 'connected') return 'Connected'
@@ -223,6 +254,13 @@ function statusText(status: GatewayStatus) {
             </div>
           </section>
         </div>
+        <InstrumentPanel
+            title="Gateway Instruments"
+            subtitle="Available instruments from this gateway."
+            :instruments="instruments"
+            mode="gateway"
+            @open="openOrderBook"
+        />
       </article>
     </div>
   </section>
