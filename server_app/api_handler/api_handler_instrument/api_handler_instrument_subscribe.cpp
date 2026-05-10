@@ -20,7 +20,7 @@ Task<HttpResponse> APIHandlerInstrumentSubscribe::child_handle()
         {
             subscribed_instruments_json.push_back(instrument->to_json());
         }
-        response["data"] = subscribed_instruments_json;
+        response["msg"] = subscribed_instruments_json;
     }
     else if (m_request->get_request_method() == RequestMethod::POST)
     {
@@ -32,32 +32,32 @@ Task<HttpResponse> APIHandlerInstrumentSubscribe::child_handle()
         {
             if (Instrument::add_subscribed_instrument(enum_reflect::enum_value<ExchangeId>(exchange), symbol) == true)
             {
-                response["data"] = "Subscribe instrument successfully";
+                response["msg"] = "Subscribe instrument successfully";
             }
             else
             {
-                response["data"] = "Failed to subscribe instrument, exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already subscribed";
+                response["msg"] = "Failed to subscribe instrument, exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already subscribed";
             }
         }
         else if (method == "unsubscribe")
         {
             if (Instrument::remove_subscribed_instrument(enum_reflect::enum_value<ExchangeId>(exchange), symbol) == true)
             {
-                response["data"] = "Unsubscribe instrument successfully";
+                response["msg"] = "Unsubscribe instrument successfully";
             }
             else
             {
-                response["data"] = "Failed to unsubscribe instrument, exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already unsubscribed";
+                response["msg"] = "Failed to unsubscribe instrument, exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already unsubscribed";
             }
         }
         else
         {
-            response["data"] = "Invalid field [method], only support [subscribe] or [unsubscribe]";
+            response["msg"] = "Invalid field [method], only support [subscribe] or [unsubscribe]";
         }
     }
 
     // Response
-    response["msg"] = "register account ";
+    response["data"] = "";
     response["status_code"] = OK_200;
     response["error"] = false;
 
