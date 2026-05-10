@@ -57,6 +57,7 @@ std::string APIHandler::check_authentication()
         if (token == PARAM_NOT_FOUND)
         {
             std::string cookies_header = m_request->get_header_param("Cookie");
+            spdlog::warn("APIHandler - Cookie header: [{}]", cookies_header);
             auto cookies = parse_cookie_header(cookies_header);
             for (const auto& [key, value] : cookies)
             {
