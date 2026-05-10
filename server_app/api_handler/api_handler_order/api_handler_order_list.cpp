@@ -24,7 +24,7 @@ Task<HttpResponse> APIHandlerOrderList::child_handle()
         OrderId order_id_a = a["order_id"];
         OrderId order_id_b = b["order_id"];
 
-        return order_id_a < order_id_b;
+        return order_id_a > order_id_b;
     });
 
     // Response
