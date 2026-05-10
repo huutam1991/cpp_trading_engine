@@ -7,6 +7,13 @@
 void OrderManager::init()
 {
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
+
+    // Load all orders in DB to [m_order_list]
+    auto orders_in_db = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
+    for (auto& [order_id, order] : orders_in_db)
+    {
+        m_order_list.insert(std::make_pair(order_id, order));
+    }
 }
 
 OrderId OrderManager::generate_order_id()
@@ -16,6 +23,18 @@ OrderId OrderManager::generate_order_id()
     auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
 
     return static_cast<OrderId>(nanos);
+}
+
+std::vector<Order> OrderManager::get_all_orders()
+{
+    std::vector<Order> res;
+
+    for (auto& [_, order] : m_order_list)
+    {
+        res.push_back(order);
+    }
+
+    return res;
 }
 
 std::vector<OrderId> OrderManager::get_open_orders()

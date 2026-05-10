@@ -39,6 +39,7 @@ public:
     // Helper method
     static OrderId generate_order_id();
     Order get_order_by_id(OrderId order_id);
+    std::vector<Order> get_all_orders();
     std::vector<OrderId> get_open_orders();
 
     inline bool is_valid_order(OrderId order_id)
