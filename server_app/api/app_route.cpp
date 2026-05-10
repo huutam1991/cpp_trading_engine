@@ -15,6 +15,9 @@
 // Instrument
 #include <api_handler/api_handler_instrument/api_handler_instrument_subscribe.h>
 
+// Order
+#include <api_handler/api_handler_order/api_handler_order_list.h>
+
 // Simulator Order
 #include <api_handler/api_handler_simulator_order/api_handler_simulator_order.h>
 
@@ -353,6 +356,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/instrument_subscribe")
     {
         co_return co_await APIHandlerInstrumentSubscribe(request).handle();
+    };
+
+    // Get order list
+    ADD_ROUTE(RequestMethod::GET, "/order_list")
+    {
+        co_return co_await APIHandlerOrderList(request).handle();
     };
 
     // Simulator order - GET
