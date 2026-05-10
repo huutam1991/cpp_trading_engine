@@ -16,11 +16,15 @@ Task<HttpResponse> APIHandlerInstrumentSubscribe::child_handle()
         std::vector<const Instrument*> subscribed_instruments = Instrument::get_subscribed_instruments();
 
         Json subscribed_instruments_json;
+        subscribed_instruments_json.set_size(0);
+
         for (const Instrument* instrument : subscribed_instruments)
         {
             subscribed_instruments_json.push_back(instrument->to_json());
         }
-        response["msg"] = subscribed_instruments_json;
+
+        response["data"] = subscribed_instruments_json;;
+        response["msg"] = "Get subscribed instruments successfully";
     }
     else if (m_request->get_request_method() == RequestMethod::POST)
     {
@@ -32,32 +36,36 @@ Task<HttpResponse> APIHandlerInstrumentSubscribe::child_handle()
         {
             if (Instrument::add_subscribed_instrument(enum_reflect::enum_value<ExchangeId>(exchange), symbol) == true)
             {
-                response["msg"] = "Subscribe instrument successfully";
+                response["msg"] = "Subscribe instrument with exchange: [" + exchange + "], symbol: [" + symbol + "] successfully";
+                response["data"] = nullptr;
             }
             else
             {
-                response["msg"] = "Failed to subscribe instrument, exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already subscribed";
+                response["msg"] = "Failed to subscribe instrument with exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already subscribed";
+                response["data"] = nullptr;
             }
         }
         else if (method == "unsubscribe")
         {
             if (Instrument::remove_subscribed_instrument(enum_reflect::enum_value<ExchangeId>(exchange), symbol) == true)
             {
-                response["msg"] = "Unsubscribe instrument successfully";
+                response["msg"] = "Unsubscribe instrument with exchange: [" + exchange + "], symbol: [" + symbol + "] successfully";
+                response["data"] = nullptr;
             }
             else
             {
-                response["msg"] = "Failed to unsubscribe instrument, exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already unsubscribed";
+                response["msg"] = "Failed to unsubscribe instrument with exchange: [" + exchange + "], symbol: [" + symbol + "], please check if the exchange and symbol are correct or already unsubscribed";
+                response["data"] = nullptr;
             }
         }
         else
         {
             response["msg"] = "Invalid field [method], only support [subscribe] or [unsubscribe]";
+            response["data"] = nullptr;
         }
     }
 
     // Response
-    response["data"] = "";
     response["status_code"] = OK_200;
     response["error"] = false;
 
