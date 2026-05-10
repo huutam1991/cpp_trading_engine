@@ -77,6 +77,24 @@ public:
         return res;
     }
 
+    static std::unordered_map<std::string, DataModel> load_data_model_map(const std::string& db, const std::string& collection)
+    {
+        Json data_list = MongoDB::instance()
+            .set_db_and_collection(db, collection)
+            .find_many();
+
+        std::unordered_map<std::string, DataModel> res;
+        data_list.for_each_with_index([&res, &db, &collection](size_t index, Json& data)
+        {
+            std::string _id = data["_id"]["$oid"];
+            DataModel dm(db, collection, _id);
+
+            res.insert(std::make_pair(_id, dm));
+        });
+
+        return res;
+    }
+
 protected:
     std::string m_id = "-1";
     std::string m_db;

@@ -137,4 +137,23 @@ public:
 
         return res;
     }
+
+    static std::unordered_map<std::string, SavableObject> load_objects_map(const std::string& db, const std::string& collection)
+    {
+        std::unordered_map<std::string, DataModel> data_list = DataModel::load_data_model_map(db, collection);
+
+        std::unordered_map<std::string, SavableObject> res;
+        for (auto& [key, dm] : data_list)
+        {
+            SavableObject object;
+            object.m_db = db;
+            object.m_collection = collection;
+            object.object = T::from_json(dm.get_data());
+            *object.m_data_model = dm;
+
+            res.insert(std::make_pair(key, object));
+        }
+
+        return res;
+    }
 };
