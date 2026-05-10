@@ -254,13 +254,15 @@ function statusText(status: GatewayStatus) {
             </div>
           </section>
         </div>
-        <InstrumentPanel
-            title="Gateway Instruments"
-            subtitle="Available instruments from this gateway."
-            :instruments="instruments"
-            mode="gateway"
-            @open="openOrderBook"
-        />
+        <div class="instrument-section">
+            <InstrumentPanel
+                title="Gateway Instruments"
+                subtitle="Available instruments from this gateway."
+                :instruments="instruments"
+                mode="gateway"
+                @open="openOrderBook"
+            />
+        </div>
       </article>
     </div>
   </section>
@@ -446,6 +448,10 @@ function statusText(status: GatewayStatus) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.instrument-section {
+  margin-top: 18px;
 }
 
 .link-button {
