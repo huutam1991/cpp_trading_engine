@@ -105,7 +105,6 @@ function selectInstrument(symbol: string) {
 
 ws.onopen = () => {
   connected.value = true
-  console.log('[WS] connected')
 
   ws.send(JSON.stringify({
     op: 'subscribe',
@@ -303,6 +302,15 @@ onUnmounted(() => {
           </div>
         </div>
       </section>
+
+      <section class="detail-panel">
+        <div class="empty-state">
+          <h2>Details</h2>
+          <p>
+            Click an order, price level, strategy action or event to inspect details here.
+          </p>
+        </div>
+      </section>
     </section>
   </main>
 </template>
@@ -314,27 +322,26 @@ onUnmounted(() => {
 
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .page-header h1 {
-  margin: 0 0 8px;
-  font-size: 32px;
+  margin: 0;
+  font-size: 24px;
 }
 
 .page-header p {
-  margin: 0;
-  color: #9ca3af;
+  display: none;
 }
 
 .status-pill {
-  padding: 7px 13px;
+  padding: 4px 10px;
   border-radius: 999px;
 
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -352,46 +359,47 @@ onUnmounted(() => {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(140px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  gap: 8px;
 
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .metric-card {
-  padding: 15px;
+  padding: 10px 12px;
 
   background: #1f2937;
 
   border: 1px solid #374151;
-  border-radius: 12px;
+  border-radius: 9px;
 }
 
 .metric-card span {
   display: block;
-  margin-bottom: 8px;
+
+  margin-bottom: 4px;
 
   color: #9ca3af;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .metric-card strong {
-  font-size: 18px;
+  font-size: 15px;
 }
 
 .orderbook-workspace {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 18px;
+  grid-template-columns: 260px 440px 1fr;
+  gap: 12px;
 }
 
 .instrument-sidebar {
-  padding: 16px;
+  padding: 12px;
 
   background: #111827;
 
   border: 1px solid #374151;
-  border-radius: 14px;
+  border-radius: 12px;
 
   box-shadow: 0 0 28px rgba(0, 0, 0, 0.25);
 }
@@ -401,12 +409,12 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .sidebar-header h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .sidebar-header span {
@@ -427,10 +435,10 @@ onUnmounted(() => {
 
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 
-  padding: 12px;
-  margin-bottom: 9px;
+  padding: 9px 10px;
+  margin-bottom: 7px;
 
   color: #d1d5db;
   background: #1f2937;
@@ -441,6 +449,7 @@ onUnmounted(() => {
   cursor: pointer;
 
   text-align: left;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -455,20 +464,20 @@ onUnmounted(() => {
 }
 
 .instrument-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 
   border-radius: 999px;
   background: #34d399;
 }
 
 .book-panel {
-  padding: 20px;
+  padding: 12px;
 
   background: #111827;
 
   border: 1px solid #374151;
-  border-radius: 14px;
+  border-radius: 12px;
 
   box-shadow: 0 0 28px rgba(0, 0, 0, 0.25);
 }
@@ -478,22 +487,21 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .panel-header h2 {
-  margin: 0 0 6px;
-  font-size: 24px;
+  margin: 0;
+  font-size: 18px;
 }
 
 .panel-header p {
-  margin: 0;
-  color: #9ca3af;
+  display: none;
 }
 
 .mid-card {
-  min-width: 140px;
-  padding: 10px 14px;
+  min-width: 100px;
+  padding: 7px 10px;
 
   background: #1f2937;
 
@@ -510,13 +518,13 @@ onUnmounted(() => {
 }
 
 .mid-card strong {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .book-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .side-panel {
@@ -525,13 +533,13 @@ onUnmounted(() => {
   background: #1f2937;
 
   border: 1px solid #374151;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .side-title {
-  padding: 12px 14px;
+  padding: 8px 10px;
 
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
 
   border-bottom: 1px solid #374151;
@@ -543,7 +551,7 @@ table {
 }
 
 th {
-  padding: 10px 12px;
+  padding: 7px 8px;
 
   color: #9ca3af;
   background: #111827;
@@ -551,15 +559,16 @@ th {
   border-bottom: 1px solid #374151;
 
   text-align: right;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 td {
-  padding: 10px 12px;
+  padding: 6px 8px;
 
   border-bottom: 1px solid rgba(55, 65, 81, 0.7);
 
   text-align: right;
+  font-size: 13px;
 }
 
 th:first-child,
@@ -585,6 +594,42 @@ td:first-child {
   background: rgba(52, 211, 153, 0.08);
 }
 
+.detail-panel {
+  min-height: 520px;
+
+  padding: 12px;
+
+  background: #111827;
+
+  border: 1px solid #374151;
+  border-radius: 12px;
+
+  box-shadow: 0 0 28px rgba(0, 0, 0, 0.25);
+}
+
+.empty-state {
+  height: 100%;
+  min-height: 460px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #9ca3af;
+  text-align: center;
+}
+
+.empty-state h2 {
+  margin: 0 0 8px;
+  color: white;
+}
+
+.empty-state p {
+  max-width: 420px;
+  margin: 0;
+}
+
 @media (max-width: 1400px) {
   .summary-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -593,16 +638,13 @@ td:first-child {
   .orderbook-workspace {
     grid-template-columns: 1fr;
   }
-
-  .book-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 800px) {
   .page-header {
     flex-direction: column;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .summary-grid {
