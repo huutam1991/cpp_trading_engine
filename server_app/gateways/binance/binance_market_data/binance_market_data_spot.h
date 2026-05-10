@@ -20,6 +20,11 @@ public:
     virtual void start();
     void start_websocket(const Instrument* instrument);
     void subscribe_instruments(std::vector<const Instrument*> instruments);
+    void subscribe_instrument(const Instrument* instrument) { m_instruments.push_back(instrument); }
+    void unsubscribe_instrument(const Instrument* instrument)
+    {
+        m_instruments.erase(std::remove(m_instruments.begin(), m_instruments.end(), instrument), m_instruments.end());
+    }
 
 protected:
     virtual bool standardize_data(const std::string& buffer, Json& data);

@@ -37,6 +37,8 @@ public:
     void init();
 
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) = 0;
+    virtual void subscribe_instrument(const Instrument* instrument) = 0;
+    virtual void unsubscribe_instrument(const Instrument* instrument) = 0;
 
     // Util methods
     virtual Task<Json> get_balances() = 0;

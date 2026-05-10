@@ -1,6 +1,7 @@
 #include <json/json.h>
 #include <mongo_db/mongo_db.h>
 #include <app_constants.h>
+#include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
 #include <gateways/binance/binance_gateway.h>
 #include <gateways/coinbase/coinbase_gateway.h>
@@ -45,6 +46,16 @@ void GatewayManager::init()
             m_gateways[gateway_enum]->init();
         }
     });
+
+    // Subscribe instruments for gateways
+    std::vector<const Instrument*> subscribed_instruments = Instrument::get_subscribed_instruments();
+    for (const Instrument* instrument : subscribed_instruments)
+    {
+        if (m_gateways.find(instrument->exchange_id) != m_gateways.end())
+        {
+            m_gateways[instrument->exchange_id]->subscribe_instruments({instrument});
+        }
+    }
 }
 
 ExchangeId GatewayManager::gateway_name_to_enum(const std::string& gateway)
