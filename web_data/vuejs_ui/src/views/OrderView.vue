@@ -212,7 +212,7 @@ onMounted(() => {
           :class="[`tone-${tab.tone}`, { active: activeTab === tab.value }]"
           @click="selectTab(tab.value)"
         >
-          <span class="filter-icon">{{ tab.icon }}</span>
+          <!-- <span class="filter-icon">{{ tab.icon }}</span> -->
 
           <span class="filter-content">
             <strong>{{ tab.label }}</strong>
@@ -237,7 +237,7 @@ onMounted(() => {
           </button>
         </div>
 
-        <div class="top-tabs">
+        <!-- <div class="top-tabs">
           <button
             v-for="tab in tabs"
             :key="tab.value"
@@ -248,7 +248,7 @@ onMounted(() => {
             <span>{{ tab.label }}</span>
             <strong>{{ getTabCount(tab) }}</strong>
           </button>
-        </div>
+        </div> -->
 
         <div
           v-if="loading"
@@ -459,7 +459,7 @@ onMounted(() => {
 
 .orders-layout {
   display: grid;
-  grid-template-columns: 280px minmax(760px, 1fr) 450px;
+  grid-template-columns: 220px minmax(860px, 1fr) 430px;
   gap: 12px;
 }
 
@@ -474,7 +474,7 @@ onMounted(() => {
 
 .filter-panel {
   min-height: 720px;
-  padding: 18px 16px;
+  padding: 14px 12px;
 }
 
 .orders-panel {
@@ -505,14 +505,14 @@ onMounted(() => {
 .detail-header h2 {
   margin: 0;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .filter-total {
-  min-width: 42px;
-  height: 42px;
+  min-width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -525,11 +525,11 @@ onMounted(() => {
 
 .filter-card {
   width: 100%;
-  min-height: 84px;
+  min-height: 72px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
+  gap: 10px;
+  padding: 10px 12px;
   margin-bottom: 12px;
   color: #e5e7eb;
   background: #1f2937;
@@ -551,14 +551,14 @@ onMounted(() => {
 }
 
 .filter-icon {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   border-radius: 999px;
-  font-size: 19px;
+  font-size: 15px;
   font-weight: 900;
   background: #111827;
   border: 1px solid #374151;
@@ -601,13 +601,13 @@ onMounted(() => {
 }
 
 .filter-content strong {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .filter-content small {
   color: #9ca3af;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .orders-header {
@@ -670,7 +670,7 @@ onMounted(() => {
   background: transparent;
   border: 0;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
   transition: none;
 }
@@ -716,7 +716,7 @@ onMounted(() => {
   background: #1f2937;
   border: 1px solid #374151;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .error-message {
@@ -740,7 +740,7 @@ table {
 
 th,
 td {
-  padding: 16px 20px;
+  padding: 10px 16px;
   border-bottom: 1px solid #374151;
   text-align: right;
   white-space: nowrap;
@@ -760,7 +760,7 @@ th {
 
 td {
   color: #f8fafc;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .order-row {
@@ -779,21 +779,21 @@ td {
 .instrument-cell {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
 .instrument-cell strong {
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 900;
 }
 
 .instrument-cell small {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: #9ca3af;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -808,11 +808,11 @@ td {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 52px;
-  padding: 5px 10px;
+  min-width: 46px;
+  padding: 3px 8px;
   border-radius: 6px;
-  font-size: 12px;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .status-badge.tone-open,
@@ -887,7 +887,7 @@ td {
 .empty-detail h2 {
   margin: 0 0 10px;
   color: #ffffff;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
