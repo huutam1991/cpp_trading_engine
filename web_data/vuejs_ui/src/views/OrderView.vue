@@ -251,6 +251,32 @@ function sideClass(side: string) {
   return side.toUpperCase() === 'BUY' ? 'buy-text' : 'sell-text'
 }
 
+const formatCreateTime = (orderId: string | number | bigint): string =>
+{
+    // orderId = UTC nanoseconds timestamp
+
+    const milliseconds =
+        Number(BigInt(orderId) / 1000000n);
+
+    const date = new Date(milliseconds);
+
+    const pad = (value: number, size: number = 2): string =>
+        String(value).padStart(size, "0");
+
+    const day = pad(date.getUTCDate());
+    const month = pad(date.getUTCMonth() + 1);
+    const year = date.getUTCFullYear();
+
+    const hours = pad(date.getUTCHours());
+    const minutes = pad(date.getUTCMinutes());
+    const seconds = pad(date.getUTCSeconds());
+
+    const millis =
+        pad(date.getUTCMilliseconds(), 3);
+
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}:${millis}`;
+};
+
 onMounted(() => {
   fetchOrders()
 })
@@ -484,6 +510,11 @@ onMounted(() => {
             <div class="detail-row"><span>Fee</span><strong>{{ formatNumber(selectedOrder.fee) }}</strong></div>
             <div class="detail-row"><span>Commission Asset</span><strong>{{ selectedOrder.commission_asset || '–' }}</strong></div>
             <div class="detail-row"><span>Output Asset</span><strong>{{ selectedOrder.output_asset || '–' }}</strong></div>
+
+            <div class="detail-row">
+              <span>Created At</span>
+              <strong class="mono-text">{{ formatCreateTime(selectedOrder.order_id) }}</strong>
+            </div>
           </section>
 
           <section class="detail-card">
