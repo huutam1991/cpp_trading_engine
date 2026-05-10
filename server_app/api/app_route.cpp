@@ -343,14 +343,14 @@ void add_app_route()
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
     };
 
-    // Update instrument - subscribe/unsubscribe
-    ADD_ROUTE(RequestMethod::POST, "/instrument_subscribe")
+    // Get subscribed instruments
+    ADD_ROUTE(RequestMethod::GET, "/instrument_subscribe")
     {
         co_return co_await APIHandlerInstrumentSubscribe(request).handle();
     };
 
-    // Get subscribed instruments
-    ADD_ROUTE(RequestMethod::GET, "/instrument_subscribe")
+    // Update instrument - subscribe/unsubscribe
+    ADD_ROUTE(RequestMethod::POST, "/instrument_subscribe")
     {
         co_return co_await APIHandlerInstrumentSubscribe(request).handle();
     };
