@@ -1,12 +1,17 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { useAuthStore } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      redirect: '/login',
+      redirect: () => {
+        const auth = useAuthStore()
+        return auth.isLoggedIn()
+          ? '/gateway'
+          : '/login'
+      },
     },
     {
       path: '/login',
@@ -14,17 +19,35 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue'),
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-    },
-    {
-      path: '/orderbook',
-      name: 'orderbook',
-      component: () => import('../views/OrderBookView.vue'),
+      path: '/',
+      component: () => import('@/layout/MainLayout.vue'),
+      children: [
+        {
+          path: 'gateway',
+          name: 'gateway',
+          component: () => import('@/views/GatewayView.vue'),
+        },
+        {
+          path: 'orderbook',
+          name: 'orderbook',
+          component: () => import('@/views/OrderBookView.vue'),
+        },
+        {
+          path: 'order',
+          name: 'order',
+          component: () => import('@/views/OrderView.vue'),
+        },
+        {
+          path: 'position',
+          name: 'position',
+          component: () => import('@/views/PositionView.vue'),
+        },
+        {
+          path: 'system',
+          name: 'system',
+          component: () => import('@/views/SystemView.vue'),
+        },
+      ],
     },
   ],
 })

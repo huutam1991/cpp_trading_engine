@@ -65,7 +65,7 @@ async function login() {
 
     auth.setToken(token)
 
-    router.push('/orderbook')
+    router.push('/gateway')
   } catch (error) {
     console.error(error)
 
