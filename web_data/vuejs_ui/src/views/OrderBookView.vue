@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { API_BASE_URL, WS_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 
@@ -26,18 +26,41 @@ type OrderBookLevel = {
   total: number
 }
 
+type InstrumentSubscribe = {
+  price_precision: number
+  tick_size: number
+  lot_size: number
+  exchange_symbol: string
+  symbol: string
+  instrument_type: string
+  exchange_id: string
+}
+
+type InstrumentSubscribeResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: InstrumentSubscribe[]
+}
+
 const connected = ref(false)
+const loadingInstruments = ref(false)
 
-const subscribedInstruments = ref<string[]>([
-  'BTC-USDC-PERPETUAL',
-  'ETH-USDT-PERPETUAL',
-])
+const subscribedInstruments = ref<InstrumentSubscribe[]>([])
 
-const activeInstrument = ref('BTC-USDC-PERPETUAL')
-const streamInstrument = ref('BTC-USDC-PERPETUAL')
+const activeInstrument = ref('')
+const streamInstrument = ref('')
+
+const activeInstrumentInfo = computed(() => {
+  return subscribedInstruments.value.find(
+    (item) => item.symbol === activeInstrument.value,
+  )
+})
 
 const asks = ref<OrderBookLevel[]>([])
 const bids = ref<OrderBookLevel[]>([])
+
+let ws: WebSocket | null = null
 
 function buildLevels(levels: RawOrderBookLevel[]): OrderBookLevel[] {
   let runningTotal = 0
@@ -87,14 +110,55 @@ const bidTotal = computed(() => {
   return bids.value.at(-1)?.total ?? 0
 })
 
-const ws = new WebSocket(`${WS_BASE_URL}/orderbook`)
+async function fetchSubscribedInstruments() {
+  loadingInstruments.value = true
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/instrument_subscribe`,
+      {
+        method: 'GET',
+        credentials: 'include',
+      },
+    )
+
+    const result: InstrumentSubscribeResponse =
+      await response.json()
+
+    if (!response.ok || result.error) {
+      console.error(
+        'Failed to fetch subscribed instruments:',
+        result.msg,
+      )
+
+      return
+    }
+
+    subscribedInstruments.value = result.data
+
+    const firstInstrument = result.data[0]
+    if (firstInstrument) {
+      activeInstrument.value = firstInstrument.symbol
+      streamInstrument.value = firstInstrument.symbol
+    }
+  } catch (error) {
+    console.error(
+      'Fetch subscribed instruments error:',
+      error,
+    )
+  } finally {
+    loadingInstruments.value = false
+  }
+}
 
 function selectInstrument(symbol: string) {
   activeInstrument.value = symbol
+  streamInstrument.value = symbol
+
   asks.value = []
   bids.value = []
 
-  if (ws.readyState === WebSocket.OPEN) {
+  if (ws?.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({
       op: 'subscribe',
       route: 'orderbook',
@@ -103,58 +167,102 @@ function selectInstrument(symbol: string) {
   }
 }
 
-ws.onopen = () => {
-  connected.value = true
+function ensureInstrumentExists(symbol: string) {
+  const exists = subscribedInstruments.value.some(
+    (instrument) => instrument.symbol === symbol,
+  )
 
-  ws.send(JSON.stringify({
-    op: 'subscribe',
-    route: 'orderbook',
-    instrument: activeInstrument.value,
-  }))
-}
-
-ws.onmessage = (event) => {
-  try {
-    const message = JSON.parse(event.data) as OrderBookMessage
-
-    if (message.route !== 'orderbook') {
-      return
-    }
-
-    if (!subscribedInstruments.value.includes(message.instrument)) {
-      subscribedInstruments.value.push(message.instrument)
-    }
-
-    if (message.instrument !== activeInstrument.value) {
-      return
-    }
-
-    streamInstrument.value = message.instrument
-    asks.value = buildLevels([...message.asks].reverse())
-    bids.value = buildLevels(message.bids)
-  } catch (error) {
-    console.error('[WS] invalid message:', error)
-  }
-}
-
-ws.onclose = (event) => {
-  connected.value = false
-
-  if (event.code === 1008 && event.reason.includes('Invalid token')) {
-    auth.logout()
+  if (exists) {
     return
   }
 
-  console.warn('[WS] closed:', event.code, event.reason)
+  subscribedInstruments.value.push({
+    symbol,
+    exchange_symbol: '',
+    exchange_id: '',
+    instrument_type: '',
+    lot_size: 0,
+    tick_size: 0,
+    price_precision: 0,
+  })
 }
 
-ws.onerror = (event) => {
-  connected.value = false
-  console.error('[WS] error:', event)
+function connectWebSocket() {
+  ws = new WebSocket(`${WS_BASE_URL}/orderbook`)
+
+  ws.onopen = () => {
+    connected.value = true
+
+    if (activeInstrument.value.length > 0) {
+      ws?.send(JSON.stringify({
+        op: 'subscribe',
+        route: 'orderbook',
+        instrument: activeInstrument.value,
+      }))
+    }
+  }
+
+  ws.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data) as OrderBookMessage
+
+      if (message.route !== 'orderbook') {
+        return
+      }
+
+      ensureInstrumentExists(message.instrument)
+
+      if (
+        activeInstrument.value.length > 0 &&
+        message.instrument !== activeInstrument.value
+      ) {
+        return
+      }
+
+      if (activeInstrument.value.length === 0) {
+        activeInstrument.value = message.instrument
+      }
+
+      streamInstrument.value = message.instrument
+
+      asks.value = buildLevels([...message.asks].reverse())
+      bids.value = buildLevels(message.bids)
+    } catch (error) {
+      console.error('[WS] invalid message:', error)
+    }
+  }
+
+  ws.onclose = (event) => {
+    connected.value = false
+
+    if (
+      event.code === 1008 &&
+      event.reason.includes('Invalid token')
+    ) {
+      auth.logout()
+      return
+    }
+
+    console.warn(
+      '[WS] closed:',
+      event.code,
+      event.reason,
+    )
+  }
+
+  ws.onerror = (event) => {
+    connected.value = false
+    console.error('[WS] error:', event)
+  }
 }
+
+onMounted(async () => {
+  await fetchSubscribedInstruments()
+  connectWebSocket()
+})
 
 onUnmounted(() => {
-  ws.close()
+  ws?.close()
 })
 </script>
 
@@ -175,9 +283,14 @@ onUnmounted(() => {
     </div>
 
     <section class="summary-grid">
-      <div class="metric-card">
+      <div class="metric-card instrument-metric">
         <span>Instrument</span>
-        <strong>{{ activeInstrument }}</strong>
+        <strong>{{ activeInstrument || '-' }}</strong>
+        <small>
+          {{ activeInstrumentInfo?.exchange_id || 'UNKNOWN' }}
+          ·
+          {{ activeInstrumentInfo?.instrument_type || 'UNKNOWN' }}
+        </small>
       </div>
 
       <div class="metric-card">
@@ -219,15 +332,39 @@ onUnmounted(() => {
           <span>{{ subscribedInstruments.length }}</span>
         </div>
 
+        <div
+          v-if="loadingInstruments"
+          class="sidebar-message"
+        >
+          Loading instruments...
+        </div>
+
+        <div
+          v-else-if="subscribedInstruments.length === 0"
+          class="sidebar-message"
+        >
+          No subscribed instruments.
+        </div>
+
         <button
-          v-for="symbol in subscribedInstruments"
-          :key="symbol"
+          v-for="instrument in subscribedInstruments"
+          v-else
+          :key="instrument.symbol"
           class="instrument-button"
-          :class="{ active: symbol === activeInstrument }"
-          @click="selectInstrument(symbol)"
+          :class="{ active: instrument.symbol === activeInstrument }"
+          @click="selectInstrument(instrument.symbol)"
         >
           <span class="instrument-dot" />
-          <span>{{ symbol }}</span>
+
+          <div class="instrument-info">
+            <strong>{{ instrument.symbol }}</strong>
+
+            <small>
+              {{ instrument.exchange_id || 'UNKNOWN' }}
+              ·
+              {{ instrument.instrument_type || 'UNKNOWN' }}
+            </small>
+          </div>
         </button>
       </aside>
 
@@ -235,7 +372,7 @@ onUnmounted(() => {
         <div class="panel-header">
           <div>
             <h2>Market Depth</h2>
-            <p>{{ streamInstrument }}</p>
+            <p>{{ streamInstrument || '-' }}</p>
           </div>
 
           <div class="mid-card">
@@ -387,6 +524,20 @@ onUnmounted(() => {
   font-size: 15px;
 }
 
+.instrument-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.instrument-metric strong {
+  margin-bottom: 3px;
+}
+
+.instrument-metric small {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
 .orderbook-workspace {
   display: grid;
   grid-template-columns: 260px 440px 1fr;
@@ -430,6 +581,18 @@ onUnmounted(() => {
   font-weight: 700;
 }
 
+.sidebar-message {
+  padding: 12px;
+
+  color: #9ca3af;
+  background: #1f2937;
+
+  border: 1px solid #374151;
+  border-radius: 10px;
+
+  font-size: 13px;
+}
+
 .instrument-button {
   width: 100%;
 
@@ -449,8 +612,6 @@ onUnmounted(() => {
   cursor: pointer;
 
   text-align: left;
-  font-size: 13px;
-  font-weight: 700;
 }
 
 .instrument-button:hover {
@@ -466,9 +627,25 @@ onUnmounted(() => {
 .instrument-dot {
   width: 7px;
   height: 7px;
+  flex-shrink: 0;
 
   border-radius: 999px;
   background: #34d399;
+}
+
+.instrument-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.instrument-info strong {
+  font-size: 13px;
+}
+
+.instrument-info small {
+  color: #9ca3af;
+  font-size: 11px;
 }
 
 .book-panel {
