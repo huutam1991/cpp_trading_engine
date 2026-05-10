@@ -222,7 +222,7 @@ void Json::check_create_json_object()
 }
 
 template<>
-Json::operator std::string()
+Json::operator std::string() const
 {
     if (m_value == nullptr || m_value->is_json_value() == false)
     {

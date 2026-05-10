@@ -82,7 +82,7 @@ public:
     }
 
     template<class T>
-    inline operator T()
+    inline operator T() const
     {
         if (m_value == nullptr || m_value->is_json_value() == false)
         {
