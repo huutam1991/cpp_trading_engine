@@ -181,6 +181,19 @@ std::unordered_map<std::string, SavableObject<Instrument>>& Instrument::get_cach
     return cache_subscribed_instruments;
 }
 
+std::vector<const Instrument*> Instrument::get_subscribed_instruments()
+{
+    std::vector<const Instrument*> res;
+
+    auto& cache_subscribed_instruments = get_cache_subscribed_instruments();
+    for (auto& [_, instrument] : cache_subscribed_instruments)
+    {
+        res.push_back(get_instrument_by_symbol(instrument->exchange_id, instrument->symbol.to_string()));
+    }
+
+    return res;
+}
+
 void Instrument::add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol)
 {
     auto& subscribed_instruments = get_cache_subscribed_instruments();

@@ -54,6 +54,7 @@ public:
     static const Instrument* get_instrument_by_exchange_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol);
 
     // Subscribed instruments
+    static std::vector<const Instrument*> get_subscribed_instruments();
     static void add_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol);
     static void remove_subscribed_instrument(ExchangeId exchange_id, const std::string& symbol);
 
