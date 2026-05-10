@@ -57,16 +57,13 @@ std::string APIHandler::check_authentication()
         if (token == PARAM_NOT_FOUND)
         {
             std::string cookies_header = m_request->get_header_param("Cookie");
-            spdlog::warn("APIHandler - Cookie header: [{}]", cookies_header);
-            auto cookies = parse_cookie_header(cookies_header);
-            for (const auto& [key, value] : cookies)
+            if (cookies_header == PARAM_NOT_FOUND)
             {
-                spdlog::warn("APIHandler - Cookie: [{}] = [{}]", key, value);
+                cookies_header = m_request->get_header_param("cookie");
             }
 
+            auto cookies = parse_cookie_header(cookies_header);
             token = cookies.find("accessToken") != cookies.end() ? cookies["accessToken"] : PARAM_NOT_FOUND;
-
-            spdlog::warn("APIHandler - Token from cookie: [{}]", token);
 
             if (token == PARAM_NOT_FOUND)
             {
@@ -74,8 +71,6 @@ std::string APIHandler::check_authentication()
             }
         }
     }
-
-    spdlog::warn("APIHandler - Token: [{}]", token);
 
     // Check valid token + get user_id from token
     std::string check_valid_token = JWTManager::instance().verify_token(token);

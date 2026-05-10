@@ -100,8 +100,6 @@ void HttpRequest::deserialize_query_params(const std::string& content)
 
 void HttpRequest::deserialize_header_params(const std::string& content)
 {
-    spdlog::warn("HttpRequest::deserialize_header_params - content: [{}]", content);
-
     size_t start_of_header = content.find_first_of("\r\n", 0) + 2;
     size_t end_of_header = content.find("\r\n\r\n", 0);
 
