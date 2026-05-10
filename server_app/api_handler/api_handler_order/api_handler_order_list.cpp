@@ -19,6 +19,14 @@ Task<HttpResponse> APIHandlerOrderList::child_handle()
         orders_json.push_back(order.to_json());
     }
 
+    orders_json.sort([](Json& a, Json& b)
+    {
+        OrderId order_id_a = a["order_id"];
+        OrderId order_id_b = b["order_id"];
+
+        return order_id_a < order_id_b;
+    });
+
     // Response
     Json response;
     response["orders"] = orders_json;
