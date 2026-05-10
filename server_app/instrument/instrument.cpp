@@ -172,3 +172,21 @@ const Instrument* Instrument::get_instrument_by_exchange_symbol(ExchangeId excha
 
     return nullptr;
 }
+
+std::unordered_map<std::string, SavableObject<Instrument>>& Instrument::get_cache_subscribed_instruments()
+{
+    static std::unordered_map<std::string, SavableObject<Instrument>> cache_subscribed_instruments;
+    return cache_subscribed_instruments;
+}
+
+void Instrument::add_subscribed_instrument(const Instrument& instrument)
+{
+    auto& subscribed_instruments = get_cache_subscribed_instruments();
+    subscribed_instruments[instrument.symbol.to_string()] = instrument;
+}
+
+void Instrument::remove_subscribed_instrument(const Instrument& instrument)
+{
+    auto& subscribed_instruments = get_cache_subscribed_instruments();
+    subscribed_instruments.erase(instrument.symbol.to_string());
+}

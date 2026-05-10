@@ -53,6 +53,10 @@ public:
     static const Instrument* get_instrument_by_symbol(ExchangeId exchange_id, const std::string& symbol);
     static const Instrument* get_instrument_by_exchange_symbol(ExchangeId exchange_id, InstrumentType instrument_type, const std::string& symbol);
 
+    // Subscribed instruments
+    static void add_subscribed_instrument(const Instrument& instrument);
+    static void remove_subscribed_instrument(const Instrument& instrument);
+
 private:
     enum StoreType
     {
@@ -64,6 +68,7 @@ private:
     static CacheInstruments& get_cache_instruments(ExchangeId exchange_id);
     static void clear_instrument_by_exchange(ExchangeId exchange_id);
     static void add_instrument_to_list(ExchangeId exchange_id, const Instrument& instrument);
+    static std::unordered_map<std::string, SavableObject<Instrument>>& get_cache_subscribed_instruments();
 
     static std::unordered_map<std::string, const Instrument*>& get_instrument_list(ExchangeId exchange_id, InstrumentType instrument_type, StoreType store_type)
     {
