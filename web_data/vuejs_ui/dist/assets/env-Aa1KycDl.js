@@ -1,0 +1,1 @@
+var e,t;{let n=window.location.protocol,r=window.location.hostname,i=window.location.port,a=n===`https:`?`wss:`:`ws:`,o=i?Number(i)+3:8443;e=window.location.origin,t=`${a}//${r}:${o}`}var n=e,r=t;export{r as n,n as t};
