@@ -27,6 +27,10 @@ Json Order::to_json() const
     return {
         {"instrument", instrument->to_json()},
         {"error", error.to_json()},
+        {"source", {
+            {"type", enum_reflect::enum_name(source.type)},
+            {"strategy_id", enum_reflect::enum_name(source.strategy_id)}
+        }},
         {"order_id", order_id},
         {"status", enum_reflect::enum_name(status)},
         {"side", enum_reflect::enum_name(side)},
@@ -41,7 +45,6 @@ Json Order::to_json() const
         {"commission_asset", commission_asset}
     };
 }
-
 
 Order Order::from_json(Json& data)
 {
@@ -58,6 +61,12 @@ Order Order::from_json(Json& data)
     Error error {
         .code = (int)data["error"]["code"],
         .message = data["error"]["message"]
+    };
+
+    // Get source
+    Source source {
+        .type = enum_reflect::enum_value<Source::SourceType>((std::string)data["source"]["type"]),
+        .strategy_id = enum_reflect::enum_value<EventBaseID>((std::string)data["source"]["strategy_id"])
     };
 
     Order res;

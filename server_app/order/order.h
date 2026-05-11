@@ -54,6 +54,21 @@ public:
         }
     };
 
+    struct Source
+    {
+        enum SourceType
+        {
+            NOT_AVAILABLE,
+            WEB,
+            IOS,
+            ANDROID,
+            STRATEGY,
+        };
+
+        SourceType type = NOT_AVAILABLE;
+        EventBaseID strategy_id = EventBaseID::NO_STRATEGY;
+    };
+
     // Input data
     OrderId order_id = 0;
     Status status = Status::NOT_AVAILABLE;
@@ -74,6 +89,9 @@ public:
 
     // Error data
     Error error;
+
+    // Source data
+    Source source;
 
     bool operator==(std::nullptr_t) const
     {
