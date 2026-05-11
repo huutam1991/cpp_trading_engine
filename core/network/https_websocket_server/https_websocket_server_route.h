@@ -11,6 +11,7 @@ enum class WebsocketRouteName
     none,
     ws,
     orderbook,
+    order,
     market_maker,
     mean_reversion,
 };
