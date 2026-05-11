@@ -25,7 +25,8 @@ enum EventBaseID
     BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
     MEAN_REVERSION_STRATEGY,  // Strategy - Mean Reversion Strategy
     PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
-    TREND_FOLLOW_STRATEGY     // Strategy - Trend Follow
+    TREND_FOLLOW_STRATEGY,    // Strategy - Trend Follow
+    NO_STRATEGY,              // Strategy - No Strategy
 };
 
 class EventBaseManager
