@@ -32,13 +32,13 @@ private:
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
+    Order& get_order_by_id(OrderId order_id);
     Task<void> update_order_in_db(Order order);
     Task<void> handle_update_order(Order order);
 
 public:
     // Helper method
     static OrderId generate_order_id();
-    Order get_order_by_id(OrderId order_id);
     std::vector<Order> get_all_orders();
     std::vector<OrderId> get_open_orders();
 

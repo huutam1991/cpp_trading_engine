@@ -77,7 +77,7 @@ void OrderManager::update_order(Order order)
     task.start_running_on(m_order_event_base);
 }
 
-Order OrderManager::get_order_by_id(OrderId order_id)
+Order& OrderManager::get_order_by_id(OrderId order_id)
 {
     // MeasureTime g("OrderManager - get_order_by_id", MeasureUnit::MICROSECOND);
     if (is_valid_order(order_id) == false)
@@ -123,7 +123,7 @@ Task<void> OrderManager::update_order_in_db(Order order)
 Task<void> OrderManager::handle_update_order(Order order)
 {
     MeasureTime a("OrderManager - Handle order update", MeasureUnit::MICROSECOND);
-    Order current_order_data = get_order_by_id(order.order_id);
+    Order& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
     {
@@ -154,6 +154,9 @@ Task<void> OrderManager::handle_update_order(Order order)
             order.status = Order::Status::FILLED;
         }
     }
+
+    // Save current order data to [m_order_list]
+    current_order_data = order;
 
     // Inform about order to strategy
     if (order.status == Order::Status::NEW ||
