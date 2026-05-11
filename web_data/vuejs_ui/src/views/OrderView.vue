@@ -256,27 +256,20 @@ const formatCreateTime = (orderId: string | number | bigint): string =>
   // orderId = nanoseconds timestamp
   // Display directly using UTC fields, no local timezone conversion
 
-  const milliseconds =
-      Number(BigInt(orderId) / 1000000n);
-
+  const milliseconds = Number(BigInt(orderId) / 1000000n);
   const date = new Date(milliseconds);
 
-  const pad = (
-      value: number,
-      size: number = 2
-  ): string =>
-      String(value).padStart(size, "0");
+  const pad = ( value: number, size: number = 2): string => String(value).padStart(size, "0");
 
-  const day = pad(date.getUTCDate());
-  const month = pad(date.getUTCMonth() + 1);
-  const year = date.getUTCFullYear();
+  const day = pad(date.getDate());
+  const month = pad(date.getMonth() + 1);
+  const year = date.getFullYear();
 
-  const hours = pad(date.getUTCHours());
-  const minutes = pad(date.getUTCMinutes());
-  const seconds = pad(date.getUTCSeconds());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
 
-  const millis =
-      pad(date.getUTCMilliseconds(), 3);
+  const millis = pad(date.getMilliseconds(), 3);
 
   return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}.${millis}`;
 };
