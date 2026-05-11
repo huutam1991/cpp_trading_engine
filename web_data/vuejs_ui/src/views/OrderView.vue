@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { API_BASE_URL } from '@/config/env'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { API_BASE_URL, WS_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+
+let orderWs: WebSocket | null = null
 
 type Instrument = {
   price_precision: number
@@ -51,6 +53,11 @@ type OrderListResponse = {
   orders: Order[]
 }
 
+type OrderUpdateMessage = {
+  route: string
+  order?: Order
+}
+
 type OrderTab = {
   label: string
   value: string
@@ -59,7 +66,16 @@ type OrderTab = {
   tone: 'all' | 'open' | 'partial' | 'filled' | 'cancel' | 'reject'
 }
 
-type SortKey = 'instrument' | 'status' | 'order_id' | 'side' | 'type' | 'price' | 'quantity' | 'fee'
+type SortKey =
+  | 'instrument'
+  | 'status'
+  | 'order_id'
+  | 'side'
+  | 'type'
+  | 'price'
+  | 'quantity'
+  | 'fee'
+
 type SortDirection = 'asc' | 'desc'
 
 const loading = ref(false)
@@ -69,6 +85,7 @@ const selectedOrder = ref<Order | null>(null)
 const activeTab = ref('all')
 const sortKey = ref<SortKey | null>(null)
 const sortDirection = ref<SortDirection>('asc')
+const connected = ref(false)
 
 const tabs: OrderTab[] = [
   { label: 'All', value: 'all', statuses: [], icon: '◇', tone: 'all' },
@@ -92,9 +109,10 @@ const filteredOrders = computed(() => {
     return orders.value
   }
 
-  return orders.value.filter((order) => tab.statuses.includes(order.status.toUpperCase()))
+  return orders.value.filter((order) =>
+    tab.statuses.includes(order.status.toUpperCase()),
+  )
 })
-
 
 const sortedOrders = computed(() => {
   if (!sortKey.value) {
@@ -111,6 +129,10 @@ const sortedOrders = computed(() => {
 })
 
 const isDetailOpen = computed(() => selectedOrder.value !== null)
+
+const activeTabInfo = computed<OrderTab>(() => {
+  return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
+})
 
 function getSortValue(order: Order, key: SortKey): string | number {
   switch (key) {
@@ -141,7 +163,10 @@ function compareSortValues(left: string | number, right: string | number) {
     return leftNumber - rightNumber
   }
 
-  return String(left).localeCompare(String(right), undefined, { numeric: true, sensitivity: 'base' })
+  return String(left).localeCompare(String(right), undefined, {
+    numeric: true,
+    sensitivity: 'base',
+  })
 }
 
 function sortOrders(key: SortKey) {
@@ -154,16 +179,33 @@ function sortOrders(key: SortKey) {
   sortDirection.value = 'asc'
 }
 
-const activeTabInfo = computed<OrderTab>(() => {
-  return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
-})
-
 function getTabCount(tab: OrderTab) {
   if (tab.value === 'all') {
     return orders.value.length
   }
 
-  return orders.value.filter((order) => tab.statuses.includes(order.status.toUpperCase())).length
+  return orders.value.filter((order) =>
+    tab.statuses.includes(order.status.toUpperCase()),
+  ).length
+}
+
+function upsertOrder(updatedOrder: Order) {
+  const index = orders.value.findIndex(
+    (order) => String(order.order_id) === String(updatedOrder.order_id),
+  )
+
+  if (index >= 0) {
+    orders.value[index] = updatedOrder
+  } else {
+    orders.value.unshift(updatedOrder)
+  }
+
+  if (
+    selectedOrder.value &&
+    String(selectedOrder.value.order_id) === String(updatedOrder.order_id)
+  ) {
+    selectedOrder.value = updatedOrder
+  }
 }
 
 async function fetchOrders() {
@@ -192,7 +234,9 @@ async function fetchOrders() {
 
     if (
       selectedOrder.value &&
-      !orders.value.some((order) => String(order.order_id) === String(selectedOrder.value?.order_id))
+      !orders.value.some(
+        (order) => String(order.order_id) === String(selectedOrder.value?.order_id),
+      )
     ) {
       selectedOrder.value = null
     }
@@ -204,12 +248,85 @@ async function fetchOrders() {
   }
 }
 
+function connectOrderWebSocket() {
+  if (orderWs) {
+    orderWs.close()
+    orderWs = null
+  }
+
+  orderWs = new WebSocket(`${WS_BASE_URL}/order`)
+
+  orderWs.onopen = () => {
+    connected.value = true
+
+    orderWs?.send(JSON.stringify({
+      op: 'subscribe',
+      route: 'order',
+    }))
+  }
+
+  orderWs.onmessage = (event) => {
+    try {
+      const message = JSON.parse(event.data) as OrderUpdateMessage
+
+      if (message.route !== 'order') {
+        return
+      }
+
+      if (!message.order) {
+        return
+      }
+
+      upsertOrder(message.order)
+    } catch (error) {
+      console.error('[ORDER WS] invalid message:', error)
+    }
+  }
+
+  orderWs.onclose = (event) => {
+    connected.value = false
+
+    if (
+      event.code === 1008 &&
+      event.reason.includes('Invalid token')
+    ) {
+      auth.logout()
+      return
+    }
+
+    console.warn(
+      '[ORDER WS] closed:',
+      event.code,
+      event.reason,
+    )
+  }
+
+  orderWs.onerror = (event) => {
+    connected.value = false
+    console.error('[ORDER WS] error:', event)
+  }
+}
+
+async function startOrderView() {
+  await fetchOrders()
+
+  if (!errorMessage.value) {
+    connectOrderWebSocket()
+  }
+}
+
+function refreshOrders() {
+  startOrderView()
+}
+
 function selectTab(tab: string) {
   activeTab.value = tab
 
   if (
     selectedOrder.value &&
-    !filteredOrders.value.some((order) => String(order.order_id) === String(selectedOrder.value?.order_id))
+    !filteredOrders.value.some(
+      (order) => String(order.order_id) === String(selectedOrder.value?.order_id),
+    )
   ) {
     selectedOrder.value = null
   }
@@ -262,30 +379,36 @@ function sideClass(side: string) {
   return side.toUpperCase() === 'BUY' ? 'buy-text' : 'sell-text'
 }
 
-const formatCreateTime = (orderId: string | number | bigint): string =>
-{
-  const milliseconds = Number(BigInt(orderId) / 1000000n);
-  const date = new Date(milliseconds);
+const formatCreateTime = (orderId: string | number | bigint): string => {
+  const milliseconds = Number(BigInt(orderId) / 1000000n)
+  const date = new Date(milliseconds)
 
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Singapore",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Singapore',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
     hour12: false,
-  }).formatToParts(date);
+  }).formatToParts(date)
 
-  const get = (type: string): string => parts.find((p) => p.type === type)?.value ?? "00";
-  const millis = String(date.getUTCMilliseconds()).padStart(3, "0");
+  const get = (type: string): string =>
+    parts.find((p) => p.type === type)?.value ?? '00'
 
-  return `${get("day")}-${get("month")}-${get("year")} ${get("hour")}:${get("minute")}:${get("second")}.${millis}`;
-};
+  const millis = String(date.getUTCMilliseconds()).padStart(3, '0')
+
+  return `${get('day')}-${get('month')}-${get('year')} ${get('hour')}:${get('minute')}:${get('second')}.${millis}`
+}
 
 onMounted(() => {
-  fetchOrders()
+  startOrderView()
+})
+
+onBeforeUnmount(() => {
+  orderWs?.close()
+  orderWs = null
 })
 </script>
 
