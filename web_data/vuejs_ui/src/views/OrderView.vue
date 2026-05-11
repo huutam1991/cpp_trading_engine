@@ -1067,6 +1067,14 @@ td {
   font-size: 13px;
 }
 
+.detail-row span.buy-text {
+  color: #34d399;
+}
+
+.detail-row span.sell-text {
+  color: #f87171;
+}
+
 .detail-row strong {
   color: #f8fafc;
   font-size: 13px;
