@@ -121,6 +121,8 @@ function getSortValue(order: Order, key: SortKey): string | number {
       return order.price
     case 'quantity':
       return order.quantity
+    case 'fee':
+      return order.fee
   }
 }
 
