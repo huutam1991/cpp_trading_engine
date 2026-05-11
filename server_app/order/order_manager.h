@@ -28,7 +28,7 @@ class OrderManager
 
 private:
     std::unordered_map<OrderId, Order> m_order_list;
-    std::function<void(Order&)> m_order_update_callback = nullptr;
+    std::vector<std::function<void(Order)>> m_order_update_callbacks;
     EventBase* m_order_event_base = nullptr;
 
     // For handling order create / update
@@ -54,7 +54,7 @@ public:
     }
 
     void init();
-    void register_order_update(std::function<void(Order&)>);
+    void register_order_update(std::function<void(Order)> callback);
     void set_cancel_order(OrderId order_id);
     void update_order(Order order);
 

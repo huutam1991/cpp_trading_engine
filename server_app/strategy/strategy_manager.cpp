@@ -29,7 +29,7 @@ void StrategyManager::add_strategy_list()
 void StrategyManager::subscribe_data_update()
 {
     // Subscribe order update from OrderManager
-    OrderManager::instance().register_order_update([this](Order& order)
+    OrderManager::instance().register_order_update([this](Order order)
     {
         for (auto& strategy : m_strategy_list)
         {

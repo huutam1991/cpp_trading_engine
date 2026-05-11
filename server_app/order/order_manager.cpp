@@ -52,9 +52,9 @@ std::vector<OrderId> OrderManager::get_open_orders()
     return res;
 }
 
-void OrderManager::register_order_update(std::function<void(Order&)> order_update_callback)
+void OrderManager::register_order_update(std::function<void(Order)> order_update_callback)
 {
-    m_order_update_callback = std::move(order_update_callback);
+    m_order_update_callbacks.push_back(std::move(order_update_callback));
 }
 
 void OrderManager::set_cancel_order(OrderId order_id)
@@ -165,9 +165,9 @@ Task<void> OrderManager::handle_update_order(Order order)
         order.status == Order::Status::FILLED)
     {
         // Invoke callback
-        if (m_order_update_callback != nullptr)
+        for (auto& order_update_callback : m_order_update_callbacks)
         {
-            m_order_update_callback(order);
+            order_update_callback(order);
         }
     }
 
