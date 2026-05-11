@@ -21,8 +21,8 @@ Task<HttpResponse> APIHandlerOrderList::child_handle()
 
     orders_json.sort([](Json& a, Json& b)
     {
-        size_t order_id_a = a["created_at"];
-        size_t order_id_b = b["created_at"];
+        size_t order_id_a = a["last_updated"];
+        size_t order_id_b = b["last_updated"];
 
         return order_id_a > order_id_b;
     });

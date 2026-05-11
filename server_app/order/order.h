@@ -77,7 +77,7 @@ public:
     OrderType type;
     double price = 0.0;
     double quantity = 0.0;
-    size_t created_at = 0;
+    size_t last_updated = 0;
 
     // Output data
     double filled_quantity = 0.0; // Always for base currency
