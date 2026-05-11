@@ -372,7 +372,7 @@ onMounted(() => {
                 <th class="sortable-header" @click="sortOrders('price')">Price</th>
                 <th class="sortable-header" @click="sortOrders('quantity')">Quantity</th>
                 <th class="sortable-header" @click="sortOrders('fee')">Fee</th>
-                <th class="sortable-header" @click="sortOrders('order_id')" v-if="!isDetailOpen">Created At</th>
+                <th class="sortable-header" @click="sortOrders('order_id')" v-if="!isDetailOpen">Last Updated</th>
               </tr>
             </thead>
 
@@ -526,7 +526,7 @@ onMounted(() => {
             <div class="detail-row"><span>Output Asset</span><strong>{{ selectedOrder.output_asset || '–' }}</strong></div>
 
             <div class="detail-row">
-              <span>Created At</span>
+              <span>Last Updated</span>
               <strong class="mono-text">{{ formatCreateTime(selectedOrder.last_updated) }}</strong>
             </div>
           </section>
