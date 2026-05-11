@@ -1,3 +1,5 @@
+#include <openssl/sha.h>
+
 #include <app_utils/app_utils.h>
 #include <app_constants.h>
 #include <utils/utils.h>
@@ -43,6 +45,30 @@ OrderId AppUtils::parse_order_id(const std::string& str)
     }
 
     return std::stoull(str);
+}
+
+OrderId AppUtils::clientOrderIdToSystemOrderId(const std::string& client_order_id)
+{
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+
+    SHA256(
+        reinterpret_cast<const unsigned char*>(client_order_id.data()),
+        client_order_id.size(),
+        hash
+    );
+
+    uint64_t value = 0;
+
+    // Get first 8 bytes of hash to create OrderId
+    for (int i = 0; i < 8; ++i)
+    {
+        value = (value << 8) | static_cast<uint64_t>(hash[i]);
+    }
+
+    // Make sure the value is positive and fits in size_t
+    value &= 0x7FFFFFFFFFFFFFFFULL;
+
+    return value;
 }
 
 double AppUtils::round_up_quantity_by_instrument(Instrument* instrument, double quantity)

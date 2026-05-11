@@ -93,12 +93,12 @@ void BinanceQuoterPerpetual::init_websocket()
 
                 if (o["X"] == "NEW")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
+                    order.order_id = AppUtils::parse_order_id(o["c"]);
                     order.status = Order::Status::NEW;
                 }
                 else if (o["X"] == "FILLED")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
+                    order.order_id = AppUtils::parse_order_id(o["c"]);
                     order.status = Order::Status::FILLED;
                     order.filled_quantity = std::stod((std::string)o["l"]);
                     order.filled_price = std::stod((std::string)o["L"]);
@@ -107,7 +107,7 @@ void BinanceQuoterPerpetual::init_websocket()
                 }
                 else if (o["X"] == "PARTIALLY_FILLED")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
+                    order.order_id = AppUtils::parse_order_id(o["c"]);
                     order.status = Order::Status::PARTIALLY_FILLED;
                     order.filled_quantity = std::stod((std::string)o["l"]);
                     order.filled_price = std::stod((std::string)o["L"]);
@@ -116,7 +116,7 @@ void BinanceQuoterPerpetual::init_websocket()
                 }
                 else if (o["X"] == "CANCELED")
                 {
-                    order.order_id = AppUtils::instance().parse_order_id(o["c"]);
+                    order.order_id = AppUtils::parse_order_id(o["c"]);
                     order.status = Order::Status::CANCELED;
                 }
 

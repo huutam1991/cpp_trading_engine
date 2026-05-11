@@ -204,7 +204,7 @@ Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(st
         {
             if (order.has_field("clientOrderId"))
             {
-                OrderId order_id = AppUtils::instance().parse_order_id(order["clientOrderId"]);
+                OrderId order_id = AppUtils::parse_order_id(order["clientOrderId"]);
 
                 if (order_id != 0)
                 {
