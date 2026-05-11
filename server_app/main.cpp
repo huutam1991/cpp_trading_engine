@@ -160,37 +160,7 @@ int main(int argc, char **argv) {
     HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
     epoll_base->start_living_system_io_object(https_server_object);
 
-    // HttpsWebsocketServerIO* https_websocket_server_object = new HttpsWebsocketServerIO(websocket_port);
-    // https_websocket_server_object->set_callbacks(
-    //     // on_connect callback
-    //     [](int fd, std::string path) -> Task<void>
-    //     {
-    //         spdlog::info("New websocket connection, fd = {}, path = {}", fd, path);
-    //         co_return;
-    //     },
-    //     // on_message callback
-    //     [https_websocket_server_object](int fd, std::string message) -> Task<void>
-    //     {
-    //         spdlog::info("Received message from websocket connection (fd = {}): {}", fd, message);
-
-    //         Json json_message = {
-    //             {"status", "ok"},
-    //             {"received_message", message}
-    //         };
-
-    //         https_websocket_server_object->write_to_connection(fd, json_message);
-
-    //         co_return;
-    //     },
-    //     // on_disconnect callback
-    //     [](int fd) -> Task<void>
-    //     {
-    //         spdlog::info("Websocket connection disconnected, fd = {}", fd);
-    //         co_return;
-    //     }
-    // );
-    // epoll_base->start_living_system_io_object(https_websocket_server_object);
-
+    // Websocket server
     WebsocketServerRoutes* websocket_server_routes = new WebsocketServerRoutes(websocket_port, epoll_base);
 
     // Test HTTPS client request
