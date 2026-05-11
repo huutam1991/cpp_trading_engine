@@ -111,12 +111,12 @@ void BinanceQuoterPerpetual::init_websocket()
                 if (o["X"] == "NEW")
                 {
                     order.status = Order::Status::NEW;
-                    order.created_at = (size_t)o["T"];
+                    order.created_at = (size_t)o["T"] * 1000000;
                 }
                 else if (o["X"] == "FILLED")
                 {
                     order.status = Order::Status::FILLED;
-                    order.created_at = (size_t)o["T"];
+                    order.created_at = (size_t)o["T"] * 1000000;
                     order.filled_quantity = std::stod((std::string)o["l"]);
                     order.filled_price = std::stod((std::string)o["L"]);
                     order.fee = std::stod((std::string)o["n"]);
@@ -125,7 +125,7 @@ void BinanceQuoterPerpetual::init_websocket()
                 else if (o["X"] == "PARTIALLY_FILLED")
                 {
                     order.status = Order::Status::PARTIALLY_FILLED;
-                    order.created_at = (size_t)o["T"];
+                    order.created_at = (size_t)o["T"] * 1000000;
                     order.filled_quantity = std::stod((std::string)o["l"]);
                     order.filled_price = std::stod((std::string)o["L"]);
                     order.fee = std::stod((std::string)o["n"]);
@@ -134,7 +134,7 @@ void BinanceQuoterPerpetual::init_websocket()
                 else if (o["X"] == "CANCELED")
                 {
                     order.status = Order::Status::CANCELED;
-                    order.created_at = (size_t)o["T"];
+                    order.created_at = (size_t)o["T"] * 1000000;
                 }
 
                 // spdlog::info("BinanceQuoterPerpetual Order: {}", order.to_json());

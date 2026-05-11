@@ -92,12 +92,12 @@ void BinanceQuoterSpot::init_websocket()
                 if (json["X"] == "NEW")
                 {
                     order.status = Order::Status::NEW;
-                    order.created_at = (size_t)json["T"];
+                    order.created_at = (size_t)json["T"] * 1000000;
                 }
                 else if (json["X"] == "FILLED")
                 {
                     order.status = Order::Status::FILLED;
-                    order.created_at = (size_t)json["T"];
+                    order.created_at = (size_t)json["T"] * 1000000;
                     order.filled_quantity = std::stod((std::string)json["l"]);
                     order.filled_price = std::stod((std::string)json["L"]);
                     order.fee = std::stod((std::string)json["n"]);
@@ -106,7 +106,7 @@ void BinanceQuoterSpot::init_websocket()
                 else if (json["X"] == "PARTIALLY_FILLED")
                 {
                     order.status = Order::Status::PARTIALLY_FILLED;
-                    order.created_at = (size_t)json["T"];
+                    order.created_at = (size_t)json["T"] * 1000000;
                     order.filled_quantity = std::stod((std::string)json["l"]);
                     order.filled_price = std::stod((std::string)json["L"]);
                     order.fee = std::stod((std::string)json["n"]);
@@ -115,7 +115,7 @@ void BinanceQuoterSpot::init_websocket()
                 else if (json["X"] == "CANCELED")
                 {
                     order.status = Order::Status::CANCELED;
-                    order.created_at = (size_t)json["T"];
+                    order.created_at = (size_t)json["T"] * 1000000;
                 }
 
                 // spdlog::info("BinanceQuoterSpot Order: {}", order.to_json());
