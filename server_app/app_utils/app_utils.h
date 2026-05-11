@@ -22,6 +22,6 @@ public:
     static bool is_long_number(const std::string& number_str);
     static bool is_all_digit(const std::string& str);
     static OrderId parse_order_id(const std::string& str);
-    static OrderId clientOrderIdToSystemOrderId(const std::string& client_order_id);
+    static OrderId client_order_id_to_system_order_id(const std::string& client_order_id);
     static double round_up_quantity_by_instrument(Instrument* instrument, double quantity);
 };

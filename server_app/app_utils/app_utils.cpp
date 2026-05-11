@@ -47,7 +47,7 @@ OrderId AppUtils::parse_order_id(const std::string& str)
     return std::stoull(str);
 }
 
-OrderId AppUtils::clientOrderIdToSystemOrderId(const std::string& client_order_id)
+OrderId AppUtils::client_order_id_to_system_order_id(const std::string& client_order_id)
 {
     unsigned char hash[SHA256_DIGEST_LENGTH];
 
