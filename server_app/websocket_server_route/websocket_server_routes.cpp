@@ -1,5 +1,6 @@
 #include "websocket_server_routes.h"
 #include "websocket_orderbook_route.h"
+#include "websocket_order_route.h"
 
 WebsocketServerRoutes::WebsocketServerRoutes(int port, EpollBase* epoll_base)
     :   m_server(std::make_unique<HttpsWebsocketServer>(port, epoll_base))
@@ -9,4 +10,7 @@ WebsocketServerRoutes::WebsocketServerRoutes(int port, EpollBase* epoll_base)
 
     // Orderbook
     m_server->add_route(std::make_unique<WebsocketOrderbookRoute>());
+
+    // Order
+    m_server->add_route(std::make_unique<WebsocketOrderRoute>());
 }
