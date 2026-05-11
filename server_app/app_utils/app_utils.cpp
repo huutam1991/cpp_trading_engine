@@ -41,7 +41,7 @@ OrderId AppUtils::parse_order_id(const std::string& str)
 {
     if (is_all_digit(str) == false)
     {
-        return 0;
+        return client_order_id_to_system_order_id(str);
     }
 
     return std::stoull(str);
