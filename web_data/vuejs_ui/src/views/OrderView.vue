@@ -52,7 +52,7 @@ type OrderTab = {
   tone: 'all' | 'open' | 'partial' | 'filled' | 'cancel' | 'reject'
 }
 
-type SortKey = 'instrument' | 'status' | 'order_id' | 'side' | 'type' | 'price' | 'quantity'
+type SortKey = 'instrument' | 'status' | 'order_id' | 'side' | 'type' | 'price' | 'quantity' | 'fee'
 type SortDirection = 'asc' | 'desc'
 
 const loading = ref(false)
@@ -102,6 +102,8 @@ const sortedOrders = computed(() => {
     return sortDirection.value === 'asc' ? result : -result
   })
 })
+
+const isDetailOpen = computed(() => selectedOrder.value !== null)
 
 function getSortValue(order: Order, key: SortKey): string | number {
   switch (key) {
@@ -280,7 +282,7 @@ onMounted(() => {
 
 <template>
   <main class="orders-page">
-    <section class="orders-layout">
+    <section class="orders-layout" :class="{ 'detail-open': isDetailOpen }">
       <aside class="filter-panel">
         <div class="filter-header">
           <h2>Filters</h2>
@@ -360,6 +362,8 @@ onMounted(() => {
                 <th class="sortable-header" @click="sortOrders('type')">Type</th>
                 <th class="sortable-header" @click="sortOrders('price')">Price</th>
                 <th class="sortable-header" @click="sortOrders('quantity')">Quantity</th>
+                <th class="sortable-header" @click="sortOrders('fee')">Fee</th>
+                <th class="sortable-header" @click="sortOrders('order_id')" v-if="!isDetailOpen">Created At</th>
               </tr>
             </thead>
 
@@ -412,6 +416,11 @@ onMounted(() => {
 
                 <td>{{ formatPrice(order.price) }}</td>
                 <td>{{ formatNumber(order.quantity) }}</td>
+                <td>{{ formatNumber(order.fee) }}</td>
+
+                <td v-if="!isDetailOpen" class="mono-text">
+                  {{ formatCreateTime(order.order_id) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -430,7 +439,7 @@ onMounted(() => {
         </div>
       </section>
 
-      <aside class="detail-panel">
+      <aside v-if="selectedOrder" class="detail-panel">
         <div
           v-if="!selectedOrder"
           class="empty-detail"
@@ -546,8 +555,12 @@ onMounted(() => {
 
 .orders-layout {
   display: grid;
-  grid-template-columns: 220px minmax(860px, 1fr) 430px;
+  grid-template-columns: 220px minmax(860px, 1fr);
   gap: 12px;
+}
+
+.orders-layout.detail-open {
+  grid-template-columns: 220px minmax(860px, 1fr) 430px;
 }
 
 .filter-panel,
@@ -827,7 +840,7 @@ table {
 
 th,
 td {
-  padding: 10px 16px;
+  padding: 5px 16px;
   border-bottom: 1px solid #374151;
   text-align: right;
   white-space: nowrap;
