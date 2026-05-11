@@ -31,6 +31,7 @@ Json Order::to_json() const
             {"type", enum_reflect::enum_name(source.type)},
             {"strategy_id", enum_reflect::enum_name(source.strategy_id)}
         }},
+        {"created_at", created_at},
         {"order_id", order_id},
         {"status", enum_reflect::enum_name(status)},
         {"side", enum_reflect::enum_name(side)},
@@ -72,6 +73,8 @@ Order Order::from_json(Json& data)
     Order res;
     res.instrument = instrument_ptr;
     res.error = error;
+    res.source = source;
+    res.created_at = (size_t)data["created_at"];
     res.order_id = (OrderId)data["order_id"];
     res.status = enum_reflect::enum_value<Status>(std::string(data["status"]));
     res.side = enum_reflect::enum_value<Side>(std::string(data["side"]));
@@ -85,6 +88,5 @@ Order Order::from_json(Json& data)
     res.volumn_in_quote_currency = (double)data["volumn_in_quote_currency"];
     res.commission_asset = data["commission_asset"];
     res.output_asset = data["output_asset"];
-
     return res;
 }
