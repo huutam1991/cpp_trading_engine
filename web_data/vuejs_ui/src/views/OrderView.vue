@@ -253,25 +253,24 @@ function sideClass(side: string) {
 
 const formatCreateTime = (orderId: string | number | bigint): string =>
 {
-  // orderId = nanoseconds timestamp
-  // Display directly using UTC fields, no local timezone conversion
-
   const milliseconds = Number(BigInt(orderId) / 1000000n);
   const date = new Date(milliseconds);
 
-  const pad = ( value: number, size: number = 2): string => String(value).padStart(size, "0");
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Singapore",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
 
-  const day = pad(date.getDate());
-  const month = pad(date.getMonth() + 1);
-  const year = date.getFullYear();
+  const get = (type: string): string => parts.find((p) => p.type === type)?.value ?? "00";
+  const millis = String(date.getUTCMilliseconds()).padStart(3, "0");
 
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-
-  const millis = pad(date.getMilliseconds(), 3);
-
-  return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}.${millis}`;
+  return `${get("day")}-${get("month")}-${get("year")} ${get("hour")}:${get("minute")}:${get("second")}.${millis}`;
 };
 
 onMounted(() => {
