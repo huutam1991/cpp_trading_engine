@@ -932,7 +932,12 @@ td {
   font-weight: 800;
 }
 
-.status-badge.tone-open,
+.status-badge.tone-open {
+  color: #60a5fa;
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+}
+
 .status-badge.tone-filled {
   color: #34d399;
   background: #1f3a35;
