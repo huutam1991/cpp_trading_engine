@@ -31,6 +31,7 @@ type Order = {
   instrument: Instrument
   error: OrderError
   source: OrderSource
+  created_at: number
   order_id: number | string
   fee: number
   status: string
@@ -427,7 +428,7 @@ onMounted(() => {
                 <td>{{ formatNumber(order.fee) }}</td>
 
                 <td v-if="!isDetailOpen" class="mono-text">
-                  {{ formatCreateTime(order.order_id) }}
+                  {{ formatCreateTime(order.created_at) }}
                 </td>
               </tr>
             </tbody>
@@ -526,7 +527,7 @@ onMounted(() => {
 
             <div class="detail-row">
               <span>Created At</span>
-              <strong class="mono-text">{{ formatCreateTime(selectedOrder.order_id) }}</strong>
+              <strong class="mono-text">{{ formatCreateTime(selectedOrder.created_at) }}</strong>
             </div>
           </section>
 
