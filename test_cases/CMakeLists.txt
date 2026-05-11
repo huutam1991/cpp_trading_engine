@@ -34,6 +34,8 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/network/https_client_websocket/*.hpp
     ${PROJECT_ROOT}/server_app/pnl/*.h
     ${PROJECT_ROOT}/server_app/pnl/*.hpp
+    ${PROJECT_ROOT}/server_app/app_utils/*.h
+    ${PROJECT_ROOT}/server_app/app_utils/*.hpp
 )
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/cache/*.c
@@ -46,6 +48,8 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/network/https_client_websocket/websocket_frame_builder.cpp
     ${PROJECT_ROOT}/server_app/pnl/*.c
     ${PROJECT_ROOT}/server_app/pnl/*.cpp
+    ${PROJECT_ROOT}/server_app/app_utils/*.c
+    ${PROJECT_ROOT}/server_app/app_utils/*.cpp
 )
 
 # Test sources
