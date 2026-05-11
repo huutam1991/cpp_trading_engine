@@ -1,10 +1,19 @@
 #include <json/json.h>
 
 #include "websocket_order_route.h"
-#include <order_book/order_book_manager.h>
+#include <order/order_manager.h>
 
 WebsocketOrderRoute::WebsocketOrderRoute() : HttpsWebsocketServerRoute(WebsocketRouteName::order, true)
 {
+    OrderManager::instance().register_order_update([this](Order order)
+    {
+        Json order_json = order.to_json();
+
+        for (int fd : m_connected_fds)
+        {
+            m_server->write_to_connection(fd, order_json);
+        }
+    });
 }
 
 Task<void> WebsocketOrderRoute::on_connect(int fd)
