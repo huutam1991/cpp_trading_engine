@@ -4,7 +4,7 @@
 <template>
   <header class="app-header">
     <div class="logo">
-      C++ Trading Engine
+      Tam Nguyen - C++ Trading Engine
     </div>
 
     <nav class="nav-menu">
