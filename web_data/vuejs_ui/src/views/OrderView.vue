@@ -20,11 +20,17 @@ type OrderError = {
   code: number
 }
 
+type OrderSource = {
+  type: string
+  strategy_id: string
+}
+
 type Order = {
   commission_asset: string
   volumn_in_quote_currency: number
   instrument: Instrument
   error: OrderError
+  source: OrderSource
   order_id: number | string
   fee: number
   status: string
@@ -541,6 +547,13 @@ onMounted(() => {
 
             <div class="detail-row"><span>Code</span><strong>{{ selectedOrder.error.code }}</strong></div>
             <div class="detail-row"><span>Message</span><strong>{{ selectedOrder.error.message || '–' }}</strong></div>
+          </section>
+
+          <section class="detail-card">
+            <h3>Source</h3>
+
+            <div class="detail-row"><span>Type</span><strong>{{ selectedOrder.source.type != 'NOT_AVAILABLE' ? selectedOrder.source.type : '–' }}</strong></div>
+            <div class="detail-row"><span>Strategy ID</span><strong>{{ selectedOrder.source.strategy_id != 'NO_STRATEGY' ? selectedOrder.source.strategy_id : '–' }}</strong></div>
           </section>
         </div>
       </aside>
