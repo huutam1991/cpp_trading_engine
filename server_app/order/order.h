@@ -42,7 +42,7 @@ public:
 
     struct Error
     {
-        int code;
+        int code = 0;
         ShareString message;
 
         Json to_json() const
