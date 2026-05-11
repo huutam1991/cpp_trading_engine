@@ -108,7 +108,7 @@ Task<void> OrderManager::update_order_in_db(Order order)
     // If order is canceled or rejected, remove it from [m_order_db_cache]
     if (order_db->status == Order::Status::CANCELED)
     {
-        order_db.remove();
+        // order_db.remove();
         m_order_db_cache.erase(order_db->order_id);
     }
     // For FILLED order, we can also remove it from [m_order_db_cache] to save space, but dont remove from DB
