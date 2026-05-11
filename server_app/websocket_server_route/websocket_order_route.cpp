@@ -7,11 +7,14 @@ WebsocketOrderRoute::WebsocketOrderRoute() : HttpsWebsocketServerRoute(Websocket
 {
     OrderManager::instance().register_order_update([this](Order order)
     {
-        Json order_json = order.to_json();
+        Json response = {
+            {"route", m_route_name},
+            {"order", order.to_json()}
+        };
 
         for (int fd : m_connected_fds)
         {
-            m_server->write_to_connection(fd, order_json);
+            m_server->write_to_connection(fd, response);
         }
     });
 }
