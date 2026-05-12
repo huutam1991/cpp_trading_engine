@@ -251,10 +251,9 @@ Task<Json> BinanceGateway::place_on_exchange(Order order)
         order.status = Order::REJECTED;
         order.error.code = (int)response["code"];
         order.error.message = response["msg"];
+        order.last_updated = Utils::get_time_now_in_utc_nanoseconds();
         OrderManager::instance().update_order(order);
     }
-
-    // co_return quoter->get_trade_result_from_response(response);
 
     co_return response;
 }
