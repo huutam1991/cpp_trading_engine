@@ -69,35 +69,6 @@ std::string BinanceQuoter::getSignature(std::string& query)
 	return encryptWithHMAC(m_api_secret.c_str(), query.c_str());
 }
 
-void BinanceQuoter::check_save_resonse_error(Json& response, const std::string& api_path, const std::string& query, RequestMethod method)
-{
-    if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
-    {
-        Json error;
-        error["url"] = get_url();
-        error["endpoint"] = api_path;
-        error["query"] = query;
-        error["method"] = request_method_map_string.at((size_t)method);
-        error["response"] = response;
-
-        Json error_new = Json::parse(error.get_string_value());
-
-        MongoDB::instance()
-            .set_db_and_collection(STRATEGY_DB_NAME, "error")
-            .insert_one(error_new);
-
-        spdlog::error("BinanceQuoter - Error: {}", error_new);
-    }
-    else
-    {
-        // Only update field code = 0 for object
-        if (response.is_array() == false)
-        {
-            response["code"] = 0;
-        }
-    }
-}
-
 Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string api_path, std::string query_str, HttpsClientRequest* client)
 {
     std::string new_query_std = query_str;
@@ -133,9 +104,6 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
             {"msg", "Disconnected"}
         };
     }
-
-    // Check to save error
-    check_save_resonse_error(response_json, api_path, new_query_std, method);
 
     co_return response_json;
 }
