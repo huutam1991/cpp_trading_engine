@@ -1,6 +1,7 @@
 #include <time/measure_time.h>
 #include <coroutine/event_base_manager.h>
 
+#include <utils/utils.h>
 #include <order/order_manager.h>
 #include <app_constants.h>
 
@@ -18,11 +19,7 @@ void OrderManager::init()
 
 OrderId OrderManager::generate_order_id()
 {
-    auto now = std::chrono::system_clock::now();
-    auto duration = now.time_since_epoch();
-    auto nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
-
-    return static_cast<OrderId>(nanos);
+    return static_cast<OrderId>(Utils::get_time_now_in_utc_nanoseconds());
 }
 
 std::vector<Order> OrderManager::get_all_orders()
