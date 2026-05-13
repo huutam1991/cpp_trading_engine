@@ -39,6 +39,7 @@ private:
     };
 
     std::unordered_map<const Instrument*, std::shared_ptr<MarketData>> m_market_data;
+    bool m_start_sync_order_book = false;
 
     Task<void> init_order_book();
     Task<void> remove_unsubscribed_instruments();

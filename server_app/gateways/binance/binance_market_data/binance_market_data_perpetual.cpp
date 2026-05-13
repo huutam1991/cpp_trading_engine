@@ -39,13 +39,8 @@ Task<void> BinanceMarketDataPerpetual::init_order_book()
         start_websocket(m_instruments[i]);
     }
 
-    static bool start_sync_order_book = false;
-    if (start_sync_order_book == false)
-    {
-        Task<void> task = check_sync_order_book();
-        task.start_running_on(m_event_base);
-        start_sync_order_book = true;
-    }
+    Task<void> task = check_sync_order_book();
+    task.start_running_on(m_event_base);
 
     co_return;
 }
