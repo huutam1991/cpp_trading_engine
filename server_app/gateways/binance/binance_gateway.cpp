@@ -157,7 +157,7 @@ void BinanceGateway::subscribe_instruments(std::vector<const Instrument*> instru
 
     // Perpetual
     m_market_data_perpetual.subscribe_instruments(perpetual_instruments);
-    m_market_data_perpetual.start();
+    // m_market_data_perpetual.start();
 }
 
 void BinanceGateway::subscribe_instrument(const Instrument* instrument)
@@ -168,11 +168,11 @@ void BinanceGateway::subscribe_instrument(const Instrument* instrument)
     }
     else if (instrument->instrument_type == InstrumentType::PERPETUAL)
     {
-        m_market_data_perpetual.subscribe_instrument(instrument);
+        // m_market_data_perpetual.subscribe_instrument(instrument);
     }
 
     m_market_data_spot.start();
-    m_market_data_perpetual.start();
+    m_market_data_perpetual.start(instrument);
 }
 
 void BinanceGateway::unsubscribe_instrument(const Instrument* instrument)
@@ -187,7 +187,7 @@ void BinanceGateway::unsubscribe_instrument(const Instrument* instrument)
     }
 
     m_market_data_spot.start();
-    m_market_data_perpetual.start();
+    m_market_data_perpetual.start(instrument);
 }
 
 Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(std::string symbol)

@@ -22,24 +22,22 @@ BinanceMarketDataPerpetual::~BinanceMarketDataPerpetual()
     spdlog::info("~BinanceMarketDataPerpetual");
 }
 
-void BinanceMarketDataPerpetual::start()
+void BinanceMarketDataPerpetual::start(const Instrument* instrument)
 {
-    Task<void> task = init_order_book();
+    Task<void> task = init_order_book(instrument);
     task.start_running_on(m_event_base);
 }
 
-Task<void> BinanceMarketDataPerpetual::init_order_book()
+Task<void> BinanceMarketDataPerpetual::init_order_book(const Instrument* instrument)
 {
     // Remove order books for instruments that are no longer subscribed
-    co_await remove_unsubscribed_instruments();
+    // co_await remove_unsubscribed_instruments();
 
     // Start WebSocket connections
-    for (size_t i = 0; i < m_instruments.size(); i++)
-    {
-        start_websocket(m_instruments[i]);
-    }
 
-    Task<void> task = check_sync_order_book();
+    start_websocket(instrument);
+
+    Task<void> task = check_sync_order_book(instrument);
     task.start_running_on(m_event_base);
 
     co_return;
@@ -47,39 +45,43 @@ Task<void> BinanceMarketDataPerpetual::init_order_book()
 
 Task<void> BinanceMarketDataPerpetual::remove_unsubscribed_instruments()
 {
-    std::vector<const Instrument*> removed_instruments;
-    for (const auto& [instrument, _] : m_market_data)
-    {
-        if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
-        {
-            removed_instruments.push_back(instrument);
-        }
-    }
+    // std::vector<const Instrument*> removed_instruments;
+    // for (const auto& [instrument, _] : m_market_data)
+    // {
+    //     if (std::find(m_instruments.begin(), m_instruments.end(), instrument) == m_instruments.end())
+    //     {
+    //         removed_instruments.push_back(instrument);
+    //     }
+    // }
 
-    for (const auto& instrument : removed_instruments)
-    {
-        m_market_data.erase(instrument);
-    }
+    // for (const auto& instrument : removed_instruments)
+    // {
+    //     m_market_data.erase(instrument);
+    // }
 
     co_return;
 }
 
-Task<void> BinanceMarketDataPerpetual::check_sync_order_book()
+Task<void> BinanceMarketDataPerpetual::check_sync_order_book(const Instrument* instrument)
 {
+    if (m_market_data.find(instrument) == m_market_data.end())
+    {
+        co_return; // Market data for this instrument is not found, return
+    }
+
+    auto market_data = m_market_data[instrument];
+
     // Loop to send REST request to query orderbook (full) at every 5 seconds, if the orderbook is not synced yet
     while (true)
     {
-        for (auto& [_, market_data] : m_market_data)
+        if (market_data->orderbook->is_not_synced())
         {
-            if (market_data->orderbook->is_not_synced())
-            {
-                co_await market_data->orderbook->send_request_get_full_order_book();
-            }
-            else
-            {
-                // If synced, print order book
-                // order_book->print_order_book();
-            }
+            co_await market_data->orderbook->send_request_get_full_order_book();
+        }
+        else
+        {
+            // If synced, print order book
+            // order_book->print_order_book();
         }
 
         co_await Timer::sleep_for(2000);
@@ -107,5 +109,9 @@ void BinanceMarketDataPerpetual::update_url_and_port(const std::string& url, con
 
 void BinanceMarketDataPerpetual::subscribe_instruments(std::vector<const Instrument*> instruments)
 {
-    m_instruments = std::move(instruments);
+    // m_instruments = std::move(instruments);
+}
+
+void subscribe_instrument(const Instrument* instrument)
+{
 }

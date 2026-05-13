@@ -53,7 +53,7 @@ void GatewayManager::init()
     {
         if (m_gateways.find(instrument->exchange_id) != m_gateways.end())
         {
-            m_gateways[instrument->exchange_id]->subscribe_instruments({instrument});
+            m_gateways[instrument->exchange_id]->subscribe_instrument(instrument);
         }
     }
 }
