@@ -25,7 +25,7 @@ void GatewayManager::init()
 
         spdlog::debug("Load activated account: {}", activate_account);
 
-        ExchangeId gateway_enum = gateway_name_to_enum(exchange);
+        ExchangeId gateway_enum = enum_reflect::enum_value<ExchangeId>(exchange);
 
         if (gateway_enum == ExchangeId::BINANCE)
         {
@@ -37,7 +37,7 @@ void GatewayManager::init()
         }
         else
         {
-            // TBD
+            spdlog::error("Unsupported exchange: {}, skip loading this account", exchange);
         }
 
         // Check to init gateway
@@ -58,23 +58,6 @@ void GatewayManager::init()
     }
 }
 
-ExchangeId GatewayManager::gateway_name_to_enum(const std::string& gateway)
-{
-    if (gateway == "binance")
-    {
-        return ExchangeId::BINANCE;
-    }
-    else if (gateway == "coinbase")
-    {
-        return ExchangeId::COINBASE;
-    }
-    // Default is BINANCE
-    else
-    {
-       return ExchangeId::BINANCE;
-    }
-}
-
 std::shared_ptr<Gateway> GatewayManager::get_gateway(ExchangeId gateway_enum)
 {
     if (m_gateways.find(gateway_enum) != m_gateways.end())
@@ -87,6 +70,5 @@ std::shared_ptr<Gateway> GatewayManager::get_gateway(ExchangeId gateway_enum)
 
 std::shared_ptr<Gateway> GatewayManager::get_gateway(const std::string& gateway)
 {
-    ExchangeId gateway_enum = gateway_name_to_enum(gateway);
-    return get_gateway(gateway_enum);
+    return get_gateway(enum_reflect::enum_value<ExchangeId>(gateway));
 }
