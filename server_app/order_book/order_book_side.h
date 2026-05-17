@@ -45,6 +45,13 @@ public:
         }
     }
 
+    inline void clear() noexcept
+    {
+        std::fill(m_levels.begin(), m_levels.end(), 0.0);
+        std::fill(m_non_empty_words.begin(), m_non_empty_words.end(), 0);
+        m_top_index = INVALID_INDEX;
+    }
+
     inline std::size_t price_to_index(double price) const noexcept
     {
         const double diff = price - m_base_price;
