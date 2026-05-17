@@ -32,6 +32,12 @@ public:
     {
     }
 
+    inline void reset() noexcept
+    {
+        m_bids.clear();
+        m_asks.clear();
+    }
+
     inline void apply_update(const OrderBookUpdate& update) noexcept
     {
         OrderBookSide& side = get_mutable_side(update.side);
