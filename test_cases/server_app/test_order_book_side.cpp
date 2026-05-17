@@ -173,3 +173,154 @@ TEST(OrderBookSideTest, FloatingPointTickPrecision)
 
     ASSERT_NEAR(book.index_to_price(index), price, EPS);
 }
+
+TEST(OrderBookSideTest, EmptyBookHasNoTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    ASSERT_FALSE(book.has_top());
+    ASSERT_DOUBLE_EQ(book.get_top_price(), 0.0);
+    ASSERT_DOUBLE_EQ(book.get_top_quantity(), 0.0);
+}
+
+TEST(OrderBookSideTest, SingleLevelBecomesTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1001.0, 5.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1001.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 5.0, EPS);
+}
+
+TEST(OrderBookSideTest, HigherPriceBecomesTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1001.0, 5.0);
+    book.set_level(1002.0, 3.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 3.0, EPS);
+}
+
+TEST(OrderBookSideTest, LowerPriceDoesNotReplaceTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1002.0, 3.0);
+    book.set_level(1001.0, 5.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 3.0, EPS);
+}
+
+TEST(OrderBookSideTest, OverwriteTopQuantityKeepsSameTopPrice)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1002.0, 3.0);
+    book.set_level(1002.0, 9.5);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 9.5, EPS);
+}
+
+TEST(OrderBookSideTest, RemoveNonTopDoesNotChangeTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1001.0, 5.0);
+    book.set_level(1002.0, 3.0);
+
+    book.remove_level(1001.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 3.0, EPS);
+}
+
+TEST(OrderBookSideTest, RemoveTopFallsBackToNextBestPrice)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1001.0, 5.0);
+    book.set_level(1002.0, 3.0);
+    book.set_level(1003.0, 7.0);
+
+    book.remove_level(1003.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 3.0, EPS);
+}
+
+TEST(OrderBookSideTest, RemoveOnlyTopLeavesBookEmpty)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1002.0, 3.0);
+    book.remove_level(1002.0);
+
+    ASSERT_FALSE(book.has_top());
+    ASSERT_DOUBLE_EQ(book.get_top_price(), 0.0);
+    ASSERT_DOUBLE_EQ(book.get_top_quantity(), 0.0);
+}
+
+TEST(OrderBookSideTest, SettingTopQuantityToZeroRemovesTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1001.0, 5.0);
+    book.set_level(1002.0, 3.0);
+
+    book.set_level(1002.0, 0.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1001.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 5.0, EPS);
+}
+
+TEST(OrderBookSideTest, OutOfRangePriceDoesNotAffectTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1001.0, 5.0);
+    book.set_level(2000.0, 99.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1001.0, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 5.0, EPS);
+}
+
+TEST(OrderBookSideTest, ResetBasePriceClearsTop)
+{
+    OrderBookSide book(1000.0, 0.5, 100);
+
+    book.set_level(1002.0, 3.0);
+
+    ASSERT_TRUE(book.has_top());
+
+    book.reset_base_price(2000.0);
+
+    ASSERT_FALSE(book.has_top());
+    ASSERT_DOUBLE_EQ(book.get_top_price(), 0.0);
+    ASSERT_DOUBLE_EQ(book.get_top_quantity(), 0.0);
+}
+
+TEST(OrderBookSideTest, TopPriceWorksWithSmallTickSize)
+{
+    OrderBookSide book(1000.0, 0.01, 10000);
+
+    book.set_level(1000.01, 1.0);
+    book.set_level(1000.37, 2.0);
+    book.set_level(1000.12, 3.0);
+
+    ASSERT_TRUE(book.has_top());
+    ASSERT_NEAR(book.get_top_price(), 1000.37, EPS);
+    ASSERT_NEAR(book.get_top_quantity(), 2.0, EPS);
+}
