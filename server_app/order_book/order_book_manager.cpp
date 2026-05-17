@@ -33,7 +33,7 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObj
 
     auto order_book = std::make_unique<OrderBook>(
         base_price,
-        m_tick_size,
+        instrument->price_precision,
         m_depth,
         m_rebase_delta
     );

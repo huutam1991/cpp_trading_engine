@@ -17,11 +17,9 @@ class OrderBookManager
     Singleton(OrderBookManager);
 
 private:
-    EventBase* m_event_base =
-        EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_BOOK);
+    EventBase* m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_BOOK);
 
     std::vector<std::function<void(OrderBookSnapShotObject)>> m_update_callbacks;
-
     std::unordered_map<const Instrument*, std::unique_ptr<OrderBook>> m_order_books;
 
     std::size_t m_depth = 10000;
