@@ -3,6 +3,7 @@
 #include <cstddef>
 
 #include "order_book_side.h"
+#include "order_book_snapshot.h"
 
 enum class OrderBookUpdateType
 {
@@ -36,6 +37,31 @@ public:
     {
         m_bids.clear();
         m_asks.clear();
+    }
+
+    inline void apply_update(const OrderBookSnapShot& snapshot) noexcept
+    {
+        reset();
+
+        for (std::size_t i = 0; i < snapshot.bids_size; ++i)
+        {
+            apply_update({
+                OrderBookSideType::Bid,
+                OrderBookUpdateType::Update,
+                snapshot.bids[i].price,
+                snapshot.bids[i].quantity
+            });
+        }
+
+        for (std::size_t i = 0; i < snapshot.asks_size; ++i)
+        {
+            apply_update({
+                OrderBookSideType::Ask,
+                OrderBookUpdateType::Update,
+                snapshot.asks[i].price,
+                snapshot.asks[i].quantity
+            });
+        }
     }
 
     inline void apply_update(const OrderBookUpdate& update) noexcept
