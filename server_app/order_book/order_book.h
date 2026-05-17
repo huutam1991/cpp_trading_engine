@@ -57,18 +57,11 @@ public:
 
     inline void apply_update(const OrderBookSnapShot& snapshot)
     {
-        const double reference_price = snapshot_reference_price(snapshot);
-
-        if (reference_price > 0.0)
-        {
-            maybe_rebase_by_price(reference_price);
-        }
-
         reset();
 
         for (std::size_t i = 0; i < snapshot.bids_size; ++i)
         {
-            apply_update({
+            apply_update_without_rebase({
                 OrderBookSideType::Bid,
                 OrderBookUpdateType::Update,
                 snapshot.bids[i].price,
@@ -78,19 +71,25 @@ public:
 
         for (std::size_t i = 0; i < snapshot.asks_size; ++i)
         {
-            apply_update({
+            apply_update_without_rebase({
                 OrderBookSideType::Ask,
                 OrderBookUpdateType::Update,
                 snapshot.asks[i].price,
                 snapshot.asks[i].quantity
             });
         }
+
+        maybe_rebase();
     }
 
     inline void apply_update(const OrderBookUpdate& update)
     {
-        maybe_rebase_by_price(update.price);
+        apply_update_without_rebase(update);
+        maybe_rebase();
+    }
 
+    inline void apply_update_without_rebase(const OrderBookUpdate& update) noexcept
+    {
         OrderBookSide& side = get_mutable_side(update.side);
 
         switch (update.type)
@@ -108,51 +107,6 @@ public:
                 break;
             }
         }
-    }
-
-    inline OrderBookSnapShotObject get_order_book_snapshot(std::size_t levels) const
-    {
-        OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
-
-        snapshot->resize(levels);
-
-        std::size_t bid_count = 0;
-        std::size_t ask_count = 0;
-
-        //
-        // bids
-        //
-        for (std::size_t i = m_bids.size(); i > 0 && bid_count < levels; --i)
-        {
-            const std::size_t index = i - 1;
-            const double quantity = m_bids.quantity_at_index(index);
-
-            if (quantity <= 0.0)
-            {
-                continue;
-            }
-
-            snapshot->add_bid(m_bids.index_to_price(index), quantity);
-            ++bid_count;
-        }
-
-        //
-        // asks
-        //
-        for (std::size_t index = 0; index < m_asks.size() && ask_count < levels; ++index)
-        {
-            const double quantity = m_asks.quantity_at_index(index);
-
-            if (quantity <= 0.0)
-            {
-                continue;
-            }
-
-            snapshot->add_ask(m_asks.index_to_price(index), quantity);
-            ++ask_count;
-        }
-
-        return snapshot;
     }
 
     inline void set_bid(double price, double quantity)
@@ -195,20 +149,32 @@ public:
         });
     }
 
-    inline bool should_rebase_by_price(double price) const noexcept
+    inline bool should_rebase() const noexcept
     {
-        return m_bids.in_rebase_trigger_zone(price, m_rebase_delta) ||
-            m_asks.in_rebase_trigger_zone(price, m_rebase_delta);
+        if (!has_spread())
+        {
+            return false;
+        }
+
+        return m_bids.in_rebase_trigger_zone(
+                best_bid_price(),
+                m_rebase_delta
+            )
+            ||
+            m_asks.in_rebase_trigger_zone(
+                best_ask_price(),
+                m_rebase_delta
+            );
     }
 
-    inline void maybe_rebase_by_price(double price)
+    inline void maybe_rebase()
     {
-        if (!should_rebase_by_price(price))
+        if (!should_rebase())
         {
             return;
         }
 
-        move_to_new_base_price(price);
+        move_to_new_base_price(best_bid_price());
     }
 
     inline void move_to_new_base_price(double new_base_price)
@@ -323,6 +289,54 @@ public:
         m_rebase_delta = rebase_delta;
     }
 
+    inline OrderBookSnapShotObject get_order_book_snapshot(std::size_t levels) const
+    {
+        OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+
+        snapshot->resize(levels);
+        snapshot->refresh();
+
+        std::size_t bid_count = 0;
+        std::size_t ask_count = 0;
+
+        for (std::size_t i = m_bids.size(); i > 0 && bid_count < levels; --i)
+        {
+            const std::size_t index = i - 1;
+            const double quantity = m_bids.quantity_at_index(index);
+
+            if (quantity <= 0.0)
+            {
+                continue;
+            }
+
+            snapshot->add_bid(
+                m_bids.index_to_price(index),
+                quantity
+            );
+
+            ++bid_count;
+        }
+
+        for (std::size_t index = 0; index < m_asks.size() && ask_count < levels; ++index)
+        {
+            const double quantity = m_asks.quantity_at_index(index);
+
+            if (quantity <= 0.0)
+            {
+                continue;
+            }
+
+            snapshot->add_ask(
+                m_asks.index_to_price(index),
+                quantity
+            );
+
+            ++ask_count;
+        }
+
+        return snapshot;
+    }
+
     inline const OrderBookSide& bids() const noexcept
     {
         return m_bids;
@@ -344,29 +358,6 @@ public:
     }
 
 private:
-    inline double snapshot_reference_price(const OrderBookSnapShot& snapshot) const noexcept
-    {
-        const bool has_bid = snapshot.bids_size > 0;
-        const bool has_ask = snapshot.asks_size > 0;
-
-        if (has_bid && has_ask)
-        {
-            return (snapshot.bids[0].price + snapshot.asks[0].price) * 0.5;
-        }
-
-        if (has_bid)
-        {
-            return snapshot.bids[0].price;
-        }
-
-        if (has_ask)
-        {
-            return snapshot.asks[0].price;
-        }
-
-        return 0.0;
-    }
-
     inline OrderBookSide& get_mutable_side(OrderBookSideType side) noexcept
     {
         return side == OrderBookSideType::Bid ? m_bids : m_asks;
