@@ -820,3 +820,235 @@ TEST(OrderBookTest, ApplySnapshotOutOfRangeWithoutValidReferenceStillClearsAndDr
     ASSERT_FALSE(book.has_best_bid());
     ASSERT_FALSE(book.has_best_ask());
 }
+
+TEST(OrderBookTest, GetOrderBookSnapshotEmptyBook)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 0u);
+    ASSERT_EQ(snapshot->asks_size, 0u);
+
+    ASSERT_DOUBLE_EQ(snapshot->get_best_bid(), 0.0);
+    ASSERT_DOUBLE_EQ(snapshot->get_best_ask(), 0.0);
+    ASSERT_DOUBLE_EQ(snapshot->get_mid_price(), 0.0);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotReturnsBestBidAndAskFirst)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(998.5, 1.0);
+    book.set_bid(999.5, 3.0);
+    book.set_bid(999.0, 2.0);
+
+    book.set_ask(1001.5, 3.0);
+    book.set_ask(1000.5, 1.0);
+    book.set_ask(1001.0, 2.0);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 3u);
+    ASSERT_EQ(snapshot->asks_size, 3u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->bids[0].quantity, 3.0, EPS);
+
+    ASSERT_NEAR(snapshot->bids[1].price, 999.0, EPS);
+    ASSERT_NEAR(snapshot->bids[1].quantity, 2.0, EPS);
+
+    ASSERT_NEAR(snapshot->bids[2].price, 998.5, EPS);
+    ASSERT_NEAR(snapshot->bids[2].quantity, 1.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+    ASSERT_NEAR(snapshot->asks[0].quantity, 1.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[1].price, 1001.0, EPS);
+    ASSERT_NEAR(snapshot->asks[1].quantity, 2.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[2].price, 1001.5, EPS);
+    ASSERT_NEAR(snapshot->asks[2].quantity, 3.0, EPS);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotRespectsRequestedLevels)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(998.5, 1.0);
+    book.set_bid(999.0, 2.0);
+    book.set_bid(999.5, 3.0);
+
+    book.set_ask(1000.5, 1.0);
+    book.set_ask(1001.0, 2.0);
+    book.set_ask(1001.5, 3.0);
+
+    auto snapshot = book.get_order_book_snapshot(2);
+
+    ASSERT_EQ(snapshot->bids_size, 2u);
+    ASSERT_EQ(snapshot->asks_size, 2u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->bids[1].price, 999.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+    ASSERT_NEAR(snapshot->asks[1].price, 1001.0, EPS);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotWithZeroLevels)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(999.5, 10.0);
+    book.set_ask(1000.5, 20.0);
+
+    auto snapshot = book.get_order_book_snapshot(0);
+
+    ASSERT_EQ(snapshot->bids_size, 0u);
+    ASSERT_EQ(snapshot->asks_size, 0u);
+
+    ASSERT_DOUBLE_EQ(snapshot->get_best_bid(), 0.0);
+    ASSERT_DOUBLE_EQ(snapshot->get_best_ask(), 0.0);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotOnlyBidSide)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(999.5, 10.0);
+    book.set_bid(999.0, 5.0);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 2u);
+    ASSERT_EQ(snapshot->asks_size, 0u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->bids[0].quantity, 10.0, EPS);
+
+    ASSERT_NEAR(snapshot->bids[1].price, 999.0, EPS);
+    ASSERT_NEAR(snapshot->bids[1].quantity, 5.0, EPS);
+
+    ASSERT_DOUBLE_EQ(snapshot->get_best_ask(), 0.0);
+    ASSERT_DOUBLE_EQ(snapshot->get_mid_price(), 0.0);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotOnlyAskSide)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_ask(1000.5, 10.0);
+    book.set_ask(1001.0, 5.0);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 0u);
+    ASSERT_EQ(snapshot->asks_size, 2u);
+
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+    ASSERT_NEAR(snapshot->asks[0].quantity, 10.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[1].price, 1001.0, EPS);
+    ASSERT_NEAR(snapshot->asks[1].quantity, 5.0, EPS);
+
+    ASSERT_DOUBLE_EQ(snapshot->get_best_bid(), 0.0);
+    ASSERT_DOUBLE_EQ(snapshot->get_mid_price(), 0.0);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotSkipsRemovedLevels)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(998.5, 1.0);
+    book.set_bid(999.0, 2.0);
+    book.set_bid(999.5, 3.0);
+
+    book.set_ask(1000.5, 1.0);
+    book.set_ask(1001.0, 2.0);
+    book.set_ask(1001.5, 3.0);
+
+    book.remove_bid(999.0);
+    book.remove_ask(1001.0);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 2u);
+    ASSERT_EQ(snapshot->asks_size, 2u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->bids[1].price, 998.5, EPS);
+
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+    ASSERT_NEAR(snapshot->asks[1].price, 1001.5, EPS);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotReflectsUpdatedQuantity)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(999.5, 10.0);
+    book.set_ask(1000.5, 20.0);
+
+    book.set_bid(999.5, 15.0);
+    book.set_ask(1000.5, 25.0);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 1u);
+    ASSERT_EQ(snapshot->asks_size, 1u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->bids[0].quantity, 15.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+    ASSERT_NEAR(snapshot->asks[0].quantity, 25.0, EPS);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotAfterRebasePreservesSortedOrder)
+{
+    OrderBook book(1000.0, 0.5, 100, 2.0);
+
+    book.set_bid(999.5, 10.0);
+    book.set_bid(999.0, 5.0);
+
+    book.set_ask(1000.5, 20.0);
+    book.set_ask(1001.0, 8.0);
+
+    book.set_bid(1023.0, 3.0);
+
+    auto snapshot = book.get_order_book_snapshot(10);
+
+    ASSERT_EQ(snapshot->bids_size, 3u);
+    ASSERT_EQ(snapshot->asks_size, 2u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 1023.0, EPS);
+    ASSERT_NEAR(snapshot->bids[0].quantity, 3.0, EPS);
+
+    ASSERT_NEAR(snapshot->bids[1].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->bids[1].quantity, 10.0, EPS);
+
+    ASSERT_NEAR(snapshot->bids[2].price, 999.0, EPS);
+    ASSERT_NEAR(snapshot->bids[2].quantity, 5.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+    ASSERT_NEAR(snapshot->asks[0].quantity, 20.0, EPS);
+
+    ASSERT_NEAR(snapshot->asks[1].price, 1001.0, EPS);
+    ASSERT_NEAR(snapshot->asks[1].quantity, 8.0, EPS);
+}
+
+TEST(OrderBookTest, GetOrderBookSnapshotLevelGreaterThanExistingLevels)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(999.5, 10.0);
+    book.set_ask(1000.5, 20.0);
+
+    auto snapshot = book.get_order_book_snapshot(50);
+
+    ASSERT_EQ(snapshot->bids_size, 1u);
+    ASSERT_EQ(snapshot->asks_size, 1u);
+
+    ASSERT_NEAR(snapshot->bids[0].price, 999.5, EPS);
+    ASSERT_NEAR(snapshot->asks[0].price, 1000.5, EPS);
+}
