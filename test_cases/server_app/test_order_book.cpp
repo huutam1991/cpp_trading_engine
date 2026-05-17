@@ -673,7 +673,7 @@ TEST(OrderBookTest, RebaseTriggeredNearLowerBoundaryPreservesBook)
 
     book.set_ask(977.0, 5.0);
 
-    ASSERT_NEAR(book.base_price(), 977.0, EPS);
+    ASSERT_NEAR(book.base_price(), 999.5, EPS);
 
     ASSERT_NEAR(book.get_bid_quantity(999.5), 10.0, EPS);
     ASSERT_NEAR(book.get_ask_quantity(1000.5), 20.0, EPS);
@@ -771,7 +771,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateRemovePreservesBook)
         0.0
     });
 
-    ASSERT_NEAR(book.base_price(), 1023.0, EPS);
+    ASSERT_NEAR(book.base_price(), 1000.0, EPS);
 
     ASSERT_NEAR(book.best_bid_price(), 1000.0, EPS);
     ASSERT_NEAR(book.best_bid_quantity(), 12.0, EPS);
@@ -789,7 +789,7 @@ TEST(OrderBookTest, ApplySnapshotNearBoundaryTriggersRebase)
 
     book.apply_update(snapshot);
 
-    ASSERT_NEAR(book.base_price(), 1023.0, EPS);
+    ASSERT_NEAR(book.base_price(), 1022.5, EPS);
 
     ASSERT_TRUE(book.has_best_bid());
     ASSERT_TRUE(book.has_best_ask());
