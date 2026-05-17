@@ -14,7 +14,6 @@ void OrderBookManager::set_config(
 {
     m_tick_size = tick_size;
     m_depth = depth;
-    m_rebase_delta = rebase_delta;
     m_publish_levels = publish_levels;
 }
 
@@ -34,8 +33,7 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObj
     auto order_book = std::make_unique<OrderBook>(
         base_price,
         instrument->price_precision,
-        m_depth,
-        m_rebase_delta
+        m_depth
     );
 
     auto [inserted_it, inserted] = m_order_books.emplace(instrument, std::move(order_book));

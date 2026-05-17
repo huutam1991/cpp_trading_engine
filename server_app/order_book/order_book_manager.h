@@ -25,7 +25,6 @@ private:
     std::size_t m_depth = 10000;
     std::size_t m_publish_levels = 20;
     double m_tick_size = 0.01;
-    double m_rebase_delta = 10.0;
 
 private:
     Task<void> run_update_order_book_snapshot(OrderBookSnapShotObject snapshot);
