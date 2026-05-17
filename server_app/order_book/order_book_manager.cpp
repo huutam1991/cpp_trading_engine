@@ -42,6 +42,20 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObj
     return *(inserted_it->second);
 }
 
+OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookUpdate& snapshot)
+{
+    // const Instrument* instrument = snapshot->instrument;
+
+    // auto it = m_order_books.find(instrument);
+
+    // if (it != m_order_books.end())
+    // {
+    //     return *(it->second);
+    // }
+
+}
+
+
 double OrderBookManager::get_snapshot_reference_price(const OrderBookSnapShotObject& snapshot) const noexcept
 {
     const bool has_bid = snapshot->bids_size > 0;
