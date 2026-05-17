@@ -5,6 +5,79 @@ void OrderBookManager::register_update(std::function<void(OrderBookSnapShotObjec
     m_update_callbacks.push_back(std::move(callback));
 }
 
+void OrderBookManager::set_config(
+    double tick_size,
+    std::size_t depth,
+    double rebase_delta,
+    std::size_t publish_levels
+)
+{
+    m_tick_size = tick_size;
+    m_depth = depth;
+    m_rebase_delta = rebase_delta;
+    m_publish_levels = publish_levels;
+}
+
+OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObject& snapshot)
+{
+    const Instrument* instrument = snapshot->instrument;
+
+    auto it = m_order_books.find(instrument);
+
+    if (it != m_order_books.end())
+    {
+        return *(it->second);
+    }
+
+    const double base_price = get_snapshot_reference_price(snapshot);
+
+    auto order_book = std::make_unique<OrderBook>(
+        base_price,
+        m_tick_size,
+        m_depth,
+        m_rebase_delta
+    );
+
+    auto [inserted_it, inserted] = m_order_books.emplace(instrument, std::move(order_book));
+
+    return *(inserted_it->second);
+}
+
+double OrderBookManager::get_snapshot_reference_price(const OrderBookSnapShotObject& snapshot) const noexcept
+{
+    const bool has_bid = snapshot->bids_size > 0;
+    const bool has_ask = snapshot->asks_size > 0;
+
+    if (has_bid && has_ask)
+    {
+        return (snapshot->bids[0].price + snapshot->asks[0].price) * 0.5;
+    }
+
+    if (has_bid)
+    {
+        return snapshot->bids[0].price;
+    }
+
+    if (has_ask)
+    {
+        return snapshot->asks[0].price;
+    }
+
+    return 0.0;
+}
+
+OrderBook* OrderBookManager::get_order_book(const Instrument* instrument) noexcept
+{
+    auto it = m_order_books.find(instrument);
+
+    if (it == m_order_books.end())
+    {
+        return nullptr;
+    }
+
+    return it->second.get();
+}
+
 void OrderBookManager::publish_order_book_snapshot(OrderBookSnapShotObject snapshot)
 {
     auto task = run_update_order_book_snapshot(snapshot);
@@ -13,9 +86,23 @@ void OrderBookManager::publish_order_book_snapshot(OrderBookSnapShotObject snaps
 
 Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObject snapshot)
 {
+    if (snapshot == nullptr || snapshot->instrument == nullptr)
+    {
+        co_return;
+    }
+
+    OrderBook& order_book = get_or_create_order_book(snapshot);
+
+    order_book.apply_update(*snapshot);
+
+    OrderBookSnapShotObject output_snapshot =
+        order_book.get_order_book_snapshot(m_publish_levels);
+
+    output_snapshot->update_instrument(snapshot->instrument);
+
     for (auto& callback : m_update_callbacks)
     {
-        callback(snapshot);
+        callback(output_snapshot);
     }
 
     co_return;
