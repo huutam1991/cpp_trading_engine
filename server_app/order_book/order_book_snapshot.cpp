@@ -8,6 +8,12 @@ void OrderBookSnapShot::refresh()
 
 void OrderBookSnapShot::print_order_book()
 {
+    if (instrument == nullptr)
+    {
+        spdlog::info("OrderBookSnapShot - No instrument associated with this order book snapshot");
+        return;
+    }
+
     spdlog::info("[{}] asks: ", instrument->symbol);
     for (size_t i = 0; i < asks_size; ++i)
     {
@@ -23,6 +29,11 @@ void OrderBookSnapShot::print_order_book()
 
 double OrderBookSnapShot::get_mid_price()
 {
+    if (bids_size == 0 || asks_size == 0)
+    {
+        return 0.0;
+    }
+
     return (get_best_bid() + get_best_ask()) / 2.0;
 }
 
