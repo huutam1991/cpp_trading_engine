@@ -24,11 +24,13 @@ class OrderBook
 {
 public:
     OrderBook(
+        const Instrument* instrument,
         double base_price,
         double tick_size,
         std::size_t depth
     )
         : OrderBook(
+              instrument,
               base_price,
               tick_size,
               depth,
@@ -38,6 +40,7 @@ public:
     }
 
     OrderBook(
+        const Instrument* instrument,
         double base_price,
         double tick_size,
         std::size_t depth,
@@ -45,6 +48,7 @@ public:
     )
         : m_bids(OrderBookSideType::Bid, base_price, tick_size, depth),
           m_asks(OrderBookSideType::Ask, base_price, tick_size, depth),
+          m_instrument(instrument),
           m_rebase_delta(rebase_delta)
     {
     }
@@ -293,6 +297,7 @@ public:
     {
         OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
 
+        snapshot->update_instrument(m_instrument);
         snapshot->resize(levels);
         snapshot->refresh();
 
@@ -375,5 +380,6 @@ private:
     OrderBookSide m_bids;
     OrderBookSide m_asks;
 
+    const Instrument* m_instrument = nullptr;
     double m_rebase_delta;
 };

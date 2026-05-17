@@ -31,6 +31,7 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObj
     const double base_price = get_snapshot_reference_price(snapshot);
 
     auto order_book = std::make_unique<OrderBook>(
+        instrument,
         base_price,
         instrument->price_precision,
         m_depth
@@ -88,7 +89,6 @@ Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObj
     order_book.apply_update(*snapshot);
 
     OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
-    output_snapshot->update_instrument(snapshot->instrument);
 
     for (auto& callback : m_update_callbacks)
     {
