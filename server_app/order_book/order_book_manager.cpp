@@ -48,11 +48,6 @@ double OrderBookManager::get_snapshot_reference_price(const OrderBookSnapShotObj
     const bool has_bid = snapshot->bids_size > 0;
     const bool has_ask = snapshot->asks_size > 0;
 
-    if (has_bid && has_ask)
-    {
-        return (snapshot->bids[0].price + snapshot->asks[0].price) * 0.5;
-    }
-
     if (has_bid)
     {
         return snapshot->bids[0].price;
