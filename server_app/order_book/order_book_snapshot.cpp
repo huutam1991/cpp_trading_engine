@@ -28,22 +28,22 @@ double OrderBookSnapShot::get_mid_price()
 
 double OrderBookSnapShot::get_best_bid()
 {
-    return bids[0].price;
+    return bids_size > 0 ? bids[0].price : 0.0;
 }
 
 double OrderBookSnapShot::get_best_ask()
 {
-    return asks[0].price;
+    return asks_size > 0 ? asks[0].price : 0.0;
 }
 
 double OrderBookSnapShot::get_best_bid_quantity()
 {
-    return bids[0].quantity;
+    return bids_size > 0 ? bids[0].quantity : 0.0;
 }
 
 double OrderBookSnapShot::get_best_ask_quantity()
 {
-    return asks[0].quantity;
+    return asks_size > 0 ? asks[0].quantity : 0.0;
 }
 
 double OrderBookSnapShot::get_bid_volume()

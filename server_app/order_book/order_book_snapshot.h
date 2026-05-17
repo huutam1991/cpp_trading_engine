@@ -36,17 +36,33 @@ public:
         instrument = instr;
     }
 
+    void resize(size_t new_size)
+    {
+        bids.resize(new_size);
+        asks.resize(new_size);
+    }
+
     void refresh();
     void print_order_book();
 
     inline void add_bid(double price, double quantity)
     {
+        if (bids_size >= bids.size())
+        {
+            return;
+        }
+
         bids[bids_size].price = price;
         bids[bids_size++].quantity = quantity;
     }
 
     inline void add_ask(double price, double quantity)
     {
+        if (asks_size >= asks.size())
+        {
+            return;
+        }
+
         asks[asks_size].price = price;
         asks[asks_size++].quantity = quantity;
     }
