@@ -110,6 +110,51 @@ public:
         }
     }
 
+    inline OrderBookSnapShotObject get_order_book_snapshot(std::size_t levels) const
+    {
+        OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+
+        snapshot->resize(levels);
+
+        std::size_t bid_count = 0;
+        std::size_t ask_count = 0;
+
+        //
+        // bids
+        //
+        for (std::size_t i = m_bids.size(); i > 0 && bid_count < levels; --i)
+        {
+            const std::size_t index = i - 1;
+            const double quantity = m_bids.quantity_at_index(index);
+
+            if (quantity <= 0.0)
+            {
+                continue;
+            }
+
+            snapshot->add_bid(m_bids.index_to_price(index), quantity);
+            ++bid_count;
+        }
+
+        //
+        // asks
+        //
+        for (std::size_t index = 0; index < m_asks.size() && ask_count < levels; ++index)
+        {
+            const double quantity = m_asks.quantity_at_index(index);
+
+            if (quantity <= 0.0)
+            {
+                continue;
+            }
+
+            snapshot->add_ask(m_asks.index_to_price(index), quantity);
+            ++ask_count;
+        }
+
+        return snapshot;
+    }
+
     inline void set_bid(double price, double quantity)
     {
         apply_update({
@@ -330,51 +375,6 @@ private:
     inline const OrderBookSide& get_side(OrderBookSideType side) const noexcept
     {
         return side == OrderBookSideType::Bid ? m_bids : m_asks;
-    }
-
-    inline OrderBookSnapShotObject get_order_book_snapshot(std::size_t levels) const
-    {
-        OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
-
-        snapshot->resize(levels);
-
-        std::size_t bid_count = 0;
-        std::size_t ask_count = 0;
-
-        //
-        // bids
-        //
-        for (std::size_t i = m_bids.size(); i > 0 && bid_count < levels; --i)
-        {
-            const std::size_t index = i - 1;
-            const double quantity = m_bids.quantity_at_index(index);
-
-            if (quantity <= 0.0)
-            {
-                continue;
-            }
-
-            snapshot->add_bid(m_bids.index_to_price(index), quantity);
-            ++bid_count;
-        }
-
-        //
-        // asks
-        //
-        for (std::size_t index = 0; index < m_asks.size() && ask_count < levels; ++index)
-        {
-            const double quantity = m_asks.quantity_at_index(index);
-
-            if (quantity <= 0.0)
-            {
-                continue;
-            }
-
-            snapshot->add_ask(m_asks.index_to_price(index), quantity);
-            ++ask_count;
-        }
-
-        return snapshot;
     }
 
 private:
