@@ -37,6 +37,7 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/server_app/app_utils/*.h
     ${PROJECT_ROOT}/server_app/app_utils/*.hpp
     ${PROJECT_ROOT}/server_app/order_book/order_book_side.h
+    ${PROJECT_ROOT}/server_app/order_book/order_book.h
 )
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/cache/*.c
@@ -52,6 +53,7 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/server_app/app_utils/*.c
     ${PROJECT_ROOT}/server_app/app_utils/*.cpp
     ${PROJECT_ROOT}/server_app/order_book/order_book_side.cpp
+    ${PROJECT_ROOT}/server_app/order_book/order_book.cpp
 )
 
 # Test sources
