@@ -413,3 +413,234 @@ TEST(OrderBookTest, AddAndUpdateProduceSameFinalState)
     ASSERT_NEAR(book.best_ask_price(), 1000.5, EPS);
     ASSERT_NEAR(book.best_ask_quantity(), 25.0, EPS);
 }
+
+TEST(OrderBookTest, ApplySnapshotBuildsBidAndAskBook)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(999.5, 10.0);
+    snapshot.add_bid(999.0, 5.0);
+
+    snapshot.add_ask(1000.5, 20.0);
+    snapshot.add_ask(1001.0, 8.0);
+
+    book.apply_update(snapshot);
+
+    ASSERT_TRUE(book.has_best_bid());
+    ASSERT_TRUE(book.has_best_ask());
+
+    ASSERT_NEAR(book.best_bid_price(), 999.5, EPS);
+    ASSERT_NEAR(book.best_bid_quantity(), 10.0, EPS);
+
+    ASSERT_NEAR(book.best_ask_price(), 1000.5, EPS);
+    ASSERT_NEAR(book.best_ask_quantity(), 20.0, EPS);
+
+    ASSERT_NEAR(book.spread(), 1.0, EPS);
+    ASSERT_NEAR(book.mid_price(), 1000.0, EPS);
+}
+
+TEST(OrderBookTest, ApplySnapshotClearsOldBookState)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(999.5, 10.0);
+    book.set_ask(1000.5, 20.0);
+
+    ASSERT_TRUE(book.has_best_bid());
+    ASSERT_TRUE(book.has_best_ask());
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(998.5, 7.0);
+    snapshot.add_ask(1002.0, 9.0);
+
+    book.apply_update(snapshot);
+
+    ASSERT_TRUE(book.has_best_bid());
+    ASSERT_TRUE(book.has_best_ask());
+
+    ASSERT_NEAR(book.best_bid_price(), 998.5, EPS);
+    ASSERT_NEAR(book.best_bid_quantity(), 7.0, EPS);
+
+    ASSERT_NEAR(book.best_ask_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.best_ask_quantity(), 9.0, EPS);
+
+    ASSERT_NEAR(book.get_bid_quantity(999.5), 0.0, EPS);
+    ASSERT_NEAR(book.get_ask_quantity(1000.5), 0.0, EPS);
+}
+
+TEST(OrderBookTest, ApplyEmptySnapshotClearsBook)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.set_bid(999.5, 10.0);
+    book.set_ask(1000.5, 20.0);
+
+    OrderBookSnapShot snapshot;
+
+    book.apply_update(snapshot);
+
+    ASSERT_FALSE(book.has_best_bid());
+    ASSERT_FALSE(book.has_best_ask());
+    ASSERT_FALSE(book.has_spread());
+
+    ASSERT_DOUBLE_EQ(book.best_bid_price(), 0.0);
+    ASSERT_DOUBLE_EQ(book.best_ask_price(), 0.0);
+    ASSERT_DOUBLE_EQ(book.spread(), 0.0);
+    ASSERT_DOUBLE_EQ(book.mid_price(), 0.0);
+}
+
+TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateBid)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(999.0, 5.0);
+    snapshot.add_bid(999.5, 10.0);
+
+    snapshot.add_ask(1000.5, 20.0);
+    snapshot.add_ask(1001.0, 8.0);
+
+    book.apply_update(snapshot);
+
+    book.apply_update({
+        OrderBookSideType::Bid,
+        OrderBookUpdateType::Update,
+        999.5,
+        30.0
+    });
+
+    ASSERT_NEAR(book.best_bid_price(), 999.5, EPS);
+    ASSERT_NEAR(book.best_bid_quantity(), 30.0, EPS);
+
+    book.apply_update({
+        OrderBookSideType::Bid,
+        OrderBookUpdateType::Add,
+        1000.0,
+        12.0
+    });
+
+    ASSERT_NEAR(book.best_bid_price(), 1000.0, EPS);
+    ASSERT_NEAR(book.best_bid_quantity(), 12.0, EPS);
+}
+
+TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateAsk)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(999.5, 10.0);
+    snapshot.add_ask(1001.0, 8.0);
+    snapshot.add_ask(1000.5, 20.0);
+
+    book.apply_update(snapshot);
+
+    book.apply_update({
+        OrderBookSideType::Ask,
+        OrderBookUpdateType::Update,
+        1000.5,
+        30.0
+    });
+
+    ASSERT_NEAR(book.best_ask_price(), 1000.5, EPS);
+    ASSERT_NEAR(book.best_ask_quantity(), 30.0, EPS);
+
+    book.apply_update({
+        OrderBookSideType::Ask,
+        OrderBookUpdateType::Add,
+        1000.0,
+        6.0
+    });
+
+    ASSERT_NEAR(book.best_ask_price(), 1000.0, EPS);
+    ASSERT_NEAR(book.best_ask_quantity(), 6.0, EPS);
+}
+
+TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveBidTop)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(999.5, 10.0);
+    snapshot.add_bid(999.0, 5.0);
+    snapshot.add_ask(1000.5, 20.0);
+
+    book.apply_update(snapshot);
+
+    book.apply_update({
+        OrderBookSideType::Bid,
+        OrderBookUpdateType::Remove,
+        999.5,
+        0.0
+    });
+
+    ASSERT_TRUE(book.has_best_bid());
+    ASSERT_NEAR(book.best_bid_price(), 999.0, EPS);
+    ASSERT_NEAR(book.best_bid_quantity(), 5.0, EPS);
+}
+
+TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveAskTop)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(999.5, 10.0);
+    snapshot.add_ask(1000.5, 20.0);
+    snapshot.add_ask(1001.0, 8.0);
+
+    book.apply_update(snapshot);
+
+    book.apply_update({
+        OrderBookSideType::Ask,
+        OrderBookUpdateType::Remove,
+        1000.5,
+        0.0
+    });
+
+    ASSERT_TRUE(book.has_best_ask());
+    ASSERT_NEAR(book.best_ask_price(), 1001.0, EPS);
+    ASSERT_NEAR(book.best_ask_quantity(), 8.0, EPS);
+}
+
+TEST(OrderBookTest, IncrementalUpdatesThenApplySnapshotReplacesEverything)
+{
+    OrderBook book(1000.0, 0.5, 100);
+
+    book.apply_update({
+        OrderBookSideType::Bid,
+        OrderBookUpdateType::Add,
+        999.5,
+        10.0
+    });
+
+    book.apply_update({
+        OrderBookSideType::Ask,
+        OrderBookUpdateType::Add,
+        1000.5,
+        20.0
+    });
+
+    ASSERT_TRUE(book.has_spread());
+
+    OrderBookSnapShot snapshot;
+
+    snapshot.add_bid(998.5, 7.0);
+    snapshot.add_ask(1002.0, 9.0);
+
+    book.apply_update(snapshot);
+
+    ASSERT_NEAR(book.best_bid_price(), 998.5, EPS);
+    ASSERT_NEAR(book.best_bid_quantity(), 7.0, EPS);
+
+    ASSERT_NEAR(book.best_ask_price(), 1002.0, EPS);
+    ASSERT_NEAR(book.best_ask_quantity(), 9.0, EPS);
+
+    ASSERT_NEAR(book.get_bid_quantity(999.5), 0.0, EPS);
+    ASSERT_NEAR(book.get_ask_quantity(1000.5), 0.0, EPS);
+}
