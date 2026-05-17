@@ -28,8 +28,24 @@ public:
         double tick_size,
         std::size_t depth
     )
+        : OrderBook(
+              base_price,
+              tick_size,
+              depth,
+              tick_size * static_cast<double>(depth) * DEFAULT_REBASE_DELTA_RATIO
+          )
+    {
+    }
+
+    OrderBook(
+        double base_price,
+        double tick_size,
+        std::size_t depth,
+        double rebase_delta
+    )
         : m_bids(OrderBookSideType::Bid, base_price, tick_size, depth),
-          m_asks(OrderBookSideType::Ask, base_price, tick_size, depth)
+          m_asks(OrderBookSideType::Ask, base_price, tick_size, depth),
+          m_rebase_delta(rebase_delta)
     {
     }
 
@@ -39,8 +55,15 @@ public:
         m_asks.clear();
     }
 
-    inline void apply_update(const OrderBookSnapShot& snapshot) noexcept
+    inline void apply_update(const OrderBookSnapShot& snapshot)
     {
+        const double reference_price = snapshot_reference_price(snapshot);
+
+        if (reference_price > 0.0)
+        {
+            maybe_rebase_by_price(reference_price);
+        }
+
         reset();
 
         for (std::size_t i = 0; i < snapshot.bids_size; ++i)
@@ -64,8 +87,10 @@ public:
         }
     }
 
-    inline void apply_update(const OrderBookUpdate& update) noexcept
+    inline void apply_update(const OrderBookUpdate& update)
     {
+        maybe_rebase_by_price(update.price);
+
         OrderBookSide& side = get_mutable_side(update.side);
 
         switch (update.type)
@@ -85,7 +110,7 @@ public:
         }
     }
 
-    inline void set_bid(double price, double quantity) noexcept
+    inline void set_bid(double price, double quantity)
     {
         apply_update({
             OrderBookSideType::Bid,
@@ -95,7 +120,7 @@ public:
         });
     }
 
-    inline void set_ask(double price, double quantity) noexcept
+    inline void set_ask(double price, double quantity)
     {
         apply_update({
             OrderBookSideType::Ask,
@@ -105,7 +130,7 @@ public:
         });
     }
 
-    inline void remove_bid(double price) noexcept
+    inline void remove_bid(double price)
     {
         apply_update({
             OrderBookSideType::Bid,
@@ -115,7 +140,7 @@ public:
         });
     }
 
-    inline void remove_ask(double price) noexcept
+    inline void remove_ask(double price)
     {
         apply_update({
             OrderBookSideType::Ask,
@@ -123,6 +148,28 @@ public:
             price,
             0.0
         });
+    }
+
+    inline bool should_rebase_by_price(double price) const noexcept
+    {
+        return m_bids.in_rebase_trigger_zone(price, m_rebase_delta) ||
+            m_asks.in_rebase_trigger_zone(price, m_rebase_delta);
+    }
+
+    inline void maybe_rebase_by_price(double price)
+    {
+        if (!should_rebase_by_price(price))
+        {
+            return;
+        }
+
+        move_to_new_base_price(price);
+    }
+
+    inline void move_to_new_base_price(double new_base_price)
+    {
+        m_bids.move_to_new_base_price(new_base_price);
+        m_asks.move_to_new_base_price(new_base_price);
     }
 
     inline double get_bid_quantity(double price) const noexcept
@@ -221,6 +268,16 @@ public:
         return m_bids.size();
     }
 
+    inline double rebase_delta() const noexcept
+    {
+        return m_rebase_delta;
+    }
+
+    inline void set_rebase_delta(double rebase_delta) noexcept
+    {
+        m_rebase_delta = rebase_delta;
+    }
+
     inline const OrderBookSide& bids() const noexcept
     {
         return m_bids;
@@ -242,6 +299,29 @@ public:
     }
 
 private:
+    inline double snapshot_reference_price(const OrderBookSnapShot& snapshot) const noexcept
+    {
+        const bool has_bid = snapshot.bids_size > 0;
+        const bool has_ask = snapshot.asks_size > 0;
+
+        if (has_bid && has_ask)
+        {
+            return (snapshot.bids[0].price + snapshot.asks[0].price) * 0.5;
+        }
+
+        if (has_bid)
+        {
+            return snapshot.bids[0].price;
+        }
+
+        if (has_ask)
+        {
+            return snapshot.asks[0].price;
+        }
+
+        return 0.0;
+    }
+
     inline OrderBookSide& get_mutable_side(OrderBookSideType side) noexcept
     {
         return side == OrderBookSideType::Bid ? m_bids : m_asks;
@@ -253,6 +333,11 @@ private:
     }
 
 private:
+    static constexpr double DEFAULT_REBASE_DELTA_RATIO = 0.10;
+
+private:
     OrderBookSide m_bids;
     OrderBookSide m_asks;
+
+    double m_rebase_delta;
 };

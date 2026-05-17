@@ -84,6 +84,27 @@ public:
         return valid_index(price_to_index(price));
     }
 
+    inline double range_min_price() const noexcept
+    {
+        return index_to_price(0);
+    }
+
+    inline double range_max_price() const noexcept
+    {
+        return index_to_price(m_levels.size() - 1);
+    }
+
+    inline bool near_boundary(double price, double delta) const noexcept
+    {
+        return price <= range_min_price() + delta ||
+               price >= range_max_price() - delta;
+    }
+
+    inline bool in_rebase_trigger_zone(double price, double delta) const noexcept
+    {
+        return valid_price(price) && near_boundary(price, delta);
+    }
+
     inline void set_level(double price, double quantity) noexcept
     {
         const auto index = price_to_index(price);
@@ -187,11 +208,32 @@ public:
     void reset_base_price(double new_base_price)
     {
         m_base_price = new_base_price;
+        clear();
+    }
 
-        std::fill(m_levels.begin(), m_levels.end(), 0.0);
-        std::fill(m_non_empty_words.begin(), m_non_empty_words.end(), 0);
+    void move_to_new_base_price(double new_base_price)
+    {
+        OrderBookSide new_side(
+            m_side,
+            new_base_price,
+            m_tick_size,
+            m_levels.size()
+        );
 
-        m_top_index = INVALID_INDEX;
+        for (std::size_t i = 0; i < m_levels.size(); ++i)
+        {
+            const double quantity = m_levels[i];
+
+            if (quantity <= 0.0)
+            {
+                continue;
+            }
+
+            const double price = index_to_price(i);
+            new_side.set_level(price, quantity);
+        }
+
+        *this = std::move(new_side);
     }
 
 private:
