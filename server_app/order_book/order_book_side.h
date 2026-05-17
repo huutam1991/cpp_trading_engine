@@ -5,6 +5,10 @@
 #include <cstdint>
 #include <stdexcept>
 #include <limits>
+#include <algorithm>
+#include <bit>
+
+#include <time/measure_time.h>
 
 class OrderBookSide
 {
@@ -15,6 +19,7 @@ public:
           m_inv_tick_size(1.0 / tick_size),
           m_center_index(depth / 2),
           m_levels(depth, 0.0),
+          m_non_empty_words((depth + WORD_BITS - 1) / WORD_BITS, 0),
           m_top_index(INVALID_INDEX)
     {
         if (tick_size <= 0.0)
@@ -73,6 +78,8 @@ public:
 
         if (quantity > 0.0)
         {
+            set_non_empty(index);
+
             if (m_top_index == INVALID_INDEX || index > m_top_index)
             {
                 m_top_index = index;
@@ -80,9 +87,11 @@ public:
         }
         else
         {
+            clear_non_empty(index);
+
             if (index == m_top_index)
             {
-                rebuild_top();
+                rebuild_top_from_bitmap();
             }
         }
     }
@@ -155,25 +164,49 @@ public:
     {
         m_base_price = new_base_price;
 
-        std::fill(
-            m_levels.begin(),
-            m_levels.end(),
-            0.0
-        );
+        std::fill(m_levels.begin(), m_levels.end(), 0.0);
+        std::fill(m_non_empty_words.begin(), m_non_empty_words.end(), 0);
 
         m_top_index = INVALID_INDEX;
     }
 
 private:
-    void rebuild_top() noexcept
+    inline void set_non_empty(std::size_t index) noexcept
+    {
+        const std::size_t word_index = index / WORD_BITS;
+        const std::size_t bit_index = index % WORD_BITS;
+
+        m_non_empty_words[word_index] |= (uint64_t{1} << bit_index);
+    }
+
+    inline void clear_non_empty(std::size_t index) noexcept
+    {
+        const std::size_t word_index = index / WORD_BITS;
+        const std::size_t bit_index = index % WORD_BITS;
+
+        m_non_empty_words[word_index] &= ~(uint64_t{1} << bit_index);
+    }
+
+    void rebuild_top_from_bitmap() noexcept
     {
         m_top_index = INVALID_INDEX;
 
-        for (std::size_t i = m_levels.size(); i > 0; --i)
+        for (std::size_t word_pos = m_non_empty_words.size(); word_pos > 0; --word_pos)
         {
-            const auto index = i - 1;
+            const std::size_t word_index = word_pos - 1;
+            const uint64_t word = m_non_empty_words[word_index];
 
-            if (m_levels[index] > 0.0)
+            if (word == 0)
+            {
+                continue;
+            }
+
+            const std::size_t highest_bit =
+                WORD_BITS - 1 - static_cast<std::size_t>(std::countl_zero(word));
+
+            const std::size_t index = word_index * WORD_BITS + highest_bit;
+
+            if (index < m_levels.size())
             {
                 m_top_index = index;
                 return;
@@ -182,6 +215,8 @@ private:
     }
 
 private:
+    static constexpr std::size_t WORD_BITS = 64;
+
     static constexpr std::size_t INVALID_INDEX =
         std::numeric_limits<std::size_t>::max();
 
@@ -192,7 +227,8 @@ private:
 
     std::size_t m_center_index;
 
-    std::size_t m_top_index;
-
     std::vector<double> m_levels;
+    std::vector<uint64_t> m_non_empty_words;
+
+    std::size_t m_top_index;
 };
