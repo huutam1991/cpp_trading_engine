@@ -10,11 +10,23 @@
 
 #include <time/measure_time.h>
 
+enum class OrderBookSideType
+{
+    Bid,
+    Ask
+};
+
 class OrderBookSide
 {
 public:
-    OrderBookSide(double base_price, double tick_size, std::size_t depth)
-        : m_base_price(base_price),
+    OrderBookSide(
+        OrderBookSideType side,
+        double base_price,
+        double tick_size,
+        std::size_t depth
+    )
+        : m_side(side),
+          m_base_price(base_price),
           m_tick_size(tick_size),
           m_inv_tick_size(1.0 / tick_size),
           m_center_index(depth / 2),
@@ -80,7 +92,7 @@ public:
         {
             set_non_empty(index);
 
-            if (m_top_index == INVALID_INDEX || index > m_top_index)
+            if (is_better_top(index))
             {
                 m_top_index = index;
             }
@@ -135,6 +147,11 @@ public:
         return m_tick_size;
     }
 
+    inline OrderBookSideType side() const noexcept
+    {
+        return m_side;
+    }
+
     inline bool has_top() const noexcept
     {
         return m_top_index != INVALID_INDEX;
@@ -171,6 +188,21 @@ public:
     }
 
 private:
+    inline bool is_better_top(std::size_t index) const noexcept
+    {
+        if (m_top_index == INVALID_INDEX)
+        {
+            return true;
+        }
+
+        if (m_side == OrderBookSideType::Bid)
+        {
+            return index > m_top_index;
+        }
+
+        return index < m_top_index;
+    }
+
     inline void set_non_empty(std::size_t index) noexcept
     {
         const std::size_t word_index = index / WORD_BITS;
@@ -188,6 +220,18 @@ private:
     }
 
     void rebuild_top_from_bitmap() noexcept
+    {
+        if (m_side == OrderBookSideType::Bid)
+        {
+            rebuild_bid_top_from_bitmap();
+        }
+        else
+        {
+            rebuild_ask_top_from_bitmap();
+        }
+    }
+
+    void rebuild_bid_top_from_bitmap() noexcept
     {
         m_top_index = INVALID_INDEX;
 
@@ -214,6 +258,32 @@ private:
         }
     }
 
+    void rebuild_ask_top_from_bitmap() noexcept
+    {
+        m_top_index = INVALID_INDEX;
+
+        for (std::size_t word_index = 0; word_index < m_non_empty_words.size(); ++word_index)
+        {
+            const uint64_t word = m_non_empty_words[word_index];
+
+            if (word == 0)
+            {
+                continue;
+            }
+
+            const std::size_t lowest_bit =
+                static_cast<std::size_t>(std::countr_zero(word));
+
+            const std::size_t index = word_index * WORD_BITS + lowest_bit;
+
+            if (index < m_levels.size())
+            {
+                m_top_index = index;
+                return;
+            }
+        }
+    }
+
 private:
     static constexpr std::size_t WORD_BITS = 64;
 
@@ -221,6 +291,8 @@ private:
         std::numeric_limits<std::size_t>::max();
 
 private:
+    OrderBookSideType m_side;
+
     double m_base_price;
     double m_tick_size;
     double m_inv_tick_size;
