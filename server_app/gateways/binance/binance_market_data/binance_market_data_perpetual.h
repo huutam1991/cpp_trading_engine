@@ -6,7 +6,7 @@
 #include <json/json.h>
 
 #include <instrument/instrument.h>
-#include <gateways/binance/binance_market_data/order_book/order_book.h>
+#include <gateways/binance/binance_market_data/order_book/binance_order_book.h>
 #include <gateways/binance/binance_market_data/trade_data/trade_data.h>
 
 class BinanceMarketDataPerpetual
@@ -33,7 +33,7 @@ private:
 
     struct MarketData
     {
-        std::shared_ptr<OrderBook> orderbook = nullptr;
+        std::shared_ptr<BinanceOrderBook> orderbook = nullptr;
         std::shared_ptr<BinanceTradeData> trade_data = nullptr;
     };
 

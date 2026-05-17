@@ -96,7 +96,7 @@ void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)
     }
 
     auto market_data = std::make_shared<MarketData>();
-    market_data->orderbook = std::make_shared<OrderBook>(instrument->exchange_symbol, 10, m_event_base);
+    market_data->orderbook = std::make_shared<BinanceOrderBook>(instrument->exchange_symbol, 10, m_event_base);
     market_data->trade_data = std::make_shared<BinanceTradeData>(instrument->exchange_symbol, m_event_base);
     m_market_data.insert(std::make_pair(instrument, market_data));
 }

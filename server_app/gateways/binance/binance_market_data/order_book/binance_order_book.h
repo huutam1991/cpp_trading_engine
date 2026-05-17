@@ -11,10 +11,10 @@
 #include <gateways/binance/binance_market_data/order_book/order_book_websocket/order_book_websocket.h>
 #include <gateways/binance/binance_market_data/order_book/order_book_rest/order_book_rest.h>
 
-class OrderBook
+class BinanceOrderBook
 {
 public:
-    OrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base);
+    BinanceOrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base);
     Task<void> send_request_get_full_order_book();
 
     bool is_not_synced();

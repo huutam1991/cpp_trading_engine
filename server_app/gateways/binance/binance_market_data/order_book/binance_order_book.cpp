@@ -1,8 +1,8 @@
-#include <gateways/binance/binance_market_data/order_book/order_book.h>
+#include <gateways/binance/binance_market_data/order_book/binance_order_book.h>
 #include <utils/dedupe_checker.h>
 #include <iomanip>
 
-OrderBook::OrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base)
+BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base)
     :   m_symbol{symbol},
         m_instrument{Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol)},
         m_depth_level{depth_level},
@@ -16,13 +16,13 @@ OrderBook::OrderBook(const std::string& symbol, size_t depth_level, EpollBase* e
         m_order_book_rest{}
 {}
 
-Task<void> OrderBook::release_current_update(Json update)
+Task<void> BinanceOrderBook::release_current_update(Json update)
 {
     // Just return here, because the goal is just to release the Json object on the other task
     co_return;
 }
 
-Task<void> OrderBook::send_request_get_full_order_book()
+Task<void> BinanceOrderBook::send_request_get_full_order_book()
 {
     std::string data = co_await m_order_book_rest.get_order_book(m_symbol, m_depth_level);
 
@@ -32,14 +32,14 @@ Task<void> OrderBook::send_request_get_full_order_book()
     co_return;
 }
 
-bool OrderBook::is_not_synced()
+bool BinanceOrderBook::is_not_synced()
 {
     return m_snapshot_loaded == false || m_ws_waiting_first_event == true;
 }
 
-void OrderBook::OnOrderbookWs(std::string data)
+void BinanceOrderBook::OnOrderbookWs(std::string data)
 {
-    // MeasureTime t("OrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
+    // MeasureTime t("BinanceOrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
     // if (DedupeChecker::is_duplicate(data) == true)
     // {
     //     spdlog::debug("[WS] data is duplicate: {}", data);
@@ -96,7 +96,7 @@ void OrderBook::OnOrderbookWs(std::string data)
     // Apply asks
     update["a"].for_each([this, snapshot](Json& level) mutable
     {
-        // MeasureTime t("OrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
+        // MeasureTime t("BinanceOrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
@@ -115,7 +115,7 @@ void OrderBook::OnOrderbookWs(std::string data)
     // Apply bids
     update["b"].for_each([this, snapshot](Json& level) mutable
     {
-        // MeasureTime t("OrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
+        // MeasureTime t("BinanceOrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
@@ -137,7 +137,7 @@ void OrderBook::OnOrderbookWs(std::string data)
     // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
 }
 
-void OrderBook::OnOrderbookRest(std::string data)
+void BinanceOrderBook::OnOrderbookRest(std::string data)
 {
     if (DedupeChecker::is_duplicate(data) == true)
     {
@@ -157,7 +157,7 @@ void OrderBook::OnOrderbookRest(std::string data)
     }
 }
 
-void OrderBook::apply_snapshot(Json& snapshsot)
+void BinanceOrderBook::apply_snapshot(Json& snapshsot)
 {
     // Update Ask
     m_asks.clear();
@@ -185,7 +185,7 @@ void OrderBook::apply_snapshot(Json& snapshsot)
     print_order_book();
 }
 
-void OrderBook::export_snapshot()
+void BinanceOrderBook::export_snapshot()
 {
     OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
     snapshot->update_instrument(m_instrument);
@@ -202,9 +202,9 @@ void OrderBook::export_snapshot()
     OrderBookManager::instance().publish_order_book_snapshot(snapshot);
 }
 
-void OrderBook::print_order_book()
+void BinanceOrderBook::print_order_book()
 {
-    spdlog::debug("[Rest] OrderBook update snapshot for symbol: {}", m_symbol);
+    spdlog::debug("[Rest] BinanceOrderBook update snapshot for symbol: {}", m_symbol);
     spdlog::debug("[Rest] asks: ");
     for (auto& [price, quantity] : m_asks)
     {
