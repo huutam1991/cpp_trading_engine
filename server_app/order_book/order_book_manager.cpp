@@ -92,12 +92,9 @@ Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObj
     }
 
     OrderBook& order_book = get_or_create_order_book(snapshot);
-
     order_book.apply_update(*snapshot);
 
-    OrderBookSnapShotObject output_snapshot =
-        order_book.get_order_book_snapshot(m_publish_levels);
-
+    OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
     output_snapshot->update_instrument(snapshot->instrument);
 
     for (auto& callback : m_update_callbacks)
