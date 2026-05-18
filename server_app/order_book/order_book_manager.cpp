@@ -42,17 +42,27 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObj
     return *(inserted_it->second);
 }
 
-OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookUpdate& snapshot)
+OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookUpdate& update)
 {
-    // const Instrument* instrument = snapshot->instrument;
+    const Instrument* instrument = update.instrument;
 
-    // auto it = m_order_books.find(instrument);
+    auto it = m_order_books.find(instrument);
 
-    // if (it != m_order_books.end())
-    // {
-    //     return *(it->second);
-    // }
+    if (it != m_order_books.end())
+    {
+        return *(it->second);
+    }
 
+    auto order_book = std::make_unique<OrderBook>(
+        instrument,
+        update.price,
+        instrument->price_precision,
+        m_depth
+    );
+
+    auto [inserted_it, inserted] = m_order_books.emplace(instrument, std::move(order_book));
+
+    return *(inserted_it->second);
 }
 
 

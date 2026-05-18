@@ -30,7 +30,7 @@ private:
     Task<void> run_update_order_book_snapshot(OrderBookSnapShotObject snapshot);
 
     OrderBook& get_or_create_order_book(const OrderBookSnapShotObject& snapshot);
-    OrderBook& get_or_create_order_book(const OrderBookUpdate& snapshot);
+    OrderBook& get_or_create_order_book(const OrderBookUpdate& update);
 
     double get_snapshot_reference_price(const OrderBookSnapShotObject& snapshot) const noexcept;
 
