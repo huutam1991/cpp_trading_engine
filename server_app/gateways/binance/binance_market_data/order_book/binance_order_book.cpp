@@ -131,7 +131,7 @@ void BinanceOrderBook::OnOrderbookWs(std::string data)
         // }
     });
 
-    OrderBookManager::instance().publish_order_book_snapshot(snapshot);
+    OrderBookManager::instance().publish_order_book_data(snapshot);
     release_current_update(std::move(update)).start_running_on(m_event_base);
 
     // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
@@ -199,7 +199,7 @@ void BinanceOrderBook::export_snapshot()
         snapshot->add_ask(price, quantity);
     }
 
-    OrderBookManager::instance().publish_order_book_snapshot(snapshot);
+    OrderBookManager::instance().publish_order_book_data(snapshot);
 }
 
 void BinanceOrderBook::print_order_book()
