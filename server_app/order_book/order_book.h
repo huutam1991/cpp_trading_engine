@@ -14,7 +14,7 @@ enum class OrderBookUpdateType
 
 struct OrderBookUpdate
 {
-    // const Instrument* instrument = nullptr;
+    const Instrument* instrument = nullptr;
     OrderBookSideType side;
     OrderBookUpdateType type;
     double price;
@@ -107,6 +107,7 @@ public:
     inline void set_bid(double price, double quantity)
     {
         apply_update({
+            m_instrument,
             OrderBookSideType::Bid,
             OrderBookUpdateType::Update,
             price,
@@ -117,6 +118,7 @@ public:
     inline void set_ask(double price, double quantity)
     {
         apply_update({
+            m_instrument,
             OrderBookSideType::Ask,
             OrderBookUpdateType::Update,
             price,
@@ -127,6 +129,7 @@ public:
     inline void remove_bid(double price)
     {
         apply_update({
+            m_instrument,
             OrderBookSideType::Bid,
             OrderBookUpdateType::Remove,
             price,
@@ -137,6 +140,7 @@ public:
     inline void remove_ask(double price)
     {
         apply_update({
+            m_instrument,
             OrderBookSideType::Ask,
             OrderBookUpdateType::Remove,
             price,
