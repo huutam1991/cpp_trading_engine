@@ -185,6 +185,11 @@ public:
         return m_top_index != INVALID_INDEX;
     }
 
+    inline size_t top_index() const noexcept
+    {
+        return m_top_index;
+    }
+
     inline double get_top_price() const noexcept
     {
         if (m_top_index == INVALID_INDEX)
