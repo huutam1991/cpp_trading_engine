@@ -28,6 +28,7 @@ private:
 
 private:
     Task<void> run_update_order_book_snapshot(OrderBookSnapShotObject snapshot);
+    Task<void> run_update_order_book_snapshot(OrderBookUpdate update);
 
     OrderBook& get_or_create_order_book(const OrderBookSnapShotObject& snapshot);
     OrderBook& get_or_create_order_book(const OrderBookUpdate& update);
@@ -37,7 +38,12 @@ private:
 public:
     void register_update(std::function<void(OrderBookSnapShotObject)> callback);
 
-    void publish_order_book_snapshot(OrderBookSnapShotObject snapshot);
+    template<class T>
+    void publish_order_book_snapshot(T update)
+    {
+        auto task = run_update_order_book_snapshot(update);
+        task.start_running_on(m_event_base);
+    }
 
     void set_config(
         double tick_size,

@@ -96,12 +96,6 @@ OrderBook* OrderBookManager::get_order_book(const Instrument* instrument) noexce
     return it->second.get();
 }
 
-void OrderBookManager::publish_order_book_snapshot(OrderBookSnapShotObject snapshot)
-{
-    auto task = run_update_order_book_snapshot(snapshot);
-    task.start_running_on(m_event_base);
-}
-
 Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObject snapshot)
 {
     if (snapshot == nullptr || snapshot->instrument == nullptr)
@@ -111,6 +105,26 @@ Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObj
 
     OrderBook& order_book = get_or_create_order_book(snapshot);
     order_book.apply_update(*snapshot);
+
+    OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
+
+    for (auto& callback : m_update_callbacks)
+    {
+        callback(output_snapshot);
+    }
+
+    co_return;
+}
+
+Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookUpdate update)
+{
+    if (update.instrument == nullptr)
+    {
+        co_return;
+    }
+
+    OrderBook& order_book = get_or_create_order_book(update);
+    order_book.apply_update(update);
 
     OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
 
