@@ -304,39 +304,45 @@ public:
         std::size_t bid_count = 0;
         std::size_t ask_count = 0;
 
-        for (std::size_t i = m_bids.size(); i > 0 && bid_count < levels; --i)
+        if (m_bids.has_top())
         {
-            const std::size_t index = i - 1;
-            const double quantity = m_bids.quantity_at_index(index);
-
-            if (quantity <= 0.0)
+            for (std::size_t i = m_bids.top_index() + 1; i > 0 && bid_count < levels; --i)
             {
-                continue;
+                const std::size_t index = i - 1;
+                const double quantity = m_bids.quantity_at_index(index);
+
+                if (quantity <= 0.0)
+                {
+                    continue;
+                }
+
+                snapshot->add_bid(
+                    m_bids.index_to_price(index),
+                    quantity
+                );
+
+                ++bid_count;
             }
-
-            snapshot->add_bid(
-                m_bids.index_to_price(index),
-                quantity
-            );
-
-            ++bid_count;
         }
 
-        for (std::size_t index = 0; index < m_asks.size() && ask_count < levels; ++index)
+        if (m_asks.has_top())
         {
-            const double quantity = m_asks.quantity_at_index(index);
-
-            if (quantity <= 0.0)
+            for (std::size_t index = m_asks.top_index(); index < m_asks.size() && ask_count < levels; ++index)
             {
-                continue;
+                const double quantity = m_asks.quantity_at_index(index);
+
+                if (quantity <= 0.0)
+                {
+                    continue;
+                }
+
+                snapshot->add_ask(
+                    m_asks.index_to_price(index),
+                    quantity
+                );
+
+                ++ask_count;
             }
-
-            snapshot->add_ask(
-                m_asks.index_to_price(index),
-                quantity
-            );
-
-            ++ask_count;
         }
 
         return snapshot;
