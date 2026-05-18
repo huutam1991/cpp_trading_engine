@@ -14,6 +14,7 @@ enum class OrderBookUpdateType
 
 struct OrderBookUpdate
 {
+    // const Instrument* instrument = nullptr;
     OrderBookSideType side;
     OrderBookUpdateType type;
     double price;
@@ -65,22 +66,12 @@ public:
 
         for (std::size_t i = 0; i < snapshot.bids_size; ++i)
         {
-            apply_update_without_rebase({
-                OrderBookSideType::Bid,
-                OrderBookUpdateType::Update,
-                snapshot.bids[i].price,
-                snapshot.bids[i].quantity
-            });
+            m_bids.set_level(snapshot.bids[i].price, snapshot.bids[i].quantity);
         }
 
         for (std::size_t i = 0; i < snapshot.asks_size; ++i)
         {
-            apply_update_without_rebase({
-                OrderBookSideType::Ask,
-                OrderBookUpdateType::Update,
-                snapshot.asks[i].price,
-                snapshot.asks[i].quantity
-            });
+            m_asks.set_level(snapshot.asks[i].price, snapshot.asks[i].quantity);
         }
 
         maybe_rebase();
