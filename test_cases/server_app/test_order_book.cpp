@@ -5,7 +5,7 @@ static constexpr double EPS = 1e-12;
 
 TEST(OrderBookTest, ConstructorInitialization)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     ASSERT_DOUBLE_EQ(book.base_price(), 1000.0);
     ASSERT_DOUBLE_EQ(book.tick_size(), 0.5);
@@ -18,7 +18,7 @@ TEST(OrderBookTest, ConstructorInitialization)
 
 TEST(OrderBookTest, SetBidUpdatesBestBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_bid(999.0, 20.0);
@@ -30,7 +30,7 @@ TEST(OrderBookTest, SetBidUpdatesBestBid)
 
 TEST(OrderBookTest, SetAskUpdatesBestAsk)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_ask(1001.0, 20.0);
     book.set_ask(1000.5, 10.0);
@@ -42,7 +42,7 @@ TEST(OrderBookTest, SetAskUpdatesBestAsk)
 
 TEST(OrderBookTest, BidAndAskSpreadAndMidPrice)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -54,7 +54,7 @@ TEST(OrderBookTest, BidAndAskSpreadAndMidPrice)
 
 TEST(OrderBookTest, GetBidAndAskQuantity)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -65,7 +65,7 @@ TEST(OrderBookTest, GetBidAndAskQuantity)
 
 TEST(OrderBookTest, RemoveBidFallsBackToNextBestBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.0, 10.0);
     book.set_bid(999.5, 20.0);
@@ -81,7 +81,7 @@ TEST(OrderBookTest, RemoveBidFallsBackToNextBestBid)
 
 TEST(OrderBookTest, RemoveAskFallsBackToNextBestAsk)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_ask(1000.5, 10.0);
     book.set_ask(1001.0, 20.0);
@@ -97,7 +97,7 @@ TEST(OrderBookTest, RemoveAskFallsBackToNextBestAsk)
 
 TEST(OrderBookTest, ApplyUpdateAddBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookUpdate update{
         OrderBookSideType::Bid,
@@ -115,7 +115,7 @@ TEST(OrderBookTest, ApplyUpdateAddBid)
 
 TEST(OrderBookTest, ApplyUpdateUpdateAsk)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
         OrderBookSideType::Ask,
@@ -138,7 +138,7 @@ TEST(OrderBookTest, ApplyUpdateUpdateAsk)
 
 TEST(OrderBookTest, ApplyUpdateRemoveBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
         OrderBookSideType::Bid,
@@ -163,7 +163,7 @@ TEST(OrderBookTest, ApplyUpdateRemoveBid)
 
 TEST(OrderBookTest, CrossedBookDetection)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(1001.0, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -175,7 +175,7 @@ TEST(OrderBookTest, CrossedBookDetection)
 
 TEST(OrderBookTest, ResetBasePriceClearsBothSides)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -197,7 +197,7 @@ TEST(OrderBookTest, ResetBasePriceClearsBothSides)
 
 TEST(OrderBookTest, EmptyBookSpreadMidAndCrossed)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     ASSERT_FALSE(book.has_best_bid());
     ASSERT_FALSE(book.has_best_ask());
@@ -212,7 +212,7 @@ TEST(OrderBookTest, EmptyBookSpreadMidAndCrossed)
 
 TEST(OrderBookTest, OnlyBidNoAsk)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
 
@@ -229,7 +229,7 @@ TEST(OrderBookTest, OnlyBidNoAsk)
 
 TEST(OrderBookTest, OnlyAskNoBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_ask(1000.5, 10.0);
 
@@ -246,7 +246,7 @@ TEST(OrderBookTest, OnlyAskNoBid)
 
 TEST(OrderBookTest, RemoveNonTopBidDoesNotChangeBestBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.0, 5.0);
     book.set_bid(999.5, 10.0);
@@ -262,7 +262,7 @@ TEST(OrderBookTest, RemoveNonTopBidDoesNotChangeBestBid)
 
 TEST(OrderBookTest, RemoveNonTopAskDoesNotChangeBestAsk)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_ask(1000.5, 10.0);
     book.set_ask(1001.0, 5.0);
@@ -278,7 +278,7 @@ TEST(OrderBookTest, RemoveNonTopAskDoesNotChangeBestAsk)
 
 TEST(OrderBookTest, OutOfRangeBidAndAskUpdatesDoNotAffectBook)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -298,7 +298,7 @@ TEST(OrderBookTest, OutOfRangeBidAndAskUpdatesDoNotAffectBook)
 
 TEST(OrderBookTest, UpdateQuantityZeroBehavesLikeRemove)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
         OrderBookSideType::Bid,
@@ -324,7 +324,7 @@ TEST(OrderBookTest, UpdateQuantityZeroBehavesLikeRemove)
 
 TEST(OrderBookTest, MultipleMixedBidAskUpdates)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
         OrderBookSideType::Bid,
@@ -378,7 +378,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
 
 TEST(OrderBookTest, BidAndAskAccessorsReturnCorrectSides)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     ASSERT_EQ(book.bids().side(), OrderBookSideType::Bid);
     ASSERT_EQ(book.asks().side(), OrderBookSideType::Ask);
@@ -392,7 +392,7 @@ TEST(OrderBookTest, BidAndAskAccessorsReturnCorrectSides)
 
 TEST(OrderBookTest, AddAndUpdateProduceSameFinalState)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
         OrderBookSideType::Ask,
@@ -416,7 +416,7 @@ TEST(OrderBookTest, AddAndUpdateProduceSameFinalState)
 
 TEST(OrderBookTest, ApplySnapshotBuildsBidAndAskBook)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookSnapShot snapshot;
 
@@ -443,7 +443,7 @@ TEST(OrderBookTest, ApplySnapshotBuildsBidAndAskBook)
 
 TEST(OrderBookTest, ApplySnapshotClearsOldBookState)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -473,7 +473,7 @@ TEST(OrderBookTest, ApplySnapshotClearsOldBookState)
 
 TEST(OrderBookTest, ApplyEmptySnapshotClearsBook)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -494,7 +494,7 @@ TEST(OrderBookTest, ApplyEmptySnapshotClearsBook)
 
 TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateBid)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookSnapShot snapshot;
 
@@ -529,7 +529,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateBid)
 
 TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateAsk)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookSnapShot snapshot;
 
@@ -562,7 +562,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateAsk)
 
 TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveBidTop)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookSnapShot snapshot;
 
@@ -586,7 +586,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveBidTop)
 
 TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveAskTop)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookSnapShot snapshot;
 
@@ -610,7 +610,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveAskTop)
 
 TEST(OrderBookTest, IncrementalUpdatesThenApplySnapshotReplacesEverything)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
         OrderBookSideType::Bid,
@@ -647,7 +647,7 @@ TEST(OrderBookTest, IncrementalUpdatesThenApplySnapshotReplacesEverything)
 
 TEST(OrderBookTest, RebaseTriggeredNearUpperBoundaryPreservesBook)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -666,7 +666,7 @@ TEST(OrderBookTest, RebaseTriggeredNearUpperBoundaryPreservesBook)
 
 TEST(OrderBookTest, RebaseTriggeredNearLowerBoundaryPreservesBook)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -685,7 +685,7 @@ TEST(OrderBookTest, RebaseTriggeredNearLowerBoundaryPreservesBook)
 
 TEST(OrderBookTest, PriceInsideRangeButNotNearBoundaryDoesNotRebase)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -703,7 +703,7 @@ TEST(OrderBookTest, PriceInsideRangeButNotNearBoundaryDoesNotRebase)
 
 TEST(OrderBookTest, OutOfRangePriceDoesNotTriggerRebase)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -726,7 +726,7 @@ TEST(OrderBookTest, OutOfRangePriceDoesNotTriggerRebase)
 
 TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateAdd)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.apply_update({
         OrderBookSideType::Bid,
@@ -758,7 +758,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateAdd)
 
 TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateRemovePreservesBook)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_bid(1000.0, 12.0);
@@ -780,7 +780,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateRemovePreservesBook)
 
 TEST(OrderBookTest, ApplySnapshotNearBoundaryTriggersRebase)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     OrderBookSnapShot snapshot;
 
@@ -803,7 +803,7 @@ TEST(OrderBookTest, ApplySnapshotNearBoundaryTriggersRebase)
 
 TEST(OrderBookTest, ApplySnapshotOutOfRangeWithoutValidReferenceStillClearsAndDropsOutOfRange)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -823,7 +823,7 @@ TEST(OrderBookTest, ApplySnapshotOutOfRangeWithoutValidReferenceStillClearsAndDr
 
 TEST(OrderBookTest, GetOrderBookSnapshotEmptyBook)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     auto snapshot = book.get_order_book_snapshot(10);
 
@@ -837,7 +837,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotEmptyBook)
 
 TEST(OrderBookTest, GetOrderBookSnapshotReturnsBestBidAndAskFirst)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(998.5, 1.0);
     book.set_bid(999.5, 3.0);
@@ -873,7 +873,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotReturnsBestBidAndAskFirst)
 
 TEST(OrderBookTest, GetOrderBookSnapshotRespectsRequestedLevels)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(998.5, 1.0);
     book.set_bid(999.0, 2.0);
@@ -897,7 +897,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotRespectsRequestedLevels)
 
 TEST(OrderBookTest, GetOrderBookSnapshotWithZeroLevels)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -913,7 +913,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotWithZeroLevels)
 
 TEST(OrderBookTest, GetOrderBookSnapshotOnlyBidSide)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_bid(999.0, 5.0);
@@ -935,7 +935,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotOnlyBidSide)
 
 TEST(OrderBookTest, GetOrderBookSnapshotOnlyAskSide)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_ask(1000.5, 10.0);
     book.set_ask(1001.0, 5.0);
@@ -957,7 +957,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotOnlyAskSide)
 
 TEST(OrderBookTest, GetOrderBookSnapshotSkipsRemovedLevels)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(998.5, 1.0);
     book.set_bid(999.0, 2.0);
@@ -984,7 +984,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotSkipsRemovedLevels)
 
 TEST(OrderBookTest, GetOrderBookSnapshotReflectsUpdatedQuantity)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
@@ -1006,7 +1006,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotReflectsUpdatedQuantity)
 
 TEST(OrderBookTest, GetOrderBookSnapshotAfterRebasePreservesSortedOrder)
 {
-    OrderBook book(1000.0, 0.5, 100, 2.0);
+    OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.set_bid(999.5, 10.0);
     book.set_bid(999.0, 5.0);
@@ -1039,7 +1039,7 @@ TEST(OrderBookTest, GetOrderBookSnapshotAfterRebasePreservesSortedOrder)
 
 TEST(OrderBookTest, GetOrderBookSnapshotLevelGreaterThanExistingLevels)
 {
-    OrderBook book(1000.0, 0.5, 100);
+    OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.set_bid(999.5, 10.0);
     book.set_ask(1000.5, 20.0);
