@@ -24,11 +24,14 @@ public:
     std::vector<OrderBookLevel> asks;
     size_t bids_size = 0;
     size_t asks_size = 0;
+    size_t max_levels = 0;
 
     OrderBookSnapShot()
     {
-        asks.resize(20);
-        bids.resize(20);
+        asks.resize(200);
+        bids.resize(200);
+
+        max_levels = 200;
     }
 
     void update_instrument(const Instrument* instr)
@@ -38,8 +41,7 @@ public:
 
     void resize(size_t new_size)
     {
-        bids.resize(new_size);
-        asks.resize(new_size);
+        max_levels = new_size;
     }
 
     void refresh();
@@ -47,7 +49,7 @@ public:
 
     inline void add_bid(double price, double quantity)
     {
-        if (bids_size >= bids.size())
+        if (bids_size >= max_levels)
         {
             return;
         }
@@ -58,7 +60,7 @@ public:
 
     inline void add_ask(double price, double quantity)
     {
-        if (asks_size >= asks.size())
+        if (asks_size >= max_levels)
         {
             return;
         }
