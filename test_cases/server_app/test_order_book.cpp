@@ -100,6 +100,7 @@ TEST(OrderBookTest, ApplyUpdateAddBid)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     OrderBookUpdate update{
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.5,
@@ -118,6 +119,7 @@ TEST(OrderBookTest, ApplyUpdateUpdateAsk)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1000.5,
@@ -125,6 +127,7 @@ TEST(OrderBookTest, ApplyUpdateUpdateAsk)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Update,
         1000.5,
@@ -141,6 +144,7 @@ TEST(OrderBookTest, ApplyUpdateRemoveBid)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.5,
@@ -150,6 +154,7 @@ TEST(OrderBookTest, ApplyUpdateRemoveBid)
     ASSERT_TRUE(book.has_best_bid());
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Remove,
         999.5,
@@ -301,6 +306,7 @@ TEST(OrderBookTest, UpdateQuantityZeroBehavesLikeRemove)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.5,
@@ -310,6 +316,7 @@ TEST(OrderBookTest, UpdateQuantityZeroBehavesLikeRemove)
     ASSERT_TRUE(book.has_best_bid());
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Update,
         999.5,
@@ -327,6 +334,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.0,
@@ -334,6 +342,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.5,
@@ -341,6 +350,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1001.0,
@@ -348,6 +358,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1000.5,
@@ -358,6 +369,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
     ASSERT_NEAR(book.best_ask_price(), 1000.5, EPS);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Remove,
         999.5,
@@ -367,6 +379,7 @@ TEST(OrderBookTest, MultipleMixedBidAskUpdates)
     ASSERT_NEAR(book.best_bid_price(), 999.0, EPS);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Remove,
         1000.5,
@@ -395,6 +408,7 @@ TEST(OrderBookTest, AddAndUpdateProduceSameFinalState)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1000.5,
@@ -404,6 +418,7 @@ TEST(OrderBookTest, AddAndUpdateProduceSameFinalState)
     ASSERT_NEAR(book.best_ask_quantity(), 10.0, EPS);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Update,
         1000.5,
@@ -507,6 +522,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateBid)
     book.apply_update(snapshot);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Update,
         999.5,
@@ -517,6 +533,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateBid)
     ASSERT_NEAR(book.best_bid_quantity(), 30.0, EPS);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         1000.0,
@@ -540,6 +557,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateAsk)
     book.apply_update(snapshot);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Update,
         1000.5,
@@ -550,6 +568,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalUpdateAsk)
     ASSERT_NEAR(book.best_ask_quantity(), 30.0, EPS);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1000.0,
@@ -573,6 +592,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveBidTop)
     book.apply_update(snapshot);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Remove,
         999.5,
@@ -597,6 +617,7 @@ TEST(OrderBookTest, ApplySnapshotThenIncrementalRemoveAskTop)
     book.apply_update(snapshot);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Remove,
         1000.5,
@@ -613,6 +634,7 @@ TEST(OrderBookTest, IncrementalUpdatesThenApplySnapshotReplacesEverything)
     OrderBook book(nullptr, 1000.0, 0.5, 100);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.5,
@@ -620,6 +642,7 @@ TEST(OrderBookTest, IncrementalUpdatesThenApplySnapshotReplacesEverything)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1000.5,
@@ -729,6 +752,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateAdd)
     OrderBook book(nullptr, 1000.0, 0.5, 100, 2.0);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         999.5,
@@ -736,6 +760,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateAdd)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Ask,
         OrderBookUpdateType::Add,
         1000.5,
@@ -743,6 +768,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateAdd)
     });
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Add,
         1023.0,
@@ -765,6 +791,7 @@ TEST(OrderBookTest, RebaseTriggeredByOrderBookUpdateRemovePreservesBook)
     book.set_ask(1000.5, 20.0);
 
     book.apply_update({
+        nullptr,
         OrderBookSideType::Bid,
         OrderBookUpdateType::Remove,
         1023.0,
