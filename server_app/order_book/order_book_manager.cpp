@@ -96,7 +96,7 @@ OrderBook* OrderBookManager::get_order_book(const Instrument* instrument) noexce
     return it->second.get();
 }
 
-Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObject snapshot)
+Task<void> OrderBookManager::run_update_order_book_data(OrderBookSnapShotObject snapshot)
 {
     if (snapshot == nullptr || snapshot->instrument == nullptr)
     {
@@ -116,7 +116,7 @@ Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookSnapShotObj
     co_return;
 }
 
-Task<void> OrderBookManager::run_update_order_book_snapshot(OrderBookUpdate update)
+Task<void> OrderBookManager::run_update_order_book_data(OrderBookUpdate update)
 {
     if (update.instrument == nullptr)
     {
