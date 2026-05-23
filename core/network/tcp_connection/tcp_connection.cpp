@@ -10,6 +10,24 @@ TCPConnection::TCPConnection(EpollBase* epoll_base, const std::string& hostname,
     connect();
 }
 
+TCPConnection::~TCPConnection()
+{
+    m_waiting_data_value = nullptr;
+
+    if (m_io_object != nullptr)
+    {
+        m_io_object->set_on_connect_callback(nullptr);
+        m_io_object->set_on_disconnect_callback(nullptr);
+        m_io_object->set_on_response_received_callback(nullptr);
+        m_io_object = nullptr;
+    }
+
+    while (!m_pending_data_queue.empty())
+    {
+        m_pending_data_queue.pop();
+    }
+}
+
 std::string TCPConnection::get_hostname() const
 {
     return m_hostname;

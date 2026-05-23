@@ -26,9 +26,8 @@ class TCPConnection
 
 public:
     TCPConnection() = default;
-
     TCPConnection(EpollBase* epoll_base, const std::string& hostname, int port, std::function<void()> on_connect, std::function<void()> on_disconnect);
-    ~TCPConnection() = default;
+    ~TCPConnection();
 
     std::string get_hostname() const;
     int get_port() const;
