@@ -21,8 +21,6 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
 
 Task<void> BinanceOrderBook::start_fetching_order_book()
 {
-    m_sync_state = SyncState::Buffering;
-
     // wss://fstream.binance.com/public/stream?streams=btcusdt@depth
     std::string path = "/public/stream?streams=" + m_instrument->get_lower_case_exchange_symbol() + "@depth";
 
@@ -31,6 +29,8 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this]() -> Task<void>
         {
             spdlog::info("BinanceOrderBook Websocket for symbol [{}] is connected", m_instrument->symbol);
+
+            m_sync_state = SyncState::Buffering;
 
             // After websocket is connected, we send request to get snapshot, so we can apply the updates from websocket
             send_request_get_snapshot().start_running_on(m_event_base);
@@ -41,7 +41,7 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this](std::string buffer) -> Task<void>
         {
             Json data = Json::parse(std::move(buffer));
-            handle_order_book_update(std::move(data));
+            handle_order_book_update(std::move(data["data"]));
 
             co_return;
         },
@@ -49,7 +49,7 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this]() -> Task<void>
         {
             spdlog::debug("BinanceOrderBook Websocket for symbol [{}] disconnected, re-starting...", m_instrument->symbol);
-            // this->start();
+            re_fetch_order_book().start_running_on(m_event_base);
 
             co_return;
         },
@@ -64,15 +64,33 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
     co_return;
 }
 
+Task<void> BinanceOrderBook::re_fetch_order_book()
+{
+    m_sync_state = SyncState::None;
+    m_snapshot_last_update_id = 0;
+    m_package_last_update_id = 0;
+
+    // Clear the buffered updates, because we will re-fetch the snapshot and apply the new updates after that
+    std::queue<Json> empty_queue;
+    std::swap(m_buffered_updates, empty_queue);
+
+    m_websocket = nullptr;
+
+    // Re-start fetching order book
+    co_await start_fetching_order_book();
+
+    co_return;
+}
+
 Task<void> BinanceOrderBook::send_request_get_snapshot()
 {
     // https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=1000
 
-    m_https_client_request = std::make_shared<HttpsClientRequest>(m_event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
-    HttpsClientResponse response = co_await m_https_client_request->get("/fapi/v1/depth?symbol=" + m_instrument->exchange_symbol.to_string() + "&limit=" + std::to_string(m_depth_level));
+    auto https_client_request = std::make_shared<HttpsClientRequest>(m_event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
+    HttpsClientResponse response = co_await https_client_request->get("/fapi/v1/depth?symbol=" + m_instrument->exchange_symbol.to_string() + "&limit=" + std::to_string(m_depth_level));
 
     Json data = Json::parse(response.body);
-    m_snapshot_last_update_id = data["lastUpdateId"];
+    m_snapshot_last_update_id = (size_t)data["lastUpdateId"];
 
     OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
     snapshot->update_instrument(m_instrument);
@@ -99,7 +117,8 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
     // Apply snapshot
     OrderBookManager::instance().publish_order_book_data(snapshot);
 
-    // m_sync_state = SyncState::Synced;
+    // Update sync state
+    m_sync_state = SyncState::Synced;
 
     co_return;
 }
@@ -113,9 +132,83 @@ void BinanceOrderBook::handle_order_book_update(Json update)
     }
     else
     {
+        while (m_buffered_updates.empty() == false)
+        {
+            Json buffered_update = std::move(m_buffered_updates.front());
+            m_buffered_updates.pop();
+
+            // Apply the buffered update to order book
+            spdlog::debug("Applying buffered order book update for symbol [{}], buffered_updates.size()={}", m_instrument->symbol, m_buffered_updates.size());
+            check_apply_update(buffered_update);
+        }
+
         // Apply the update to order book
         spdlog::debug("Applying order book update for symbol [{}]", m_instrument->symbol);
+        check_apply_update(update);
     }
+}
+
+void BinanceOrderBook::check_apply_update(Json& update)
+{
+    // Check if the update is still valid to apply, if not, we need to reload the snapshot
+    uint64_t pu = update["pu"];
+    uint64_t U  = update["U"];
+    uint64_t u  = update["u"];
+
+    if (m_snapshot_last_update_id != 0 && u < m_snapshot_last_update_id)
+    {
+        return;
+    }
+
+    if (m_package_last_update_id != 0 && pu != m_package_last_update_id)
+    {
+        // Re-fech snapshot
+        spdlog::warn("Update chain broken for symbol [{}], pu={}, expected={}, re-fetching snapshot...", m_instrument->symbol, pu, m_package_last_update_id);
+
+        auto task = re_fetch_order_book();
+        task.start_running_on(m_event_base);
+
+        return;
+    }
+
+    apply_update(update);
+    m_package_last_update_id = u;
+}
+
+void BinanceOrderBook::apply_update(Json& update)
+{
+    // Apply asks
+    update["a"].for_each([this](Json& level)
+    {
+        double price = std::stod((std::string)level[0]);
+        double quantity = std::stod((std::string)level[1]);
+
+        OrderBookUpdate update{
+            .instrument = m_instrument,
+            .side = OrderBookSideType::Ask,
+            .type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
+            .price = price,
+            .quantity = quantity
+        };
+
+        OrderBookManager::instance().publish_order_book_data(update);
+    });
+
+    // Apply bids
+    update["b"].for_each([this](Json& level)
+    {
+        double price = std::stod((std::string)level[0]);
+        double quantity = std::stod((std::string)level[1]);
+
+        OrderBookUpdate update{
+            .instrument = m_instrument,
+            .side = OrderBookSideType::Bid,
+            .type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
+            .price = price,
+            .quantity = quantity
+        };
+        OrderBookManager::instance().publish_order_book_data(update);
+    });
 }
 
 Task<void> BinanceOrderBook::release_current_update(Json update)

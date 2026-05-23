@@ -33,20 +33,24 @@ private:
 
     enum class SyncState
     {
+        None,
         Buffering,
         Synced
     };
-    SyncState m_sync_state = SyncState::Buffering;
+    SyncState m_sync_state = SyncState::None;
 
     std::shared_ptr<HttpsClientWebsocket> m_websocket;
-    std::shared_ptr<HttpsClientRequest> m_https_client_request;
     std::queue<Json> m_buffered_updates;
 
     Task<void> start_fetching_order_book();
+    Task<void> re_fetch_order_book();
     Task<void> send_request_get_snapshot();
     void handle_order_book_update(Json update);
+    void check_apply_update(Json& update);
+    void apply_update(Json& update);
 
     // Order book data structure
+    size_t m_package_last_update_id = 0;
     size_t m_snapshot_last_update_id = 0;
 
     // Bid, Ask
