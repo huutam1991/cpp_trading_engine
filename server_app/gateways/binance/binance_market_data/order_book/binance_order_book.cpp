@@ -145,7 +145,6 @@ void BinanceOrderBook::handle_order_book_update(Json update)
     else
     {
         // Apply the update to order book
-        spdlog::debug("Applying order book update for symbol [{}]", m_instrument->symbol);
         check_apply_update(update);
     }
 }
