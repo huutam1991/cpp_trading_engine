@@ -47,8 +47,8 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         // on_disconnect
         [this]() -> Task<void>
         {
-            // spdlog::debug("BinanceOrderBook Websocket for symbol [{}] disconnected, re-starting...", m_instrument->symbol);
-            // re_fetch_order_book().start_running_on(m_event_base);
+            spdlog::debug("BinanceOrderBook Websocket for symbol [{}] disconnected, re-starting...", m_instrument->symbol);
+            re_fetch_order_book().start_running_on(m_event_base);
 
             co_return;
         },
