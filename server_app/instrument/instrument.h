@@ -43,6 +43,7 @@ public:
 
     // Helper method
     std::string round_string_number(const std::string& str_number, size_t precision) const;
+    std::string get_lower_case_exchange_symbol() const;
     double get_round_up_quantity(double quantity) const;
     double get_round_up_price(double price) const;
 

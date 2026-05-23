@@ -50,6 +50,18 @@ std::string Instrument::round_string_number(const std::string& str_number, size_
     return str_number;
 }
 
+std::string Instrument::get_lower_case_exchange_symbol() const
+{
+    std::string data = exchange_symbol.to_string();
+
+    std::for_each(data.begin(), data.end(), [](char & c) \
+    {
+        c = ::tolower(c);
+    });
+
+    return data;
+}
+
 double Instrument::get_round_up_quantity(double quantity) const
 {
     std::string round_str_number = round_string_number(std::to_string(quantity), lot_size);
