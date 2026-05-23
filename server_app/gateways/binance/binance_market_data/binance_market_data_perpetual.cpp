@@ -37,8 +37,8 @@ Task<void> BinanceMarketDataPerpetual::init_order_book(const Instrument* instrum
 
     start_websocket(instrument);
 
-    Task<void> task = check_sync_order_book(instrument);
-    task.start_running_on(m_event_base);
+    // Task<void> task = check_sync_order_book(instrument);
+    // task.start_running_on(m_event_base);
 
     co_return;
 }
@@ -64,28 +64,30 @@ Task<void> BinanceMarketDataPerpetual::remove_unsubscribed_instruments()
 
 Task<void> BinanceMarketDataPerpetual::check_sync_order_book(const Instrument* instrument)
 {
-    if (m_market_data.find(instrument) == m_market_data.end())
-    {
-        co_return; // Market data for this instrument is not found, return
-    }
+    // if (m_market_data.find(instrument) == m_market_data.end())
+    // {
+    //     co_return; // Market data for this instrument is not found, return
+    // }
 
-    auto market_data = m_market_data[instrument];
+    // auto market_data = m_market_data[instrument];
 
-    // Loop to send REST request to query orderbook (full) at every 5 seconds, if the orderbook is not synced yet
-    while (true)
-    {
-        if (market_data->orderbook->is_not_synced())
-        {
-            co_await market_data->orderbook->send_request_get_full_order_book();
-        }
-        else
-        {
-            // If synced, print order book
-            // order_book->print_order_book();
-        }
+    // // Loop to send REST request to query orderbook (full) at every 5 seconds, if the orderbook is not synced yet
+    // while (true)
+    // {
+    //     if (market_data->orderbook->is_not_synced())
+    //     {
+    //         co_await market_data->orderbook->send_request_get_full_order_book();
+    //     }
+    //     else
+    //     {
+    //         // If synced, print order book
+    //         // order_book->print_order_book();
+    //     }
 
-        co_await Timer::sleep_for(2000);
-    }
+    //     co_await Timer::sleep_for(2000);
+    // }
+
+    co_return;
 }
 
 void BinanceMarketDataPerpetual::start_websocket(const Instrument* instrument)

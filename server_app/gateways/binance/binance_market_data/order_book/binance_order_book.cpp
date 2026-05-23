@@ -6,14 +6,14 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
     :   m_symbol{symbol},
         m_instrument{Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol)},
         m_depth_level{depth_level},
-        m_event_base{event_base},
-        m_order_book_websocket{
-            m_instrument,
-            depth_level,
-            event_base,
-            [this](std::string data) { this->OnOrderbookWs(std::move(data)); }
-        },
-        m_order_book_rest{}
+        m_event_base{event_base}
+        // m_order_book_websocket{
+        //     m_instrument,
+        //     depth_level,
+        //     event_base,
+        //     [this](std::string data) { this->OnOrderbookWs(std::move(data)); }
+        // },
+        // m_order_book_rest{}
 {
     auto task = start_fetching_order_book();
     task.start_running_on(m_event_base);
@@ -117,7 +117,12 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
     // Apply snapshot
     OrderBookManager::instance().publish_order_book_data(snapshot);
 
-    // Update sync state
+    if (process_buffered_updates_after_snapshot() == false)
+    {
+        re_fetch_order_book().start_running_on(m_event_base);
+        co_return;
+    }
+
     m_sync_state = SyncState::Synced;
 
     co_return;
@@ -125,6 +130,11 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
 
 void BinanceOrderBook::handle_order_book_update(Json update)
 {
+    if (m_sync_state == SyncState::None)
+    {
+        return;
+    }
+
     if (m_sync_state == SyncState::Buffering)
     {
         m_buffered_updates.push(std::move(update));
@@ -132,42 +142,102 @@ void BinanceOrderBook::handle_order_book_update(Json update)
     }
     else
     {
-        while (m_buffered_updates.empty() == false)
-        {
-            Json buffered_update = std::move(m_buffered_updates.front());
-            m_buffered_updates.pop();
-
-            // Apply the buffered update to order book
-            spdlog::debug("Applying buffered order book update for symbol [{}], buffered_updates.size()={}", m_instrument->symbol, m_buffered_updates.size());
-            check_apply_update(buffered_update);
-        }
-
         // Apply the update to order book
         spdlog::debug("Applying order book update for symbol [{}]", m_instrument->symbol);
         check_apply_update(update);
     }
 }
 
-void BinanceOrderBook::check_apply_update(Json& update)
+bool BinanceOrderBook::process_buffered_updates_after_snapshot()
 {
-    // Check if the update is still valid to apply, if not, we need to reload the snapshot
-    uint64_t pu = update["pu"];
-    uint64_t U  = update["U"];
-    uint64_t u  = update["u"];
+    bool found_first_valid_update = false;
 
-    if (m_snapshot_last_update_id != 0 && u < m_snapshot_last_update_id)
+    while (m_buffered_updates.empty() == false)
     {
-        return;
+        Json update = std::move(m_buffered_updates.front());
+        m_buffered_updates.pop();
+
+        uint64_t U = update["U"];
+        uint64_t u = update["u"];
+
+        // old update, already included in snapshot
+        if (u < m_snapshot_last_update_id)
+        {
+            continue;
+        }
+
+        // first update after snapshot must bridge snapshot lastUpdateId
+        if (found_first_valid_update == false)
+        {
+            if (!(U <= m_snapshot_last_update_id && u >= m_snapshot_last_update_id))
+            {
+                spdlog::warn(
+                    "Cannot find bridge update for symbol [{}], U={}, u={}, snapshot_last_update_id={}",
+                    m_instrument->symbol,
+                    U,
+                    u,
+                    m_snapshot_last_update_id
+                );
+
+                return false;
+            }
+
+            apply_update(update);
+            m_package_last_update_id = u;
+            found_first_valid_update = true;
+
+            spdlog::info(
+                "Found first valid buffered update for symbol [{}], U={}, u={}, snapshot_last_update_id={}",
+                m_instrument->symbol,
+                U,
+                u,
+                m_snapshot_last_update_id
+            );
+
+            continue;
+        }
+
+        uint64_t pu = update["pu"];
+
+        if (pu != m_package_last_update_id)
+        {
+            spdlog::warn(
+                "Buffered update chain broken for symbol [{}], pu={}, expected={}",
+                m_instrument->symbol,
+                pu,
+                m_package_last_update_id
+            );
+
+            return false;
+        }
+
+        apply_update(update);
+        m_package_last_update_id = u;
     }
 
-    if (m_package_last_update_id != 0 && pu != m_package_last_update_id)
+    return found_first_valid_update;
+}
+
+void BinanceOrderBook::check_apply_update(Json& update)
+{
+    uint64_t pu = update["pu"];
+    uint64_t u  = update["u"];
+
+    if (u <= m_package_last_update_id)
     {
-        // Re-fech snapshot
-        spdlog::warn("Update chain broken for symbol [{}], pu={}, expected={}, re-fetching snapshot...", m_instrument->symbol, pu, m_package_last_update_id);
+        return; // duplicate / old update
+    }
 
-        auto task = re_fetch_order_book();
-        task.start_running_on(m_event_base);
+    if (pu != m_package_last_update_id)
+    {
+        spdlog::warn(
+            "Update chain broken for symbol [{}], pu={}, expected={}, re-fetching snapshot...",
+            m_instrument->symbol,
+            pu,
+            m_package_last_update_id
+        );
 
+        re_fetch_order_book().start_running_on(m_event_base);
         return;
     }
 
@@ -211,204 +281,204 @@ void BinanceOrderBook::apply_update(Json& update)
     });
 }
 
-Task<void> BinanceOrderBook::release_current_update(Json update)
-{
-    // Just return here, because the goal is just to release the Json object on the other task
-    co_return;
-}
+// Task<void> BinanceOrderBook::release_current_update(Json update)
+// {
+//     // Just return here, because the goal is just to release the Json object on the other task
+//     co_return;
+// }
 
-Task<void> BinanceOrderBook::send_request_get_full_order_book()
-{
-    std::string data = co_await m_order_book_rest.get_order_book(m_symbol, m_depth_level);
+// Task<void> BinanceOrderBook::send_request_get_full_order_book()
+// {
+//     std::string data = co_await m_order_book_rest.get_order_book(m_symbol, m_depth_level);
 
-    // Update to method OnOrderbookRest
-    OnOrderbookRest(data);
+//     // Update to method OnOrderbookRest
+//     OnOrderbookRest(data);
 
-    co_return;
-}
+//     co_return;
+// }
 
-bool BinanceOrderBook::is_not_synced()
-{
-    return m_snapshot_loaded == false || m_ws_waiting_first_event == true;
-}
+// bool BinanceOrderBook::is_not_synced()
+// {
+//     return m_snapshot_loaded == false || m_ws_waiting_first_event == true;
+// }
 
-void BinanceOrderBook::OnOrderbookWs(std::string data)
-{
-    // MeasureTime t("BinanceOrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
-    // if (DedupeChecker::is_duplicate(data) == true)
-    // {
-    //     spdlog::debug("[WS] data is duplicate: {}", data);
-    //     return;
-    // }
+// void BinanceOrderBook::OnOrderbookWs(std::string data)
+// {
+//     // MeasureTime t("BinanceOrderBook::OnOrderbookWs [" + m_symbol + "], handle from websocket", MeasureUnit::MICROSECOND);
+//     // if (DedupeChecker::is_duplicate(data) == true)
+//     // {
+//     //     spdlog::debug("[WS] data is duplicate: {}", data);
+//     //     return;
+//     // }
 
-    Json update = Json::parse(std::move(data));
-    // spdlog::debug("[WS] symbol: [{}], update: {}", m_symbol, update);
+//     Json update = Json::parse(std::move(data));
+//     // spdlog::debug("[WS] symbol: [{}], update: {}", m_symbol, update);
 
-    if (!m_snapshot_loaded)
-    {
-        spdlog::debug("[WS] symbol: [{}], Snapshot not loaded — skipping update", m_symbol);
-        return;
-    }
+//     if (!m_snapshot_loaded)
+//     {
+//         spdlog::debug("[WS] symbol: [{}], Snapshot not loaded — skipping update", m_symbol);
+//         return;
+//     }
 
-    if (m_ws_waiting_first_event)
-    {
-        uint64_t u  = update["u"];
-        uint64_t U  = update["U"];
+//     if (m_ws_waiting_first_event)
+//     {
+//         uint64_t u  = update["u"];
+//         uint64_t U  = update["U"];
 
-        if (U <= m_ws_last_update_id && u >= m_ws_last_update_id)
-        {
-            m_ws_waiting_first_event = false;
-            m_ws_last_update_id = u; // Sync from here
-            spdlog::debug("[WS] symbol: [{}], First valid event applied: U={}, u={}", m_symbol, U, u);
-        }
-        else
-        {
-            spdlog::debug("[WS] symbol: [{}], Waiting for first valid event. Got U={}, u={}, expected to cover lastUpdateId={}", m_symbol, U, u, m_ws_last_update_id);
-            return;
-        }
-    }
-    else
-    {
-        uint64_t pu = update["pu"];
-        uint64_t u  = update["u"];
+//         if (U <= m_ws_last_update_id && u >= m_ws_last_update_id)
+//         {
+//             m_ws_waiting_first_event = false;
+//             m_ws_last_update_id = u; // Sync from here
+//             spdlog::debug("[WS] symbol: [{}], First valid event applied: U={}, u={}", m_symbol, U, u);
+//         }
+//         else
+//         {
+//             spdlog::debug("[WS] symbol: [{}], Waiting for first valid event. Got U={}, u={}, expected to cover lastUpdateId={}", m_symbol, U, u, m_ws_last_update_id);
+//             return;
+//         }
+//     }
+//     else
+//     {
+//         uint64_t pu = update["pu"];
+//         uint64_t u  = update["u"];
 
-        // Only after sync is started, we enforce pu == lastUpdateId
-        if (pu != m_ws_last_update_id)
-        {
-            spdlog::debug("[WS] symbol: [{}], Update chain broken: pu={}, expected={} -> triggering snapshot reload", m_symbol, pu, m_ws_last_update_id);
-            m_snapshot_loaded = false;
-            m_ws_waiting_first_event = true;
-            return;
-        }
+//         // Only after sync is started, we enforce pu == lastUpdateId
+//         if (pu != m_ws_last_update_id)
+//         {
+//             spdlog::debug("[WS] symbol: [{}], Update chain broken: pu={}, expected={} -> triggering snapshot reload", m_symbol, pu, m_ws_last_update_id);
+//             m_snapshot_loaded = false;
+//             m_ws_waiting_first_event = true;
+//             return;
+//         }
 
-        m_ws_last_update_id = u;
-    }
+//         m_ws_last_update_id = u;
+//     }
 
-    // Get a snapshot
-    OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
-    snapshot->update_instrument(m_instrument);
+//     // Get a snapshot
+//     OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+//     snapshot->update_instrument(m_instrument);
 
-    // Apply asks
-    update["a"].for_each([this, snapshot](Json& level) mutable
-    {
-        // MeasureTime t("BinanceOrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
-        double price = std::stod((std::string)level[0]);
-        double quantity = std::stod((std::string)level[1]);
+//     // Apply asks
+//     update["a"].for_each([this, snapshot](Json& level) mutable
+//     {
+//         // MeasureTime t("BinanceOrderBook::OnOrderbookWs, handle level a", MeasureUnit::MICROSECOND);
+//         double price = std::stod((std::string)level[0]);
+//         double quantity = std::stod((std::string)level[1]);
 
-        snapshot->add_ask(price, quantity);
+//         snapshot->add_ask(price, quantity);
 
-        // if (quantity == 0.0)
-        // {
-        //     m_asks.erase(price);
-        // }
-        // else
-        // {
-        //     m_asks[price] = quantity;
-        // }
-    });
+//         // if (quantity == 0.0)
+//         // {
+//         //     m_asks.erase(price);
+//         // }
+//         // else
+//         // {
+//         //     m_asks[price] = quantity;
+//         // }
+//     });
 
-    // Apply bids
-    update["b"].for_each([this, snapshot](Json& level) mutable
-    {
-        // MeasureTime t("BinanceOrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
-        double price = std::stod((std::string)level[0]);
-        double quantity = std::stod((std::string)level[1]);
+//     // Apply bids
+//     update["b"].for_each([this, snapshot](Json& level) mutable
+//     {
+//         // MeasureTime t("BinanceOrderBook::OnOrderbookWs, handle level b", MeasureUnit::MICROSECOND);
+//         double price = std::stod((std::string)level[0]);
+//         double quantity = std::stod((std::string)level[1]);
 
-        snapshot->add_bid(price, quantity);
+//         snapshot->add_bid(price, quantity);
 
-        // if (quantity == 0.0)
-        // {
-        //     m_bids.erase(price);
-        // }
-        // else
-        // {
-        //     m_bids[price] = quantity;
-        // }
-    });
+//         // if (quantity == 0.0)
+//         // {
+//         //     m_bids.erase(price);
+//         // }
+//         // else
+//         // {
+//         //     m_bids[price] = quantity;
+//         // }
+//     });
 
-    OrderBookManager::instance().publish_order_book_data(snapshot);
-    release_current_update(std::move(update)).start_running_on(m_event_base);
+//     OrderBookManager::instance().publish_order_book_data(snapshot);
+//     release_current_update(std::move(update)).start_running_on(m_event_base);
 
-    // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
-}
+//     // spdlog::debug("[WS] symbol: [{}], Update applied successfully: u={}, m_asks.size()={}, m_bids.size()={}", m_symbol, u, m_asks.size(), m_bids.size());
+// }
 
-void BinanceOrderBook::OnOrderbookRest(std::string data)
-{
-    if (DedupeChecker::is_duplicate(data) == true)
-    {
-        spdlog::debug("[Rest] data is duplicate: {}", data);
-        return;
-    }
+// void BinanceOrderBook::OnOrderbookRest(std::string data)
+// {
+//     if (DedupeChecker::is_duplicate(data) == true)
+//     {
+//         spdlog::debug("[Rest] data is duplicate: {}", data);
+//         return;
+//     }
 
-    Json snapshot = Json::parse(data);
+//     Json snapshot = Json::parse(data);
 
-    uint64_t snapshot_id = snapshot["lastUpdateId"];
+//     uint64_t snapshot_id = snapshot["lastUpdateId"];
 
-    // Check dedupe m_last_update_id
-    if (m_snapshot_last_update_id != snapshot_id)
-    {
-        m_snapshot_last_update_id = snapshot_id;
-        apply_snapshot(snapshot);
-    }
-}
+//     // Check dedupe m_last_update_id
+//     if (m_snapshot_last_update_id != snapshot_id)
+//     {
+//         m_snapshot_last_update_id = snapshot_id;
+//         apply_snapshot(snapshot);
+//     }
+// }
 
-void BinanceOrderBook::apply_snapshot(Json& snapshsot)
-{
-    // Update Ask
-    m_asks.clear();
-    snapshsot["asks"].for_each([this](Json& level)
-    {
-        double price = std::stod((std::string)level[0]);
-        double quantity = std::stod((std::string)level[1]);
-        m_asks.insert(std::make_pair(price, quantity));
-    });
+// void BinanceOrderBook::apply_snapshot(Json& snapshsot)
+// {
+//     // Update Ask
+//     m_asks.clear();
+//     snapshsot["asks"].for_each([this](Json& level)
+//     {
+//         double price = std::stod((std::string)level[0]);
+//         double quantity = std::stod((std::string)level[1]);
+//         m_asks.insert(std::make_pair(price, quantity));
+//     });
 
-    // Update Bids
-    m_bids.clear();
-    snapshsot["bids"].for_each([this](Json& level)
-    {
-        double price = std::stod((std::string)level[0]);
-        double quantity = std::stod((std::string)level[1]);
-        m_bids.insert(std::make_pair(price, quantity));
-    });
+//     // Update Bids
+//     m_bids.clear();
+//     snapshsot["bids"].for_each([this](Json& level)
+//     {
+//         double price = std::stod((std::string)level[0]);
+//         double quantity = std::stod((std::string)level[1]);
+//         m_bids.insert(std::make_pair(price, quantity));
+//     });
 
-    m_snapshot_loaded = true;
-    m_ws_waiting_first_event = true;
-    m_ws_last_update_id = m_snapshot_last_update_id;
+//     m_snapshot_loaded = true;
+//     m_ws_waiting_first_event = true;
+//     m_ws_last_update_id = m_snapshot_last_update_id;
 
-    // Print logs
-    print_order_book();
-}
+//     // Print logs
+//     print_order_book();
+// }
 
-void BinanceOrderBook::export_snapshot()
-{
-    OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
-    snapshot->update_instrument(m_instrument);
+// void BinanceOrderBook::export_snapshot()
+// {
+//     OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+//     snapshot->update_instrument(m_instrument);
 
-    for (const auto& [price, quantity] : m_bids)
-    {
-        snapshot->add_bid(price, quantity);
-    }
-    for (const auto& [price, quantity] : m_asks)
-    {
-        snapshot->add_ask(price, quantity);
-    }
+//     for (const auto& [price, quantity] : m_bids)
+//     {
+//         snapshot->add_bid(price, quantity);
+//     }
+//     for (const auto& [price, quantity] : m_asks)
+//     {
+//         snapshot->add_ask(price, quantity);
+//     }
 
-    OrderBookManager::instance().publish_order_book_data(snapshot);
-}
+//     OrderBookManager::instance().publish_order_book_data(snapshot);
+// }
 
-void BinanceOrderBook::print_order_book()
-{
-    spdlog::debug("[Rest] BinanceOrderBook update snapshot for symbol: {}", m_symbol);
-    spdlog::debug("[Rest] asks: ");
-    for (auto& [price, quantity] : m_asks)
-    {
-        spdlog::debug("[Rest] [{} - {}], ", price, quantity);
-    }
+// void BinanceOrderBook::print_order_book()
+// {
+//     spdlog::debug("[Rest] BinanceOrderBook update snapshot for symbol: {}", m_symbol);
+//     spdlog::debug("[Rest] asks: ");
+//     for (auto& [price, quantity] : m_asks)
+//     {
+//         spdlog::debug("[Rest] [{} - {}], ", price, quantity);
+//     }
 
-    spdlog::debug("[Rest] bids: ");
-    for (auto& [price, quantity] : m_bids)
-    {
-        spdlog::debug("[Rest] [{} - {}], ", price, quantity);
-    }
-}
+//     spdlog::debug("[Rest] bids: ");
+//     for (auto& [price, quantity] : m_bids)
+//     {
+//         spdlog::debug("[Rest] [{} - {}], ", price, quantity);
+//     }
+// }

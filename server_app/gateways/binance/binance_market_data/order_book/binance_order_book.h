@@ -18,18 +18,18 @@ class BinanceOrderBook
 {
 public:
     BinanceOrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base);
-    Task<void> send_request_get_full_order_book();
+    // Task<void> send_request_get_full_order_book();
 
-    bool is_not_synced();
-    void print_order_book();
+    // bool is_not_synced();
+    // void print_order_book();
 
 private:
     std::string m_symbol;
     const Instrument* m_instrument = nullptr;
     size_t m_depth_level;
     EpollBase* m_event_base;
-    OrderBookWebsocket m_order_book_websocket;
-    OrderBookRest m_order_book_rest;
+    // OrderBookWebsocket m_order_book_websocket;
+    // OrderBookRest m_order_book_rest;
 
     enum class SyncState
     {
@@ -46,6 +46,7 @@ private:
     Task<void> re_fetch_order_book();
     Task<void> send_request_get_snapshot();
     void handle_order_book_update(Json update);
+    bool process_buffered_updates_after_snapshot();
     void check_apply_update(Json& update);
     void apply_update(Json& update);
 
@@ -62,11 +63,11 @@ private:
     bool m_ws_waiting_first_event = true;
     size_t m_ws_last_update_id = 0;
 
-    Task<void> release_current_update(Json update);
+    // Task<void> release_current_update(Json update);
 
-    void OnOrderbookWs(std::string data);
-    void OnOrderbookRest(std::string data);
+    // void OnOrderbookWs(std::string data);
+    // void OnOrderbookRest(std::string data);
 
-    void apply_snapshot(Json& snapshsot);
-    void export_snapshot();
+    // void apply_snapshot(Json& snapshsot);
+    // void export_snapshot();
 };
