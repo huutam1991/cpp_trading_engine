@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <queue>
 
 #include <coroutine/task.h>
 #include <coroutine/task.h>
@@ -39,9 +40,11 @@ private:
 
     std::shared_ptr<HttpsClientWebsocket> m_websocket;
     std::shared_ptr<HttpsClientRequest> m_https_client_request;
+    std::queue<Json> m_buffered_updates;
 
     Task<void> start_fetching_order_book();
     Task<void> send_request_get_snapshot();
+    void handle_order_book_update(Json update);
 
     // Bid, Ask
     std::map<double, double, std::greater<double>> m_bids;

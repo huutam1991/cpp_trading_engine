@@ -40,7 +40,9 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            // spdlog::warn("BinanceOrderBook Websocket for symbol [{}] received message: {}", m_instrument->symbol, buffer);
+            Json data = Json::parse(std::move(buffer));
+            handle_order_book_update(std::move(data));
+
             co_return;
         },
         // on_disconnect
@@ -73,6 +75,20 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
     spdlog::warn("Initial order book snapshot for symbol [{}]: {}", m_instrument->symbol, data);
 
     co_return;
+}
+
+void BinanceOrderBook::handle_order_book_update(Json update)
+{
+    if (m_sync_state == SyncState::Buffering)
+    {
+        m_buffered_updates.push(std::move(update));
+        spdlog::warn("Buffering order book update for symbol [{}], buffered_updates.size()={}", m_instrument->symbol, m_buffered_updates.size());
+    }
+    else
+    {
+        // Apply the update to order book
+        spdlog::debug("Applying order book update for symbol [{}]", m_instrument->symbol);
+    }
 }
 
 Task<void> BinanceOrderBook::release_current_update(Json update)
