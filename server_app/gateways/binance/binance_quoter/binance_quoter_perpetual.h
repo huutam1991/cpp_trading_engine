@@ -11,8 +11,8 @@ class BinanceQuoterPerpetual : public BinanceQuoter
     std::shared_ptr<HttpsClientRequest> m_client = nullptr;
 
 private:
-    std::string m_url = BINANCE_FUTURES_URL;
-    std::string m_port = BINANCE_FUTURES_PORT;
+    std::string m_url = BINANCE_FUTURES_REST_URL;
+    std::string m_port = BINANCE_FUTURES_REST_PORT;
     std::string m_ws_url = BINANCE_FUTURES_WS_URL;
     std::string m_ws_port = BINANCE_FUTURES_WS_PORT;
 

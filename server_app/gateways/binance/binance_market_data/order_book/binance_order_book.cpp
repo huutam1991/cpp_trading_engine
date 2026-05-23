@@ -45,6 +45,8 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
             co_return;
         }
     );
+
+    m_https_client_request = std::make_shared<HttpsClientRequest>(event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
 }
 
 Task<void> BinanceOrderBook::release_current_update(Json update)

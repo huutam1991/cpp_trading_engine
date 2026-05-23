@@ -47,7 +47,7 @@ Task<Json> BinanceGateway::get_exchange_info()
 
 Task<Json> BinanceGateway::get_exchange_info_perpetual()
 {
-    HttpsClientRequest client(m_epoll_base, BINANCE_FUTURES_URL, std::stoi(BINANCE_FUTURES_PORT));
+    HttpsClientRequest client(m_epoll_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
     HttpsClientResponse response = co_await client.get("/fapi/v1/exchangeInfo");
 
     co_return Json::parse(response.body);

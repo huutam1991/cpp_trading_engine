@@ -14,8 +14,8 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
     m_client->add_header("X-MBX-APIKEY", m_api_key);
 
-    m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_URL;
-    m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_PORT;
+    m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_REST_URL;
+    m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_REST_PORT;
 
     // websocket
     m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL : BINANCE_FUTURES_WS_URL;

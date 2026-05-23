@@ -102,8 +102,8 @@ enum class SourceType
 
 // Binance Fututes
 #define BINANCE_FUTURES_DB_SOURCE_NAME "binance_futures"
-#define BINANCE_FUTURES_URL "fapi.binance.com"
-#define BINANCE_FUTURES_PORT "443"
+#define BINANCE_FUTURES_REST_URL "fapi.binance.com"
+#define BINANCE_FUTURES_REST_PORT "443"
 #define BINANCE_FUTURES_WS_URL "fstream.binance.com"
 #define BINANCE_FUTURES_WS_PORT "443"
 
