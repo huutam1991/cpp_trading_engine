@@ -5,6 +5,7 @@
 #include <coroutine/task.h>
 #include <coroutine/task.h>
 #include <json/json.h>
+#include <network/https_client_websocket/https_client_websocket.h>
 
 #include <order_book/order_book_snapshot.h>
 #include <order_book/order_book_manager.h>
@@ -27,6 +28,8 @@ private:
     EpollBase* m_event_base;
     OrderBookWebsocket m_order_book_websocket;
     OrderBookRest m_order_book_rest;
+
+    std::shared_ptr<HttpsClientWebsocket> m_websocket;
 
     // Bid, Ask
     std::map<double, double, std::greater<double>> m_bids;

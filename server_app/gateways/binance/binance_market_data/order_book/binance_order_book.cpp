@@ -14,7 +14,39 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
             [this](std::string data) { this->OnOrderbookWs(std::move(data)); }
         },
         m_order_book_rest{}
-{}
+{
+    // wss://fstream.binance.com/public/stream?streams=btcusdt@depth
+    std::string path = "/public/stream?streams=" + m_instrument->get_lower_case_exchange_symbol() + "@depth";
+
+    m_websocket = std::make_shared<HttpsClientWebsocket>(event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), path,
+        // on_connect
+        [this]() -> Task<void>
+        {
+            spdlog::info("BinanceOrderBook Websocket for symbol [{}] is connected", m_instrument->symbol);
+            co_return;
+        },
+        // on_message
+        [this](std::string buffer) -> Task<void>
+        {
+            spdlog::warn("Binance websocket stream: {}", buffer);
+            co_return;
+        },
+        // on_disconnect
+        [this]() -> Task<void>
+        {
+            spdlog::debug("BinanceOrderBook Websocket for symbol [{}] disconnected, re-starting...", m_instrument->symbol);
+            // this->start();
+
+            co_return;
+        },
+        // on_close
+        [this]() -> Task<void>
+        {
+            spdlog::debug("BinanceOrderBook Websocket for symbol [{}] closed", m_instrument->symbol);
+            co_return;
+        }
+    );
+}
 
 Task<void> BinanceOrderBook::release_current_update(Json update)
 {
