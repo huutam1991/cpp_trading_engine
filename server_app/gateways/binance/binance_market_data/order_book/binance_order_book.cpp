@@ -15,10 +15,16 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
         },
         m_order_book_rest{}
 {
+    auto task = start_fetching_order_book();
+    task.start_running_on(m_event_base);
+}
+
+Task<void> BinanceOrderBook::start_fetching_order_book()
+{
     // wss://fstream.binance.com/public/stream?streams=btcusdt@depth
     std::string path = "/public/stream?streams=" + m_instrument->get_lower_case_exchange_symbol() + "@depth";
 
-    m_websocket = std::make_shared<HttpsClientWebsocket>(event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), path,
+    m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), path,
         // on_connect
         [this]() -> Task<void>
         {
@@ -28,6 +34,7 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
         // on_message
         [this](std::string buffer) -> Task<void>
         {
+            // spdlog::warn("BinanceOrderBook Websocket for symbol [{}] received message: {}", m_instrument->symbol, buffer);
             co_return;
         },
         // on_disconnect
@@ -46,7 +53,16 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
         }
     );
 
-    m_https_client_request = std::make_shared<HttpsClientRequest>(event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
+    // Get depth
+    // https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=1000
+
+    m_https_client_request = std::make_shared<HttpsClientRequest>(m_event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
+    HttpsClientResponse response = co_await m_https_client_request->get("/fapi/v1/depth?symbol=" + m_instrument->exchange_symbol.to_string() + "&limit=" + std::to_string(m_depth_level));
+
+    Json data = Json::parse(response.body);
+    spdlog::warn("Initial order book snapshot for symbol [{}]: {}", m_instrument->symbol, data);
+
+    co_return;
 }
 
 Task<void> BinanceOrderBook::release_current_update(Json update)

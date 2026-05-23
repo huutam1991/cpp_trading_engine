@@ -33,6 +33,8 @@ private:
     std::shared_ptr<HttpsClientWebsocket> m_websocket;
     std::shared_ptr<HttpsClientRequest> m_https_client_request;
 
+    Task<void> start_fetching_order_book();
+
     // Bid, Ask
     std::map<double, double, std::greater<double>> m_bids;
     std::map<double, double, std::less<double>> m_asks;
