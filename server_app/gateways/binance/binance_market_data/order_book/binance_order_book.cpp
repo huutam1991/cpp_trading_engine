@@ -28,7 +28,6 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            spdlog::warn("Binance websocket stream: {}", buffer);
             co_return;
         },
         // on_disconnect
