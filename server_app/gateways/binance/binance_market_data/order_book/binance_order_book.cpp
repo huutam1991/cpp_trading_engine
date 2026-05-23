@@ -22,16 +22,23 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         {
             spdlog::info("BinanceOrderBook Websocket for symbol [{}] is connected", m_instrument->symbol);
 
-            m_sync_state = SyncState::Buffering;
-
-            // After websocket is connected, we send request to get snapshot, so we can apply the updates from websocket
-            send_request_get_snapshot().start_running_on(m_event_base);
-
             co_return;
         },
         // on_message
         [this](std::string buffer) -> Task<void>
         {
+            if (m_has_received_first_update == false)
+            {
+                spdlog::info("Received first order book update for symbol [{}]", m_instrument->symbol);
+                m_has_received_first_update = true;
+
+
+                m_sync_state = SyncState::Buffering;
+
+                // After websocket is connected, we send request to get snapshot, so we can apply the updates from websocket
+                send_request_get_snapshot().start_running_on(m_event_base);
+            }
+
             Json data = Json::parse(std::move(buffer));
             handle_order_book_update(std::move(data["data"]));
 
@@ -40,8 +47,8 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         // on_disconnect
         [this]() -> Task<void>
         {
-            spdlog::debug("BinanceOrderBook Websocket for symbol [{}] disconnected, re-starting...", m_instrument->symbol);
-            re_fetch_order_book().start_running_on(m_event_base);
+            // spdlog::debug("BinanceOrderBook Websocket for symbol [{}] disconnected, re-starting...", m_instrument->symbol);
+            // re_fetch_order_book().start_running_on(m_event_base);
 
             co_return;
         },
@@ -58,7 +65,9 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
 
 Task<void> BinanceOrderBook::re_fetch_order_book()
 {
+    spdlog::error("Re-fetching order book snapshot for symbol [{}] due to missing update", m_instrument->symbol);
     m_sync_state = SyncState::None;
+    m_has_received_first_update = false;
     m_snapshot_last_update_id = 0;
     m_package_last_update_id = 0;
 
@@ -111,6 +120,7 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
 
     if (process_buffered_updates_after_snapshot() == false)
     {
+        spdlog::warn("Failed to process buffered updates after snapshot for symbol [{}], re-fetching order book...", m_instrument->symbol);
         re_fetch_order_book().start_running_on(m_event_base);
         co_return;
     }
@@ -155,6 +165,13 @@ bool BinanceOrderBook::process_buffered_updates_after_snapshot()
         // old update, already included in snapshot
         if (u < m_snapshot_last_update_id)
         {
+            spdlog::warn(
+                "Skipping old buffered update for symbol [{}], U={}, u={}, snapshot_last_update_id={}",
+                m_instrument->symbol,
+                U,
+                u,
+                m_snapshot_last_update_id
+            );
             continue;
         }
 
@@ -207,7 +224,24 @@ bool BinanceOrderBook::process_buffered_updates_after_snapshot()
         m_package_last_update_id = u;
     }
 
-    return found_first_valid_update;
+    if (found_first_valid_update == false)
+    {
+        // no buffered updates newer than snapshot
+        // snapshot itself is already latest
+        // m_package_last_update_id = m_snapshot_last_update_id;
+
+        spdlog::info(
+            "Snapshot already up to date for symbol [{}], snapshot_last_update_id={}",
+            m_instrument->symbol,
+            m_snapshot_last_update_id
+        );
+
+        // m_package_last_update_id = m_snapshot_last_update_id;
+
+        return true;
+    }
+
+    return true;
 }
 
 void BinanceOrderBook::check_apply_update(Json& update)
@@ -215,12 +249,12 @@ void BinanceOrderBook::check_apply_update(Json& update)
     uint64_t pu = update["pu"];
     uint64_t u  = update["u"];
 
-    if (u <= m_package_last_update_id)
+    if (m_package_last_update_id != 0 && u <= m_package_last_update_id)
     {
         return; // duplicate / old update
     }
 
-    if (pu != m_package_last_update_id)
+    if (m_package_last_update_id != 0 && pu != m_package_last_update_id)
     {
         spdlog::warn(
             "Update chain broken for symbol [{}], pu={}, expected={}, re-fetching snapshot...",

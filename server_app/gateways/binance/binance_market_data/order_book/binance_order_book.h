@@ -43,6 +43,7 @@ private:
     void apply_update(Json& update);
 
     // Order book data structure
+    bool m_has_received_first_update = false;
     size_t m_package_last_update_id = 0;
     size_t m_snapshot_last_update_id = 0;
 };
