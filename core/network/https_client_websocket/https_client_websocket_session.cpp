@@ -15,6 +15,14 @@ HttpsClientWebsocketSession::HttpsClientWebsocketSession(
     m_wait_for_tcp_data_task.start_running_on(epoll_base);
 }
 
+HttpsClientWebsocketSession::~HttpsClientWebsocketSession()
+{
+    spdlog::debug("HttpsClientWebsocketSession::~HttpsClientWebsocketSession - Destroying Websocket Session [{}]", m_name);
+
+    // Need to intendly destroy [m_wait_for_tcp_data_task]
+    m_wait_for_tcp_data_task.destroy(true);
+}
+
 void HttpsClientWebsocketSession::write_raw_frame(const std::vector<char>& frame)
 {
     if (frame.empty())
@@ -23,7 +31,11 @@ void HttpsClientWebsocketSession::write_raw_frame(const std::vector<char>& frame
     }
 
     std::string frame_str(frame.data(), frame.size());
-    m_tcp_connection->write(frame_str);
+
+    if (m_tcp_connection)
+    {
+        m_tcp_connection->write(frame_str);
+    }
 }
 
 void HttpsClientWebsocketSession::write(std::string message)

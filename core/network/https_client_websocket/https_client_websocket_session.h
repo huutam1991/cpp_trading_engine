@@ -16,7 +16,7 @@ class HttpsClientWebsocketSession
 
 public:
     HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& name, std::unique_ptr<TCPConnection> tcp_connection, std::function<Task<void>(std::string)> on_message);
-    ~HttpsClientWebsocketSession() = default;
+    ~HttpsClientWebsocketSession();
 
     void write(std::string message);
     void write_ping(const std::string& payload = "");
