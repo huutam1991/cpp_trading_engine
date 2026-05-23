@@ -8,7 +8,7 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
         m_depth_level{depth_level},
         m_event_base{event_base},
         m_order_book_websocket{
-            symbol,
+            m_instrument,
             depth_level,
             event_base,
             [this](std::string data) { this->OnOrderbookWs(std::move(data)); }

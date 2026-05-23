@@ -6,16 +6,15 @@
 #include <mongo_db/mongo_db.h>
 #include <utils/utils.h>
 
-OrderBookWebsocket::OrderBookWebsocket(const std::string& symbol, size_t depth_level, EpollBase* event_base, std::function<void(std::string)> on_order_book_ws)
-    : m_symbol{symbol}, m_depth_level{depth_level}, m_event_base{event_base}, m_on_order_book_ws{on_order_book_ws}
+OrderBookWebsocket::OrderBookWebsocket(const Instrument* instrument, size_t depth_level, EpollBase* event_base, std::function<void(std::string)> on_order_book_ws)
+    : m_instrument{instrument}, m_depth_level{depth_level}, m_event_base{event_base}, m_on_order_book_ws{on_order_book_ws}
 {
-    STRING_LOWER_CASE(m_symbol);
     start();
 }
 
 void OrderBookWebsocket::start()
 {
-    std::string ws_path = "/ws/" + m_symbol + "@depth" + std::to_string(m_depth_level) + "@500ms";
+    std::string ws_path = "/ws/" + m_instrument->get_lower_case_exchange_symbol() + "@depth" + std::to_string(m_depth_level) + "@500ms";
 
     m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), ws_path,
         // on_connect
@@ -27,7 +26,7 @@ void OrderBookWebsocket::start()
                 .set_db_and_collection("websocket_monitoring", "OrderBookWebsocket")
                 .insert_one(Json{
                     {"event", "CONNECTED"},
-                    {"symbol", m_symbol},
+                    {"symbol", m_instrument->get_lower_case_exchange_symbol()},
                     {"depth_level", m_depth_level},
                     {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
                 }
@@ -42,16 +41,16 @@ void OrderBookWebsocket::start()
             co_return;
         },
         // on_disconnect
-        [this, symbol = m_symbol]() -> Task<void>
+        [this]() -> Task<void>
         {
-            spdlog::debug("OrderBookWebsocket [{}] disconnected, re-starting...", symbol);
+            spdlog::debug("OrderBookWebsocket [{}] disconnected, re-starting...", m_instrument->get_lower_case_exchange_symbol());
             // this->start();
 
             MongoDB::instance()
                 .set_db_and_collection("websocket_monitoring", "OrderBookWebsocket")
                 .insert_one(Json{
                     {"event", "DISCONNECTED"},
-                    {"symbol", m_symbol},
+                    {"symbol", m_instrument->get_lower_case_exchange_symbol()},
                     {"depth_level", m_depth_level},
                     {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
                 }
@@ -60,9 +59,9 @@ void OrderBookWebsocket::start()
             co_return;
         },
         // on_close
-        [symbol = m_symbol]() -> Task<void>
+        [this]() -> Task<void>
         {
-            spdlog::debug("OrderBookWebsocket [{}] closed", symbol);
+            spdlog::debug("OrderBookWebsocket [{}] closed", m_instrument->get_lower_case_exchange_symbol());
             co_return;
         }
     );
