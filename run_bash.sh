@@ -27,15 +27,23 @@ echo "---------------------------------------------------------------"
 ./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
 
 code=$?
+now=$(date '+%F_%H-%M-%S')
 
 echo "==== EXIT http_server_cpp $(date '+%F %T'), code=${code} ===="
 
 if [[ $code -eq 139 ]]; then
     echo "LIKELY SIGSEGV"
-elif [[ $code -eq 134 ]]; then
-    echo "LIKELY SIGABRT / std::terminate / assert"
-elif [[ $code -eq 137 ]]; then
-    echo "LIKELY SIGKILL / OOM killer"
+
+    latest_core=$(ls -t /tmp/core.http_server_cpp.* 2>/dev/null | head -n 1)
+
+    if [[ -n "$latest_core" ]]; then
+        gdb -batch \
+            -ex "set pagination off" \
+            -ex "bt" \
+            -ex "thread apply all bt" \
+            ./http_server_cpp "$latest_core" \
+            > "/tmp/http_server_cpp_crash_${now}.log" 2>&1
+    fi
 fi
 
 exit $code
