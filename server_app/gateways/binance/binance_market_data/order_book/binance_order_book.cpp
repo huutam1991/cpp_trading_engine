@@ -72,7 +72,34 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
     HttpsClientResponse response = co_await m_https_client_request->get("/fapi/v1/depth?symbol=" + m_instrument->exchange_symbol.to_string() + "&limit=" + std::to_string(m_depth_level));
 
     Json data = Json::parse(response.body);
-    spdlog::warn("Initial order book snapshot for symbol [{}]: {}", m_instrument->symbol, data);
+    m_snapshot_last_update_id = data["lastUpdateId"];
+
+    OrderBookSnapShotObject snapshot = OrderBookSnapShotPool::acquire();
+    snapshot->update_instrument(m_instrument);
+
+    data["asks"].for_each([snapshot](Json& level) mutable
+    {
+        double price = std::stod((std::string)level[0]);
+        double quantity = std::stod((std::string)level[1]);
+
+        snapshot->add_ask(price, quantity);
+    });
+
+    data["bids"].for_each([snapshot](Json& level) mutable
+    {
+        double price = std::stod((std::string)level[0]);
+        double quantity = std::stod((std::string)level[1]);
+
+        snapshot->add_bid(price, quantity);
+    });
+
+    spdlog::warn("snapshot for {}", m_instrument->symbol);
+    snapshot->print_order_book();
+
+    // Apply snapshot
+    OrderBookManager::instance().publish_order_book_data(snapshot);
+
+    // m_sync_state = SyncState::Synced;
 
     co_return;
 }

@@ -46,6 +46,9 @@ private:
     Task<void> send_request_get_snapshot();
     void handle_order_book_update(Json update);
 
+    // Order book data structure
+    size_t m_snapshot_last_update_id = 0;
+
     // Bid, Ask
     std::map<double, double, std::greater<double>> m_bids;
     std::map<double, double, std::less<double>> m_asks;
@@ -53,7 +56,6 @@ private:
     // For logic to apply orderbook's updates
     bool m_snapshot_loaded = false;
     bool m_ws_waiting_first_event = true;
-    size_t m_snapshot_last_update_id = 0;
     size_t m_ws_last_update_id = 0;
 
     Task<void> release_current_update(Json update);
