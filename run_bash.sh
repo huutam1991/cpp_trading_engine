@@ -4,12 +4,13 @@
 # export GLOG_logbufsecs=0
 #export GLOG_logbuflevel=-1
 
-chmod 777 z_util_scripts/generate_server_certificate.sh
-./z_util_scripts/generate_server_certificate.sh
+if [[ ! -f server-certificate.crt || ! -f server-private-key.pem ]]; then
+    chmod 777 z_util_scripts/generate_server_certificate.sh
+    ./z_util_scripts/generate_server_certificate.sh
+fi
 
 ulimit -c unlimited
 
-# Detect port
 if [[ "$PROD" == "true" ]]; then
     PORT=443
     WEBSOCKET_PORT=8443
@@ -18,9 +19,23 @@ else
     WEBSOCKET_PORT=8083
 fi
 
-echo "Starting http_server_cpp on port ${PORT} - $(date '+%F %T')"
-echo "---------------------------------------------------------------"
+echo "==== START http_server_cpp $(date '+%F %T') ===="
+echo "PORT=${PORT}, WEBSOCKET_PORT=${WEBSOCKET_PORT}"
+echo "PID(before exec)=$$"
 echo "---------------------------------------------------------------"
 
-# perf stat -e cycles,instructions,task-clock,context-switches ./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
-exec ./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
+./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
+
+code=$?
+
+echo "==== EXIT http_server_cpp $(date '+%F %T'), code=${code} ===="
+
+if [[ $code -eq 139 ]]; then
+    echo "LIKELY SIGSEGV"
+elif [[ $code -eq 134 ]]; then
+    echo "LIKELY SIGABRT / std::terminate / assert"
+elif [[ $code -eq 137 ]]; then
+    echo "LIKELY SIGKILL / OOM killer"
+fi
+
+exit $code
