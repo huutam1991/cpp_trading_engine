@@ -30,10 +30,18 @@ private:
     OrderBookWebsocket m_order_book_websocket;
     OrderBookRest m_order_book_rest;
 
+    enum class SyncState
+    {
+        Buffering,
+        Synced
+    };
+    SyncState m_sync_state = SyncState::Buffering;
+
     std::shared_ptr<HttpsClientWebsocket> m_websocket;
     std::shared_ptr<HttpsClientRequest> m_https_client_request;
 
     Task<void> start_fetching_order_book();
+    Task<void> send_request_get_snapshot();
 
     // Bid, Ask
     std::map<double, double, std::greater<double>> m_bids;

@@ -21,6 +21,8 @@ BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level
 
 Task<void> BinanceOrderBook::start_fetching_order_book()
 {
+    m_sync_state = SyncState::Buffering;
+
     // wss://fstream.binance.com/public/stream?streams=btcusdt@depth
     std::string path = "/public/stream?streams=" + m_instrument->get_lower_case_exchange_symbol() + "@depth";
 
@@ -29,6 +31,10 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this]() -> Task<void>
         {
             spdlog::info("BinanceOrderBook Websocket for symbol [{}] is connected", m_instrument->symbol);
+
+            // After websocket is connected, we send request to get snapshot, so we can apply the updates from websocket
+            send_request_get_snapshot().start_running_on(m_event_base);
+
             co_return;
         },
         // on_message
@@ -53,7 +59,11 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         }
     );
 
-    // Get depth
+    co_return;
+}
+
+Task<void> BinanceOrderBook::send_request_get_snapshot()
+{
     // https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=1000
 
     m_https_client_request = std::make_shared<HttpsClientRequest>(m_event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
