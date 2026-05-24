@@ -45,7 +45,10 @@ bool TCPConnection::is_disconnected() const
 
 void TCPConnection::write(std::string data)
 {
-    m_io_object->write(std::move(data));
+    if (m_io_object != nullptr)
+    {
+        m_io_object->write(std::move(data));
+    }
 }
 
 Future<std::string> TCPConnection::wait_for_data()
