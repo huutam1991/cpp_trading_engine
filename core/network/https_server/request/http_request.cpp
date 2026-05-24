@@ -228,22 +228,32 @@ bool HttpRequest::check_is_file_path_exist(const std::string& file_path)
 
 HttpResponse HttpRequest::send_file_from_directory(const std::string& url, const FileInfo& file_info)
 {
-    HttpResponse response;
+    const std::string file_path = m_dir_path + "/" + url;
 
-    std::string file_path = std::string(m_dir_path + "/" + url);
-    std::ifstream ifs(file_path);
+    std::error_code ec;
 
-    if (ifs.good() && std::filesystem::is_directory(file_path) == false)
+    if (!std::filesystem::exists(file_path, ec) || ec)
     {
-        std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
-        response = HttpResponse(OK_200, content, file_info);
-    }
-    else if (!std::filesystem::exists(file_path))
-    {
-        response = bad_request_default(this);
+        return bad_request_default(this);
     }
 
-    return response;
+    if (!std::filesystem::is_regular_file(file_path, ec) || ec)
+    {
+        return bad_request_default(this);
+    }
+
+    std::ifstream ifs(file_path, std::ios::binary);
+    if (!ifs.good())
+    {
+        return bad_request_default(this);
+    }
+
+    std::string content(
+        (std::istreambuf_iterator<char>(ifs)),
+        std::istreambuf_iterator<char>()
+    );
+
+    return HttpResponse(OK_200, content, file_info);
 }
 
 HttpResponse HttpRequest::send_file_from_directory(const std::string& url, const std::string& file_name)
