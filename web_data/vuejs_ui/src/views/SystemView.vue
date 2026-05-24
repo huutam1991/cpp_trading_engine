@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { API_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 
-const auth = useAuthStore()
+const authStore = useAuthStore()
 
 type CrashLog = {
   app: string
@@ -27,31 +27,29 @@ type CrashLogResponse = {
   data: CrashLog[]
 }
 
+type ObjectPoolInfoResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: Record<string, number>
+}
+
 type SystemTab = {
   label: string
   value: 'crash_log' | 'object_pool'
   description: string
 }
 
-const authStore = useAuthStore()
-
 const tabs: SystemTab[] = [
-  {
-    label: 'Crash Log',
-    value: 'crash_log',
-    description: 'Runtime crash reports',
-  },
-  {
-    label: 'Object Pool',
-    value: 'object_pool',
-    description: 'Pool metrics',
-  },
+  { label: 'Crash Log', value: 'crash_log', description: 'Runtime crash reports' },
+  { label: 'Object Pool', value: 'object_pool', description: 'Pool metrics' },
 ]
 
 const activeTab = ref<SystemTab['value']>('crash_log')
 const loading = ref(false)
 const errorMessage = ref('')
 const crashLogs = ref<CrashLog[]>([])
+const objectPoolInfo = ref<Record<string, number>>({})
 
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -63,16 +61,33 @@ const sortedCrashLogs = computed(() => {
   })
 })
 
+const objectPoolEntries = computed(() => {
+  return Object.entries(objectPoolInfo.value).map(([name, size]) => ({
+    name,
+    size,
+  }))
+})
+
 function getTabCount(tab: SystemTab) {
   if (tab.value === 'crash_log') {
     return crashLogs.value.length
   }
 
-  return 0
+  return objectPoolEntries.value.length
 }
 
-function selectTab(tab: SystemTab['value']) {
+function formatNumber(value: number) {
+  return value.toLocaleString('en-US')
+}
+
+async function selectTab(tab: SystemTab['value']) {
   activeTab.value = tab
+
+  if (tab === 'crash_log') {
+    await fetchCrashLogs()
+  } else if (tab === 'object_pool') {
+    await fetchObjectPoolInfo()
+  }
 }
 
 async function fetchCrashLogs() {
@@ -106,9 +121,42 @@ async function fetchCrashLogs() {
   }
 }
 
+async function fetchObjectPoolInfo() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/object_pool_info`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: ObjectPoolInfoResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      authStore.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      errorMessage.value = result.msg || 'Failed to fetch object pool info.'
+      return
+    }
+
+    objectPoolInfo.value = result.data ?? {}
+  } catch (error) {
+    console.error('Fetch object pool info error:', error)
+    errorMessage.value = 'Fetch object pool info error.'
+  } finally {
+    loading.value = false
+  }
+}
+
 function refreshSystem() {
   if (activeTab.value === 'crash_log') {
     fetchCrashLogs()
+  } else {
+    fetchObjectPoolInfo()
   }
 }
 
@@ -123,10 +171,7 @@ onMounted(() => {
       <aside class="filter-panel">
         <div class="filter-header">
           <h2>System</h2>
-
-          <span class="filter-total">
-            {{ getTabCount(activeTabInfo) }}
-          </span>
+          <span class="filter-total">{{ getTabCount(activeTabInfo) }}</span>
         </div>
 
         <button
@@ -163,17 +208,11 @@ onMounted(() => {
           Loading system data...
         </div>
 
-        <div
-          v-else-if="errorMessage"
-          class="panel-message error-message"
-        >
+        <div v-else-if="errorMessage" class="panel-message error-message">
           {{ errorMessage }}
         </div>
 
-        <div
-          v-else-if="activeTab === 'crash_log'"
-          class="table-card"
-        >
+        <div v-else-if="activeTab === 'crash_log'" class="table-card">
           <table v-if="sortedCrashLogs.length > 0">
             <colgroup>
               <col class="col-created" />
@@ -209,76 +248,47 @@ onMounted(() => {
                 :key="String(log.created_at_ns)"
                 class="table-row"
               >
-                <td class="mono-text">
-                  {{ log.created_at }}
-                </td>
-
-                <td>
-                  <span class="type-badge">
-                    {{ log.env }}
-                  </span>
-                </td>
-
-                <td>
-                  <span class="status-badge tone-reject">
-                    {{ log.signal }}
-                  </span>
-                </td>
-
-                <td>
-                  {{ log.exit_code }}
-                </td>
-
-                <td class="mono-text function-cell">
-                  {{ log.crash_function }}
-                </td>
-
-                <td>
-                  {{ log.crash_line || '–' }}
-                </td>
-
-                <td class="mono-text function-cell">
-                  {{ log.caller }}
-                </td>
-
-                <td>
-                  {{ log.caller_line || '–' }}
-                </td>
-
-                <td>
-                  {{ log.core_file_size }}
-                </td>
-
-                <td class="mono-text">
-                  {{ log.host }}
-                </td>
+                <td class="mono-text">{{ log.created_at }}</td>
+                <td><span class="type-badge">{{ log.env }}</span></td>
+                <td><span class="status-badge tone-reject">{{ log.signal }}</span></td>
+                <td>{{ log.exit_code }}</td>
+                <td class="mono-text function-cell">{{ log.crash_function }}</td>
+                <td>{{ log.crash_line || '–' }}</td>
+                <td class="mono-text function-cell">{{ log.caller }}</td>
+                <td>{{ log.caller_line || '–' }}</td>
+                <td>{{ log.core_file_size }}</td>
+                <td class="mono-text">{{ log.host }}</td>
               </tr>
             </tbody>
           </table>
 
-          <div
-            v-else
-            class="empty-table"
-          >
+          <div v-else class="empty-table">
             No crash logs found.
           </div>
         </div>
 
-        <div
-          v-else
-          class="empty-table"
-        >
-          Object pool metrics are not available yet.
+        <div v-else-if="activeTab === 'object_pool'" class="object-pool-grid">
+          <article
+            v-for="item in objectPoolEntries"
+            :key="item.name"
+            class="object-pool-card"
+          >
+            <div class="object-pool-name">
+              {{ item.name }}
+            </div>
+
+            <div class="object-pool-value">
+              {{ formatNumber(item.size) }}
+            </div>
+          </article>
+
+          <div v-if="objectPoolEntries.length === 0" class="empty-table">
+            No object pool data found.
+          </div>
         </div>
 
         <div class="table-footer">
-          Showing
-          {{
-            activeTab === 'crash_log'
-              ? sortedCrashLogs.length
-              : 0
-          }}
-          records
+          Showing {{ getTabCount(activeTabInfo) }} records
         </div>
       </section>
     </section>
@@ -289,14 +299,7 @@ onMounted(() => {
 .system-page {
   min-height: 100%;
   color: #f8fafc;
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .system-layout {
@@ -355,36 +358,27 @@ onMounted(() => {
 .filter-total {
   min-width: 36px;
   height: 36px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   color: #bfdbfe;
   background: #1e3a5f;
-
   border: 1px solid #3b82f6;
   border-radius: 999px;
-
   font-weight: 800;
 }
 
 .filter-card {
   width: 100%;
   min-height: 72px;
-
   display: flex;
   align-items: center;
-
   padding: 10px 12px;
   margin-bottom: 12px;
-
   color: #e5e7eb;
   background: #1f2937;
-
   border: 1px solid #374151;
   border-radius: 12px;
-
   text-align: left;
   cursor: pointer;
 }
@@ -419,17 +413,13 @@ onMounted(() => {
 .refresh-button {
   width: 42px;
   height: 42px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   color: #cbd5e1;
   background: #111827;
-
   border: 1px solid #374151;
   border-radius: 9px;
-
   font-size: 24px;
   cursor: pointer;
 }
@@ -448,13 +438,10 @@ onMounted(() => {
 .panel-message,
 .empty-table {
   padding: 24px;
-
   color: #9ca3af;
   background: #1f2937;
-
   border: 1px solid #374151;
   border-radius: 10px;
-
   font-size: 12px;
 }
 
@@ -465,12 +452,9 @@ onMounted(() => {
 
 .table-card {
   min-height: 420px;
-
   overflow-x: hidden;
   overflow-y: auto;
-
   background: #1f2937;
-
   border: 1px solid #374151;
   border-radius: 10px;
 }
@@ -481,54 +465,22 @@ table {
   table-layout: fixed;
 }
 
-.col-created {
-  width: 10%;
-}
-
-.col-env {
-  width: 6%;
-}
-
-.col-signal {
-  width: 7%;
-}
-
-.col-exit {
-  width: 4%;
-}
-
-.col-function {
-  width: 30%;
-}
-
-.col-line {
-  width: 4%;
-}
-
-.col-caller {
-  width: 28%;
-}
-
-.col-caller-line {
-  width: 6%;
-}
-
-.col-core {
-  width: 5%;
-}
-
-.col-host {
-  width: 8%;
-}
+.col-created { width: 10%; }
+.col-env { width: 6%; }
+.col-signal { width: 7%; }
+.col-exit { width: 4%; }
+.col-function { width: 30%; }
+.col-line { width: 4%; }
+.col-caller { width: 28%; }
+.col-caller-line { width: 6%; }
+.col-core { width: 5%; }
+.col-host { width: 8%; }
 
 th,
 td {
   padding: 10px 12px;
-
   border-bottom: 1px solid #374151;
-
   vertical-align: top;
-
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -537,17 +489,14 @@ td {
 th {
   color: #9ca3af;
   background: #1f2937;
-
   font-size: 13px;
   font-weight: 800;
-
   text-align: left;
 }
 
 td {
   color: #f8fafc;
   font-size: 13px;
-
   text-align: left;
 }
 
@@ -566,7 +515,6 @@ td:nth-child(9) {
 
 .function-cell {
   line-height: 1.5;
-
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -575,15 +523,11 @@ td:nth-child(9) {
 .status-badge,
 .type-badge {
   min-width: 46px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   padding: 3px 8px;
-
   border-radius: 6px;
-
   font-size: 11px;
   font-weight: 800;
 }
@@ -591,40 +535,59 @@ td:nth-child(9) {
 .status-badge.tone-reject {
   color: #c084fc;
   background: #31263d;
-
   border: 1px solid #6b21a8;
 }
 
 .type-badge {
   color: #e5e7eb;
   background: #111827;
-
   border: 1px solid #374151;
 }
 
-.mono-text {
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    'Liberation Mono',
-    'Courier New',
-    monospace;
+.object-pool-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 14px;
+}
 
+.object-pool-card {
+  min-height: 120px;
+  padding: 18px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 10px;
+}
+
+.object-pool-name {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.object-pool-value {
+  margin-top: 18px;
+  color: #f8fafc;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.mono-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   line-height: 1.5;
 }
 
 .table-footer {
   margin-top: 18px;
-
   color: #9ca3af;
   font-size: 13px;
 }
 
 @media (max-width: 1050px) {
-  .system-layout {
+  .system-layout,
+  .object-pool-grid {
     grid-template-columns: 1fr;
   }
 
