@@ -228,6 +228,16 @@ bool HttpRequest::check_is_file_path_exist(const std::string& file_path)
 
 HttpResponse HttpRequest::send_file_from_directory(const std::string& url, const FileInfo& file_info)
 {
+    if (this == nullptr)
+    {
+        return HttpResponse(NOT_FOUND_404, NOT_FOUND_ERROR_MESSAGE);
+    }
+
+    if (m_dir_path.empty())
+    {
+        return HttpResponse(NOT_FOUND_404, NOT_FOUND_ERROR_MESSAGE);
+    }
+
     const std::string file_path = m_dir_path + "/" + url;
 
     std::error_code ec;
