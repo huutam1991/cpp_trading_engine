@@ -596,4 +596,83 @@ td:nth-child(9) {
     min-height: unset;
   }
 }
+
+@media (max-width: 760px) {
+  .system-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .system-panel,
+  .filter-panel {
+    padding: 16px;
+    min-height: unset;
+  }
+
+  .table-card {
+    overflow: visible;
+    border: none;
+    background: transparent;
+  }
+
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+    width: 100%;
+  }
+
+  thead {
+    display: none;
+  }
+
+  .table-row {
+    margin-bottom: 14px;
+    padding: 14px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+  }
+
+  td {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #374151;
+    text-align: left !important;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  td::before {
+    color: #9ca3af;
+    font-weight: 800;
+  }
+
+  td:nth-child(1)::before { content: 'Created At'; }
+  td:nth-child(2)::before { content: 'Env'; }
+  td:nth-child(3)::before { content: 'Signal'; }
+  td:nth-child(4)::before { content: 'Exit'; }
+  td:nth-child(5)::before { content: 'Crash'; }
+  td:nth-child(6)::before { content: 'Line'; }
+  td:nth-child(7)::before { content: 'Caller'; }
+  td:nth-child(8)::before { content: 'Caller Line'; }
+  td:nth-child(9)::before { content: 'Core'; }
+  td:nth-child(10)::before { content: 'Host'; }
+
+  .function-cell,
+  .mono-text {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  .object-pool-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
