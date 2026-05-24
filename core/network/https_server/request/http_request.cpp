@@ -217,10 +217,13 @@ const std::string HttpRequest::check_missing_params(const std::vector<std::strin
 
 bool HttpRequest::check_is_file_path_exist(const std::string& file_path)
 {
-    std::string path = std::string(m_dir_path + "/" + file_path);
-    std::ifstream ifs(path);
+    const std::string path = m_dir_path + "/" + file_path;
 
-    return ifs.good() && std::filesystem::is_directory(path) == false;
+    std::error_code ec;
+    return std::filesystem::exists(path, ec)
+        && !ec
+        && std::filesystem::is_regular_file(path, ec)
+        && !ec;
 }
 
 HttpResponse HttpRequest::send_file_from_directory(const std::string& url, const FileInfo& file_info)
