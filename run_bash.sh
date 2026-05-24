@@ -19,7 +19,7 @@ else
     ENV_NAME="local"
 fi
 
-DB_NAME="trading"
+DB_NAME="system_monitoring"
 COLLECTION_NAME="crash_logs"
 
 echo "==== START http_server_cpp $(date '+%F %T') ===="
