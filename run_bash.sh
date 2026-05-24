@@ -70,6 +70,7 @@ if [[ $code -eq 139 || $code -eq 134 || $code -eq 137 ]]; then
         caller_line=$(echo "$frame1" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
 
         core_size=$(du -h "$latest_core" | cut -f1)
+        created_at_ns=$(date -u +%s%N)
 
         if command -v mongosh >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
             mongosh "${MONGO_URI}/${DB_NAME}" --quiet --eval "
@@ -84,7 +85,8 @@ if [[ $code -eq 139 || $code -eq 134 || $code -eq 137 ]]; then
                     caller_line: $(jq -Rn --arg v "$caller_line" '$v'),
                     core_file_size: '${core_size}',
                     host: '$(hostname)',
-                    created_at: new Date()
+                    created_at: new Date(),
+                    created_at_ns: NumberLong(\"${created_at_ns}\")
                 });
             "
         else
