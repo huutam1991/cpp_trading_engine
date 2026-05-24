@@ -77,7 +77,7 @@ Task<std::string> RouteController::check_handle_by_route(HttpRequest* request)
 
 std::string RouteController::check_send_file_from_dashboard_folder(HttpRequest* request)
 {
-    if (m_dashboard_folder != "")
+    if (m_dashboard_folder != "" && request != nullptr)
     {
         std::string file_path = m_dashboard_folder + request->get_url();
         if (request->check_is_file_path_exist(file_path))
