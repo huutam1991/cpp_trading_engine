@@ -15,7 +15,7 @@ Task<HttpResponse> APIHandlerCrashLog::child_handle()
         .set_db_and_collection("system_monitoring", "crash_log")
         .find_many();
 
-    crash_logs.sort([](const Json& a, const Json& b)
+    crash_logs.sort([](Json& a, Json& b)
     {
         size_t timestamp_a = a["created_at_ns"];
         size_t timestamp_b = b["created_at_ns"];
