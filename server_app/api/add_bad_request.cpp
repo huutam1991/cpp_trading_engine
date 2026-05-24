@@ -6,6 +6,11 @@ void add_bad_request()
 {
     ADD_CUSTOM_BAD_REQUEST
     {
+        if (request == nullptr)
+        {
+            return HttpResponse(NOT_FOUND_404, NOT_FOUND_ERROR_MESSAGE);
+        }
+
         return request->send_file_from_directory("templates/bad_request_404.html");
     });
 }
