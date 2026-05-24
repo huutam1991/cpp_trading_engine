@@ -20,7 +20,7 @@ else
 fi
 
 DB_NAME="system_monitoring"
-COLLECTION_NAME="crash_logs"
+COLLECTION_NAME="crash_log"
 
 echo "==== START http_server_cpp $(date '+%F %T') ===="
 echo "ENV=${ENV_NAME}"

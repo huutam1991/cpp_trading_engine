@@ -13,18 +13,18 @@ APIHandlerCrashLog::APIHandlerCrashLog(HttpRequest* request) : APIHandler(reques
 
 Task<HttpResponse> APIHandlerCrashLog::child_handle()
 {
-    Json crash_logs = MongoDB::instance()
+    Json crash_log = MongoDB::instance()
         .set_db_and_collection("system_monitoring", "crash_log")
         .find_many();
 
-    crash_logs.sort([](Json& a, Json& b)
+    crash_log.sort([](Json& a, Json& b)
     {
         size_t timestamp_a = a["created_at_ns"];
         size_t timestamp_b = b["created_at_ns"];
         return timestamp_a > timestamp_b; // Sort in descending order
     });
 
-    crash_logs.for_each([](Json& crash_log)
+    crash_log.for_each([](Json& crash_log)
     {
         crash_log.remove_field("_id"); // Remove MongoDB internal ID field
 
@@ -35,7 +35,7 @@ Task<HttpResponse> APIHandlerCrashLog::child_handle()
 
     Json response;
     response["msg"] = "Find crash logs successfully";
-    response["data"] = crash_logs;
+    response["data"] = crash_log;
     response["status_code"] = OK_200;
     response["error"] = false;
 
