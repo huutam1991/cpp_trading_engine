@@ -33,9 +33,19 @@ type SystemTab = {
   description: string
 }
 
+const authStore = useAuthStore()
+
 const tabs: SystemTab[] = [
-  { label: 'Crash Log', value: 'crash_log', description: 'Runtime crash reports' },
-  { label: 'Object Pool', value: 'object_pool', description: 'Pool metrics' },
+  {
+    label: 'Crash Log',
+    value: 'crash_log',
+    description: 'Runtime crash reports',
+  },
+  {
+    label: 'Object Pool',
+    value: 'object_pool',
+    description: 'Pool metrics',
+  },
 ]
 
 const activeTab = ref<SystemTab['value']>('crash_log')
@@ -78,7 +88,7 @@ async function fetchCrashLogs() {
     const result: CrashLogResponse = await response.json()
 
     if (response.status === 401 || response.status === 403) {
-      auth.logout()
+      authStore.logout()
       return
     }
 
@@ -113,7 +123,10 @@ onMounted(() => {
       <aside class="filter-panel">
         <div class="filter-header">
           <h2>System</h2>
-          <span class="filter-total">{{ getTabCount(activeTabInfo) }}</span>
+
+          <span class="filter-total">
+            {{ getTabCount(activeTabInfo) }}
+          </span>
         </div>
 
         <button
@@ -150,12 +163,31 @@ onMounted(() => {
           Loading system data...
         </div>
 
-        <div v-else-if="errorMessage" class="panel-message error-message">
+        <div
+          v-else-if="errorMessage"
+          class="panel-message error-message"
+        >
           {{ errorMessage }}
         </div>
 
-        <div v-else-if="activeTab === 'crash_log'" class="table-card">
+        <div
+          v-else-if="activeTab === 'crash_log'"
+          class="table-card"
+        >
           <table v-if="sortedCrashLogs.length > 0">
+            <colgroup>
+              <col class="col-created" />
+              <col class="col-env" />
+              <col class="col-signal" />
+              <col class="col-exit" />
+              <col class="col-function" />
+              <col class="col-line" />
+              <col class="col-caller" />
+              <col class="col-caller-line" />
+              <col class="col-core" />
+              <col class="col-host" />
+            </colgroup>
+
             <thead>
               <tr>
                 <th>Created At</th>
@@ -177,31 +209,76 @@ onMounted(() => {
                 :key="String(log.created_at_ns)"
                 class="table-row"
               >
-                <td class="mono-text">{{ log.created_at }}</td>
-                <td><span class="type-badge">{{ log.env }}</span></td>
-                <td><span class="status-badge tone-reject">{{ log.signal }}</span></td>
-                <td>{{ log.exit_code }}</td>
-                <td class="mono-text function-cell">{{ log.crash_function }}</td>
-                <td>{{ log.crash_line || '–' }}</td>
-                <td class="mono-text function-cell">{{ log.caller }}</td>
-                <td>{{ log.caller_line || '–' }}</td>
-                <td>{{ log.core_file_size }}</td>
-                <td class="mono-text">{{ log.host }}</td>
+                <td class="mono-text">
+                  {{ log.created_at }}
+                </td>
+
+                <td>
+                  <span class="type-badge">
+                    {{ log.env }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="status-badge tone-reject">
+                    {{ log.signal }}
+                  </span>
+                </td>
+
+                <td>
+                  {{ log.exit_code }}
+                </td>
+
+                <td class="mono-text function-cell">
+                  {{ log.crash_function }}
+                </td>
+
+                <td>
+                  {{ log.crash_line || '–' }}
+                </td>
+
+                <td class="mono-text function-cell">
+                  {{ log.caller }}
+                </td>
+
+                <td>
+                  {{ log.caller_line || '–' }}
+                </td>
+
+                <td>
+                  {{ log.core_file_size }}
+                </td>
+
+                <td class="mono-text">
+                  {{ log.host }}
+                </td>
               </tr>
             </tbody>
           </table>
 
-          <div v-else class="empty-table">
+          <div
+            v-else
+            class="empty-table"
+          >
             No crash logs found.
           </div>
         </div>
 
-        <div v-else class="empty-table">
+        <div
+          v-else
+          class="empty-table"
+        >
           Object pool metrics are not available yet.
         </div>
 
         <div class="table-footer">
-          Showing {{ activeTab === 'crash_log' ? sortedCrashLogs.length : 0 }} records
+          Showing
+          {{
+            activeTab === 'crash_log'
+              ? sortedCrashLogs.length
+              : 0
+          }}
+          records
         </div>
       </section>
     </section>
@@ -212,7 +289,14 @@ onMounted(() => {
 .system-page {
   min-height: 100%;
   color: #f8fafc;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 }
 
 .system-layout {
@@ -226,7 +310,6 @@ onMounted(() => {
   background: #111827;
   border: 1px solid #374151;
   border-radius: 12px;
-  box-shadow: none;
 }
 
 .filter-panel {
@@ -244,7 +327,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
 }
 
 .filter-header {
@@ -273,31 +355,38 @@ onMounted(() => {
 .filter-total {
   min-width: 36px;
   height: 36px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   color: #bfdbfe;
   background: #1e3a5f;
+
   border: 1px solid #3b82f6;
   border-radius: 999px;
+
   font-weight: 800;
 }
 
 .filter-card {
   width: 100%;
   min-height: 72px;
+
   display: flex;
   align-items: center;
-  gap: 10px;
+
   padding: 10px 12px;
   margin-bottom: 12px;
+
   color: #e5e7eb;
   background: #1f2937;
+
   border: 1px solid #374151;
   border-radius: 12px;
+
   text-align: left;
   cursor: pointer;
-  transition: none;
 }
 
 .filter-card:hover {
@@ -330,16 +419,19 @@ onMounted(() => {
 .refresh-button {
   width: 42px;
   height: 42px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
   color: #cbd5e1;
   background: #111827;
+
   border: 1px solid #374151;
   border-radius: 9px;
+
   font-size: 24px;
   cursor: pointer;
-  transition: none;
 }
 
 .refresh-button:hover {
@@ -356,25 +448,29 @@ onMounted(() => {
 .panel-message,
 .empty-table {
   padding: 24px;
+
   color: #9ca3af;
   background: #1f2937;
+
   border: 1px solid #374151;
   border-radius: 10px;
+
   font-size: 12px;
 }
 
 .error-message {
   color: #fca5a5;
-  background: #1f2937;
   border-color: #7f1d1d;
 }
 
 .table-card {
   min-height: 420px;
+
   overflow-x: hidden;
   overflow-y: auto;
 
   background: #1f2937;
+
   border: 1px solid #374151;
   border-radius: 10px;
 }
@@ -382,12 +478,55 @@ onMounted(() => {
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.col-created {
+  width: 10%;
+}
+
+.col-env {
+  width: 6%;
+}
+
+.col-signal {
+  width: 7%;
+}
+
+.col-exit {
+  width: 4%;
+}
+
+.col-function {
+  width: 30%;
+}
+
+.col-line {
+  width: 4%;
+}
+
+.col-caller {
+  width: 28%;
+}
+
+.col-caller-line {
+  width: 6%;
+}
+
+.col-core {
+  width: 5%;
+}
+
+.col-host {
+  width: 8%;
 }
 
 th,
 td {
-  padding: 8px 12px;
+  padding: 10px 12px;
+
   border-bottom: 1px solid #374151;
+
   vertical-align: top;
 
   white-space: normal;
@@ -395,25 +534,30 @@ td {
   overflow-wrap: anywhere;
 }
 
-th:first-child,
-td:first-child,
-th:nth-child(5),
-td:nth-child(5),
-th:nth-child(7),
-td:nth-child(7) {
-  text-align: left;
-}
-
 th {
   color: #9ca3af;
   background: #1f2937;
+
   font-size: 13px;
   font-weight: 800;
+
+  text-align: left;
 }
 
 td {
   color: #f8fafc;
   font-size: 13px;
+
+  text-align: left;
+}
+
+td:nth-child(2),
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(6),
+td:nth-child(8),
+td:nth-child(9) {
+  text-align: center;
 }
 
 .table-row:hover {
@@ -421,21 +565,25 @@ td {
 }
 
 .function-cell {
+  line-height: 1.5;
+
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
-
-  line-height: 1.45;
 }
 
 .status-badge,
 .type-badge {
+  min-width: 46px;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 46px;
+
   padding: 3px 8px;
+
   border-radius: 6px;
+
   font-size: 11px;
   font-weight: 800;
 }
@@ -443,29 +591,36 @@ td {
 .status-badge.tone-reject {
   color: #c084fc;
   background: #31263d;
+
   border: 1px solid #6b21a8;
 }
 
 .type-badge {
   color: #e5e7eb;
   background: #111827;
+
   border: 1px solid #374151;
 }
 
 .mono-text {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    'Liberation Mono',
+    'Courier New',
+    monospace;
+
+  line-height: 1.5;
 }
 
 .table-footer {
   margin-top: 18px;
+
   color: #9ca3af;
   font-size: 13px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
 }
 
 @media (max-width: 1050px) {
