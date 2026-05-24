@@ -93,6 +93,14 @@ if [[ $code -eq 139 || $code -eq 134 || $code -eq 137 ]]; then
 
         rm -f "$latest_core"
         rm -f "$trace_file"
+
+        if [[ ! -f "$latest_core" ]]; then
+            echo "Deleted core file: $latest_core"
+        fi
+
+        if [[ ! -f "$trace_file" ]]; then
+            echo "Deleted trace file: $trace_file"
+        fi
     else
         echo "No core file found"
     fi
