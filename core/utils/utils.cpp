@@ -105,6 +105,28 @@ std::string Utils::get_string_time_YMD_with_millisecond(time_t time_val, time_t 
     return "";
 }
 
+std::string Utils::get_string_time_from_utc_nanoseconds(size_t utc_nanoseconds, time_t offset)
+{
+    size_t seconds = utc_nanoseconds / 1000000000ULL;
+
+    seconds += offset;
+
+    struct tm* timeinfo = nullptr;
+    char buffer[80];
+
+    time_t time_val = static_cast<time_t>(seconds);
+
+    timeinfo = gmtime(&time_val);
+
+    if (timeinfo)
+    {
+        strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+        return std::string(buffer);
+    }
+
+    return "";
+}
+
 std::vector<std::string> Utils::split_string(const std::string& str, const std::string& del)
 {
     std::vector<std::string> res;

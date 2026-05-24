@@ -42,6 +42,7 @@ public:
     static std::string get_string_time(time_t time, time_t offset = UTC_PLUS_7_IN_S);
     static std::string get_string_time_YMD(time_t time, time_t offset = UTC_PLUS_7_IN_S);
     static std::string get_string_time_YMD_with_millisecond(time_t time, time_t offset = UTC_PLUS_7_IN_MS);
+    static std::string get_string_time_from_utc_nanoseconds(size_t utc_nanoseconds, time_t offset = UTC_PLUS_7_IN_S);
 
     static std::vector<std::string> split_string(const std::string& str, const std::string& del);
     static std::string round_string_number(const std::string& str_number, size_t precision);
