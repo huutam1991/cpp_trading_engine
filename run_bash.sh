@@ -60,8 +60,15 @@ if [[ $code -eq 139 || $code -eq 134 || $code -eq 137 ]]; then
             ./http_server_cpp "$latest_core" \
             > "$trace_file" 2>&1
 
-        crash_function=$(grep -m 1 "^#0" "$trace_file" | sed -E 's/^#0 +0x[0-9a-f]+ in ([^(]+).*/\1/')
-        caller=$(grep -m 1 "^#1" "$trace_file" | sed -E 's/^#1 +0x[0-9a-f]+ in ([^(]+).*/\1/')
+        frame0=$(grep -m 1 "^#0" "$trace_file")
+        frame1=$(grep -m 1 "^#1" "$trace_file")
+
+        crash_function=$(echo "$frame0" | sed -E 's/^#0 +0x[0-9a-f]+ in ([^(]+).*/\1/')
+        caller=$(echo "$frame1" | sed -E 's/^#1 +0x[0-9a-f]+ in ([^(]+).*/\1/')
+
+        crash_line=$(echo "$frame0" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
+        caller_line=$(echo "$frame1" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
+
         core_size=$(du -h "$latest_core" | cut -f1)
 
         if command -v mongosh >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
@@ -72,7 +79,9 @@ if [[ $code -eq 139 || $code -eq 134 || $code -eq 137 ]]; then
                     exit_code: ${code},
                     signal: '${signal}',
                     crash_function: $(jq -Rn --arg v "$crash_function" '$v'),
+                    crash_line: $(jq -Rn --arg v "$crash_line" '$v'),
                     caller: $(jq -Rn --arg v "$caller" '$v'),
+                    caller_line: $(jq -Rn --arg v "$caller_line" '$v'),
                     core_file_size: '${core_size}',
                     host: '$(hostname)',
                     created_at: new Date()
