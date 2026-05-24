@@ -371,7 +371,9 @@ onMounted(() => {
 
 .table-card {
   min-height: 420px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+
   background: #1f2937;
   border: 1px solid #374151;
   border-radius: 10px;
@@ -384,10 +386,13 @@ table {
 
 th,
 td {
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-bottom: 1px solid #374151;
-  text-align: right;
   vertical-align: top;
+
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 th:first-child,
@@ -416,9 +421,6 @@ td {
 }
 
 .function-cell {
-  min-width: 420px;
-  max-width: 720px;
-
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -463,7 +465,7 @@ td {
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 @media (max-width: 1050px) {
