@@ -2,6 +2,30 @@
 
 set -e
 
+# Apply sysctl config
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SYSCTL_CONFIG_SOURCE="${SCRIPT_DIR}/z_config/sysctl.conf"
+SYSCTL_CONFIG_TARGET="/etc/sysctl.conf"
+
+if [[ -f "${SYSCTL_CONFIG_SOURCE}" ]]; then
+    echo "Applying sysctl config from ${SYSCTL_CONFIG_SOURCE}"
+
+    if [[ -f "${SYSCTL_CONFIG_TARGET}" ]]; then
+        cp "${SYSCTL_CONFIG_TARGET}" "${SYSCTL_CONFIG_TARGET}.bak.$(date '+%Y%m%d_%H%M%S')"
+    fi
+
+    cp "${SYSCTL_CONFIG_SOURCE}" "${SYSCTL_CONFIG_TARGET}"
+
+    echo "Reloading sysctl config..."
+    sysctl -p "${SYSCTL_CONFIG_TARGET}"
+
+    echo "sysctl config applied successfully."
+else
+    echo "WARNING: sysctl config file not found: ${SYSCTL_CONFIG_SOURCE}"
+fi
+
+
+# Start installing dependency packages
 DOWNLOAD_FOLDER="/temp/download_packages"
 mkdir -p "$DOWNLOAD_FOLDER"
 
