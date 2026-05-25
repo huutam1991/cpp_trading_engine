@@ -33,11 +33,6 @@ struct Future
             m_suspending_promise.store(suspending_promise, std::memory_order_release);
         }
 
-        bool is_value_set()
-        {
-            return m_is_set.load(std::memory_order_acquire);
-        }
-
         void set_value(T& value)
         {
             // Check if this future is already set
