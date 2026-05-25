@@ -65,6 +65,45 @@ install_if_missing() {
     apt install -y "$pkg"
 }
 
+install_mongosh_if_missing() {
+    if command -v mongosh >/dev/null 2>&1; then
+        echo "✔ [mongosh] is already installed."
+        mongosh --version
+        return
+    fi
+
+    echo "✘ [mongosh] not found. Installing..."
+
+    install_if_missing curl
+    install_if_missing gnupg
+    install_if_missing lsb-release
+    install_if_missing ca-certificates
+
+    local mongodb_version="8.0"
+    local keyring="/usr/share/keyrings/mongodb-server-${mongodb_version}.gpg"
+    local list_file="/etc/apt/sources.list.d/mongodb-org-${mongodb_version}.list"
+
+    local ubuntu_codename
+    ubuntu_codename="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
+
+    if [[ -z "$ubuntu_codename" ]]; then
+        ubuntu_codename="$(lsb_release -cs)"
+    fi
+
+    echo "Ubuntu codename: ${ubuntu_codename}"
+
+    curl -fsSL "https://pgp.mongodb.com/server-${mongodb_version}.asc" | \
+        gpg --dearmor -o "${keyring}"
+
+    echo "deb [ arch=amd64,arm64 signed-by=${keyring} ] https://repo.mongodb.org/apt/ubuntu ${ubuntu_codename}/mongodb-org/${mongodb_version} multiverse" > "${list_file}"
+
+    apt update -y
+    apt install -y mongodb-mongosh
+
+    echo "mongosh installed successfully:"
+    mongosh --version
+}
+
 install_dependency_packages() {
     # -----------------------------------------
     # Skip installation when running in CI
@@ -86,6 +125,8 @@ install_dependency_packages() {
     install_if_missing libsasl2-dev
     install_if_missing libboost-all-dev
     install_if_missing libspdlog-dev
+
+    install_mongosh_if_missing
 
     # Install PM2
     curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
@@ -121,13 +162,14 @@ if [ ! -f "$INSTALL_FOLDER/lib/libmongocxx.so" ]; then
     cd "$DOWNLOAD_FOLDER"
     curl -OL https://github.com/mongodb/mongo-cxx-driver/releases/download/r3.6.7/mongo-cxx-driver-r3.6.7.tar.gz
     tar -xzf mongo-cxx-driver-r3.6.7.tar.gz
-    # Patch all .hpp files that use std::uintXX_t or std::intXX_t but are missing <cstdint> (not nice, but works)
+
     find "$DOWNLOAD_FOLDER"/mongo-cxx-driver-r3.6.7/src -name "*.hpp" | while read file; do
     if grep -qE 'std::(u?int(8|16|32|64)_t)' "$file" && ! grep -q '<cstdint>' "$file"; then
         echo "Patching $file"
         sed -i '/#pragma once/a #include <cstdint>' "$file"
     fi
     done
+
     cd "$DOWNLOAD_FOLDER"/mongo-cxx-driver-r3.6.7/build
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$INSTALL_FOLDER"
     cmake --build . -j 4
@@ -147,14 +189,6 @@ else
     cmake --build build
     cmake --install build
 fi
-
-# # Install GLog
-# cd "$DOWNLOAD_FOLDER"
-# git clone https://github.com/google/glog.git
-# cd "$DOWNLOAD_FOLDER"/glog
-# mkdir build && cd "$DOWNLOAD_FOLDER"/build
-# cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_FOLDER" ..
-# make -j$(nproc) && make install
 
 # Clean up if you want to keep the image size smaller
 cd "$DOWNLOAD_FOLDER"
