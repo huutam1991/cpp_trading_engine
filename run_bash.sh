@@ -7,6 +7,20 @@ fi
 
 ulimit -c unlimited
 
+# Core dump pattern: /tmp/core.%e.%p.%t
+current_core_pattern=$(cat /proc/sys/kernel/core_pattern)
+echo "Current core_pattern: ${current_core_pattern}"
+
+if [[ "${current_core_pattern}" != "/tmp/core.%e.%p.%t" ]]; then
+    echo "Updating core_pattern to /tmp/core.%e.%p.%t"
+
+    sudo sysctl -w kernel.core_pattern=/tmp/core.%e.%p.%t
+
+    echo "Updated core_pattern: $(cat /proc/sys/kernel/core_pattern)"
+else
+    echo "core_pattern already correct"
+fi
+
 if [[ "${PROD:-false}" == "true" ]]; then
     PORT=443
     WEBSOCKET_PORT=8443
