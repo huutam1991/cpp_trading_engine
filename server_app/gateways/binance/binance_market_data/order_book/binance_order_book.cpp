@@ -228,7 +228,7 @@ bool BinanceOrderBook::process_buffered_updates_after_snapshot()
         // no buffered updates newer than snapshot
         // snapshot itself is already latest
 
-        m_package_last_update_id = m_snapshot_last_update_id;
+        // m_package_last_update_id = m_snapshot_last_update_id;
 
         spdlog::info(
             "Snapshot already up to date for symbol [{}], snapshot_last_update_id={}",
