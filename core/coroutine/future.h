@@ -41,7 +41,11 @@ struct Future
         void set_value(T& value)
         {
             // Check if this future is already set
-            if (m_is_set.load(std::memory_order_acquire) == true) return;
+            bool expected = false;
+            if (!m_is_set.compare_exchange_strong(expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
+            {
+                return;
+            }
 
             m_value = value;
 
@@ -52,7 +56,11 @@ struct Future
         void set_value(T&& value)
         {
             // Check if this future is already set
-            if (m_is_set.load(std::memory_order_acquire) == true) return;
+            bool expected = false;
+            if (!m_is_set.compare_exchange_strong(expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
+            {
+                return;
+            }
 
             m_value = std::move(value);
 
@@ -68,8 +76,6 @@ struct Future
     private:
         void future_set_ready()
         {
-            m_is_set.store(true, std::memory_order_release);
-
             // Mark suspending promise as ready
             BasePromiseType* suspending_promise = m_suspending_promise.load(std::memory_order_acquire);
             if (suspending_promise != nullptr)
