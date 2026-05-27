@@ -24,6 +24,7 @@
 // System monitoring
 #include <api_handler/api_handler_system_monitoring/api_handler_object_pool_info.h>
 #include <api_handler/api_handler_system_monitoring/api_handler_crash_log.h>
+#include <api_handler/api_handler_system_monitoring/api_handler_up_time.h>
 
 // Strategy
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
@@ -387,6 +388,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/crash_log")
     {
         co_return co_await APIHandlerCrashLog(request).handle();
+    };
+
+    // System monitoring - Up time
+    ADD_ROUTE(RequestMethod::GET, "/up_time")
+    {
+        co_return co_await APIHandlerUpTime(request).handle();
     };
 
     // Update strategy's config
