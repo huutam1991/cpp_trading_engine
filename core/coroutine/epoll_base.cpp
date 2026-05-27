@@ -29,6 +29,7 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
         spdlog::error("EpollBase - [add_fd] epoll_ctl ADD error for fd: {}, error: {}", fd, std::strerror(errno));
     }
 }
+
 void EpollBase::mod_fd_events(int fd, SystemIOObject* ptr, uint32_t events)
 {
     epoll_event ev;
