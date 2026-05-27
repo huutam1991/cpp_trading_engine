@@ -3,8 +3,6 @@
 #include <utils/utils.h>
 
 #include <api_handler/api_handler_system_monitoring/api_handler_crash_log.h>
-#include <order/simulator_order.h>
-
 
 APIHandlerCrashLog::APIHandlerCrashLog(HttpRequest* request) : APIHandler(request)
 {
