@@ -72,7 +72,7 @@ struct BaseTask
 
         if (handle.done() || complete == true)
         {
-            auto base_promise_type = get_base_promise_type();
+            BasePromiseType* base_promise_type = get_base_promise_type();
             if (base_promise_type->m_event_base != nullptr)
             {
                 void* task_ptr = base_promise_type->task_ptr;
