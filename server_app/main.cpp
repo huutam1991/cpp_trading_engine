@@ -4,6 +4,7 @@
 // #include <glog/logging.h>
 
 #include <utils/constants.h>
+#include <utils/utils.h>
 #include <app_constants.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
@@ -147,6 +148,9 @@ int main(int argc, char **argv) {
 
     // Init SpdLog format
     LogInit::init();
+
+    // Print update time
+    spdlog::info("Server up time: {}", Utils::get_up_time());
 
     GatewayManager::instance().init();
     OrderManager::instance().init();
