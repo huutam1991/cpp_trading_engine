@@ -78,4 +78,30 @@ public:
 
         return base + amplitude / (1.0 + std::pow(x / scale, power));
     }
+
+    static inline size_t get_start_time()
+    {
+        static size_t start_time = get_time_now_in_utc_nanoseconds();
+        return start_time;
+    }
+
+    static inline std::string get_up_time()
+    {
+        size_t start_time = get_start_time();
+        size_t now = get_time_now_in_utc_nanoseconds();
+        size_t up_time_in_seconds = (now - start_time) / 1'000'000'000;
+
+        size_t hours = up_time_in_seconds / 3600;
+        size_t minutes = (up_time_in_seconds % 3600) / 60;
+        size_t seconds = up_time_in_seconds % 60;
+
+        std::ostringstream oss;
+
+        oss << std::setfill('0')
+            << std::setw(2) << hours << ":"
+            << std::setw(2) << minutes << ":"
+            << std::setw(2) << seconds;
+
+        return oss.str();
+    }
 };
