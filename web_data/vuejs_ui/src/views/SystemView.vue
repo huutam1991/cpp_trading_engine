@@ -34,6 +34,13 @@ type ObjectPoolInfoResponse = {
   data: Record<string, number>
 }
 
+type UpTimeResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: string
+}
+
 type SystemTab = {
   label: string
   value: 'crash_log' | 'object_pool'
@@ -50,6 +57,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const crashLogs = ref<CrashLog[]>([])
 const objectPoolInfo = ref<Record<string, number>>({})
+const upTime = ref('--:--:--')
 
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -87,6 +95,32 @@ async function selectTab(tab: SystemTab['value']) {
     await fetchCrashLogs()
   } else if (tab === 'object_pool') {
     await fetchObjectPoolInfo()
+  }
+}
+
+async function fetchUpTime() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/up_time`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: UpTimeResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      authStore.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      upTime.value = '--:--:--'
+      return
+    }
+
+    upTime.value = result.data || '--:--:--'
+  } catch (error) {
+    console.error('Fetch up time error:', error)
+    upTime.value = '--:--:--'
   }
 }
 
@@ -152,16 +186,21 @@ async function fetchObjectPoolInfo() {
   }
 }
 
-function refreshSystem() {
+async function refreshSystem() {
+  await fetchUpTime()
+
   if (activeTab.value === 'crash_log') {
-    fetchCrashLogs()
+    await fetchCrashLogs()
   } else {
-    fetchObjectPoolInfo()
+    await fetchObjectPoolInfo()
   }
 }
 
-onMounted(() => {
-  fetchCrashLogs()
+onMounted(async () => {
+  await Promise.all([
+    fetchCrashLogs(),
+    fetchUpTime(),
+  ])
 })
 </script>
 
@@ -195,13 +234,20 @@ onMounted(() => {
             <p>{{ activeTabInfo.description }}</p>
           </div>
 
-          <button
-            class="refresh-button"
-            :disabled="loading"
-            @click="refreshSystem"
-          >
-            ↻
-          </button>
+          <div class="system-actions">
+            <div class="up-time-box">
+              <span class="up-time-label">Up Time</span>
+              <span class="up-time-value">{{ upTime }}</span>
+            </div>
+
+            <button
+              class="refresh-button"
+              :disabled="loading"
+              @click="refreshSystem"
+            >
+              ↻
+            </button>
+          </div>
         </div>
 
         <div v-if="loading" class="panel-message">
@@ -353,6 +399,37 @@ onMounted(() => {
   margin: 5px 0 0;
   color: #9ca3af;
   font-size: 13px;
+}
+
+.system-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.up-time-box {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: #cbd5e1;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 9px;
+}
+
+.up-time-label {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.up-time-value {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 .filter-total {
@@ -606,6 +683,19 @@ td:nth-child(9) {
   .filter-panel {
     padding: 16px;
     min-height: unset;
+  }
+
+  .system-header {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .system-actions {
+    flex-shrink: 0;
+  }
+
+  .up-time-box {
+    padding: 0 10px;
   }
 
   .table-card {
