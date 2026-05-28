@@ -47,7 +47,6 @@ namespace
     }
 }
 
-
 TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
 {
     auto fn = []() -> Task<int>
