@@ -56,7 +56,7 @@ void TaskInfo::release()
     // Do nothing here, will be release at EventBase
 }
 
-void* EventBase::add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address)
+void* EventBase::create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
     TaskInfo* task_info = TaskInfoPool::acquire();
     task_info->handle = handle;

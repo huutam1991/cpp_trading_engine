@@ -13,7 +13,7 @@ struct BasePromiseType
     void register_on(EventBase* event_base, std::coroutine_handle<> handle)
     {
         m_event_base = event_base;
-        task_ptr = event_base->add_to_event_base(handle, this);
+        task_ptr = event_base->create_task_info(handle, this);
         set_waiting(false); // Need to run this task at the beginning
     }
 

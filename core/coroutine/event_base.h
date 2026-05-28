@@ -57,7 +57,7 @@ public:
     size_t m_event_base_id = 0;
     ReadyTaskQueue m_ready_task_queue;
 
-    void* add_to_event_base(std::coroutine_handle<> handle, void* base_promise_type_address);
+    void* create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address);
     void remove_from_event_base(void* id);
     void check_to_remove_task(TaskInfo* task_info);
     virtual void set_ready_task(void* task_info);
