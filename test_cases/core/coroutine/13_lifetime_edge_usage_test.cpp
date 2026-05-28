@@ -210,7 +210,7 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveSuspendedTaskWrapperThenCompleteRelease
     ASSERT_EQ(frames.free(), 1);
 }
 
-TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignActiveSuspendedTaskWrapperThenCompleteReleasesOldFrame)
+TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignOverUnscheduledTaskWhileOtherIsSuspendedMustReleaseOldFrame)
 {
     FrameCounterGuard<int> frames;
 
@@ -234,8 +234,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignActiveSuspendedTaskWrapperThenCom
     };
 
     {
-        auto task1 = immediate();
-        auto task2 = delayed();
+        auto task1 = immediate(); // unscheduled frame
+        auto task2 = delayed();   // frame that will be scheduled and suspended
 
         auto result2 = task2.start_running_on(test_event_base());
         ASSERT_EQ(result2.wait_for(1ms), std::future_status::timeout);
@@ -248,6 +248,12 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignActiveSuspendedTaskWrapperThenCom
     settle();
 
     ASSERT_EQ(frames.alloc(), 2);
+
+    // Target behavior:
+    // - task1's old unscheduled frame must be released during move assignment.
+    // - delayed task frame must be released after completion + wrapper destruction.
+    //
+    // If this fails with free == 1, runtime still leaks unscheduled overwritten frame.
     ASSERT_EQ(frames.free(), 2);
 }
 
