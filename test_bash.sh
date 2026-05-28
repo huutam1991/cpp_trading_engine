@@ -36,6 +36,15 @@ normalize_target() {
     local input="$1"
 
     input="${input#./}"
+
+    if [[ "${input}" != test_cases/* ]]; then
+        echo "Error: target must start with test_cases/"
+        echo "Example:"
+        echo "./test_bash.sh test_cases/core/coroutine"
+        echo "./test_bash.sh test_cases/core/coroutine/07_lifetime_usage_test.cpp"
+        exit 1
+    fi
+
     input="${input#test_cases/}"
 
     echo "${input}"
@@ -76,7 +85,7 @@ build_filter() {
     for file in "${files[@]}"; do
         local tests
 
-        tests=$(extract_tests_from_file "${file}")
+        tests=$(extract_tests_from_file "${file}" || true)
 
         if [ -n "${tests}" ]; then
             all_tests="${all_tests}"$'\n'"${tests}"
