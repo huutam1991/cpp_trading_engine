@@ -92,5 +92,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main Thr
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+    TEST_MODE=1
+)
+
 include(GoogleTest)
 gtest_discover_tests(${PROJECT_NAME})
