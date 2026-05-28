@@ -1,6 +1,9 @@
 #pragma once
 
+#include <atomic>
+#include <cstddef>
 #include <future>
+
 #include "base_promise_type.h"
 #include "base_task.h"
 
@@ -9,7 +12,39 @@ struct Task : public BaseTask<T>
 {
     struct promise_type : public BaseTask<T>::promise_type
     {
-        // Methods of a standard promise
+#ifdef TEST_MODE
+        inline static std::atomic<int64_t> alloc_count{0};
+        inline static std::atomic<int64_t> free_count{0};
+
+        static void* operator new(std::size_t size)
+        {
+            alloc_count.fetch_add(1, std::memory_order_relaxed);
+            return ::operator new(size);
+        }
+
+        static void operator delete(void* ptr, std::size_t) noexcept
+        {
+            free_count.fetch_add(1, std::memory_order_relaxed);
+            ::operator delete(ptr);
+        }
+
+        static void reset_frame_counters()
+        {
+            alloc_count.store(0, std::memory_order_relaxed);
+            free_count.store(0, std::memory_order_relaxed);
+        }
+
+        static int64_t frame_alloc_count()
+        {
+            return alloc_count.load(std::memory_order_relaxed);
+        }
+
+        static int64_t frame_free_count()
+        {
+            return free_count.load(std::memory_order_relaxed);
+        }
+#endif
+
         Task get_return_object()
         {
             return Task{this};
@@ -35,7 +70,7 @@ struct Task : public BaseTask<T>
     T await_resume()
     {
         auto& promise = this->handle.promise();
-        return ((promise_type*)&promise)->value;
+        return static_cast<promise_type*>(&promise)->value;
     }
 };
 
@@ -44,7 +79,39 @@ struct Task<void> : public BaseTask<void>
 {
     struct promise_type : public BaseTask<void>::promise_type
     {
-        // Methods of a standard promise
+#ifdef TEST_MODE
+        inline static std::atomic<int64_t> alloc_count{0};
+        inline static std::atomic<int64_t> free_count{0};
+
+        static void* operator new(std::size_t size)
+        {
+            alloc_count.fetch_add(1, std::memory_order_relaxed);
+            return ::operator new(size);
+        }
+
+        static void operator delete(void* ptr, std::size_t) noexcept
+        {
+            free_count.fetch_add(1, std::memory_order_relaxed);
+            ::operator delete(ptr);
+        }
+
+        static void reset_frame_counters()
+        {
+            alloc_count.store(0, std::memory_order_relaxed);
+            free_count.store(0, std::memory_order_relaxed);
+        }
+
+        static int64_t frame_alloc_count()
+        {
+            return alloc_count.load(std::memory_order_relaxed);
+        }
+
+        static int64_t frame_free_count()
+        {
+            return free_count.load(std::memory_order_relaxed);
+        }
+#endif
+
         Task get_return_object()
         {
             return Task{this};
