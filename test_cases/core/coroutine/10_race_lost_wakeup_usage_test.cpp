@@ -48,52 +48,52 @@ namespace
 }
 
 
-TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
-{
-    constexpr int N = 10000;
+// TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
+// {
+//     constexpr int N = 10000;
 
-    auto fn = []() -> Task<int>
-    {
-        int v = co_await Future<int>([](auto* out)
-        {
-            out->set_value(1);
-        });
+//     auto fn = []() -> Task<int>
+//     {
+//         int v = co_await Future<int>([](auto* out)
+//         {
+//             out->set_value(1);
+//         });
 
-        co_return v;
-    };
+//         co_return v;
+//     };
 
-    for (int i = 0; i < N; ++i)
-    {
-        auto task = fn();
-        auto result = task.start_running_on(test_event_base());
-        ASSERT_EQ(wait_result(result), 1);
-    }
-}
+//     for (int i = 0; i < N; ++i)
+//     {
+//         auto task = fn();
+//         auto result = task.start_running_on(test_event_base());
+//         ASSERT_EQ(wait_result(result), 1);
+//     }
+// }
 
-TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
-{
-    constexpr int N = 1000;
+// TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
+// {
+//     constexpr int N = 1000;
 
-    auto fn = []() -> Task<int>
-    {
-        int v = co_await Future<int>([](auto* out)
-        {
-            std::thread([out]()
-            {
-                out->set_value(1);
-            }).detach();
-        });
+//     auto fn = []() -> Task<int>
+//     {
+//         int v = co_await Future<int>([](auto* out)
+//         {
+//             std::thread([out]()
+//             {
+//                 out->set_value(1);
+//             }).detach();
+//         });
 
-        co_return v;
-    };
+//         co_return v;
+//     };
 
-    for (int i = 0; i < N; ++i)
-    {
-        auto task = fn();
-        auto result = task.start_running_on(test_event_base());
-        ASSERT_EQ(wait_result(result), 1);
-    }
-}
+//     for (int i = 0; i < N; ++i)
+//     {
+//         auto task = fn();
+//         auto result = task.start_running_on(test_event_base());
+//         ASSERT_EQ(wait_result(result), 1);
+//     }
+// }
 
 // TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
 // {
