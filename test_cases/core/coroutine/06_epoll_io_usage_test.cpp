@@ -3,10 +3,12 @@
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <memory>
 #include <utility>
+#include <iostream>
 
 #include <coroutine/task.h>
 #include <coroutine/future.h>
@@ -19,46 +21,56 @@ namespace
     template <class T>
     T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future timeout";
+            throw std::runtime_error("future timeout");
+        }
+
         return f.get();
     }
 
     inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future<void> timeout";
+            throw std::runtime_error("future<void> timeout");
+        }
+
         f.get();
     }
 
     inline EventBase* test_event_base()
     {
-        // Use a non-IO event base for black-box coroutine tests.
         return EventBaseManager::get_event_base_by_id(EventBaseID::NO_STRATEGY);
     }
 }
 
+
 #include <sys/eventfd.h>
 #include <unistd.h>
 
-// NOTE:
-// This file is intentionally written as black-box IO usage coverage.
-// Adapt the SystemIOObject test double to your exact public IO-object API.
+// Black-box IO coverage placeholders.
+// Keep these skipped until there is a stable public test wrapper around SystemIOObject.
+// Do not test EpollBase internals directly here.
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderReadableFdWakesTask)
 {
-    GTEST_SKIP() << "Implement with your public SystemIOObject wrapper: create fd, register on EpollBase, write to fd, assert task resumes.";
+    GTEST_SKIP() << "Implement with public IO object API: register fd, write to fd, assert coroutine resumes.";
 }
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderMultipleIoObjects)
 {
-    GTEST_SKIP() << "Implement with multiple public IO objects active on EpollBase; assert all callbacks/tasks complete.";
+    GTEST_SKIP() << "Implement with multiple public IO objects on EpollBase; assert all callbacks/tasks complete.";
 }
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderIoCloseCleanupIsSafe)
 {
-    GTEST_SKIP() << "Register IO object, close/release it through public API, then ensure no crash/no invalid resume.";
+    GTEST_SKIP() << "Register IO object, close/release through public API, assert no invalid resume/no crash.";
 }
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderIoErrorOrHangupPathSafe)
 {
-    GTEST_SKIP() << "Trigger EPOLLERR/EPOLLHUP/EPOLLRDHUP through public IO API; assert safe cleanup behavior.";
+    GTEST_SKIP() << "Trigger error/hangup through public IO API, assert cleanup behavior.";
 }

@@ -3,10 +3,12 @@
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <memory>
 #include <utility>
+#include <iostream>
 
 #include <coroutine/task.h>
 #include <coroutine/future.h>
@@ -19,29 +21,36 @@ namespace
     template <class T>
     T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future timeout";
+            throw std::runtime_error("future timeout");
+        }
+
         return f.get();
     }
 
     inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future<void> timeout";
+            throw std::runtime_error("future<void> timeout");
+        }
+
         f.get();
     }
 
     inline EventBase* test_event_base()
     {
-        // Use a non-IO event base for black-box coroutine tests.
         return EventBaseManager::get_event_base_by_id(EventBaseID::NO_STRATEGY);
     }
 }
 
+
 #include <stdexcept>
 
-// Current implementation may terminate on unhandled_exception.
-// Keep these as disabled death tests until desired failure policy is finalized.
-
-TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesTaskPendingSafely)
+TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
 {
     auto fn = []() -> Task<int>
     {
@@ -59,6 +68,9 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesTaskPendingSafely)
     ASSERT_EQ(result.wait_for(20ms), std::future_status::timeout);
 }
 
+// Current implementation may terminate on unhandled_exception.
+// Keep these disabled until the desired failure policy is finalized.
+
 TEST(CoroutineUsageFailureTest, DISABLED_ExceptionBeforeAwaitPolicy)
 {
     auto fn = []() -> Task<int>
@@ -69,10 +81,6 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionBeforeAwaitPolicy)
 
     auto task = fn();
     auto result = task.start_running_on(test_event_base());
-
-    // Choose one policy:
-    // 1. EXPECT_DEATH(...), if unhandled exception terminates.
-    // 2. EXPECT_THROW(...), if refactor captures exception into result future.
     (void)result;
 }
 
@@ -91,6 +99,5 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionAfterAwaitPolicy)
 
     auto task = fn();
     auto result = task.start_running_on(test_event_base());
-
     (void)result;
 }

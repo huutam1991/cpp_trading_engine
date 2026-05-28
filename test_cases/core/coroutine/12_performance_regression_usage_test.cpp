@@ -3,10 +3,12 @@
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <memory>
 #include <utility>
+#include <iostream>
 
 #include <coroutine/task.h>
 #include <coroutine/future.h>
@@ -19,24 +21,32 @@ namespace
     template <class T>
     T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future timeout";
+            throw std::runtime_error("future timeout");
+        }
+
         return f.get();
     }
 
     inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future<void> timeout";
+            throw std::runtime_error("future<void> timeout");
+        }
+
         f.get();
     }
 
     inline EventBase* test_event_base()
     {
-        // Use a non-IO event base for black-box coroutine tests.
         return EventBaseManager::get_event_base_by_id(EventBaseID::NO_STRATEGY);
     }
 }
 
-#include <iostream>
 
 TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
 {
@@ -66,8 +76,6 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
     std::cout << "[perf] simple task avg ns: " << avg_ns << std::endl;
 
     ASSERT_EQ(total, N);
-
-    // Keep loose at first. Tighten after benchmark environment is stable.
     ASSERT_LT(avg_ns, 100000.0);
 }
 
@@ -105,8 +113,6 @@ TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
     std::cout << "[perf] task-await-task avg ns: " << avg_ns << std::endl;
 
     ASSERT_EQ(total, N);
-
-    // Keep loose at first. Tighten toward your 800ns - 1.3us baseline later.
     ASSERT_LT(avg_ns, 100000.0);
 }
 

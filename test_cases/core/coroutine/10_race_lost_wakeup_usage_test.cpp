@@ -3,10 +3,12 @@
 #include <atomic>
 #include <chrono>
 #include <future>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 #include <memory>
 #include <utility>
+#include <iostream>
 
 #include <coroutine/task.h>
 #include <coroutine/future.h>
@@ -19,22 +21,32 @@ namespace
     template <class T>
     T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future timeout";
+            throw std::runtime_error("future timeout");
+        }
+
         return f.get();
     }
 
     inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
     {
-        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        if (f.wait_for(timeout) != std::future_status::ready)
+        {
+            ADD_FAILURE() << "future<void> timeout";
+            throw std::runtime_error("future<void> timeout");
+        }
+
         f.get();
     }
 
     inline EventBase* test_event_base()
     {
-        // Use a non-IO event base for black-box coroutine tests.
         return EventBaseManager::get_event_base_by_id(EventBaseID::NO_STRATEGY);
     }
 }
+
 
 TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
 {
@@ -83,7 +95,36 @@ TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
     }
 }
 
-// TEST(CoroutineUsageRaceTest, ManyThreadsCompleteManyFutures)
+// TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
+// {
+//     constexpr int N = 1000;
+
+//     auto fn = [](int i) -> Task<int>
+//     {
+//         int v = co_await Future<int>([i](auto* out)
+//         {
+//             std::thread([out, i]()
+//             {
+//                 out->set_value(i);
+//             }).detach();
+//         });
+
+//         co_return v;
+//     };
+
+//     long long sum = 0;
+
+//     for (int i = 0; i < N; ++i)
+//     {
+//         auto task = fn(i);
+//         auto result = task.start_running_on(test_event_base());
+//         sum += wait_result(result, 1000ms);
+//     }
+
+//     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+// }
+
+// TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
 // {
 //     constexpr int N = 512;
 
@@ -117,7 +158,7 @@ TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
 //     long long sum = 0;
 //     for (auto& f : results)
 //     {
-//         sum += wait_result(f);
+//         sum += wait_result(f, 3000ms);
 //     }
 
 //     ASSERT_EQ(sum, (N - 1LL) * N / 2);
