@@ -9,7 +9,9 @@
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
-            "defines": [],
+            "defines": [
+                "TEST_MODE_ONLY=1"
+            ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++23",

@@ -12,7 +12,7 @@ struct Task : public BaseTask<T>
 {
     struct promise_type : public BaseTask<T>::promise_type
     {
-#ifdef TEST_MODE
+#ifdef TEST_MODE_ONLY
         inline static std::atomic<int64_t> alloc_count{0};
         inline static std::atomic<int64_t> free_count{0};
 
@@ -79,7 +79,8 @@ struct Task<void> : public BaseTask<void>
 {
     struct promise_type : public BaseTask<void>::promise_type
     {
-#ifdef TEST_MODE
+
+#ifdef TEST_MODE_ONLY
         inline static std::atomic<int64_t> alloc_count{0};
         inline static std::atomic<int64_t> free_count{0};
 

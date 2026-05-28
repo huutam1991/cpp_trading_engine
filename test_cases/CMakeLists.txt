@@ -94,7 +94,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
-    TEST_MODE=1
+    TEST_MODE_ONLY=1
 )
 
 include(GoogleTest)
