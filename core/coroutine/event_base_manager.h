@@ -1,8 +1,8 @@
 #pragma once
 
 #include <thread>
-#include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include <utils/spin_lock.h>
 #include <utils/thread_pinning.h>
@@ -36,12 +36,12 @@ public:
     static EventBase* get_event_base_by_id(T id)
     {
         static SpinLock spin_lock;
-        static std::vector<std::thread> threads;
         static std::unordered_map<T, std::shared_ptr<EventBase>> event_base_list;
 
         SpinLockGuard lock(spin_lock);
 
-        if (event_base_list.find(id) == event_base_list.end())
+        auto it = event_base_list.find(id);
+        if (it == event_base_list.end())
         {
             std::shared_ptr<EventBase> event_base;
 
@@ -54,15 +54,18 @@ public:
                 event_base = std::make_shared<EventBase>(static_cast<EventBaseID>(id));
             }
 
-            event_base_list.insert(std::make_pair(id, event_base));
-            threads.emplace_back([event_base]()
+            event_base_list.emplace(id, event_base);
+
+            std::thread([event_base]()
             {
                 // Pin each event base thread to a specific core
                 ThreadPinning::pin_thread_to_core(static_cast<int>(event_base->m_event_base_id));
                 event_base->loop();
-            });
+            }).detach();
+
+            return event_base.get();
         }
 
-        return event_base_list[id].get();
+        return it->second.get();
     }
 };
