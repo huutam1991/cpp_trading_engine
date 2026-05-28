@@ -28,6 +28,8 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/cache/*.hpp
     ${PROJECT_ROOT}/core/json/*.h
     ${PROJECT_ROOT}/core/json/*.hpp
+    ${PROJECT_ROOT}/core/coroutine/*.h
+    ${PROJECT_ROOT}/core/coroutine/*.hpp
     ${PROJECT_ROOT}/core/network/https_client_request/*.h
     ${PROJECT_ROOT}/core/network/https_client_request/*.hpp
     ${PROJECT_ROOT}/core/network/https_client_websocket/*.h
@@ -45,6 +47,8 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/cache/*.cpp
     ${PROJECT_ROOT}/core/json/*.c
     ${PROJECT_ROOT}/core/json/*.cpp
+    ${PROJECT_ROOT}/core/coroutine/*.c
+    ${PROJECT_ROOT}/core/coroutine/*.cpp
     ${PROJECT_ROOT}/core/network/https_client_request/https_client_response_parser*.cpp
     ${PROJECT_ROOT}/core/network/https_client_request/https_client_chunk_parser*.cpp
     ${PROJECT_ROOT}/core/network/https_client_websocket/websocket_frame_parser.cpp

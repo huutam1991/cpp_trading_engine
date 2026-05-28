@@ -1,0 +1,124 @@
+#include <gtest/gtest.h>
+
+#include <atomic>
+#include <chrono>
+#include <future>
+#include <thread>
+#include <vector>
+#include <memory>
+#include <utility>
+
+#include <coroutine/task.h>
+#include <coroutine/future.h>
+#include <coroutine/event_base_manager.h>
+
+using namespace std::chrono_literals;
+
+namespace
+{
+    template <class T>
+    T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
+    {
+        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        return f.get();
+    }
+
+    inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
+    {
+        EXPECT_EQ(f.wait_for(timeout), std::future_status::ready);
+        f.get();
+    }
+
+    inline EventBase* test_event_base()
+    {
+        // Use a non-IO event base for black-box coroutine tests.
+        return EventBaseManager::get_event_base_by_id(EventBaseID::NO_STRATEGY);
+    }
+}
+
+TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
+{
+    constexpr int N = 10000;
+
+    auto fn = []() -> Task<int>
+    {
+        int v = co_await Future<int>([](auto* out)
+        {
+            out->set_value(1);
+        });
+
+        co_return v;
+    };
+
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+        ASSERT_EQ(wait_result(result), 1);
+    }
+}
+
+TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
+{
+    constexpr int N = 1000;
+
+    auto fn = []() -> Task<int>
+    {
+        int v = co_await Future<int>([](auto* out)
+        {
+            std::thread([out]()
+            {
+                out->set_value(1);
+            }).detach();
+        });
+
+        co_return v;
+    };
+
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+        ASSERT_EQ(wait_result(result), 1);
+    }
+}
+
+// TEST(CoroutineUsageRaceTest, ManyThreadsCompleteManyFutures)
+// {
+//     constexpr int N = 512;
+
+//     std::vector<Task<int>> tasks;
+//     std::vector<std::future<int>> results;
+
+//     tasks.reserve(N);
+//     results.reserve(N);
+
+//     auto fn = [](int i) -> Task<int>
+//     {
+//         int v = co_await Future<int>([i](auto* out)
+//         {
+//             std::thread([out, i]()
+//             {
+//                 out->set_value(i);
+//             }).detach();
+//         });
+
+//         co_return v;
+//     };
+
+//     auto eb = test_event_base();
+
+//     for (int i = 0; i < N; ++i)
+//     {
+//         tasks.emplace_back(fn(i));
+//         results.emplace_back(tasks.back().start_running_on(eb));
+//     }
+
+//     long long sum = 0;
+//     for (auto& f : results)
+//     {
+//         sum += wait_result(f);
+//     }
+
+//     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+// }
