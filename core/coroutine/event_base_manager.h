@@ -36,7 +36,8 @@ public:
     static EventBase* get_event_base_by_id(T id)
     {
         static SpinLock spin_lock;
-        static std::unordered_map<T, std::shared_ptr<EventBase>> event_base_list;
+        std::unordered_map<T, std::shared_ptr<EventBase>>& event_base_list = get_event_bases<T>();
+        std::vector<std::thread>& event_base_threads = get_event_base_threads();
 
         SpinLockGuard lock(spin_lock);
 
@@ -56,16 +57,56 @@ public:
 
             event_base_list.emplace(id, event_base);
 
-            std::thread([event_base]()
+            std::thread thread([event_base]()
             {
                 // Pin each event base thread to a specific core
                 ThreadPinning::pin_thread_to_core(static_cast<int>(event_base->m_event_base_id));
                 event_base->loop();
-            }).detach();
+            });
+
+            event_base_threads.push_back(std::move(thread));
 
             return event_base.get();
         }
 
         return it->second.get();
+    }
+
+    template <typename T>
+    static std::unordered_map<T, std::shared_ptr<EventBase>>& get_event_bases()
+    {
+        static std::unordered_map<T, std::shared_ptr<EventBase>> event_bases;
+        return event_bases;
+    }
+
+    static std::vector<std::thread>& get_event_base_threads()
+    {
+        static std::vector<std::thread> event_base_threads;
+        return event_base_threads;
+    }
+
+    static void shutdown_all()
+    {
+        // Signal all event bases to stop
+        {
+            for (auto& [id, event_base] : get_event_bases<EventBaseID>())
+            {
+                event_base->stop();
+            }
+
+            for (auto& [id, event_base] : get_event_bases<EpollBaseID>())
+            {
+                event_base->stop();
+            }
+        }
+
+        std::vector<std::thread>& event_base_threads = get_event_base_threads();
+        for (auto& thread : event_base_threads)
+        {
+            if (thread.joinable())
+            {
+                thread.join();
+            }
+        }
     }
 };
