@@ -43,7 +43,7 @@ namespace
 
     inline EventBase* test_event_base()
     {
-        return EventBaseManager::get_event_base_by_id(EventBaseID::NO_STRATEGY);
+        return EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY);
     }
 }
 
@@ -58,6 +58,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
