@@ -47,7 +47,6 @@ namespace
     }
 }
 
-
 TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseSequentialStart)
 {
     constexpr int N = 1000;
@@ -68,6 +67,9 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseSequentialStart)
     }
 
     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
@@ -98,6 +100,9 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
     }
 
     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEventBaseTest, ParentAwaitsChildInsteadOfBlockingFutureGet)
@@ -117,6 +122,9 @@ TEST(CoroutineUsageEventBaseTest, ParentAwaitsChildInsteadOfBlockingFutureGet)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEventBaseTest, TaskLoopAwaitManyTimes)
@@ -140,6 +148,9 @@ TEST(CoroutineUsageEventBaseTest, TaskLoopAwaitManyTimes)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEventBaseTest, DifferentEventBaseIdsCanRunTasks)
@@ -159,4 +170,7 @@ TEST(CoroutineUsageEventBaseTest, DifferentEventBaseIdsCanRunTasks)
     auto f2 = t2.start_running_on(eb2);
 
     ASSERT_EQ(wait_result(f1) + wait_result(f2), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
