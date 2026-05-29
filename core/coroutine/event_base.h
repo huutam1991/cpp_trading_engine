@@ -11,7 +11,7 @@
 #include <queue/mpsc_queue.h>
 #include <system_io/system_io_object.h>
 
-#define MAX_TASK_INFO 20000
+#define MAX_TASK_INFO 200000
 
 class EventBase;
 
