@@ -58,19 +58,31 @@ namespace
 TEST(CoroutineUsageEpollIoTest, PlaceholderReadableFdWakesTask)
 {
     GTEST_SKIP() << "Implement with public IO object API: register fd, write to fd, assert coroutine resumes.";
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderMultipleIoObjects)
 {
     GTEST_SKIP() << "Implement with multiple public IO objects on EpollBase; assert all callbacks/tasks complete.";
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderIoCloseCleanupIsSafe)
 {
     GTEST_SKIP() << "Register IO object, close/release through public API, assert no invalid resume/no crash.";
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageEpollIoTest, PlaceholderIoErrorOrHangupPathSafe)
 {
     GTEST_SKIP() << "Trigger error/hangup through public IO API, assert cleanup behavior.";
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
