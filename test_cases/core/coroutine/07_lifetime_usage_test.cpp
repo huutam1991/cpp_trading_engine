@@ -93,6 +93,9 @@ TEST(CoroutineUsageLifetimeTest, DestroyTaskBeforeSchedulingReleasesCoroutineFra
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, DestroyVoidTaskBeforeSchedulingReleasesCoroutineFrame)
@@ -111,6 +114,9 @@ TEST(CoroutineUsageLifetimeTest, DestroyVoidTaskBeforeSchedulingReleasesCoroutin
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, DestroyTaskAfterCompletionReleasesCoroutineFrame)
@@ -135,6 +141,9 @@ TEST(CoroutineUsageLifetimeTest, DestroyTaskAfterCompletionReleasesCoroutineFram
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, DestroyVoidTaskAfterCompletionReleasesCoroutineFrame)
@@ -162,6 +171,9 @@ TEST(CoroutineUsageLifetimeTest, DestroyVoidTaskAfterCompletionReleasesCoroutine
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, RepeatedCreateDestroyBeforeSchedulingReleasesEveryFrame)
@@ -182,6 +194,9 @@ TEST(CoroutineUsageLifetimeTest, RepeatedCreateDestroyBeforeSchedulingReleasesEv
 
     small_settle_delay();
     frames.expect_counts(N, N);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, RepeatedCreateRunDestroyReleasesEveryFrame)
@@ -204,6 +219,9 @@ TEST(CoroutineUsageLifetimeTest, RepeatedCreateRunDestroyReleasesEveryFrame)
 
     small_settle_delay();
     frames.expect_counts(N, N);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, MoveConstructedTaskReleasesOnlyOnceAfterRun)
@@ -228,6 +246,9 @@ TEST(CoroutineUsageLifetimeTest, MoveConstructedTaskReleasesOnlyOnceAfterRun)
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, MovedFromTaskDestructorDoesNotReleaseFrameOwnedByMovedToTask)
@@ -251,6 +272,9 @@ TEST(CoroutineUsageLifetimeTest, MovedFromTaskDestructorDoesNotReleaseFrameOwned
 
     auto result = moved_to.start_running_on(test_event_base());
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, MovedToTaskReleasesFrameWhenDestroyed)
@@ -276,6 +300,9 @@ TEST(CoroutineUsageLifetimeTest, MovedToTaskReleasesFrameWhenDestroyed)
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, MoveAssignOverCompletedTaskReleasesOldAndNewFrames)
@@ -306,6 +333,9 @@ TEST(CoroutineUsageLifetimeTest, MoveAssignOverCompletedTaskReleasesOldAndNewFra
 
     small_settle_delay();
     frames.expect_counts(2, 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, MoveAssignOverUnscheduledTaskReleasesOldFrame)
@@ -334,6 +364,9 @@ TEST(CoroutineUsageLifetimeTest, MoveAssignOverUnscheduledTaskReleasesOldFrame)
 
     small_settle_delay();
     frames.expect_counts(2, 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, TemporaryTaskReturnedFromFunctionReleasesFrame)
@@ -353,6 +386,9 @@ TEST(CoroutineUsageLifetimeTest, TemporaryTaskReturnedFromFunctionReleasesFrame)
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, TaskStoredInVectorAndMovedByReallocationReleasesFrames)
@@ -392,6 +428,9 @@ TEST(CoroutineUsageLifetimeTest, TaskStoredInVectorAndMovedByReallocationRelease
 
     small_settle_delay();
     frames.expect_counts(N, N);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, ParentAwaitChildReleasesBothFrames)
@@ -420,6 +459,9 @@ TEST(CoroutineUsageLifetimeTest, ParentAwaitChildReleasesBothFrames)
 
     small_settle_delay();
     frames.expect_counts(2, 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, DeepAwaitChainReleasesAllFrames)
@@ -450,6 +492,9 @@ TEST(CoroutineUsageLifetimeTest, DeepAwaitChainReleasesAllFrames)
 
     small_settle_delay();
     frames.expect_counts(11, 11);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureReleasesFrameAfterCompletion)
@@ -474,6 +519,9 @@ TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureReleasesFrameAfterCompletion)
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureFromThreadReleasesFrameAfterCompletion)
@@ -502,6 +550,9 @@ TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureFromThreadReleasesFrameAfterC
 
     small_settle_delay();
     frames.expect_counts(1, 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeTest, PendingFutureTaskFrameNotFreedWhileTaskWrapperAlive)
@@ -533,16 +584,25 @@ TEST(CoroutineUsageLifetimeTest, PendingFutureTaskFrameNotFreedWhileTaskWrapperA
     // tighten this to expect_counts(1, 1).
     ASSERT_EQ(frames.alloc(), 1);
     ASSERT_LE(frames.free(), 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 // Enable after cancellation semantics are explicitly defined.
 TEST(CoroutineUsageLifetimeTest, DISABLED_DestroyRunningTaskWaitingOnFutureThenExternalCompletionIsSafe)
 {
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 // Enable if self-move is officially supported by Task.
 TEST(CoroutineUsageLifetimeTest, DISABLED_SelfMoveAssignmentPolicy)
 {
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
