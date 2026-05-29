@@ -70,22 +70,19 @@ struct BaseTask
             return;
         }
 
-        if (handle.done() || complete == true)
-        {
-            BasePromiseType* base_promise_type = get_base_promise_type();
-            if (base_promise_type->m_event_base != nullptr)
-            {
-                void* task_ptr = base_promise_type->task_ptr;
-                base_promise_type->m_event_base->remove_from_event_base(task_ptr);
-            }
+        auto* promise = get_base_promise_type();
 
-            // handle.destroy(); // Will be destroyed at EventBase
-        }
-        else
+        // Hasn't register on EventBase, just destroy the coroutine frame and return
+        if (promise->m_event_base == nullptr)
         {
-            // Mark this task is already release, then it will be destroy later when it's done
-            get_base_promise_type()->is_task_release = true;
+            handle.destroy();
+            handle = nullptr;
+            return;
         }
+
+        // Already register, mark this task is already release, then it will be destroy later when it's done
+        promise->is_task_release = true;
+        handle = nullptr;
     }
 
     // Get BasePromiseType of current coroutine
