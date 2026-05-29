@@ -53,6 +53,7 @@ class EventBase
 public:
     EventBase() {}
     EventBase(size_t id) : m_event_base_id {id} {}
+    virtual ~EventBase() {}
 
     size_t m_event_base_id = 0;
     ReadyTaskQueue m_ready_task_queue;

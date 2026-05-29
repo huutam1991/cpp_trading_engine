@@ -81,6 +81,16 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     }
 }
 
+EpollBase::~EpollBase()
+{
+    // Close the epoll file descriptor to stop the event loop
+    close(m_epoll_fd);
+}
+
+void EpollBase::stop()
+{
+}
+
 void EpollBase::set_ready_task(void* task_info)
 {
     SystemIOObject* task = static_cast<SystemIOObject*>(task_info);
