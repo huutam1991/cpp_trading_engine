@@ -47,7 +47,6 @@ namespace
     }
 }
 
-
 TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsChildValue)
 {
     auto child = []() -> Task<int>
@@ -65,6 +64,8 @@ TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsChildValue)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsVoidChild)
@@ -87,6 +88,8 @@ TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsVoidChild)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 1);
+
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageAwaitTaskTest, NestedTaskChain)
@@ -109,6 +112,8 @@ TEST(CoroutineUsageAwaitTaskTest, NestedTaskChain)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageAwaitTaskTest, MultipleSequentialAwaits)
@@ -130,4 +135,6 @@ TEST(CoroutineUsageAwaitTaskTest, MultipleSequentialAwaits)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    EventBaseManager::shutdown_all();
 }
