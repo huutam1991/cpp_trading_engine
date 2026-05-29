@@ -64,6 +64,9 @@ TEST(CoroutineUsageCompositionTest, TaskAwaitsFutureThenReturns)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageCompositionTest, ChildTaskAwaitsFuture)
@@ -88,6 +91,9 @@ TEST(CoroutineUsageCompositionTest, ChildTaskAwaitsFuture)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
@@ -118,6 +124,9 @@ TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageCompositionTest, SeveralAsyncSteps)
@@ -141,4 +150,7 @@ TEST(CoroutineUsageCompositionTest, SeveralAsyncSteps)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 27);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
