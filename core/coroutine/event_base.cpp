@@ -112,6 +112,7 @@ void EventBase::loop()
         }
         else
         {
+            spdlog::error("EventBase: {}, Received null task, stopping event loop", m_event_base_id);
             // This is a signal to stop the event loop
             break;
         }

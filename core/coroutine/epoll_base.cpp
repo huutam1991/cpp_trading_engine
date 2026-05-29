@@ -14,7 +14,54 @@ EpollBase::EpollBase(size_t id) : EventBase(id)
         exit(EXIT_FAILURE);
     }
 
+    if ((m_shutdown_fd = create_shutdown_event()) == -1)
+    {
+        spdlog::error("EpollBase - Failed to create shutdown event, error: {}", std::strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     spdlog::info("EpollBase - Created EpollBase with id: {}", m_event_base_id);
+}
+
+EpollBase::~EpollBase()
+{
+    if (m_epoll_fd != -1)
+    {
+        close(m_epoll_fd);
+    }
+
+    if (m_shutdown_fd != -1)
+    {
+        close(m_shutdown_fd);
+    }
+}
+
+int EpollBase::create_shutdown_event()
+{
+    int fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    if (fd == -1)
+    {
+        spdlog::error("EpollBase - [create_shutdown_event] eventfd error: {}", std::strerror(errno));
+        return -1;
+    }
+
+    epoll_event ev;
+    ev.events = EPOLLIN;
+
+    // Reserved sentinel:
+    // nullptr means shutdown event.
+    ev.data.ptr = nullptr;
+
+    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
+    if (res == -1)
+    {
+        spdlog::error("EpollBase - [create_shutdown_event] epoll_ctl ADD error: {}", std::strerror(errno));
+
+        close(fd);
+        return -1;
+    }
+
+    return fd;
 }
 
 void EpollBase::add_fd(int fd, SystemIOObject* ptr)
@@ -81,14 +128,12 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     }
 }
 
-EpollBase::~EpollBase()
-{
-    // Close the epoll file descriptor to stop the event loop
-    close(m_epoll_fd);
-}
-
 void EpollBase::stop()
 {
+    if (m_shutdown_fd != -1)
+    {
+        eventfd_write(m_shutdown_fd, 1);
+    }
 }
 
 void EpollBase::set_ready_task(void* task_info)
@@ -133,6 +178,15 @@ void EpollBase::loop()
 
         for (int i = 0; i < nfds; i++)
         {
+            // This is the shutdown event, exit the loop and stop the event base
+            if (events[i].data.ptr == nullptr)
+            {
+                eventfd_t value;
+                eventfd_read(m_shutdown_fd, &value);
+
+                return;
+            }
+
             SystemIOObject* io_object = static_cast<SystemIOObject*>(events[i].data.ptr);
             int fd = io_object->fd;
 
