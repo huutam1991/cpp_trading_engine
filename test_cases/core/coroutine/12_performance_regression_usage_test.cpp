@@ -58,14 +58,20 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
     };
 
     auto eb = test_event_base();
-
     auto start = std::chrono::high_resolution_clock::now();
 
     int total = 0;
+    std::vector<std::future<int>> results;
     for (int i = 0; i < N; ++i)
     {
         auto task = fn();
         auto result = task.start_running_on(eb);
+        results.push_back(std::move(result));
+        // total += wait_result(result, 5000ms);
+    }
+
+    for (auto& result : results)
+    {
         total += wait_result(result, 5000ms);
     }
 
@@ -73,7 +79,7 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     double avg_ns = static_cast<double>(ns) / N;
 
-    std::cout << "[perf] simple task avg ns: " << avg_ns << std::endl;
+    spdlog::info("[perf] simple task avg ns: {}", avg_ns);
 
     ASSERT_EQ(total, N);
     ASSERT_LT(avg_ns, 100000.0);
