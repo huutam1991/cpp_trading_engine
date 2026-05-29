@@ -88,13 +88,15 @@ public:
     static void shutdown_all()
     {
         // Signal all event bases to stop
+        std::unordered_map<EventBaseID, std::shared_ptr<EventBase>>& event_base_list = get_event_bases<EventBaseID>();
+        std::unordered_map<EpollBaseID, std::shared_ptr<EventBase>>& epoll_base_list = get_event_bases<EpollBaseID>();
         {
-            for (auto& [id, event_base] : get_event_bases<EventBaseID>())
+            for (auto& [id, event_base] : event_base_list)
             {
                 event_base->stop();
             }
 
-            for (auto& [id, event_base] : get_event_bases<EpollBaseID>())
+            for (auto& [id, event_base] : epoll_base_list)
             {
                 event_base->stop();
             }
@@ -108,5 +110,9 @@ public:
                 thread.join();
             }
         }
+
+        event_base_list.clear();
+        epoll_base_list.clear();
+        event_base_threads.clear();
     }
 };
