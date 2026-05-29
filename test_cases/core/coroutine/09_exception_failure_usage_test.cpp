@@ -66,6 +66,9 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(result.wait_for(20ms), std::future_status::timeout);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 // Current implementation may terminate on unhandled_exception.
@@ -82,6 +85,9 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionBeforeAwaitPolicy)
     auto task = fn();
     auto result = task.start_running_on(test_event_base());
     (void)result;
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageFailureTest, DISABLED_ExceptionAfterAwaitPolicy)
@@ -100,4 +106,7 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionAfterAwaitPolicy)
     auto task = fn();
     auto result = task.start_running_on(test_event_base());
     (void)result;
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
