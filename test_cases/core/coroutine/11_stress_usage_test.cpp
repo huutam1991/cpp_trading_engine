@@ -47,7 +47,6 @@ namespace
     }
 }
 
-
 TEST(CoroutineUsageStressTest, ManySimpleTasksSequential)
 {
     constexpr int N = 10000;
@@ -67,6 +66,9 @@ TEST(CoroutineUsageStressTest, ManySimpleTasksSequential)
     }
 
     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageStressTest, ManySimpleTasksBurst)
@@ -99,6 +101,9 @@ TEST(CoroutineUsageStressTest, ManySimpleTasksBurst)
     }
 
     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageStressTest, ManyTaskAwaitChains)
@@ -126,6 +131,9 @@ TEST(CoroutineUsageStressTest, ManyTaskAwaitChains)
         auto result = task.start_running_on(test_event_base());
         ASSERT_EQ(wait_result(result, 5000ms), i + 10);
     }
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 // TEST(CoroutineUsageStressTest, ManyFutureWakeupsSequential)
