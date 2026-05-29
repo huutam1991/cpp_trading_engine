@@ -136,28 +136,31 @@ TEST(CoroutineUsageStressTest, ManyTaskAwaitChains)
     EventBaseManager::shutdown_all();
 }
 
-// TEST(CoroutineUsageStressTest, ManyFutureWakeupsSequential)
-// {
-//     constexpr int N = 1000;
+TEST(CoroutineUsageStressTest, ManyFutureWakeupsSequential)
+{
+    constexpr int N = 1000;
 
-//     auto fn = [](int i) -> Task<int>
-//     {
-//         int v = co_await Future<int>([i](auto* out)
-//         {
-//             out->set_value(i);
-//         });
+    auto fn = [](int i) -> Task<int>
+    {
+        int v = co_await Future<int>([i](Future<int>::FutureValue* out) mutable
+        {
+            out->set_value(i);
+        });
 
-//         co_return v;
-//     };
+        co_return v;
+    };
 
-//     long long sum = 0;
+    long long sum = 0;
 
-//     for (int i = 0; i < N; ++i)
-//     {
-//         auto task = fn(i);
-//         auto result = task.start_running_on(test_event_base());
-//         sum += wait_result(result);
-//     }
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn(i);
+        auto result = task.start_running_on(test_event_base());
+        sum += wait_result(result);
+    }
 
-//     ASSERT_EQ(sum, (N - 1LL) * N / 2);
-// }
+    ASSERT_EQ(sum, (N - 1LL) * N / 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
+}
