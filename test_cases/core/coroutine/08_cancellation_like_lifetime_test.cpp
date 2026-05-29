@@ -65,6 +65,9 @@ TEST(CoroutineUsageCancellationLikeTest, DestroyUnscheduledSuspendedStyleTaskIsS
     }
 
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageCancellationLikeTest, RunningTaskCanCompleteAfterDelayedFuture)
@@ -87,6 +90,9 @@ TEST(CoroutineUsageCancellationLikeTest, RunningTaskCanCompleteAfterDelayedFutur
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result, 1000ms), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageCancellationLikeTest, RepeatedDestroyBeforeSchedulingIsSafe)
@@ -102,6 +108,9 @@ TEST(CoroutineUsageCancellationLikeTest, RepeatedDestroyBeforeSchedulingIsSafe)
     }
 
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 // This is intentionally disabled because completing a Future after destroying
@@ -110,4 +119,7 @@ TEST(CoroutineUsageCancellationLikeTest, RepeatedDestroyBeforeSchedulingIsSafe)
 TEST(CoroutineUsageCancellationLikeTest, DISABLED_DestroyRunningTaskThenExternalCompletionPolicy)
 {
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
