@@ -59,6 +59,7 @@ TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
 
     ASSERT_EQ(wait_result(result), 42);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
 
@@ -78,6 +79,7 @@ TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
     wait_done(result);
     ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
 
@@ -100,6 +102,7 @@ TEST(CoroutineUsageBasicTaskTest, TaskBodyDoesNotRunBeforeScheduled)
     ASSERT_EQ(wait_result(result), 7);
     ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
 
@@ -119,5 +122,6 @@ TEST(CoroutineUsageBasicTaskTest, TaskExecutesExactlyOnce)
     ASSERT_EQ(wait_result(result), 100);
     ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }

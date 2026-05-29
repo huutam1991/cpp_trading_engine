@@ -65,6 +65,7 @@ TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsChildValue)
 
     ASSERT_EQ(wait_result(result), 42);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
 
@@ -89,6 +90,7 @@ TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsVoidChild)
 
     ASSERT_EQ(wait_result(result), 1);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
 
@@ -113,6 +115,7 @@ TEST(CoroutineUsageAwaitTaskTest, NestedTaskChain)
 
     ASSERT_EQ(wait_result(result), 42);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
 
@@ -136,5 +139,6 @@ TEST(CoroutineUsageAwaitTaskTest, MultipleSequentialAwaits)
 
     ASSERT_EQ(wait_result(result), 42);
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }

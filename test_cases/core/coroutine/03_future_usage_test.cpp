@@ -64,6 +64,9 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromSameThread)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageFutureTest, AwaitFutureSetFromAnotherThread)
@@ -86,6 +89,9 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromAnotherThread)
     auto result = task.start_running_on(test_event_base());
 
     ASSERT_EQ(wait_result(result), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageFutureTest, DoubleSetValueOnlyFirstWins)
@@ -104,7 +110,8 @@ TEST(CoroutineUsageFutureTest, DoubleSetValueOnlyFirstWins)
     auto task = fn();
     auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageFutureTest, FutureExecuteFunctionRunsOnce)
@@ -127,4 +134,7 @@ TEST(CoroutineUsageFutureTest, FutureExecuteFunctionRunsOnce)
 
     ASSERT_EQ(wait_result(result), 42);
     ASSERT_EQ(execute_count.load(std::memory_order_relaxed), 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
