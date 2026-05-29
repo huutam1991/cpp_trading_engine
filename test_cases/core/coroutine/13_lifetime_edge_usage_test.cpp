@@ -84,6 +84,9 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyImmediatelyAfterScheduleDoesNotCrash
 
     ASSERT_EQ(frames.alloc(), 1);
     ASSERT_LE(frames.free(), 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, DestroyWrapperWhileSuspendedOnNeverCompletingFutureDoesNotCrash)
@@ -115,6 +118,9 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyWrapperWhileSuspendedOnNeverCompleti
     // no cancellation contract. If you implement cancellation-on-destroy, change
     // this to ASSERT_EQ(frames.free(), 1).
     ASSERT_LE(frames.free(), 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_DestroyParentWhileChildStillRunningPolicy)
@@ -150,11 +156,17 @@ TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_DestroyParentWhileChildStillRunnin
     settle();
 
     ASSERT_LE(frames.free(), frames.alloc());
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_ChildCompletesAfterParentReleasedPolicy)
 {
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_TaskInfoReleasedButCoroutineFrameStillAliveNeedsPoolCounters)
@@ -164,6 +176,9 @@ TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_TaskInfoReleasedButCoroutineFrameS
     // - TaskInfoPool::acquire_count()
     // - TaskInfoPool::release_count()
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_CrossThreadSetValueAfterTaskDestroyPolicy)
@@ -173,6 +188,9 @@ TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_CrossThreadSetValueAfterTaskDestro
     // 2. Cancellation token rejects late completion.
     // 3. Runtime declares this unsupported and debug-asserts.
     SUCCEED();
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, MoveSuspendedTaskWrapperThenCompleteReleasesOnce)
@@ -208,6 +226,9 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveSuspendedTaskWrapperThenCompleteRelease
 
     ASSERT_EQ(frames.alloc(), 1);
     ASSERT_EQ(frames.free(), 1);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignOverUnscheduledTaskWhileOtherIsSuspendedMustReleaseOldFrame)
@@ -255,6 +276,9 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignOverUnscheduledTaskWhileOtherIsSu
     //
     // If this fails with free == 1, runtime still leaks unscheduled overwritten frame.
     ASSERT_EQ(frames.free(), 2);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_SelfMoveActiveTaskWrapperPolicy)
@@ -282,4 +306,7 @@ TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_SelfMoveActiveTaskWrapperPolicy)
 #pragma GCC diagnostic pop
 
     ASSERT_EQ(wait_result(result, 1000ms), 42);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
 }
