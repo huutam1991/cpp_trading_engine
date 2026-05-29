@@ -60,6 +60,7 @@ public:
     void* create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address);
     void remove_from_event_base(void* id);
     void check_to_remove_task(TaskInfo* task_info);
+    virtual void stop();
     virtual void set_ready_task(void* task_info);
     virtual void loop();
 };

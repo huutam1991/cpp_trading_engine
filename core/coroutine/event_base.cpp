@@ -77,6 +77,12 @@ void EventBase::remove_from_event_base(void* id)
     // spdlog::info("EventBase: {}, Total task list remaining: {} ", m_event_base_id, m_ready_task_queue.size());
 }
 
+void EventBase::stop()
+{
+    // Push a null task to signal the event loop to stop
+    m_ready_task_queue.push(nullptr);
+}
+
 void EventBase::set_ready_task(void* task_info)
 {
     m_ready_task_queue.push(static_cast<TaskInfo*>(task_info));
@@ -103,6 +109,11 @@ void EventBase::loop()
         if (task_info != nullptr)
         {
             task_info->check_handle();
+        }
+        else
+        {
+            // This is a signal to stop the event loop
+            break;
         }
     }
 }
