@@ -59,7 +59,7 @@ TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
 
     ASSERT_EQ(wait_result(result), 42);
 
-    // EventBaseManager::shutdown_all();
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
@@ -77,6 +77,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
 
     wait_done(result);
     ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageBasicTaskTest, TaskBodyDoesNotRunBeforeScheduled)
@@ -97,6 +99,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskBodyDoesNotRunBeforeScheduled)
 
     ASSERT_EQ(wait_result(result), 7);
     ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+
+    EventBaseManager::shutdown_all();
 }
 
 TEST(CoroutineUsageBasicTaskTest, TaskExecutesExactlyOnce)
@@ -114,4 +118,6 @@ TEST(CoroutineUsageBasicTaskTest, TaskExecutesExactlyOnce)
 
     ASSERT_EQ(wait_result(result), 100);
     ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+
+    EventBaseManager::shutdown_all();
 }
