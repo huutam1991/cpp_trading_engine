@@ -1,5 +1,7 @@
 {
     "files.trimTrailingWhitespace": true,
+    "cmake.generator": "Unix Makefiles",
+    "cmake.configureOnOpen": false,
     "files.associations": {
         "chrono": "cpp",
         "cctype": "cpp",
