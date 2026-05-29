@@ -48,36 +48,39 @@ namespace
 }
 
 
-// TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
-// {
-//     constexpr int N = 100000;
+TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
+{
+    constexpr int N = 100000;
 
-//     auto fn = []() -> Task<int>
-//     {
-//         co_return 1;
-//     };
+    auto fn = []() -> Task<int>
+    {
+        co_return 1;
+    };
 
-//     auto eb = test_event_base();
+    auto eb = test_event_base();
 
-//     auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::high_resolution_clock::now();
 
-//     int total = 0;
-//     for (int i = 0; i < N; ++i)
-//     {
-//         auto task = fn();
-//         auto result = task.start_running_on(eb);
-//         total += wait_result(result, 5000ms);
-//     }
+    int total = 0;
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn();
+        auto result = task.start_running_on(eb);
+        total += wait_result(result, 5000ms);
+    }
 
-//     auto end = std::chrono::high_resolution_clock::now();
-//     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-//     double avg_ns = static_cast<double>(ns) / N;
+    auto end = std::chrono::high_resolution_clock::now();
+    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    double avg_ns = static_cast<double>(ns) / N;
 
-//     std::cout << "[perf] simple task avg ns: " << avg_ns << std::endl;
+    std::cout << "[perf] simple task avg ns: " << avg_ns << std::endl;
 
-//     ASSERT_EQ(total, N);
-//     ASSERT_LT(avg_ns, 100000.0);
-// }
+    ASSERT_EQ(total, N);
+    ASSERT_LT(avg_ns, 100000.0);
+
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
+}
 
 // TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
 // {
@@ -114,6 +117,9 @@ namespace
 
 //     ASSERT_EQ(total, N);
 //     ASSERT_LT(avg_ns, 100000.0);
+
+//     // Cleanup event base threads after test
+//     EventBaseManager::shutdown_all();
 // }
 
 // TEST(CoroutineUsagePerformanceTest, FutureImmediateWakeupLatencyBudget)
@@ -150,4 +156,7 @@ namespace
 
 //     ASSERT_EQ(total, N);
 //     ASSERT_LT(avg_ns, 100000.0);
+
+//     // Cleanup event base threads after test
+//     EventBaseManager::shutdown_all();
 // }
