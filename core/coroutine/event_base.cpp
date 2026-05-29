@@ -79,9 +79,9 @@ void EventBase::remove_from_event_base(void* id)
 
 void EventBase::stop()
 {
-    // Push a null task to signal the event loop to stop
-    m_ready_task_queue.push(nullptr);
+    m_stopping.store(true, std::memory_order_release);
 }
+
 
 void EventBase::set_ready_task(void* task_info)
 {
@@ -100,7 +100,7 @@ void EventBase::check_to_remove_task(TaskInfo* task_info)
 
 void EventBase::loop()
 {
-    while (true)
+    while (m_stopping.load(std::memory_order_acquire) == false)
     {
         // Check if there's any task ready to process
         TaskInfo* task_info = m_ready_task_queue.pop();
@@ -109,12 +109,11 @@ void EventBase::loop()
         if (task_info != nullptr)
         {
             task_info->check_handle();
+            continue;
         }
         else
         {
-            spdlog::error("EventBase: {}, Received null task, stopping event loop", m_event_base_id);
-            // This is a signal to stop the event loop
-            break;
+            _mm_pause();
         }
     }
 }

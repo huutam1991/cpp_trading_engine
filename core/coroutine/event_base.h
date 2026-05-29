@@ -56,6 +56,7 @@ public:
     virtual ~EventBase() {}
 
     size_t m_event_base_id = 0;
+    std::atomic<bool> m_stopping{false};
     ReadyTaskQueue m_ready_task_queue;
 
     void* create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address);
