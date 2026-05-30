@@ -20,12 +20,12 @@ namespace
     template <class T>
     T wait_result(TaskResult<T>& result)
     {
-        return result.get();
+        return result.spin_wait();
     }
 
     inline void wait_done(TaskResult<void>& result)
     {
-        result.get();
+        result.spin_wait();
     }
 
     inline EventBase* test_event_base()
