@@ -104,7 +104,7 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyWrapperWhileSuspendedOnNeverCompleti
 
     {
         auto task = fn();
-        auto result = task.start_running_on(test_event_base()).get();
+        auto result = task.start_running_on(test_event_base()).spin_wait();
 
         // ASSERT_EQ(result.wait_for(20ms), std::future_status::timeout);
     }
@@ -148,7 +148,7 @@ TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_DestroyParentWhileChildStillRunnin
 
     {
         auto task = parent();
-        auto result = task.start_running_on(test_event_base()).get();
+        auto result = task.start_running_on(test_event_base()).spin_wait();
     }
 
     settle();
