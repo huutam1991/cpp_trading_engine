@@ -52,11 +52,8 @@ struct Task : public BaseTask<T>
 
         void return_value(T v)
         {
-            this->promise_value.set_value(v);
-            this->value = v;
+            this->task_value.set_value(v);
         }
-
-        T value;
     };
 
     Task(std::nullptr_t) : BaseTask<T>(nullptr) {}
@@ -70,7 +67,7 @@ struct Task : public BaseTask<T>
     T await_resume()
     {
         auto& promise = this->handle.promise();
-        return static_cast<promise_type*>(&promise)->value;
+        return static_cast<promise_type*>(&promise)->task_value.value;
     }
 };
 
@@ -120,7 +117,6 @@ struct Task<void> : public BaseTask<void>
 
         void return_void()
         {
-            promise_value.set_value();
         }
     };
 
