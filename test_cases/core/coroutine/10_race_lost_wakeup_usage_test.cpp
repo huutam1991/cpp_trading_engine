@@ -35,119 +35,118 @@ namespace
     }
 }
 
+TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
+{
+    constexpr int N = 10000;
 
-// TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
-// {
-//     constexpr int N = 10000;
+    auto fn = []() -> Task<int>
+    {
+        int v = co_await Future<int>([](auto* out)
+        {
+            out->set_value(1);
+        });
 
-//     auto fn = []() -> Task<int>
-//     {
-//         int v = co_await Future<int>([](auto* out)
-//         {
-//             out->set_value(1);
-//         });
+        co_return v;
+    };
 
-//         co_return v;
-//     };
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+        ASSERT_EQ(wait_result(result), 1);
+    }
+}
 
-//     for (int i = 0; i < N; ++i)
-//     {
-//         auto task = fn();
-//         auto result = task.start_running_on(test_event_base());
-//         ASSERT_EQ(wait_result(result), 1);
-//     }
-// }
+TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
+{
+    constexpr int N = 1000;
 
-// TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
-// {
-//     constexpr int N = 1000;
+    auto fn = []() -> Task<int>
+    {
+        int v = co_await Future<int>([](auto* out)
+        {
+            std::thread([out]()
+            {
+                out->set_value(1);
+            }).detach();
+        });
 
-//     auto fn = []() -> Task<int>
-//     {
-//         int v = co_await Future<int>([](auto* out)
-//         {
-//             std::thread([out]()
-//             {
-//                 out->set_value(1);
-//             }).detach();
-//         });
+        co_return v;
+    };
 
-//         co_return v;
-//     };
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+        ASSERT_EQ(wait_result(result), 1);
+    }
+}
 
-//     for (int i = 0; i < N; ++i)
-//     {
-//         auto task = fn();
-//         auto result = task.start_running_on(test_event_base());
-//         ASSERT_EQ(wait_result(result), 1);
-//     }
-// }
+TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
+{
+    constexpr int N = 1000;
 
-// TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
-// {
-//     constexpr int N = 1000;
+    auto fn = [](int i) -> Task<int>
+    {
+        int v = co_await Future<int>([i](auto* out)
+        {
+            std::thread([out, i]() mutable
+            {
+                out->set_value(i);
+            }).detach();
+        });
 
-//     auto fn = [](int i) -> Task<int>
-//     {
-//         int v = co_await Future<int>([i](auto* out)
-//         {
-//             std::thread([out, i]()
-//             {
-//                 out->set_value(i);
-//             }).detach();
-//         });
+        co_return v;
+    };
 
-//         co_return v;
-//     };
+    long long sum = 0;
 
-//     long long sum = 0;
+    for (int i = 0; i < N; ++i)
+    {
+        auto task = fn(i);
+        auto result = task.start_running_on(test_event_base());
+        sum += wait_result(result);
+    }
 
-//     for (int i = 0; i < N; ++i)
-//     {
-//         auto task = fn(i);
-//         auto result = task.start_running_on(test_event_base());
-//         sum += wait_result(result, 1000ms);
-//     }
+    ASSERT_EQ(sum, (N - 1LL) * N / 2);
+}
 
-//     ASSERT_EQ(sum, (N - 1LL) * N / 2);
-// }
+TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
+{
+    constexpr int N = 512;
 
-// TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
-// {
-//     constexpr int N = 512;
+    std::vector<Task<int>> tasks;
+    std::vector<TaskResult<int>> results;
 
-//     std::vector<Task<int>> tasks;
-//     std::vector<std::future<int>> results;
+    tasks.reserve(N);
+    results.reserve(N);
 
-//     tasks.reserve(N);
-//     results.reserve(N);
+    auto fn = [](int i) -> Task<int>
+    {
+        int v = co_await Future<int>([i](auto* out)
+        {
+            std::thread([out, i]() mutable
+            {
+                out->set_value(i);
+            }).detach();
+        });
 
-//     auto fn = [](int i) -> Task<int>
-//     {
-//         int v = co_await Future<int>([i](auto* out)
-//         {
-//             std::thread([out, i]()
-//             {
-//                 out->set_value(i);
-//             }).detach();
-//         });
+        co_return v;
+    };
 
-//         co_return v;
-//     };
+    auto eb = test_event_base();
 
-//     auto eb = test_event_base();
+    for (int i = 0; i < N; ++i)
+    {
+        tasks.emplace_back(fn(i));
+        results.emplace_back(tasks.back().start_running_on(eb));
+    }
 
-//     for (int i = 0; i < N; ++i)
-//     {
-//         tasks.emplace_back(fn(i));
-//         results.emplace_back(tasks.back().start_running_on(eb));
-//     }
+    long long sum = 0;
+    for (auto& f : results)
+    {
+        sum += wait_result(f);
+    }
 
-//     long long sum = 0;
-//     for (auto& f : results)
-//     {
-//         sum += wait_result(f, 3000ms);
-//     }
-
-//     ASSERT_EQ(sum, (N - 1LL) * N / 2);
-// }
+    ASSERT_EQ(sum, (N - 1LL) * N / 2);
+}
