@@ -1,6 +1,5 @@
 #pragma once
 
-#include <future>
 #include "base_promise_type.h"
 
 template<typename T>
