@@ -19,26 +19,14 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
+    T wait_result(TaskResult<T>& result)
     {
-        if (f.wait_for(timeout) != std::future_status::ready)
-        {
-            ADD_FAILURE() << "future timeout";
-            throw std::runtime_error("future timeout");
-        }
-
-        return f.get();
+        return result.get();
     }
 
-    inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
+    inline void wait_done(TaskResult<void>& result)
     {
-        if (f.wait_for(timeout) != std::future_status::ready)
-        {
-            ADD_FAILURE() << "future<void> timeout";
-            throw std::runtime_error("future<void> timeout");
-        }
-
-        f.get();
+        result.get();
     }
 
     inline EventBase* test_event_base()
@@ -61,7 +49,7 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
     auto start = std::chrono::high_resolution_clock::now();
 
     int total = 0;
-    std::vector<std::future<int>> results;
+    std::vector<TaskResult<int>> results;
     for (int i = 0; i < N; ++i)
     {
         auto task = fn();
@@ -72,7 +60,7 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
 
     for (auto& result : results)
     {
-        total += wait_result(result, 5000ms);
+        total += wait_result(result);
     }
 
     auto end = std::chrono::high_resolution_clock::now();

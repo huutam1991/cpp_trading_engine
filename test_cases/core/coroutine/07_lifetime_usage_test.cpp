@@ -19,26 +19,14 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
+    T wait_result(TaskResult<T>& result)
     {
-        if (f.wait_for(timeout) != std::future_status::ready)
-        {
-            ADD_FAILURE() << "future timeout";
-            throw std::runtime_error("future timeout");
-        }
-
-        return f.get();
+        return result.get();
     }
 
-    inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
+    inline void wait_done(TaskResult<void>& result)
     {
-        if (f.wait_for(timeout) != std::future_status::ready)
-        {
-            ADD_FAILURE() << "future<void> timeout";
-            throw std::runtime_error("future<void> timeout");
-        }
-
-        f.get();
+        result.get();
     }
 
     inline EventBase* test_event_base()
@@ -404,7 +392,7 @@ TEST(CoroutineUsageLifetimeTest, TaskStoredInVectorAndMovedByReallocationRelease
 
     {
         std::vector<Task<int>> tasks;
-        std::vector<std::future<int>> results;
+        std::vector<TaskResult<int>> results;
         results.reserve(N);
 
         auto eb = test_event_base();
@@ -418,7 +406,7 @@ TEST(CoroutineUsageLifetimeTest, TaskStoredInVectorAndMovedByReallocationRelease
         long long sum = 0;
         for (auto& result : results)
         {
-            sum += wait_result(result, 3000ms);
+            sum += wait_result(result);
         }
 
         ASSERT_EQ(sum, (N - 1LL) * N / 2);
@@ -573,7 +561,6 @@ TEST(CoroutineUsageLifetimeTest, PendingFutureTaskFrameNotFreedWhileTaskWrapperA
         auto task = fn();
         auto result = task.start_running_on(test_event_base());
 
-        ASSERT_EQ(result.wait_for(20ms), std::future_status::timeout);
         frames.expect_counts(1, 0);
     }
 

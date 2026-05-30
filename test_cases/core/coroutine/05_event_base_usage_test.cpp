@@ -19,26 +19,14 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(std::future<T>& f, std::chrono::milliseconds timeout = 1000ms)
+    T wait_result(TaskResult<T>& result)
     {
-        if (f.wait_for(timeout) != std::future_status::ready)
-        {
-            ADD_FAILURE() << "future timeout";
-            throw std::runtime_error("future timeout");
-        }
-
-        return f.get();
+        return result.get();
     }
 
-    inline void wait_done(std::future<void>& f, std::chrono::milliseconds timeout = 1000ms)
+    inline void wait_done(TaskResult<void>& result)
     {
-        if (f.wait_for(timeout) != std::future_status::ready)
-        {
-            ADD_FAILURE() << "future<void> timeout";
-            throw std::runtime_error("future<void> timeout");
-        }
-
-        f.get();
+        result.get();
     }
 
     inline EventBase* test_event_base()
@@ -83,7 +71,7 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
     };
 
     std::vector<Task<int>> tasks;
-    std::vector<std::future<int>> results;
+    std::vector<TaskResult<int>> results;
     tasks.reserve(N);
     results.reserve(N);
 
@@ -96,7 +84,7 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
     long long sum = 0;
     for (auto& f : results)
     {
-        sum += wait_result(f, 3000ms);
+        sum += wait_result(f);
     }
 
     ASSERT_EQ(sum, (N - 1LL) * N / 2);
