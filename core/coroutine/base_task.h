@@ -14,7 +14,7 @@ struct TaskValue
     alignas(64) std::atomic<State> state{State::WAITING};
     T value;
 
-    T get()
+    T spin_wait()
     {
         while (state.load(std::memory_order_acquire) == State::WAITING)
         {
@@ -53,9 +53,9 @@ struct TaskResult
         return *this;
     }
 
-    T get()
+    T spin_wait()
     {
-        return parent->get();
+        return parent->spin_wait();
     }
 };
 
@@ -70,7 +70,7 @@ struct TaskValue<void>
 
     alignas(64) std::atomic<State> state{WAITING};
 
-    void get()
+    void spin_wait()
     {
         while (state.load(std::memory_order_acquire) == WAITING)
         {
@@ -106,9 +106,9 @@ struct TaskResult<void>
         return *this;
     }
 
-    void get()
+    void spin_wait()
     {
-        return parent->get();
+        return parent->spin_wait();
     }
 };
 
