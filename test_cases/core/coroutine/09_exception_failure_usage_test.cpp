@@ -51,7 +51,7 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
     };
 
     auto task = fn();
-    auto result = task.start_running_on(test_event_base()).get();
+    auto result = task.start_running_on(test_event_base());
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
