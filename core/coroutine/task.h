@@ -116,6 +116,7 @@ struct Task<void> : public BaseTask<void>
 
         void return_void()
         {
+            this->task_value.set_value();
         }
     };
 
