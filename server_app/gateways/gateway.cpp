@@ -49,7 +49,7 @@ void Gateway::check_remove_canceled_orders(std::string symbol)
     // Get open orders from gateway
     std::unordered_set<OrderId> open_orders_from_gateway = get_open_orders_on_exchange(std::move(symbol))
         .start_running_on(m_event_base)
-        .get();
+        .spin_wait();
 
     // Get open orders from OrderManager
     std::vector<OrderId> open_orders = OrderManager::instance().get_open_orders();

@@ -50,7 +50,7 @@ void BinanceQuoterPerpetual::init_websocket()
     EventBase* event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
 
     auto task = this->get_listen_key();
-    m_listen_key = task.start_running_on(event_base).get();
+    m_listen_key = task.start_running_on(event_base).spin_wait();
 
     m_websocket = std::make_shared<HttpsClientWebsocket>(m_epoll_base, m_ws_url, std::stoi(m_ws_port), "/private/ws/" + m_listen_key,
         // on_connect
