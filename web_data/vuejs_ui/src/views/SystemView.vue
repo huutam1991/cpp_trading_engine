@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { API_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 
@@ -59,6 +59,8 @@ const crashLogs = ref<CrashLog[]>([])
 const objectPoolInfo = ref<Record<string, number>>({})
 const upTime = ref('--:--:--')
 
+let upTimeTimer: ReturnType<typeof setInterval> | null = null
+
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
 })
@@ -88,6 +90,58 @@ function formatNumber(value: number) {
   return value.toLocaleString('en-US')
 }
 
+
+function parseUpTime(value: string): number | null {
+  const match = /^(\d+):(\d+):(\d+)$/.exec(value)
+
+  if (!match) {
+    return null
+  }
+
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  const seconds = Number(match[3])
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes) || Number.isNaN(seconds)) {
+    return null
+  }
+
+  return hours * 3600 + minutes * 60 + seconds
+}
+
+function formatUpTime(totalSeconds: number) {
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  return [
+    String(hours).padStart(2, '0'),
+    String(minutes).padStart(2, '0'),
+    String(seconds).padStart(2, '0'),
+  ].join(':')
+}
+
+function stopUpTimeTimer() {
+  if (upTimeTimer) {
+    clearInterval(upTimeTimer)
+    upTimeTimer = null
+  }
+}
+
+function startUpTimeTimer() {
+  stopUpTimeTimer()
+
+  upTimeTimer = setInterval(() => {
+    const currentSeconds = parseUpTime(upTime.value)
+
+    if (currentSeconds === null) {
+      return
+    }
+
+    upTime.value = formatUpTime(currentSeconds + 1)
+  }, 1000)
+}
+
 async function selectTab(tab: SystemTab['value']) {
   activeTab.value = tab
 
@@ -109,18 +163,27 @@ async function fetchUpTime() {
 
     if (response.status === 401 || response.status === 403) {
       authStore.logout()
+      stopUpTimeTimer()
       return
     }
 
     if (!response.ok || result.error) {
       upTime.value = '--:--:--'
+      stopUpTimeTimer()
       return
     }
 
     upTime.value = result.data || '--:--:--'
+
+    if (parseUpTime(upTime.value) !== null) {
+      startUpTimeTimer()
+    } else {
+      stopUpTimeTimer()
+    }
   } catch (error) {
     console.error('Fetch up time error:', error)
     upTime.value = '--:--:--'
+    stopUpTimeTimer()
   }
 }
 
@@ -201,6 +264,10 @@ onMounted(async () => {
     fetchCrashLogs(),
     fetchUpTime(),
   ])
+})
+
+onBeforeUnmount(() => {
+  stopUpTimeTimer()
 })
 </script>
 
