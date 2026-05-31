@@ -35,6 +35,18 @@ public:
         }
     };
 
+    template <typename U>
+    static constexpr bool has_init = requires(U& obj)
+    {
+        obj.init();
+    };
+
+    template <typename U>
+    static constexpr bool has_refresh = requires(U& obj)
+    {
+        obj.refresh();
+    };
+
 public:
     SingleThreadCachePool();
 
@@ -82,17 +94,20 @@ SingleThreadCachePool<T>::Object* SingleThreadCachePool<T>::acquire()
     Object* object = m_free_objects[m_head];
 
     ++m_head;
-
     if (m_head >= POOL_SIZE)
     {
         m_head = 0;
     }
 
     --m_free_count;
-
     object->is_active = true;
-
     ++object->use_time;
+
+    // Check if the item has init method and call it
+    if constexpr (has_init<T>)
+    {
+        object->value.init();
+    }
 
     return object;
 }
@@ -111,11 +126,15 @@ bool SingleThreadCachePool<T>::release(Object* object)
     }
 
     object->is_active = false;
-
     m_free_objects[m_tail] = object;
 
-    ++m_tail;
+    // Check if the item has refresh method and call it
+    if constexpr (has_refresh<T>)
+    {
+        object->value.refresh();
+    }
 
+    ++m_tail;
     if (m_tail >= POOL_SIZE)
     {
         m_tail = 0;
