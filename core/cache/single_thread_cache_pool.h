@@ -61,6 +61,7 @@ public:
 
 private:
     static constexpr std::size_t POOL_SIZE = Size;
+    std::string name = type_name::TypeName<T>::name();
 
     std::array<Object, POOL_SIZE> m_objects;
     std::array<Object*, POOL_SIZE> m_free_objects;
@@ -88,7 +89,7 @@ typename SingleThreadCachePool<T, Size>::Object* SingleThreadCachePool<T, Size>:
 {
     if (m_free_count == 0)
     {
-        return nullptr;
+        throw std::runtime_error("SingleThreadCachePool<" + name + "> - [acquire] No available items in cache pool");
     }
 
     Object* object = m_free_objects[m_head];
@@ -117,12 +118,12 @@ bool SingleThreadCachePool<T, Size>::release(Object* object)
 {
     if (object == nullptr)
     {
-        return false;
+        throw std::runtime_error("SingleThreadCachePool<" + name + "> - [release] Attempting to release a nullptr object");
     }
 
     if (!object->is_active)
     {
-        return false;
+        throw std::runtime_error("SingleThreadCachePool<" + name + "> - [release] Attempting to release an inactive object");
     }
 
     object->is_active = false;
