@@ -56,13 +56,15 @@ TEST(SingleThreadCachePoolTest, AcquireThreeObjectsSequentialIndex)
     ASSERT_EQ(pool.active_size(), 3);
 }
 
-TEST(SingleThreadCachePoolTest, ReleaseNullptrReturnsFalse)
+TEST(SingleThreadCachePoolTest, ReleaseNullptrThrows)
 {
     Pool pool;
 
-    ASSERT_FALSE(pool.release(nullptr));
+    ASSERT_THROW(pool.release(nullptr), std::runtime_error);
+
     ASSERT_EQ(pool.available_size(), MAX_POOL_SIZE);
     ASSERT_EQ(pool.active_size(), 0);
+    ASSERT_TRUE(pool.full());
 }
 
 TEST(SingleThreadCachePoolTest, ReleaseActiveObject)
@@ -79,18 +81,19 @@ TEST(SingleThreadCachePoolTest, ReleaseActiveObject)
     ASSERT_EQ(pool.active_size(), 0);
 }
 
-TEST(SingleThreadCachePoolTest, ReleaseSameObjectTwiceReturnsFalse)
+TEST(SingleThreadCachePoolTest, ReleaseSameObjectTwiceThrows)
 {
     Pool pool;
 
     auto* object = pool.acquire();
 
     ASSERT_TRUE(pool.release(object));
-    ASSERT_FALSE(pool.release(object));
 
-    ASSERT_TRUE(pool.full());
+    ASSERT_THROW(pool.release(object), std::runtime_error);
+
     ASSERT_EQ(pool.available_size(), MAX_POOL_SIZE);
     ASSERT_EQ(pool.active_size(), 0);
+    ASSERT_TRUE(pool.full());
 }
 
 TEST(SingleThreadCachePoolTest, AcquireAfterReleaseDoesNotImmediatelyReuseBecauseFifo)
@@ -233,7 +236,7 @@ TEST(SingleThreadCachePoolTest, AcquireUntilEmpty)
     ASSERT_EQ(pool.active_size(), MAX_POOL_SIZE);
 }
 
-TEST(SingleThreadCachePoolTest, AcquireWhenEmptyReturnsNullptr)
+TEST(SingleThreadCachePoolTest, AcquireWhenEmptyThrows)
 {
     Pool pool;
 
@@ -242,7 +245,7 @@ TEST(SingleThreadCachePoolTest, AcquireWhenEmptyReturnsNullptr)
         ASSERT_NE(pool.acquire(), nullptr);
     }
 
-    ASSERT_EQ(pool.acquire(), nullptr);
+    ASSERT_THROW(pool.acquire(), std::runtime_error);
 
     ASSERT_TRUE(pool.empty());
     ASSERT_EQ(pool.available_size(), 0);
@@ -444,7 +447,7 @@ TEST(SingleThreadCachePoolTest, StressFullPoolAcquireReleaseCycles)
         }
 
         ASSERT_TRUE(pool.empty());
-        ASSERT_EQ(pool.acquire(), nullptr);
+        ASSERT_THROW(pool.acquire(), std::runtime_error);
 
         for (std::size_t i = 0; i < MAX_POOL_SIZE; ++i)
         {
