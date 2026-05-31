@@ -5,7 +5,9 @@
 #include <array>
 #include <cstddef>
 
-using Pool = SingleThreadCachePool<std::size_t>;
+#define MAX_POOL_SIZE 4000
+
+using Pool = SingleThreadCachePool<std::size_t, MAX_POOL_SIZE>;
 
 TEST(SingleThreadCachePoolTest, InitialState)
 {

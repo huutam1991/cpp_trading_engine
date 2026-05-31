@@ -3,9 +3,9 @@
 #include <array>
 #include <cstddef>
 
-#define MAX_POOL_SIZE 4000
+#include <utils/type_name.h>
 
-template<typename T>
+template<typename T, size_t Size>
 class SingleThreadCachePool
 {
 public:
@@ -60,7 +60,7 @@ public:
     std::size_t active_size() const;
 
 private:
-    static constexpr std::size_t POOL_SIZE = MAX_POOL_SIZE;
+    static constexpr std::size_t POOL_SIZE = Size;
 
     std::array<Object, POOL_SIZE> m_objects;
     std::array<Object*, POOL_SIZE> m_free_objects;
@@ -70,8 +70,8 @@ private:
     std::size_t m_free_count = POOL_SIZE;
 };
 
-template<typename T>
-SingleThreadCachePool<T>::SingleThreadCachePool()
+template<typename T, size_t Size>
+SingleThreadCachePool<T, Size>::SingleThreadCachePool()
 {
     for (std::size_t i = 0; i < POOL_SIZE; ++i)
     {
@@ -83,8 +83,8 @@ SingleThreadCachePool<T>::SingleThreadCachePool()
     }
 }
 
-template<typename T>
-SingleThreadCachePool<T>::Object* SingleThreadCachePool<T>::acquire()
+template<typename T, size_t Size>
+typename SingleThreadCachePool<T, Size>::Object* SingleThreadCachePool<T, Size>::acquire()
 {
     if (m_free_count == 0)
     {
@@ -112,8 +112,8 @@ SingleThreadCachePool<T>::Object* SingleThreadCachePool<T>::acquire()
     return object;
 }
 
-template<typename T>
-bool SingleThreadCachePool<T>::release(Object* object)
+template<typename T, size_t Size>
+bool SingleThreadCachePool<T, Size>::release(Object* object)
 {
     if (object == nullptr)
     {
@@ -145,20 +145,20 @@ bool SingleThreadCachePool<T>::release(Object* object)
     return true;
 }
 
-template<typename T>
-bool SingleThreadCachePool<T>::empty() const
+template<typename T, size_t Size>
+bool SingleThreadCachePool<T, Size>::empty() const
 {
     return m_free_count == 0;
 }
 
-template<typename T>
-bool SingleThreadCachePool<T>::full() const
+template<typename T, size_t Size>
+bool SingleThreadCachePool<T, Size>::full() const
 {
     return m_free_count == POOL_SIZE;
 }
 
-template<typename T>
-bool SingleThreadCachePool<T>::is_active(Id id) const
+template<typename T, size_t Size>
+bool SingleThreadCachePool<T, Size>::is_active(Id id) const
 {
     if (id.index >= POOL_SIZE)
     {
@@ -169,14 +169,14 @@ bool SingleThreadCachePool<T>::is_active(Id id) const
     return object.is_active && object.use_time == id.use_time;
 }
 
-template<typename T>
-std::size_t SingleThreadCachePool<T>::available_size() const
+template<typename T, size_t Size>
+std::size_t SingleThreadCachePool<T, Size>::available_size() const
 {
     return m_free_count;
 }
 
-template<typename T>
-std::size_t SingleThreadCachePool<T>::active_size() const
+template<typename T, size_t Size>
+std::size_t SingleThreadCachePool<T, Size>::active_size() const
 {
     return POOL_SIZE - m_free_count;
 }
