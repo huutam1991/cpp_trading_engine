@@ -3,7 +3,7 @@
 #include <array>
 #include <cstddef>
 
-#define MAX_POOL_SIZE 10000
+#define MAX_POOL_SIZE 4000
 
 template<typename T>
 class SingleThreadCachePool
