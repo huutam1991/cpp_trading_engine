@@ -58,7 +58,7 @@ struct SupportsNullptr<
 template <class T, size_t Size>
 class MPSCQueue
 {
-    static_assert(Size > 0, "MPSCQueue Size must be > 0");
+    static_assert(Size > 1, "MPSCQueue Size must be > 1");
     static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
     static_assert(
         std::is_pointer_v<T> || SupportsNullptr<T>::value,
