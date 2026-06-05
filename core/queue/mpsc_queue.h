@@ -55,8 +55,8 @@ class MPSCQueue
     {
         alignas(64) std::array<Slot, Size> available_items;
         alignas(64) std::atomic<size_t> head{0};
-        alignas(64) std::atomic<size_t> tail{0};
         alignas(64) std::atomic<size_t> size{0};
+        alignas(64) size_t tail{0};
 
         PoolBuffer()
         {
@@ -82,7 +82,7 @@ public:
             );
         }
 
-        MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
 
         size_t pos = m_pool_buffer.head.load(std::memory_order_relaxed);
 
@@ -126,9 +126,9 @@ public:
 
     FORCE_INLINE T* pop()
     {
-        MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
 
-        size_t pos = m_pool_buffer.tail.load(std::memory_order_relaxed);
+        size_t pos = m_pool_buffer.tail;
         Slot& slot = m_pool_buffer.available_items[pos % Size];
 
         size_t seq = slot.sequence.load(std::memory_order_acquire);
@@ -142,7 +142,7 @@ public:
             // mark slot free for next producer round
             slot.sequence.store(pos + Size, std::memory_order_release);
 
-            m_pool_buffer.tail.store(pos + 1, std::memory_order_relaxed);
+            m_pool_buffer.tail = pos + 1;
             m_pool_buffer.size.fetch_sub(1, std::memory_order_release);
 
             return item;
@@ -158,7 +158,7 @@ public:
 
     FORCE_INLINE size_t tail()
     {
-        return m_pool_buffer.tail.load(std::memory_order_relaxed);
+        return m_pool_buffer.tail;
     }
 
     FORCE_INLINE size_t size()
