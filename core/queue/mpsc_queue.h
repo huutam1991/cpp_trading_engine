@@ -7,6 +7,8 @@
 #include <string>
 #include <cxxabi.h>
 #include <emmintrin.h>
+#include <type_traits>
+#include <utility>
 
 #include <time/measure_time.h>
 
@@ -44,11 +46,12 @@ template <class T, size_t Size>
 class MPSCQueue
 {
     static_assert(Size > 0, "MPSCQueue Size must be > 0");
+    static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
 
     struct alignas(64) Slot
     {
         std::atomic<size_t> sequence;
-        T* ptr;
+        T value{};
     };
 
     struct PoolBuffer
@@ -63,7 +66,7 @@ class MPSCQueue
             for (size_t i = 0; i < Size; ++i)
             {
                 available_items[i].sequence.store(i, std::memory_order_relaxed);
-                available_items[i].ptr = nullptr;
+                available_items[i].value = T{};
             }
         }
     };
@@ -72,17 +75,20 @@ class MPSCQueue
     std::string name = GetTypeName<T>::get_name();
 
 public:
-    FORCE_INLINE void push(T* item)
+    FORCE_INLINE void push(T item)
     {
-        if (item == nullptr)
+        if constexpr (std::is_pointer_v<T>)
         {
-            throw std::runtime_error
-            (
-                "Attempt to release a null item back to the cache pool: [" + name + "]"
-            );
+            if (item == nullptr)
+            {
+                throw std::runtime_error
+                (
+                    "Attempt to release a null item back to the cache pool: [" + name + "]"
+                );
+            }
         }
 
-        // MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
+        MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
 
         size_t pos = m_pool_buffer.head.load(std::memory_order_relaxed);
 
@@ -101,8 +107,7 @@ public:
                         std::memory_order_relaxed,
                         std::memory_order_relaxed))
                 {
-                    // slot.ptr.store(item, std::memory_order_relaxed);
-                    slot.ptr = item;
+                    slot.value = std::move(item);
 
                     // publish item
                     slot.sequence.store(pos + 1, std::memory_order_release);
@@ -124,9 +129,9 @@ public:
         }
     }
 
-    FORCE_INLINE T* pop()
+    FORCE_INLINE T pop()
     {
-        // MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
+        MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
 
         size_t pos = m_pool_buffer.tail;
         Slot& slot = m_pool_buffer.available_items[pos % Size];
@@ -136,8 +141,8 @@ public:
 
         if (diff == 0)
         {
-            T* item = slot.ptr;
-            slot.ptr = nullptr;
+            T item = std::move(slot.value);
+            slot.value = T{};
 
             // mark slot free for next producer round
             slot.sequence.store(pos + Size, std::memory_order_release);
@@ -148,7 +153,14 @@ public:
             return item;
         }
 
-        return nullptr;
+        if constexpr (std::is_pointer_v<T>)
+        {
+            return nullptr;
+        }
+        else
+        {
+            return T{};
+        }
     }
 
     FORCE_INLINE size_t head()
