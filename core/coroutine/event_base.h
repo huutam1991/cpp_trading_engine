@@ -69,6 +69,9 @@ private:
         std::coroutine_handle<> handle;
     };
 
+    using TaskEventQueue = MPSCQueue<TaskInfoEvent, MAX_TASK_INFO>;
+    // TaskEventQueue m_task_event_queue;
+
 public:
 
     size_t m_event_base_id = 0;
@@ -81,4 +84,5 @@ public:
     virtual void stop();
     virtual void set_ready_task(void* task_info);
     virtual void loop();
+    virtual void loop2();
 };
