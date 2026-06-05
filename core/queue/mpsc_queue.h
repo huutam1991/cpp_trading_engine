@@ -42,11 +42,31 @@ struct GetTypeName<T, std::void_t<decltype(T::get_name())>>
     }
 };
 
+template<typename T, typename = void>
+struct SupportsNullptr : std::false_type
+{
+};
+
+template<typename T>
+struct SupportsNullptr<
+    T,
+    std::void_t<
+        decltype(T(nullptr)),
+        decltype(std::declval<T>() == nullptr)
+    >
+> : std::true_type
+{
+};
+
 template <class T, size_t Size>
 class MPSCQueue
 {
     static_assert(Size > 0, "MPSCQueue Size must be > 0");
     static_assert(std::is_default_constructible_v<T>, "T must be default constructible");
+    static_assert(
+        std::is_pointer_v<T> || SupportsNullptr<T>::value,
+        "T must either be a pointer type or support construction/comparison with nullptr"
+    );
 
     struct alignas(64) Slot
     {
@@ -66,7 +86,7 @@ class MPSCQueue
             for (size_t i = 0; i < Size; ++i)
             {
                 available_items[i].sequence.store(i, std::memory_order_relaxed);
-                available_items[i].value = T{};
+                available_items[i].value = nullptr;
             }
         }
     };
@@ -142,7 +162,7 @@ public:
         if (diff == 0)
         {
             T item = std::move(slot.value);
-            slot.value = T{};
+            slot.value = nullptr;
 
             // mark slot free for next producer round
             slot.sequence.store(pos + Size, std::memory_order_release);
@@ -153,14 +173,7 @@ public:
             return item;
         }
 
-        if constexpr (std::is_pointer_v<T>)
-        {
-            return nullptr;
-        }
-        else
-        {
-            return T{};
-        }
+        return nullptr;
     }
 
     FORCE_INLINE size_t head()
