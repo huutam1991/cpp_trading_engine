@@ -144,7 +144,7 @@ public:
 
     FORCE_INLINE size_t tail()
     {
-        return m_pool_buffer.tail.load(std::memory_order_relaxed);
+        return m_pool_buffer.tail;
     }
 
     FORCE_INLINE size_t size()
