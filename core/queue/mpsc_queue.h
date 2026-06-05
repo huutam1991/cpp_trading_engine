@@ -48,7 +48,7 @@ class MPSCQueue
     struct alignas(64) Slot
     {
         std::atomic<size_t> sequence;
-        std::atomic<T*>     ptr;
+        T* ptr;
     };
 
     struct PoolBuffer
@@ -63,7 +63,7 @@ class MPSCQueue
             for (size_t i = 0; i < Size; ++i)
             {
                 available_items[i].sequence.store(i, std::memory_order_relaxed);
-                available_items[i].ptr.store(nullptr, std::memory_order_relaxed);
+                available_items[i].ptr = nullptr;
             }
         }
     };
@@ -82,7 +82,7 @@ public:
             );
         }
 
-        // MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
+        MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
 
         size_t pos = m_pool_buffer.head.load(std::memory_order_relaxed);
 
@@ -101,7 +101,8 @@ public:
                         std::memory_order_relaxed,
                         std::memory_order_relaxed))
                 {
-                    slot.ptr.store(item, std::memory_order_relaxed);
+                    // slot.ptr.store(item, std::memory_order_relaxed);
+                    slot.ptr = item;
 
                     // publish item
                     slot.sequence.store(pos + 1, std::memory_order_release);
@@ -125,7 +126,7 @@ public:
 
     FORCE_INLINE T* pop()
     {
-        // MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
+        MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
 
         size_t pos = m_pool_buffer.tail.load(std::memory_order_relaxed);
         Slot& slot = m_pool_buffer.available_items[pos % Size];
@@ -135,9 +136,8 @@ public:
 
         if (diff == 0)
         {
-            T* item = slot.ptr.load(std::memory_order_relaxed);
-
-            slot.ptr.store(nullptr, std::memory_order_relaxed);
+            T* item = slot.ptr;
+            slot.ptr = nullptr;
 
             // mark slot free for next producer round
             slot.sequence.store(pos + Size, std::memory_order_release);
