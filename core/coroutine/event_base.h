@@ -55,6 +55,22 @@ public:
     EventBase(size_t id) : m_event_base_id {id} {}
     virtual ~EventBase() {}
 
+private:
+    enum TaskType
+    {
+        RUN,
+        SET_SUSPEND_VALUE,
+        REMOVE_AWAITER
+    };
+
+    struct TaskInfoEvent
+    {
+        TaskType type;
+        std::coroutine_handle<> handle;
+    };
+
+public:
+
     size_t m_event_base_id = 0;
     std::atomic<bool> m_stopping{false};
     ReadyTaskQueue m_ready_task_queue;
