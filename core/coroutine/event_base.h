@@ -46,7 +46,7 @@ struct TaskInfo : public NamedIOObject<TaskInfo>
 };
 
 using TaskInfoPool = CachePool<TaskInfo, MAX_TASK_INFO>;
-using ReadyTaskQueue = MPSCQueue<TaskInfo, MAX_TASK_INFO>;
+using ReadyTaskQueue = MPSCQueue<TaskInfo*, MAX_TASK_INFO>;
 
 class EventBase
 {
