@@ -415,3 +415,197 @@ TEST(MPSCQueueValueTest, MultiProducerSingleConsumerStress)
     ASSERT_EQ(seen.size(), TOTAL);
     ASSERT_TRUE(q.pop() == nullptr);
 }
+
+TEST(MPSCQueueValueTest, LongStressWithRandomYield)
+{
+    static constexpr size_t PRODUCERS = 4;
+    static constexpr size_t ITEMS_PER_PRODUCER = 1250000;
+    static constexpr size_t TOTAL = PRODUCERS * ITEMS_PER_PRODUCER;
+
+    MPSCQueue<TaskEventValue, 8192> q;
+
+    std::atomic<bool> start{false};
+    std::atomic<size_t> consumed{0};
+
+    std::vector<std::thread> producers;
+
+    for (size_t p = 0; p < PRODUCERS; ++p)
+    {
+        producers.emplace_back([&, p]()
+        {
+            while (!start.load(std::memory_order_acquire))
+            {
+                std::this_thread::yield();
+            }
+
+            for (size_t i = 0; i < ITEMS_PER_PRODUCER; ++i)
+            {
+                size_t id = p * ITEMS_PER_PRODUCER + i + 1;
+
+                if ((i & 0x3FF) == 0)
+                {
+                    std::this_thread::yield();
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        q.push(TaskEventValue{id, "long"});
+                        break;
+                    }
+                    catch (const std::runtime_error&)
+                    {
+                        std::this_thread::yield();
+                    }
+                }
+            }
+        });
+    }
+
+    std::vector<std::atomic<uint8_t>> seen(TOTAL + 1);
+    for (auto& v : seen)
+    {
+        v.store(0, std::memory_order_relaxed);
+    }
+
+    std::thread consumer([&]()
+    {
+        while (consumed.load(std::memory_order_relaxed) < TOTAL)
+        {
+            auto item = q.pop();
+
+            if (item == nullptr)
+            {
+                std::this_thread::yield();
+                continue;
+            }
+
+            ASSERT_GE(item.id, 1);
+            ASSERT_LE(item.id, TOTAL);
+            ASSERT_EQ(item.payload, "long");
+
+            uint8_t expected = 0;
+            ASSERT_TRUE(seen[item.id].compare_exchange_strong(
+                expected,
+                1,
+                std::memory_order_relaxed,
+                std::memory_order_relaxed
+            ));
+
+            consumed.fetch_add(1, std::memory_order_relaxed);
+        }
+    });
+
+    start.store(true, std::memory_order_release);
+
+    for (auto& t : producers)
+    {
+        t.join();
+    }
+
+    consumer.join();
+
+    ASSERT_EQ(consumed.load(), TOTAL);
+
+    for (size_t id = 1; id <= TOTAL; ++id)
+    {
+        ASSERT_EQ(seen[id].load(std::memory_order_relaxed), 1);
+    }
+
+    ASSERT_TRUE(q.pop() == nullptr);
+}
+
+TEST(MPSCQueueValueTest, ThreadSanitizerStress)
+{
+    static constexpr size_t PRODUCERS = 4;
+    static constexpr size_t ITEMS_PER_PRODUCER = 100000;
+    static constexpr size_t TOTAL = PRODUCERS * ITEMS_PER_PRODUCER;
+
+    MPSCQueue<TaskEventValue, 1024> q;
+
+    std::atomic<bool> start{false};
+    std::atomic<size_t> consumed{0};
+
+    std::vector<std::thread> producers;
+
+    for (size_t p = 0; p < PRODUCERS; ++p)
+    {
+        producers.emplace_back([&, p]()
+        {
+            while (!start.load(std::memory_order_acquire))
+            {
+                std::this_thread::yield();
+            }
+
+            for (size_t i = 0; i < ITEMS_PER_PRODUCER; ++i)
+            {
+                size_t id = p * ITEMS_PER_PRODUCER + i + 1;
+
+                if ((i % 97) == 0)
+                {
+                    std::this_thread::yield();
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        q.push(TaskEventValue{id, "tsan"});
+                        break;
+                    }
+                    catch (const std::runtime_error&)
+                    {
+                        std::this_thread::yield();
+                    }
+                }
+            }
+        });
+    }
+
+    std::vector<std::atomic<uint8_t>> seen(TOTAL + 1);
+    for (auto& v : seen)
+    {
+        v.store(0, std::memory_order_relaxed);
+    }
+
+    std::thread consumer([&]()
+    {
+        while (consumed.load(std::memory_order_relaxed) < TOTAL)
+        {
+            auto item = q.pop();
+
+            if (item == nullptr)
+            {
+                std::this_thread::yield();
+                continue;
+            }
+
+            ASSERT_GE(item.id, 1);
+            ASSERT_LE(item.id, TOTAL);
+            ASSERT_EQ(item.payload, "tsan");
+
+            uint8_t expected = 0;
+            ASSERT_TRUE(seen[item.id].compare_exchange_strong(
+                expected,
+                1,
+                std::memory_order_relaxed,
+                std::memory_order_relaxed
+            ));
+
+            consumed.fetch_add(1, std::memory_order_relaxed);
+        }
+    });
+
+    start.store(true, std::memory_order_release);
+
+    for (auto& t : producers)
+    {
+        t.join();
+    }
+
+    consumer.join();
+
+    ASSERT_EQ(consumed.load(), TOTAL);
+    ASSERT_TRUE(q.pop() == nullptr);
+}
