@@ -1,10 +1,11 @@
 #pragma once
 
-#include <cxxabi.h>
-#include <cstddef>
-#include <string>
 #include <array>
 #include <atomic>
+#include <cstddef>
+#include <stdexcept>
+#include <string>
+#include <cxxabi.h>
 #include <emmintrin.h>
 
 #include <time/measure_time.h>
@@ -14,8 +15,8 @@
 template <typename T>
 std::string demangled_get_name()
 {
-    int status;
-    char* realname = abi::__cxa_demangle(typeid(T).name(), 0, 0, &status);
+    int status = 0;
+    char* realname = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, &status);
     std::string result = (status == 0 && realname) ? realname : typeid(T).name();
     std::free(realname);
     return result;
@@ -42,39 +43,28 @@ struct GetTypeName<T, std::void_t<decltype(T::get_name())>>
 template <class T, size_t Size>
 class MPSCQueue
 {
-    struct alignas(64) ObjectPointerWrapper
+    static_assert(Size > 0, "MPSCQueue Size must be > 0");
+
+    struct alignas(64) Slot
     {
-        std::atomic<T*> ptr;
+        std::atomic<size_t> sequence;
+        std::atomic<T*>     ptr;
     };
 
     struct PoolBuffer
     {
-        alignas(64) std::array<ObjectPointerWrapper, Size> available_items;
-        alignas(64) std::atomic<size_t> head = 0;
-        alignas(64) size_t              tail = 0;
-        alignas(64) std::atomic<size_t> size = 0;
+        alignas(64) std::array<Slot, Size> available_items;
+        alignas(64) std::atomic<size_t> head{0};
+        alignas(64) std::atomic<size_t> tail{0};
+        alignas(64) std::atomic<size_t> size{0};
 
         PoolBuffer()
         {
             for (size_t i = 0; i < Size; ++i)
             {
+                available_items[i].sequence.store(i, std::memory_order_relaxed);
                 available_items[i].ptr.store(nullptr, std::memory_order_relaxed);
             }
-        }
-
-        FORCE_INLINE size_t get_current_head()
-        {
-            size_t current = head.load(std::memory_order_acquire);
-            size_t next = (current + 1) % Size;
-
-            while (!head.compare_exchange_weak(current, next,
-                                            std::memory_order_relaxed,
-                                            std::memory_order_relaxed))
-            {
-                next = (current + 1) % Size;
-            }
-
-            return current;
         }
     };
 
@@ -82,59 +72,83 @@ class MPSCQueue
     std::string name = GetTypeName<T>::get_name();
 
 public:
-    // push an item into the queue
     FORCE_INLINE void push(T* item)
     {
-        if (item != nullptr)
+        if (item == nullptr)
         {
-            // MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
-            // MeasureTime measure_time("MPSCQueue::push", MeasureUnit::NANOSECOND);
+            throw std::runtime_error
+            (
+                "Attempt to release a null item back to the cache pool: [" + name + "]"
+            );
+        }
 
-            if (m_pool_buffer.size.load(std::memory_order_acquire) == Size)
+        MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
+
+        size_t pos = m_pool_buffer.head.load(std::memory_order_relaxed);
+
+        while (true)
+        {
+            Slot& slot = m_pool_buffer.available_items[pos % Size];
+
+            size_t seq = slot.sequence.load(std::memory_order_acquire);
+            intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos);
+
+            if (diff == 0)
+            {
+                if (m_pool_buffer.head.compare_exchange_weak(
+                        pos,
+                        pos + 1,
+                        std::memory_order_relaxed,
+                        std::memory_order_relaxed))
+                {
+                    slot.ptr.store(item, std::memory_order_relaxed);
+
+                    // publish item
+                    slot.sequence.store(pos + 1, std::memory_order_release);
+
+                    m_pool_buffer.size.fetch_add(1, std::memory_order_release);
+                    return;
+                }
+            }
+            else if (diff < 0)
             {
                 throw std::runtime_error("Queue is full: [" + name + "]");
             }
+            else
+            {
+                pos = m_pool_buffer.head.load(std::memory_order_relaxed);
+            }
 
-            // Push item into the pool
-            size_t head_index = m_pool_buffer.get_current_head();
-            m_pool_buffer.available_items[head_index].ptr.store(item, std::memory_order_release);
-
-            // Increase size only after successfully moving head
-            m_pool_buffer.size.fetch_add(1, std::memory_order_release);
-        }
-        else
-        {
-            throw std::runtime_error("Attempt to release a null item back to the cache pool: [" + name + "]");
+            _mm_pause();
         }
     }
 
-    // Release a cache item back to the pool
     FORCE_INLINE T* pop()
     {
-        if (m_pool_buffer.size.load(std::memory_order_acquire) == 0)
+        size_t pos = m_pool_buffer.tail.load(std::memory_order_relaxed);
+        Slot& slot = m_pool_buffer.available_items[pos % Size];
+
+        size_t seq = slot.sequence.load(std::memory_order_acquire);
+        intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos + 1);
+
+        MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
+
+        if (diff == 0)
         {
-            return nullptr;
+            T* item = slot.ptr.load(std::memory_order_relaxed);
+
+            slot.ptr.store(nullptr, std::memory_order_relaxed);
+
+            // mark slot free for next producer round
+            slot.sequence.store(pos + Size, std::memory_order_release);
+
+            m_pool_buffer.tail.store(pos + 1, std::memory_order_relaxed);
+            m_pool_buffer.size.fetch_sub(1, std::memory_order_release);
+
+            return item;
         }
 
-        // Pop item from the pool
-        size_t tail_index = m_pool_buffer.tail;
-        T* item = m_pool_buffer.available_items[tail_index].ptr.load(std::memory_order_acquire);
-        if (item == nullptr)
-        {
-            _mm_pause();
-            return nullptr;
-        }
-
-        // MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
-        // MeasureTime measure_time("MPSCQueue::release", MeasureUnit::NANOSECOND);
-
-        m_pool_buffer.available_items[tail_index].ptr.store(nullptr, std::memory_order_release);
-        m_pool_buffer.tail = (tail_index + 1) % Size;
-
-        // Decrease size only after successfully moving tail
-        m_pool_buffer.size.fetch_sub(1, std::memory_order_release);
-
-        return item;
+        return nullptr;
     }
 
     FORCE_INLINE size_t head()
@@ -144,7 +158,7 @@ public:
 
     FORCE_INLINE size_t tail()
     {
-        return m_pool_buffer.tail;
+        return m_pool_buffer.tail.load(std::memory_order_relaxed);
     }
 
     FORCE_INLINE size_t size()
