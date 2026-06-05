@@ -125,13 +125,13 @@ public:
 
     FORCE_INLINE T* pop()
     {
+        MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
+
         size_t pos = m_pool_buffer.tail.load(std::memory_order_relaxed);
         Slot& slot = m_pool_buffer.available_items[pos % Size];
 
         size_t seq = slot.sequence.load(std::memory_order_acquire);
         intptr_t diff = static_cast<intptr_t>(seq) - static_cast<intptr_t>(pos + 1);
-
-        MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
 
         if (diff == 0)
         {
