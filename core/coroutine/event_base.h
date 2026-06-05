@@ -58,6 +58,7 @@ public:
 private:
     enum TaskType
     {
+        NONE,
         RUN,
         SET_SUSPEND_VALUE,
         REMOVE_AWAITER
@@ -67,10 +68,18 @@ private:
     {
         TaskType type;
         std::coroutine_handle<> handle;
+
+        TaskInfoEvent() = default;
+        TaskInfoEvent(std::nullptr_t) : type(TaskType::NONE), handle(nullptr) {}
+
+        bool operator==(std::nullptr_t) const
+        {
+            return type == TaskType::NONE && handle == nullptr;
+        }
     };
 
     using TaskEventQueue = MPSCQueue<TaskInfoEvent, MAX_TASK_INFO>;
-    // TaskEventQueue m_task_event_queue;
+    TaskEventQueue m_task_event_queue;
 
 public:
 
