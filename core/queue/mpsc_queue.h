@@ -43,20 +43,17 @@ struct GetTypeName<T, std::void_t<decltype(T::get_name())>>
 };
 
 template<typename T, typename = void>
-struct SupportsNullptr : std::false_type
-{
-};
+struct SupportsNullptr : std::false_type {};
 
 template<typename T>
 struct SupportsNullptr<
     T,
     std::void_t<
-        decltype(T(nullptr)),
+        decltype(T{nullptr}),
+        decltype(std::declval<T&>() = nullptr),
         decltype(std::declval<T>() == nullptr)
     >
-> : std::true_type
-{
-};
+> : std::true_type {};
 
 template <class T, size_t Size>
 class MPSCQueue
