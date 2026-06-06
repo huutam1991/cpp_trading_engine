@@ -63,10 +63,14 @@ struct Task : public BaseTask
     Task(std::nullptr_t) : BaseTask(nullptr) {}
     Task(promise_type* promise) : BaseTask(promise) {}
     Task() = default;
-    Task(const Task&) = delete;
+
+    // Only allow move constructor and move assignment
     Task(Task&&) = default;
-    Task& operator=(const Task&) = delete;
     Task& operator=(Task&&) = default;
+
+    // Delete copy constructor and copy assignment
+    Task(const Task&) = delete;
+    Task& operator=(const Task&) = delete;
 
     T await_resume()
     {
@@ -142,10 +146,14 @@ struct Task<void> : public BaseTask
     Task(std::nullptr_t) : BaseTask(nullptr) {}
     Task(promise_type* promise) : BaseTask(promise) {}
     Task() = default;
-    Task(const Task&) = delete;
+
+    // Only allow move constructor and move assignment
     Task(Task&&) = default;
-    Task& operator=(const Task&) = delete;
     Task& operator=(Task&&) = default;
+
+    // Delete copy constructor and copy assignment
+    Task(const Task&) = delete;
+    Task& operator=(const Task&) = delete;
 
     void await_resume()
     {
