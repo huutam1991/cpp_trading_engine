@@ -46,6 +46,8 @@ struct Task : public BaseTask
 
         Task get_return_object()
         {
+            std::coroutine_handle<promise_type> h = std::coroutine_handle<promise_type>::from_promise(*this);
+            this->handle = h;
             return Task{this};
         }
 
@@ -122,6 +124,9 @@ struct Task<void> : public BaseTask
 
         Task get_return_object()
         {
+            std::coroutine_handle<promise_type> h = std::coroutine_handle<promise_type>::from_promise(*this);
+            this->handle = h;
+
             return Task{this};
         }
 
