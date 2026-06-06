@@ -29,22 +29,10 @@ struct BaseTask
 
     BaseTask(std::nullptr_t) : m_promise(nullptr) {}
     BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise) {}
-    BaseTask(const BaseTask& copy) = delete;
-    BaseTask(BaseTask&& copy) : m_promise{copy.m_promise} { copy.m_promise = nullptr; }
     BaseTask() {};
-    ~BaseTask()
-    {
-        // Light destroy, lol
-        destroy(false);
-    }
 
-    bool operator==(std::nullptr_t null) const
-    {
-        return m_promise == nullptr;
-    }
-
-    BaseTask& operator=(const BaseTask& copy) = delete;
-
+    // Only allow move constructor and move assignment
+    BaseTask(BaseTask&& copy) : m_promise{copy.m_promise} { copy.m_promise = nullptr; }
     BaseTask& operator=(BaseTask&& copy)
     {
         if (m_promise != nullptr)
@@ -55,6 +43,21 @@ struct BaseTask
         m_promise = copy.m_promise;
         copy.m_promise = nullptr;
         return *this;
+    }
+
+    // Delete copy constructor and copy assignment
+    BaseTask(const BaseTask& copy) = delete;
+    BaseTask& operator=(const BaseTask& copy) = delete;
+
+    ~BaseTask()
+    {
+        // Light destroy, lol
+        destroy(false);
+    }
+
+    bool operator==(std::nullptr_t null) const
+    {
+        return m_promise == nullptr;
     }
 
     void destroy(bool complete = true)
