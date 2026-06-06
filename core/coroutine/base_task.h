@@ -28,11 +28,10 @@ struct BaseTask
     BasePromiseType* m_promise = nullptr;
 
     BaseTask(std::nullptr_t) : m_promise(nullptr) {}
-    // BaseTask(std::coroutine_handle<promise_type> h) : handle(h) {}
     BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise) {}
-    BaseTask() {};
     BaseTask(const BaseTask& copy) = delete;
     BaseTask(BaseTask&& copy) : m_promise{copy.m_promise} { copy.m_promise = nullptr; }
+    BaseTask() {};
     ~BaseTask()
     {
         // Light destroy, lol
