@@ -134,8 +134,8 @@ void EventBase::loop2()
             // }
             // else if (task_event.type == TaskType::SET_SUSPEND_VALUE)
             // {
-            //     auto& promise = task_event.handle.promise();
-            //     static_cast<BasePromiseType&>(promise).has_suspend_value = true;
+            //     BaseTask::promise_type& promise = std::coroutine_handle<BaseTask::promise_type>::from_address(task_event.handle.address()).promise();
+            //     promise.has_suspend_value = false;
             // }
             // else if (task_event.type == TaskType::REMOVE_AWAITER)
             // {

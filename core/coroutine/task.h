@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <future>
 
-#include "base_promise_type.h"
 #include "base_task.h"
 
 template<class T>
