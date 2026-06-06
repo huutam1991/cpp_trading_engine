@@ -2,117 +2,6 @@
 
 #include "base_promise_type.h"
 
-template<typename T>
-struct TaskValue
-{
-    enum State
-    {
-        WAITING,
-        READY
-    };
-
-    alignas(64) std::atomic<State> state{State::WAITING};
-    T value;
-
-    T spin_wait()
-    {
-        while (state.load(std::memory_order_acquire) == State::WAITING)
-        {
-            _mm_pause();
-        }
-
-        return value;
-    }
-
-    template<typename U>
-    void set_value(U&& v)
-    {
-        value = std::forward<U>(v);
-        state.store(State::READY, std::memory_order_release);
-    }
-};
-
-template<class T>
-struct TaskResult
-{
-    TaskValue<T>* parent;
-    TaskResult(TaskValue<T>* parent) : parent(parent) {}
-
-    TaskResult(const TaskResult& copy) = delete;
-    TaskResult& operator=(const TaskResult& copy) = delete;
-
-    TaskResult(TaskResult&& copy) : parent(copy.parent)
-    {
-        copy.parent = nullptr;
-    }
-
-    TaskResult& operator=(TaskResult&& copy)
-    {
-        parent = copy.parent;
-        copy.parent = nullptr;
-        return *this;
-    }
-
-    T spin_wait()
-    {
-        return parent->spin_wait();
-    }
-};
-
-template<>
-struct TaskValue<void>
-{
-    enum State
-    {
-        WAITING,
-        READY
-    };
-
-    alignas(64) std::atomic<State> state{WAITING};
-
-    void spin_wait()
-    {
-        while (state.load(std::memory_order_acquire) == WAITING)
-        {
-            _mm_pause();
-        }
-    }
-
-    void set_value()
-    {
-        state.store(READY, std::memory_order_release);
-    }
-};
-
-
-template<>
-struct TaskResult<void>
-{
-    TaskValue<void>* parent;
-    TaskResult(TaskValue<void>* parent) : parent(parent) {}
-
-    TaskResult(const TaskResult& copy) = delete;
-    TaskResult& operator=(const TaskResult& copy) = delete;
-
-    TaskResult(TaskResult&& copy) : parent(copy.parent)
-    {
-        copy.parent = nullptr;
-    }
-
-    TaskResult& operator=(TaskResult&& copy)
-    {
-        parent = copy.parent;
-        copy.parent = nullptr;
-        return *this;
-    }
-
-    void spin_wait()
-    {
-        return parent->spin_wait();
-    }
-};
-
-template<class T>
 struct BaseTask
 {
     struct promise_type : public BasePromiseType
@@ -133,9 +22,6 @@ struct BaseTask
             return {};
         }
         void unhandled_exception() { std::terminate(); }
-
-        // Promise value
-        TaskValue<T> task_value;
     };
 
     std::coroutine_handle<promise_type> handle = nullptr;
@@ -212,11 +98,11 @@ struct BaseTask
         base_promise_type->register_on(event_base, handle);
     }
 
-    inline TaskResult<T> start_running_on(EventBase* event_base)
-    {
-        register_on(event_base);
-        return TaskResult<T>{&handle.promise().task_value};
-    }
+    // inline TaskResult<T> start_running_on(EventBase* event_base)
+    // {
+    //     register_on(event_base);
+    //     return TaskResult<T>{&handle.promise().task_value};
+    // }
 
     bool await_ready()
     {

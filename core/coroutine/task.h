@@ -2,14 +2,15 @@
 
 #include <atomic>
 #include <cstddef>
+#include <future>
 
 #include "base_promise_type.h"
 #include "base_task.h"
 
 template<class T>
-struct Task : public BaseTask<T>
+struct Task : public BaseTask
 {
-    struct promise_type : public BaseTask<T>::promise_type
+    struct promise_type : public BaseTask::promise_type
     {
 #ifdef TEST_MODE_ONLY
         inline static std::atomic<int64_t> alloc_count{0};
@@ -51,12 +52,15 @@ struct Task : public BaseTask<T>
 
         void return_value(T v)
         {
-            this->task_value.set_value(v);
+            this->task_value.set_value(std::move(v));
         }
+
+        // Promise value
+        std::promise<T> task_value;
     };
 
-    Task(std::nullptr_t) : BaseTask<T>(nullptr) {}
-    Task(promise_type* promise) : BaseTask<T>(promise) {}
+    Task(std::nullptr_t) : BaseTask(nullptr) {}
+    Task(promise_type* promise) : BaseTask(promise) {}
     Task() = default;
     Task(const Task&) = delete;
     Task(Task&&) = default;
@@ -66,14 +70,22 @@ struct Task : public BaseTask<T>
     T await_resume()
     {
         auto& promise = this->handle.promise();
-        return static_cast<promise_type*>(&promise)->task_value.value;
+        return static_cast<promise_type*>(&promise)->task_value.get_future().get();
+    }
+
+    inline std::future<T> start_running_on(EventBase* event_base)
+    {
+        register_on(event_base);
+
+        auto typed = std::coroutine_handle<BaseTask::promise_type>::from_address(handle.address());
+        return static_cast<promise_type&>(typed.promise()).task_value.get_future();
     }
 };
 
 template<>
-struct Task<void> : public BaseTask<void>
+struct Task<void> : public BaseTask
 {
-    struct promise_type : public BaseTask<void>::promise_type
+    struct promise_type : public BaseTask::promise_type
     {
 
 #ifdef TEST_MODE_ONLY
@@ -118,10 +130,13 @@ struct Task<void> : public BaseTask<void>
         {
             this->task_value.set_value();
         }
+
+        // Promise value
+        std::promise<void> task_value;
     };
 
-    Task(std::nullptr_t) : BaseTask<void>(nullptr) {}
-    Task(promise_type* promise) : BaseTask<void>(promise) {}
+    Task(std::nullptr_t) : BaseTask(nullptr) {}
+    Task(promise_type* promise) : BaseTask(promise) {}
     Task() = default;
     Task(const Task&) = delete;
     Task(Task&&) = default;
@@ -131,5 +146,13 @@ struct Task<void> : public BaseTask<void>
     void await_resume()
     {
         return;
+    }
+
+    inline std::future<void> start_running_on(EventBase* event_base)
+    {
+        register_on(event_base);
+
+        auto typed = std::coroutine_handle<BaseTask::promise_type>::from_address(handle.address());
+        return static_cast<promise_type&>(typed.promise()).task_value.get_future();
     }
 };
