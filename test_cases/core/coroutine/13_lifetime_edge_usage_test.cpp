@@ -20,12 +20,12 @@
 //     template <class T>
 //     T wait_result(TaskResult<T>& result)
 //     {
-//         return result.spin_wait();
+//         return result.get();
 //     }
 
 //     inline void wait_done(TaskResult<void>& result)
 //     {
-//         result.spin_wait();
+//         result.get();
 //     }
 
 //     inline EventBase* test_event_base()
@@ -104,7 +104,7 @@
 
 //     {
 //         auto task = fn();
-//         auto result = task.start_running_on(test_event_base()).spin_wait();
+//         auto result = task.start_running_on(test_event_base()).get();
 
 //         // ASSERT_EQ(result.wait_for(20ms), std::future_status::timeout);
 //     }
@@ -148,7 +148,7 @@
 
 //     {
 //         auto task = parent();
-//         auto result = task.start_running_on(test_event_base()).spin_wait();
+//         auto result = task.start_running_on(test_event_base()).get();
 //     }
 
 //     settle();
