@@ -83,6 +83,9 @@ struct Task : public BaseTask
         register_on(event_base);
 
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
+        // promise->m_event_base = event_base;
+        // event_base->add_run_task_event(promise);
+
         return promise->task_value.get_future();
     }
 };
