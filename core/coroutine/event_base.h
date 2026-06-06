@@ -14,6 +14,7 @@
 #define MAX_TASK_INFO 200000
 
 class EventBase;
+struct BasePromiseType;
 
 struct TaskInfo : public NamedIOObject<TaskInfo>
 {
@@ -67,15 +68,15 @@ private:
     struct TaskInfoEvent
     {
         TaskType type;
-        std::coroutine_handle<> handle;
+        BasePromiseType* promise;
 
-        TaskInfoEvent() = default;
-        TaskInfoEvent(std::nullptr_t) : type(TaskType::NONE), handle(nullptr) {}
-        TaskInfoEvent(TaskType type, std::coroutine_handle<> handle) : type(type), handle(handle) {}
+        TaskInfoEvent() : type(TaskType::NONE), promise(nullptr) {};
+        TaskInfoEvent(std::nullptr_t) : type(TaskType::NONE), promise(nullptr) {}
+        TaskInfoEvent(TaskType type, BasePromiseType* promise) : type(type), promise(promise) {}
 
         bool operator==(std::nullptr_t) const
         {
-            return type == TaskType::NONE && handle == nullptr;
+            return type == TaskType::NONE && promise == nullptr;
         }
     };
 
@@ -92,17 +93,17 @@ public:
     void remove_from_event_base(void* id);
     void check_to_remove_task(TaskInfo* task_info);
 
-    inline void add_run_task_event(std::coroutine_handle<> handle)
+    inline void add_run_task_event(BasePromiseType* handle)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskType::RUN, handle});
     }
 
-    inline void add_set_suspend_value_event(std::coroutine_handle<> handle)
+    inline void add_set_suspend_value_event(BasePromiseType* handle)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskType::SET_SUSPEND_VALUE, handle});
     }
 
-    inline void add_remove_awaiter_event(std::coroutine_handle<> handle)
+    inline void add_remove_awaiter_event(BasePromiseType* handle)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskType::REMOVE_AWAITER, handle});
     }
