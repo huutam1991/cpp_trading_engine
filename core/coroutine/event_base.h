@@ -78,6 +78,8 @@ private:
         {
             return type == TaskType::NONE && promise == nullptr;
         }
+
+        inline void check_handle();
     };
 
     using TaskEventQueue = MPSCQueue<TaskInfoEvent, MAX_TASK_INFO>;

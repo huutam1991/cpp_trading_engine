@@ -56,6 +56,32 @@ void TaskInfo::release()
     // Do nothing here, will be release at EventBase
 }
 
+void EventBase::TaskInfoEvent::check_handle()
+{
+    if (type == TaskType::RUN)
+    {
+        promise->handle.resume();
+    }
+    else if (type == TaskType::SET_SUSPEND_VALUE)
+    {
+        promise->has_suspend_value = false;
+
+        if (promise->has_awaiter)
+        {
+            promise->handle.resume();
+        }
+    }
+    else if (type == TaskType::REMOVE_AWAITER)
+    {
+        promise->has_awaiter = false;
+    }
+
+    if (promise->has_awaiter == false && promise->has_suspend_value == false)
+    {
+        promise->handle.destroy();
+    }
+}
+
 void* EventBase::create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address)
 {
     TaskInfo* task_info = TaskInfoPool::acquire();
@@ -126,33 +152,9 @@ void EventBase::loop2()
         TaskInfoEvent task_event = m_task_event_queue.pop();
 
         // Continue process this task
-        if (task_event != nullptr && task_event.promise != nullptr)
+        if (task_event != nullptr)
         {
-            BasePromiseType* promise = task_event.promise;
-
-            if (task_event.type == TaskType::RUN)
-            {
-                promise->handle.resume();
-            }
-            else if (task_event.type == TaskType::SET_SUSPEND_VALUE)
-            {
-                promise->has_suspend_value = false;
-
-                if (promise->has_awaiter)
-                {
-                    promise->handle.resume();
-                }
-            }
-            else if (task_event.type == TaskType::REMOVE_AWAITER)
-            {
-                promise->has_awaiter = false;
-            }
-
-            if (promise->has_awaiter == false && promise->has_suspend_value == false)
-            {
-                promise->handle.destroy();
-            }
-
+            task_event.check_handle();
             continue;
         }
         else
