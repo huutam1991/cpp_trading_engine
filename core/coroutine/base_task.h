@@ -9,7 +9,7 @@ struct BaseTask
         // Methods of a standard promise
         BaseTask get_return_object()
         {
-            return BaseTask{std::coroutine_handle<promise_type>::from_promise(*this)};
+            return BaseTask{nullptr};
         }
         std::suspend_always initial_suspend() { return {}; }
         std::suspend_always final_suspend() noexcept
@@ -24,14 +24,15 @@ struct BaseTask
         void unhandled_exception() { std::terminate(); }
     };
 
-    std::coroutine_handle<promise_type> handle = nullptr;
+    // std::coroutine_handle<promise_type> handle = nullptr;
+    BasePromiseType* m_promise = nullptr;
 
-    BaseTask(std::nullptr_t) : handle(nullptr) {}
-    BaseTask(std::coroutine_handle<promise_type> h) : handle(h) {}
-    BaseTask(promise_type* promise) : handle(std::coroutine_handle<promise_type>::from_promise(*promise)) {}
+    BaseTask(std::nullptr_t) : m_promise(nullptr) {}
+    // BaseTask(std::coroutine_handle<promise_type> h) : handle(h) {}
+    BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise) {}
     BaseTask() {};
     BaseTask(const BaseTask& copy) = delete;
-    BaseTask(BaseTask&& copy) : handle{std::move(copy.handle)} { copy.handle = nullptr; }
+    BaseTask(BaseTask&& copy) : m_promise{copy.m_promise} { copy.m_promise = nullptr; }
     ~BaseTask()
     {
         // Light destroy, lol
@@ -40,27 +41,27 @@ struct BaseTask
 
     bool operator==(std::nullptr_t null) const
     {
-        return handle == nullptr;
+        return m_promise == nullptr;
     }
 
     BaseTask& operator=(const BaseTask& copy) = delete;
 
     BaseTask& operator=(BaseTask&& copy)
     {
-        if (handle != nullptr)
+        if (m_promise != nullptr)
         {
             destroy();
         }
 
-        handle = std::move(copy.handle);
-        copy.handle = nullptr;
+        m_promise = copy.m_promise;
+        copy.m_promise = nullptr;
         return *this;
     }
 
     void destroy(bool complete = true)
     {
         // This is just a BaseTask object with nullptr handle, not a really BaseTask that is created by C++
-        if (handle == nullptr)
+        if (m_promise == nullptr)
         {
             return;
         }
@@ -70,21 +71,20 @@ struct BaseTask
         // Hasn't register on EventBase, just destroy the coroutine frame and return
         if (promise->m_event_base == nullptr)
         {
-            handle.destroy();
-            handle = nullptr;
+            m_promise->handle.destroy();
+            m_promise = nullptr;
             return;
         }
 
         // Already register, mark this task is already release, then it will be destroy later when it's done
         promise->is_task_release = true;
-        handle = nullptr;
+        m_promise = nullptr;
     }
 
     // Get BasePromiseType of current coroutine
     BasePromiseType* get_base_promise_type()
     {
-        promise_type& promise = handle.promise();
-        return &promise;
+        return m_promise;
     }
 
     void save_suspending_promise(BasePromiseType* suspend_base_pt)
@@ -95,7 +95,7 @@ struct BaseTask
     void register_on(EventBase* event_base)
     {
         auto base_promise_type = get_base_promise_type();
-        base_promise_type->register_on(event_base, handle);
+        base_promise_type->register_on(event_base, m_promise->handle);
     }
 
     // inline TaskResult<T> start_running_on(EventBase* event_base)
@@ -106,7 +106,7 @@ struct BaseTask
 
     bool await_ready()
     {
-        return handle.done();
+        return m_promise->handle.done();
     }
 
     template<class promise_type>

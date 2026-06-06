@@ -6,6 +6,7 @@ struct BasePromiseType
 {
     bool m_is_waiting = false;
     BasePromiseType* m_suspending_promise = nullptr;
+    std::coroutine_handle<> handle = nullptr;
     EventBase* m_event_base = nullptr;
     bool has_suspend_value = false;
     bool is_awaiter_release = false;
@@ -15,6 +16,7 @@ struct BasePromiseType
     void register_on(EventBase* event_base, std::coroutine_handle<> handle)
     {
         m_event_base = event_base;
+        this->handle = handle;
         task_ptr = event_base->create_task_info(handle, this);
         set_waiting(false); // Need to run this task at the beginning
     }

@@ -68,16 +68,16 @@ struct Task : public BaseTask
 
     T await_resume()
     {
-        auto& promise = this->handle.promise();
-        return static_cast<promise_type*>(&promise)->task_value.get_future().get();
+        Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
+        return promise->task_value.get_future().get();
     }
 
     inline std::future<T> start_running_on(EventBase* event_base)
     {
         register_on(event_base);
 
-        auto typed = std::coroutine_handle<BaseTask::promise_type>::from_address(handle.address());
-        return static_cast<promise_type&>(typed.promise()).task_value.get_future();
+        Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
+        return promise->task_value.get_future();
     }
 };
 
@@ -151,7 +151,7 @@ struct Task<void> : public BaseTask
     {
         register_on(event_base);
 
-        auto typed = std::coroutine_handle<BaseTask::promise_type>::from_address(handle.address());
-        return static_cast<promise_type&>(typed.promise()).task_value.get_future();
+        Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
+        return promise->task_value.get_future();
     }
 };
