@@ -71,6 +71,7 @@ private:
 
         TaskInfoEvent() = default;
         TaskInfoEvent(std::nullptr_t) : type(TaskType::NONE), handle(nullptr) {}
+        TaskInfoEvent(TaskType type, std::coroutine_handle<> handle) : type(type), handle(handle) {}
 
         bool operator==(std::nullptr_t) const
         {
@@ -90,6 +91,22 @@ public:
     void* create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address);
     void remove_from_event_base(void* id);
     void check_to_remove_task(TaskInfo* task_info);
+
+    inline void add_run_task_event(std::coroutine_handle<> handle)
+    {
+        m_task_event_queue.push(TaskInfoEvent{TaskType::RUN, handle});
+    }
+
+    inline void add_set_suspend_value_event(std::coroutine_handle<> handle)
+    {
+        m_task_event_queue.push(TaskInfoEvent{TaskType::SET_SUSPEND_VALUE, handle});
+    }
+
+    inline void add_remove_awaiter_event(std::coroutine_handle<> handle)
+    {
+        m_task_event_queue.push(TaskInfoEvent{TaskType::REMOVE_AWAITER, handle});
+    }
+
     virtual void stop();
     virtual void set_ready_task(void* task_info);
     virtual void loop();

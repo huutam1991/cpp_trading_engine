@@ -7,6 +7,8 @@ struct BasePromiseType
     bool m_is_waiting = false;
     BasePromiseType* m_suspending_promise = nullptr;
     EventBase* m_event_base = nullptr;
+    bool has_suspend_value = false;
+    bool is_awaiter_release = false;
     bool is_task_release = false;
     void* task_ptr = nullptr;
 

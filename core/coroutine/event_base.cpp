@@ -120,20 +120,39 @@ void EventBase::loop()
 
 void EventBase::loop2()
 {
-    // while (m_stopping.load(std::memory_order_acquire) == false)
-    // {
-    //     // Check if there's any task ready to process
-    //     TaskInfoEvent* task_event = m_task_event_queue.pop();
+    while (m_stopping.load(std::memory_order_acquire) == false)
+    {
+        // Check if there's any task ready to process
+        TaskInfoEvent task_event = m_task_event_queue.pop();
 
-    //     // Continue process this task
-    //     if (task_event != nullptr)
-    //     {
-    //         task_event->handle.resume();
-    //         continue;
-    //     }
-    //     else
-    //     {
-    //         _mm_pause();
-    //     }
-    // }
+        // Continue process this task
+        if (task_event != nullptr)
+        {
+            // if (task_event.type == TaskType::RUN)
+            // {
+            //     task_event.handle.resume();
+            // }
+            // else if (task_event.type == TaskType::SET_SUSPEND_VALUE)
+            // {
+            //     auto& promise = task_event.handle.promise();
+            //     static_cast<BasePromiseType&>(promise).has_suspend_value = true;
+            // }
+            // else if (task_event.type == TaskType::REMOVE_AWAITER)
+            // {
+            //     auto& promise = task_event.handle.promise();
+            //     BasePromiseType& base_promise = static_cast<BasePromiseType&>(promise);
+            //     if (base_promise.m_suspending_promise != nullptr)
+            //     {
+            //         base_promise.m_suspending_promise->set_waiting(false);
+            //         base_promise.m_suspending_promise = nullptr;
+            //     }
+            // }
+
+            continue;
+        }
+        else
+        {
+            _mm_pause();
+        }
+    }
 }
