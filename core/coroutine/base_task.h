@@ -58,7 +58,6 @@ struct BaseTask
     bool operator==(std::nullptr_t null) const;
     void destroy(bool complete = true);
     void check_release();
-    BasePromiseType* get_base_promise_type();
     void save_suspending_promise(BasePromiseType* suspend_base_pt);
     void register_on(EventBase* event_base);
     bool await_ready();

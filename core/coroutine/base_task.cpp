@@ -13,10 +13,8 @@ void BaseTask::destroy(bool complete)
         return;
     }
 
-    auto* promise = get_base_promise_type();
-
     // Hasn't register on EventBase, just destroy the coroutine frame and return
-    if (promise->m_event_base == nullptr)
+    if (m_promise->m_event_base == nullptr)
     {
         m_promise->handle.destroy();
         m_promise = nullptr;
@@ -24,7 +22,7 @@ void BaseTask::destroy(bool complete)
     }
 
     // Already register, mark this task is already release, then it will be destroy later when it's done
-    promise->is_task_release = true;
+    m_promise->is_task_release = true;
     m_promise = nullptr;
 }
 
@@ -47,21 +45,14 @@ void BaseTask::check_release()
     }
 }
 
-// Get BasePromiseType of current coroutine
-BasePromiseType* BaseTask::get_base_promise_type()
-{
-    return m_promise;
-}
-
 void BaseTask::save_suspending_promise(BasePromiseType* suspend_base_pt)
 {
-    get_base_promise_type()->m_suspending_promise = suspend_base_pt;
+    m_promise->m_suspending_promise = suspend_base_pt;
 }
 
 void BaseTask::register_on(EventBase* event_base)
 {
-    auto base_promise_type = get_base_promise_type();
-    base_promise_type->register_on(event_base, m_promise->handle);
+    m_promise->register_on(event_base, m_promise->handle);
 
     // m_promise->m_event_base = event_base;
     // event_base->add_run_task_event(m_promise);
