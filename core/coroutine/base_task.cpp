@@ -28,6 +28,25 @@ void BaseTask::destroy(bool complete)
     m_promise = nullptr;
 }
 
+void BaseTask::check_release()
+{
+    if (m_promise != nullptr)
+    {
+        // If this task is not running on any EventBase, we can destroy it immediately
+        if (m_promise->m_event_base == nullptr)
+        {
+            m_promise->handle.destroy();
+        }
+        // If this task is running on an EventBase, mark it as has no waiter
+        else
+        {
+            m_promise->has_awaiter = false;
+        }
+
+        m_promise = nullptr;
+    }
+}
+
 // Get BasePromiseType of current coroutine
 BasePromiseType* BaseTask::get_base_promise_type()
 {
