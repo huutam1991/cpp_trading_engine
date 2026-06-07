@@ -39,6 +39,12 @@ void BaseTask::check_release()
         else
         {
             m_promise->has_awaiter = false;
+
+            // If this task has no waiter and no suspend value, we can destroy it immediately
+            if (m_promise->has_awaiter == false && m_promise->has_suspend_value == false)
+            {
+                m_promise->handle.destroy();
+            }
         }
 
         m_promise = nullptr;
