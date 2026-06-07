@@ -54,6 +54,7 @@ struct Task : public BaseTask
         void return_value(T v)
         {
             this->task_value.set_value(std::move(v));
+            // this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
@@ -140,6 +141,7 @@ struct Task<void> : public BaseTask
         void return_void()
         {
             this->task_value.set_value();
+            this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
