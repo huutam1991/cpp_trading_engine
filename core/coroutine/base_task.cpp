@@ -63,8 +63,8 @@ void BaseTask::register_on(EventBase* event_base)
     auto base_promise_type = get_base_promise_type();
     base_promise_type->register_on(event_base, m_promise->handle);
 
-    m_promise->m_event_base = event_base;
-    m_promise->has_awaiter = true;
+    // m_promise->m_event_base = event_base;
+    // event_base->add_run_task_event(m_promise);
 }
 
 bool BaseTask::await_ready()
