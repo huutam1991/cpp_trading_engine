@@ -45,11 +45,6 @@ void BaseTask::check_release()
     }
 }
 
-void BaseTask::save_suspending_promise(BasePromiseType* suspend_base_pt)
-{
-    m_promise->m_suspending_promise = suspend_base_pt;
-}
-
 void BaseTask::register_on(EventBase* event_base)
 {
     m_promise->register_on(event_base, m_promise->handle);
