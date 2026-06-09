@@ -53,7 +53,7 @@ struct Task : public BaseTask
 
         void return_value(T v)
         {
-            if (this->has_promise_value == true)
+            if (this->task_value != nullptr)
             {
                 this->task_value->set_value(std::move(v));
             }
@@ -85,7 +85,7 @@ struct Task : public BaseTask
     {
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
 
-        if (promise->has_promise_value == true)
+        if (promise->task_value != nullptr)
         {
             return promise->task_value->get_future().get();
         }
@@ -98,8 +98,6 @@ struct Task : public BaseTask
     inline std::future<T> start_running_on(EventBase* event_base)
     {
         register_on(event_base);
-
-        m_promise->has_promise_value = true;
 
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<T>>();
@@ -156,7 +154,7 @@ struct Task<void> : public BaseTask
 
         void return_void()
         {
-            if (this->has_promise_value == true)
+            if (this->task_value != nullptr)
             {
                 this->task_value->set_value();
             }
@@ -187,8 +185,6 @@ struct Task<void> : public BaseTask
     inline std::future<void> start_running_on(EventBase* event_base)
     {
         register_on(event_base);
-
-        m_promise->has_promise_value = true;
 
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<void>>();
