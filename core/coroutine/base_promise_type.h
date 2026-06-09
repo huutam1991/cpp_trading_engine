@@ -4,7 +4,6 @@
 
 struct BasePromiseType
 {
-    bool m_is_waiting = false;
     BasePromiseType* m_suspending_promise = nullptr;
     std::coroutine_handle<> handle = nullptr;
     EventBase* m_event_base = nullptr;
