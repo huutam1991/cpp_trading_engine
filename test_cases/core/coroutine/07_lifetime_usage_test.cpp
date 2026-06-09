@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }
@@ -392,7 +392,7 @@ TEST(CoroutineUsageLifetimeTest, TaskStoredInVectorAndMovedByReallocationRelease
 
     {
         std::vector<Task<int>> tasks;
-        std::vector<TaskResult<int>> results;
+        std::vector<std::future<int>> results;
         results.reserve(N);
 
         auto eb = test_event_base();
@@ -491,9 +491,9 @@ TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureReleasesFrameAfterCompletion)
 
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(42);
+            out.set_value(42);
         });
 
         co_return v;
@@ -518,12 +518,12 @@ TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureFromThreadReleasesFrameAfterC
 
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            std::thread([out]()
+            std::thread([out = std::move(out)]() mutable
             {
                 std::this_thread::sleep_for(1ms);
-                out->set_value(42);
+                out.set_value(42);
             }).detach();
         });
 
@@ -549,7 +549,7 @@ TEST(CoroutineUsageLifetimeTest, PendingFutureTaskFrameNotFreedWhileTaskWrapperA
 
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto*)
+        int v = co_await Future<int>([](auto)
         {
             // Intentionally never complete.
         });

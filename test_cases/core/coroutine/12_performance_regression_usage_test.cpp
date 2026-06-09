@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }
@@ -49,7 +49,7 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
     auto start = std::chrono::high_resolution_clock::now();
 
     int total = 0;
-    std::vector<TaskResult<int>> results;
+    std::vector<std::future<int>> results;
     for (int i = 0; i < N; ++i)
     {
         auto task = fn();
@@ -122,9 +122,9 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
 
 //     auto fn = []() -> Task<int>
 //     {
-//         int v = co_await Future<int>([](auto* out)
+//         int v = co_await Future<int>([](auto out)
 //         {
-//             out->set_value(1);
+//             out.set_value(1);
 //         });
 
 //         co_return v;

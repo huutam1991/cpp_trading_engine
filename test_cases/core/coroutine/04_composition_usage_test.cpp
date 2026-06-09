@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }
@@ -40,9 +40,9 @@ TEST(CoroutineUsageCompositionTest, TaskAwaitsFutureThenReturns)
 {
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(40);
+            out.set_value(40);
         });
 
         co_return v + 2;
@@ -61,9 +61,9 @@ TEST(CoroutineUsageCompositionTest, ChildTaskAwaitsFuture)
 {
     auto child = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(21);
+            out.set_value(21);
         });
 
         co_return v;
@@ -88,9 +88,9 @@ TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
 {
     auto leaf = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(2);
+            out.set_value(2);
         });
 
         co_return v;
@@ -98,9 +98,9 @@ TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
 
     auto root = [&]() -> Task<int>
     {
-        int a = co_await Future<int>([](auto* out)
+        int a = co_await Future<int>([](auto out)
         {
-            out->set_value(40);
+            out.set_value(40);
         });
 
         int b = co_await leaf();
@@ -125,9 +125,9 @@ TEST(CoroutineUsageCompositionTest, SeveralAsyncSteps)
 
         for (int i = 0; i < 6; ++i)
         {
-            total += co_await Future<int>([i](auto* out)
+            total += co_await Future<int>([i](auto out)
             {
-                out->set_value(i + 2);
+                out.set_value(i + 2);
             });
         }
 

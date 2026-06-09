@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }
@@ -69,7 +69,7 @@ TEST(CoroutineUsageStressTest, ManySimpleTasksBurst)
     };
 
     std::vector<Task<int>> tasks;
-    std::vector<TaskResult<int>> results;
+    std::vector<std::future<int>> results;
 
     tasks.reserve(N);
     results.reserve(N);
@@ -132,7 +132,7 @@ TEST(CoroutineUsageStressTest, ManyFutureWakeupsSequential)
     {
         int v = co_await Future<int>([i](Future<int>::FutureValue out) mutable
         {
-            out->set_value(i);
+            out.set_value(i);
         });
 
         co_return v;

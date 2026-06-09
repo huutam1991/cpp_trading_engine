@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }

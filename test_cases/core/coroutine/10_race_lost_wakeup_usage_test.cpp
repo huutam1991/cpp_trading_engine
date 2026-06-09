@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }
@@ -41,9 +41,9 @@ TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
 
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(1);
+            out.set_value(1);
         });
 
         co_return v;
@@ -66,11 +66,11 @@ TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
 
 //     auto fn = []() -> Task<int>
 //     {
-//         int v = co_await Future<int>([](auto* out)
+//         int v = co_await Future<int>([](auto out)
 //         {
 //             std::thread([out]()
 //             {
-//                 out->set_value(1);
+//                 out.set_value(1);
 //             }).detach();
 //         });
 
@@ -94,11 +94,11 @@ TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
 
 //     auto fn = [](int i) -> Task<int>
 //     {
-//         int v = co_await Future<int>([i](auto* out)
+//         int v = co_await Future<int>([i](auto out)
 //         {
 //             std::thread([out, i]() mutable
 //             {
-//                 out->set_value(i);
+//                 out.set_value(i);
 //             }).detach();
 //         });
 
@@ -125,18 +125,18 @@ TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
     constexpr int N = 512;
 
     std::vector<Task<int>> tasks;
-    std::vector<TaskResult<int>> results;
+    std::vector<std::future<int>> results;
 
     tasks.reserve(N);
     results.reserve(N);
 
     auto fn = [](int i) -> Task<int>
     {
-        int v = co_await Future<int>([i](auto* out)
+        int v = co_await Future<int>([i](auto out)
         {
-            std::thread([out, i]() mutable
+            std::thread([out = std::move(out), i]() mutable
             {
-                out->set_value(i);
+                out.set_value(i);
             }).detach();
         });
 

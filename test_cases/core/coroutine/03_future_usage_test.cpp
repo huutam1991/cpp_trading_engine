@@ -19,12 +19,12 @@ using namespace std::chrono_literals;
 namespace
 {
     template <class T>
-    T wait_result(TaskResult<T>& result)
+    T wait_result(std::future<T>& result)
     {
         return result.get();
     }
 
-    inline void wait_done(TaskResult<void>& result)
+    inline void wait_done(std::future<void>& result)
     {
         result.get();
     }
@@ -40,9 +40,9 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromSameThread)
 {
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(42);
+            out.set_value(42);
         });
 
         co_return v;
@@ -61,12 +61,12 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromAnotherThread)
 {
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            std::thread([out]()
+            std::thread([out = std::move(out)]() mutable
             {
                 std::this_thread::sleep_for(1ms);
-                out->set_value(42);
+                out.set_value(42);
             }).detach();
         });
 
@@ -86,10 +86,10 @@ TEST(CoroutineUsageFutureTest, DoubleSetValueOnlyFirstWins)
 {
     auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto* out)
+        int v = co_await Future<int>([](auto out)
         {
-            out->set_value(42);
-            out->set_value(999);
+            out.set_value(42);
+            out.set_value(999);
         });
 
         co_return v;
@@ -108,10 +108,10 @@ TEST(CoroutineUsageFutureTest, FutureExecuteFunctionRunsOnce)
 
     auto fn = [&]() -> Task<int>
     {
-        int v = co_await Future<int>([&](auto* out)
+        int v = co_await Future<int>([&](auto out)
         {
             execute_count.fetch_add(1, std::memory_order_relaxed);
-            out->set_value(42);
+            out.set_value(42);
         });
 
         co_return v;
