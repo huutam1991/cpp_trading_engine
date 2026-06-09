@@ -55,13 +55,15 @@ struct Task : public BaseTask
         {
             if (this->task_value != nullptr)
             {
+                spdlog::warn("Task, Return value set through promise, which may cause extra heap allocation and copy/move, consider co_return directly if possible");
                 this->task_value->set_value(std::move(v));
             }
             else
             {
                 value = std::move(v);
             }
-            // this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
+
+            this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
@@ -171,7 +173,8 @@ struct Task<void> : public BaseTask
             {
                 this->task_value->set_value();
             }
-            // this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
+
+            this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
