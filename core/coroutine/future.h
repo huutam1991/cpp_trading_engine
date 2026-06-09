@@ -29,6 +29,7 @@ struct Future
         {
             if (this != &copy)
             {
+                check_set_default_value();
                 m_future = copy.m_future;
                 copy.m_future = nullptr;
             }
@@ -40,15 +41,31 @@ struct Future
         FutureValue(const FutureValue& copy) = delete;
         FutureValue& operator=(const FutureValue&) = delete;
 
+        ~FutureValue()
+        {
+            check_set_default_value();
+        }
+
         FutureValue& operator=(std::nullptr_t null)
         {
+            check_set_default_value();
             m_future = nullptr;
+
             return *this;
         }
 
         bool operator==(std::nullptr_t) const
         {
             return m_future == nullptr;
+        }
+
+        void check_set_default_value()
+        {
+            if (m_future != nullptr)
+            {
+                m_future->set_value(T{});
+                m_future = nullptr;
+            }
         }
 
         void set_value(T& value)
