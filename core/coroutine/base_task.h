@@ -49,13 +49,23 @@ struct BaseTask
     BaseTask(const BaseTask& copy) = delete;
     BaseTask& operator=(const BaseTask& copy) = delete;
 
+    BaseTask& operator=(std::nullptr_t null)
+    {
+        check_release();
+        return *this;
+    }
+
+    bool operator==(std::nullptr_t null) const
+    {
+        return m_promise == nullptr;
+    }
+
     ~BaseTask()
     {
         // Light destroy, lol
         destroy(false);
     }
 
-    bool operator==(std::nullptr_t null) const;
     void destroy(bool complete = true);
     void check_release();
     void register_on(EventBase* event_base);

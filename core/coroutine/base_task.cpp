@@ -1,10 +1,5 @@
 #include "base_task.h"
 
-bool BaseTask::operator==(std::nullptr_t null) const
-{
-    return m_promise == nullptr;
-}
-
 void BaseTask::destroy(bool complete)
 {
     // This is just a BaseTask object with nullptr handle, not a really BaseTask that is created by C++

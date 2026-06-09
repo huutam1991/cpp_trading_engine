@@ -81,6 +81,17 @@ struct Task : public BaseTask
     Task(const Task&) = delete;
     Task& operator=(const Task&) = delete;
 
+    Task& operator=(std::nullptr_t null)
+    {
+        BaseTask::operator=(null);
+        return *this;
+    }
+
+    bool operator==(std::nullptr_t null) const
+    {
+        return BaseTask::operator==(null);
+    }
+
     T await_resume()
     {
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
@@ -176,6 +187,17 @@ struct Task<void> : public BaseTask
     // Delete copy constructor and copy assignment
     Task(const Task&) = delete;
     Task& operator=(const Task&) = delete;
+
+    Task& operator=(std::nullptr_t null)
+    {
+        BaseTask::operator=(null);
+        return *this;
+    }
+
+    bool operator==(std::nullptr_t null) const
+    {
+        return BaseTask::operator==(null);
+    }
 
     void await_resume()
     {
