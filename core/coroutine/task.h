@@ -53,12 +53,13 @@ struct Task : public BaseTask
 
         void return_value(T v)
         {
-            this->task_value.set_value(std::move(v));
+            this->task_value->set_value(std::move(v));
             // this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
-        std::promise<T> task_value;
+        T value;
+        std::shared_ptr<std::promise<T>> task_value = nullptr;
     };
 
     Task(std::nullptr_t) : BaseTask(nullptr) {}
@@ -76,18 +77,18 @@ struct Task : public BaseTask
     T await_resume()
     {
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
-        return promise->task_value.get_future().get();
+        return promise->task_value->get_future().get();
     }
 
     inline std::future<T> start_running_on(EventBase* event_base)
     {
         register_on(event_base);
 
-        Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
-        // promise->m_event_base = event_base;
-        // event_base->add_run_task_event(promise);
+        m_promise->has_promise_value = true;
 
-        return promise->task_value.get_future();
+        Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
+        promise->task_value = std::make_shared<std::promise<T>>();
+        return promise->task_value->get_future();
     }
 };
 
@@ -140,12 +141,12 @@ struct Task<void> : public BaseTask
 
         void return_void()
         {
-            this->task_value.set_value();
+            this->task_value->set_value();
             this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
-        std::promise<void> task_value;
+        std::shared_ptr<std::promise<void>> task_value = nullptr;
     };
 
     Task(std::nullptr_t) : BaseTask(nullptr) {}
@@ -169,7 +170,10 @@ struct Task<void> : public BaseTask
     {
         register_on(event_base);
 
+        m_promise->has_promise_value = true;
+
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
-        return promise->task_value.get_future();
+        promise->task_value = std::make_shared<std::promise<void>>();
+        return promise->task_value->get_future();
     }
 };
