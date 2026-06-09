@@ -64,15 +64,17 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
 
 TEST(CoroutineUsageFailureTest, ExceptionBeforeAwaitPolicy)
 {
-    auto fn = []() -> Task<int>
     {
-        throw std::runtime_error("boom");
-        co_return 42;
-    };
+        auto fn = []() -> Task<int>
+        {
+            throw std::runtime_error("boom");
+            co_return 42;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
-    (void)result;
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+        (void)result;
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -80,20 +82,22 @@ TEST(CoroutineUsageFailureTest, ExceptionBeforeAwaitPolicy)
 
 TEST(CoroutineUsageFailureTest, ExceptionAfterAwaitPolicy)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto fn = []() -> Task<int>
         {
-            out.set_value(1);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(1);
+            });
 
-        throw std::runtime_error("boom");
-        co_return v;
-    };
+            throw std::runtime_error("boom");
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
-    (void)result;
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+        (void)result;
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
