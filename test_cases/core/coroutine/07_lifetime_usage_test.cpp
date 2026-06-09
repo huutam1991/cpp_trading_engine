@@ -31,7 +31,7 @@ namespace
 
     inline EventBase* test_event_base()
     {
-        return EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY);
+        return EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
     }
 
     template <class T>
