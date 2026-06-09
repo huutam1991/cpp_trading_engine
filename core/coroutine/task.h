@@ -102,7 +102,7 @@ struct Task : public BaseTask
         m_promise->has_promise_value = true;
 
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
-        promise->task_value = std::make_shared<std::promise<T>>();
+        promise->task_value = std::make_unique<std::promise<T>>();
         return promise->task_value->get_future();
     }
 };
@@ -164,7 +164,7 @@ struct Task<void> : public BaseTask
         }
 
         // Promise value
-        std::shared_ptr<std::promise<void>> task_value = nullptr;
+        std::unique_ptr<std::promise<void>> task_value = nullptr;
     };
 
     Task(std::nullptr_t) : BaseTask(nullptr) {}
@@ -191,7 +191,7 @@ struct Task<void> : public BaseTask
         m_promise->has_promise_value = true;
 
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
-        promise->task_value = std::make_shared<std::promise<void>>();
+        promise->task_value = std::make_unique<std::promise<void>>();
         return promise->task_value->get_future();
     }
 };
