@@ -63,6 +63,11 @@ namespace
     {
         std::this_thread::sleep_for(1ms);
     }
+
+    inline void large_settle_delay()
+    {
+        std::this_thread::sleep_for(10ms);
+    }
 }
 
 TEST(CoroutineUsageLifetimeTest, DestroyTaskBeforeSchedulingReleasesCoroutineFrame)
@@ -677,5 +682,113 @@ TEST(CoroutineUsageLifetimeTest, SelfMoveAssignmentPolicy)
     }
 
     // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
+}
+
+TEST(CoroutineUsageLifetimeStressTest, ManyTasksHundredThreadsComplexSuspendLifetime)
+{
+    {
+        FrameCounterGuard<int> frames;
+
+        constexpr int THREADS = 100;
+        constexpr int TASKS_PER_THREAD = 10000;
+        constexpr int TOTAL_TASKS = THREADS * TASKS_PER_THREAD;
+
+        std::atomic<int64_t> completed{0};
+
+        auto leaf = [](int v) -> Task<int>
+        {
+            int r = co_await Future<int>([v](auto out) mutable
+            {
+                // No thread-per-future here. Complete directly.
+                out.set_value(v + 1);
+            });
+
+            co_return r;
+        };
+
+        auto mid = [&]() -> Task<int>
+        {
+            int a = co_await leaf(1);
+            int b = co_await leaf(a);
+            int c = co_await leaf(b);
+
+            co_return c;
+        };
+
+        auto root = [&]() -> Task<int>
+        {
+            int v1 = co_await mid();
+            int v2 = co_await leaf(v1);
+            int v3 = co_await leaf(v2);
+
+            co_return v3;
+        };
+
+        auto worker = [&]()
+        {
+            auto eb = test_event_base();
+
+            std::vector<Task<int>> tasks;
+            std::vector<std::future<int>> results;
+
+            tasks.reserve(128);
+            results.reserve(128);
+
+            for (int i = 0; i < TASKS_PER_THREAD; ++i)
+            {
+                tasks.emplace_back(root());
+                results.emplace_back(tasks.back().start_running_on(eb));
+
+                if (tasks.size() >= 128)
+                {
+                    for (auto& result : results)
+                    {
+                        ASSERT_EQ(wait_result(result), 6);
+                        completed.fetch_add(1, std::memory_order_relaxed);
+                    }
+
+                    results.clear();
+                    tasks.clear();
+                }
+            }
+
+            for (auto& result : results)
+            {
+                ASSERT_EQ(wait_result(result), 6);
+                completed.fetch_add(1, std::memory_order_relaxed);
+            }
+
+            results.clear();
+            tasks.clear();
+        };
+
+        std::vector<std::thread> threads;
+        threads.reserve(THREADS);
+
+        for (int i = 0; i < THREADS; ++i)
+        {
+            threads.emplace_back(worker);
+        }
+
+        for (auto& t : threads)
+        {
+            t.join();
+        }
+
+        large_settle_delay();
+
+        ASSERT_EQ(completed.load(std::memory_order_relaxed), TOTAL_TASKS);
+
+        // Per root task:
+        // root = 1 frame
+        // mid  = 1 frame
+        // leaf inside mid = 3 frames
+        // leaf inside root = 2 frames
+        //
+        // total = 7 Task<int> frames per root task
+        frames.expect_counts(TOTAL_TASKS * 7LL, TOTAL_TASKS * 7LL);
+    }
+
     EventBaseManager::shutdown_all();
 }
