@@ -53,7 +53,14 @@ struct Task : public BaseTask
 
         void return_value(T v)
         {
-            this->task_value->set_value(std::move(v));
+            if (this->has_promise_value == true)
+            {
+                this->task_value->set_value(std::move(v));
+            }
+            else
+            {
+                value = std::move(v);
+            }
             // this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
@@ -77,7 +84,15 @@ struct Task : public BaseTask
     T await_resume()
     {
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
-        return promise->task_value->get_future().get();
+
+        if (promise->has_promise_value == true)
+        {
+            return promise->task_value->get_future().get();
+        }
+        else
+        {
+            return std::move(promise->value);
+        }
     }
 
     inline std::future<T> start_running_on(EventBase* event_base)
@@ -141,8 +156,11 @@ struct Task<void> : public BaseTask
 
         void return_void()
         {
-            this->task_value->set_value();
-            this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
+            if (this->has_promise_value == true)
+            {
+                this->task_value->set_value();
+            }
+            // this->m_event_base->add_set_suspend_value_event(this->m_suspending_promise);
         }
 
         // Promise value
