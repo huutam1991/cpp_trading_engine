@@ -20,7 +20,8 @@ HttpsClientWebsocketSession::~HttpsClientWebsocketSession()
     spdlog::debug("HttpsClientWebsocketSession::~HttpsClientWebsocketSession - Destroying Websocket Session [{}]", m_name);
 
     // Need to intendly destroy [m_wait_for_tcp_data_task]
-    m_wait_for_tcp_data_task.destroy(true);
+    // [Tam need re-test]
+    // m_wait_for_tcp_data_task.destroy(true);
 }
 
 void HttpsClientWebsocketSession::write_raw_frame(const std::vector<char>& frame)

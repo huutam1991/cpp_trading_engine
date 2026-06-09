@@ -40,7 +40,9 @@ void HttpsClientWebsocket::on_tcp_disconnect()
     m_websocket_session = nullptr;
 
     // Need to intendly destroy [m_send_ping_task]
-    m_send_ping_task.destroy(true);
+    // [Tam need re-test]
+    // m_send_ping_task.destroy(true);
+    m_send_ping_task = nullptr;
 
     if (m_on_disconnect != nullptr)
     {

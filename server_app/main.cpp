@@ -122,7 +122,7 @@ Task<void> test_future()
         Json number = co_await get_number_future();
         spdlog::info("Received number from future: {}", number);
 
-        co_await Timer::sleep_for(2000);
+        co_await Timer::sleep_for(1000);
     }
 
     co_return;
@@ -170,7 +170,16 @@ int main(int argc, char **argv) {
     // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
 
-    test_future().start_running_on((EventBase*)EventBaseManager::get_event_base_by_id(EventBaseID::ORDER));
+
+    std::thread t(
+        []()
+        {
+            test_future().start_running_on((EventBase*)EventBaseManager::get_event_base_by_id(EventBaseID::ORDER));
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+        }
+    );
+
+    t.join();
 
     // Main loop, only sleep here
     while (true)

@@ -1,26 +1,5 @@
 #include "base_task.h"
 
-void BaseTask::destroy(bool complete)
-{
-    // This is just a BaseTask object with nullptr handle, not a really BaseTask that is created by C++
-    if (m_promise == nullptr)
-    {
-        return;
-    }
-
-    // Hasn't register on EventBase, just destroy the coroutine frame and return
-    if (m_promise->m_event_base == nullptr)
-    {
-        m_promise->handle.destroy();
-        m_promise = nullptr;
-        return;
-    }
-
-    // Already register, mark this task is already release, then it will be destroy later when it's done
-    m_promise->is_task_release = true;
-    m_promise = nullptr;
-}
-
 void BaseTask::check_release()
 {
     if (m_promise != nullptr)

@@ -67,11 +67,9 @@ struct BaseTask
 
     ~BaseTask()
     {
-        // Light destroy, lol
-        destroy(false);
+        check_release();
     }
 
-    void destroy(bool complete = true);
     void check_release();
     void register_on(EventBase* event_base);
     bool await_ready();
