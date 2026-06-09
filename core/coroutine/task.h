@@ -81,11 +81,7 @@ struct Task : public BaseTask
 
     inline std::future<T> start_running_on(EventBase* event_base)
     {
-        m_promise->has_awaiter = false;
         register_on(event_base);
-
-        // This task now is running on an EventBase and will be destroyed by that EventBase
-        m_promise == nullptr;
 
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
         // promise->m_event_base = event_base;
@@ -171,11 +167,7 @@ struct Task<void> : public BaseTask
 
     inline std::future<void> start_running_on(EventBase* event_base)
     {
-        m_promise->has_awaiter = false;
         register_on(event_base);
-
-        // This task now is running on an EventBase and will be destroyed by that EventBase
-        m_promise == nullptr;
 
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
         return promise->task_value.get_future();

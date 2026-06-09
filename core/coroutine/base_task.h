@@ -69,8 +69,10 @@ struct BaseTask
         promise_type& promise = suspend_handle.promise();
         BasePromiseType *suspend_base_pt = &promise;
         suspend_base_pt->set_waiting(true);
+        suspend_base_pt->has_suspend_value = true;
 
         // Save to suspending_promise
+        m_promise->m_suspending_promise = suspend_base_pt;
         save_suspending_promise(suspend_base_pt);
 
         // Running this task on EventBase
