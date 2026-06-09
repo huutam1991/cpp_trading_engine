@@ -113,5 +113,4 @@ public:
     virtual void stop();
     virtual void set_ready_task(void* task_info);
     virtual void loop();
-    // virtual void loop2();
 };
