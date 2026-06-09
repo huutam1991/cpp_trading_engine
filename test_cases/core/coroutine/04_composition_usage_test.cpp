@@ -38,20 +38,22 @@ namespace
 
 TEST(CoroutineUsageCompositionTest, TaskAwaitsFutureThenReturns)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto fn = []() -> Task<int>
         {
-            out.set_value(40);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(40);
+            });
 
-        co_return v + 2;
-    };
+            co_return v + 2;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -59,26 +61,28 @@ TEST(CoroutineUsageCompositionTest, TaskAwaitsFutureThenReturns)
 
 TEST(CoroutineUsageCompositionTest, ChildTaskAwaitsFuture)
 {
-    auto child = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto child = []() -> Task<int>
         {
-            out.set_value(21);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(21);
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto parent = [&]() -> Task<int>
-    {
-        int v = co_await child();
-        co_return v * 2;
-    };
+        auto parent = [&]() -> Task<int>
+        {
+            int v = co_await child();
+            co_return v * 2;
+        };
 
-    auto task = parent();
-    auto result = task.start_running_on(test_event_base());
+        auto task = parent();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -86,32 +90,34 @@ TEST(CoroutineUsageCompositionTest, ChildTaskAwaitsFuture)
 
 TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
 {
-    auto leaf = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto leaf = []() -> Task<int>
         {
-            out.set_value(2);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(2);
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto root = [&]() -> Task<int>
-    {
-        int a = co_await Future<int>([](auto out)
+        auto root = [&]() -> Task<int>
         {
-            out.set_value(40);
-        });
+            int a = co_await Future<int>([](auto out)
+            {
+                out.set_value(40);
+            });
 
-        int b = co_await leaf();
+            int b = co_await leaf();
 
-        co_return a + b;
-    };
+            co_return a + b;
+        };
 
-    auto task = root();
-    auto result = task.start_running_on(test_event_base());
+        auto task = root();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -119,25 +125,27 @@ TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
 
 TEST(CoroutineUsageCompositionTest, SeveralAsyncSteps)
 {
-    auto fn = []() -> Task<int>
     {
-        int total = 0;
-
-        for (int i = 0; i < 6; ++i)
+        auto fn = []() -> Task<int>
         {
-            total += co_await Future<int>([i](auto out)
+            int total = 0;
+
+            for (int i = 0; i < 6; ++i)
             {
-                out.set_value(i + 2);
-            });
-        }
+                total += co_await Future<int>([i](auto out)
+                {
+                    out.set_value(i + 2);
+                });
+            }
 
-        co_return total;
-    };
+            co_return total;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 27);
+        ASSERT_EQ(wait_result(result), 27);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
