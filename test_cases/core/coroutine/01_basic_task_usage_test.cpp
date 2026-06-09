@@ -37,15 +37,17 @@ namespace
 
 TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
 {
-    auto fn = []() -> Task<int>
     {
-        co_return 42;
-    };
+        auto fn = []() -> Task<int>
+        {
+            co_return 42;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -53,19 +55,21 @@ TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
 
 TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
 {
-    std::atomic<int> counter{0};
-
-    auto fn = [&]() -> Task<void>
     {
-        counter.fetch_add(1, std::memory_order_relaxed);
-        co_return;
-    };
+        std::atomic<int> counter{0};
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto fn = [&]() -> Task<void>
+        {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            co_return;
+        };
 
-    wait_done(result);
-    ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+
+        wait_done(result);
+        ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -73,22 +77,24 @@ TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
 
 TEST(CoroutineUsageBasicTaskTest, TaskBodyDoesNotRunBeforeScheduled)
 {
-    std::atomic<int> counter{0};
-
-    auto fn = [&]() -> Task<int>
     {
-        counter.fetch_add(1, std::memory_order_relaxed);
-        co_return 7;
-    };
+        std::atomic<int> counter{0};
 
-    auto task = fn();
+        auto fn = [&]() -> Task<int>
+        {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            co_return 7;
+        };
 
-    ASSERT_EQ(counter.load(std::memory_order_relaxed), 0);
+        auto task = fn();
 
-    auto result = task.start_running_on(test_event_base());
+        ASSERT_EQ(counter.load(std::memory_order_relaxed), 0);
 
-    ASSERT_EQ(wait_result(result), 7);
-    ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+        auto result = task.start_running_on(test_event_base());
+
+        ASSERT_EQ(wait_result(result), 7);
+        ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -96,19 +102,21 @@ TEST(CoroutineUsageBasicTaskTest, TaskBodyDoesNotRunBeforeScheduled)
 
 TEST(CoroutineUsageBasicTaskTest, TaskExecutesExactlyOnce)
 {
-    std::atomic<int> counter{0};
-
-    auto fn = [&]() -> Task<int>
     {
-        counter.fetch_add(1, std::memory_order_relaxed);
-        co_return 100;
-    };
+        std::atomic<int> counter{0};
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto fn = [&]() -> Task<int>
+        {
+            counter.fetch_add(1, std::memory_order_relaxed);
+            co_return 100;
+        };
 
-    ASSERT_EQ(wait_result(result), 100);
-    ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+
+        ASSERT_EQ(wait_result(result), 100);
+        ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
