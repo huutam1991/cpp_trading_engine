@@ -124,27 +124,27 @@ void EventBase::check_to_remove_task(TaskInfo* task_info)
     }
 }
 
+// void EventBase::loop()
+// {
+//     while (m_stopping.load(std::memory_order_acquire) == false)
+//     {
+//         // Check if there's any task ready to process
+//         TaskInfo* task_info = m_ready_task_queue.pop();
+
+//         // Continue process this task
+//         if (task_info != nullptr)
+//         {
+//             task_info->check_handle();
+//             continue;
+//         }
+//         else
+//         {
+//             _mm_pause();
+//         }
+//     }
+// }
+
 void EventBase::loop()
-{
-    while (m_stopping.load(std::memory_order_acquire) == false)
-    {
-        // Check if there's any task ready to process
-        TaskInfo* task_info = m_ready_task_queue.pop();
-
-        // Continue process this task
-        if (task_info != nullptr)
-        {
-            task_info->check_handle();
-            continue;
-        }
-        else
-        {
-            _mm_pause();
-        }
-    }
-}
-
-void EventBase::loop2()
 {
     while (m_stopping.load(std::memory_order_acquire) == false)
     {
