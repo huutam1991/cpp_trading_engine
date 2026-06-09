@@ -152,23 +152,25 @@ int main(int argc, char **argv) {
     // Print update time
     spdlog::info("Server up time: {}", Utils::get_up_time());
 
-    GatewayManager::instance().init();
-    OrderManager::instance().init();
-    SimulatorOrder::init();
+    // GatewayManager::instance().init();
+    // OrderManager::instance().init();
+    // SimulatorOrder::init();
 
-    // Strategy
-    // StrategyManager::instance().init();
+    // // Strategy
+    // // StrategyManager::instance().init();
 
-    // Start HTTPS server - running on EpollBase
-    EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
-    HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
-    epoll_base->start_living_system_io_object(https_server_object);
+    // // Start HTTPS server - running on EpollBase
+    // EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
+    // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
+    // epoll_base->start_living_system_io_object(https_server_object);
 
-    // Websocket server
-    WebsocketServerRoutes* websocket_server_routes = new WebsocketServerRoutes(websocket_port, epoll_base);
+    // // Websocket server
+    // WebsocketServerRoutes* websocket_server_routes = new WebsocketServerRoutes(websocket_port, epoll_base);
 
     // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
+
+    test_future().start_running_on((EventBase*)EventBaseManager::get_event_base_by_id(EventBaseID::ORDER));
 
     // Main loop, only sleep here
     while (true)
