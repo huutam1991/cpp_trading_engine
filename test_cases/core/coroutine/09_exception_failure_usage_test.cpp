@@ -31,7 +31,7 @@ namespace
 
     inline EventBase* test_event_base()
     {
-        return EventBaseManager::get_event_base_by_id(EventBaseID::MARKET_MAKER_STRATEGY);
+        return EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
     }
 }
 
@@ -40,18 +40,20 @@ namespace
 
 TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto)
+        auto fn = []() -> Task<std::string>
         {
-            // Intentionally never set.
-        });
+            std::string v = co_await Future<std::string>([](auto)
+            {
+                // Intentionally never set.
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -60,7 +62,7 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
 // Current implementation may terminate on unhandled_exception.
 // Keep these disabled until the desired failure policy is finalized.
 
-TEST(CoroutineUsageFailureTest, DISABLED_ExceptionBeforeAwaitPolicy)
+TEST(CoroutineUsageFailureTest, ExceptionBeforeAwaitPolicy)
 {
     auto fn = []() -> Task<int>
     {
@@ -76,7 +78,7 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionBeforeAwaitPolicy)
     EventBaseManager::shutdown_all();
 }
 
-TEST(CoroutineUsageFailureTest, DISABLED_ExceptionAfterAwaitPolicy)
+TEST(CoroutineUsageFailureTest, ExceptionAfterAwaitPolicy)
 {
     auto fn = []() -> Task<int>
     {
