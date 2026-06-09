@@ -174,7 +174,8 @@ int main(int argc, char **argv) {
     std::thread t(
         []()
         {
-            test_future().start_running_on((EventBase*)EventBaseManager::get_event_base_by_id(EventBaseID::ORDER));
+            Task<void> task = test_future();
+            task.start_running_on((EventBase*)EventBaseManager::get_event_base_by_id(EventBaseID::ORDER));
             std::this_thread::sleep_for(std::chrono::seconds(5));
         }
     );
