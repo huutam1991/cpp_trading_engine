@@ -35,16 +35,10 @@ void BaseTask::check_release()
         {
             m_promise->handle.destroy();
         }
-        // If this task is running on an EventBase, mark it as has no waiter
+        // If this task is running on an EventBase, mark it as has no waiter by sending an event to that EventBase
         else
         {
-            m_promise->has_awaiter = false;
-
-            // If this task has no waiter and no suspend value, we can destroy it immediately
-            if (m_promise->has_awaiter == false && m_promise->has_suspend_value == false)
-            {
-                m_promise->handle.destroy();
-            }
+            m_promise->m_event_base->add_remove_awaiter_event(m_promise);
         }
 
         m_promise = nullptr;
