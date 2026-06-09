@@ -12,27 +12,4 @@ struct BasePromiseType
     bool has_awaiter = true;
     bool is_task_release = false;
     void* task_ptr = nullptr;
-
-    void register_on(EventBase* event_base, std::coroutine_handle<> handle)
-    {
-        m_event_base = event_base;
-        this->handle = handle;
-        task_ptr = event_base->create_task_info(handle, this);
-        set_waiting(false); // Need to run this task at the beginning
-    }
-
-    void set_waiting(bool value)
-    {
-        m_is_waiting = value;
-
-        if (m_is_waiting == false)
-        {
-            m_event_base->set_ready_task(task_ptr);
-        }
-    }
-
-    bool is_waiting()
-    {
-        return m_is_waiting;
-    }
 };

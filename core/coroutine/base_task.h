@@ -12,15 +12,7 @@ struct BaseTask
             return BaseTask{nullptr};
         }
         std::suspend_always initial_suspend() { return {}; }
-        std::suspend_always final_suspend() noexcept
-        {
-            if (m_suspending_promise != nullptr)
-            {
-                m_suspending_promise->set_waiting(false);
-            }
-
-            return {};
-        }
+        std::suspend_always final_suspend() noexcept { return {};}
         void unhandled_exception() { std::terminate(); }
     };
 
@@ -80,7 +72,6 @@ struct BaseTask
         // Tricky here, cast promise_type to a pointer of BasePromiseType (suppose all of promise_type is child class of BasePromiseType class)
         promise_type& promise = suspend_handle.promise();
         BasePromiseType *suspend_base_pt = &promise;
-        suspend_base_pt->set_waiting(true);
         suspend_base_pt->has_suspend_value = true;
 
         // Save to suspending_promise
