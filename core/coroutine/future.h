@@ -17,7 +17,7 @@ struct Future
 
     public:
         FutureValue(Future<T>* future) : m_future(future) {}
-        FutureValue() = delete;
+        FutureValue() = default;
 
         // Only allow move constructor and move assignment
         FutureValue(FutureValue&& copy) : m_future(copy.m_future)
@@ -40,14 +40,37 @@ struct Future
         FutureValue(const FutureValue& copy) = delete;
         FutureValue& operator=(const FutureValue&) = delete;
 
+        FutureValue& operator=(std::nullptr_t null)
+        {
+            m_future = nullptr;
+            return *this;
+        }
+
+        bool operator==(std::nullptr_t) const
+        {
+            return m_future == nullptr;
+        }
+
         void set_value(T& value)
         {
-            m_future->set_value(value);
+            if (m_future != nullptr)
+            {
+                m_future->set_value(value);
+            }
+
+            // Clear the future pointer after setting the value
+            m_future = nullptr;
         }
 
         void set_value(T&& value)
         {
-            m_future->set_value(std::move(value));
+            if (m_future != nullptr)
+            {
+                m_future->set_value(std::move(value));
+            }
+
+            // Clear the future pointer after setting the value
+            m_future = nullptr;
         }
     };
 

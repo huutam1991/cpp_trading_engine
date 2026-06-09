@@ -53,18 +53,18 @@ void TCPConnection::write(std::string data)
 
 Future<std::string> TCPConnection::wait_for_data()
 {
-    return Future<std::string>([this](Future<std::string>::FutureValue* value)
+    return Future<std::string>([this](Future<std::string>::FutureValue value)
     {
         if (m_pending_data_queue.empty() == false)
         {
             // If there is pending data, return immediately
-            value->set_value(std::move(m_pending_data_queue.front()));
+            value.set_value(std::move(m_pending_data_queue.front()));
             m_pending_data_queue.pop();
 
             return;
         }
 
-        m_waiting_data_value = value;
+        m_waiting_data_value = std::move(value);
     });
 }
 
@@ -114,7 +114,7 @@ void TCPConnection::on_response_received(const char* buffer, std::uint32_t size)
 {
     if (m_waiting_data_value != nullptr)
     {
-        m_waiting_data_value->set_value(std::string(buffer, size));
+        m_waiting_data_value.set_value(std::string(buffer, size));
         m_waiting_data_value = nullptr;
     }
     else

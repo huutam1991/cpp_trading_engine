@@ -21,7 +21,7 @@ class TCPConnection
     std::unique_ptr<HttpsClientRequestIO> m_io_object = nullptr;
     std::function<void()> m_on_connect = nullptr;
     std::function<void()> m_on_disconnect = nullptr;
-    Future<std::string>::FutureValue* m_waiting_data_value = nullptr;
+    Future<std::string>::FutureValue m_waiting_data_value = nullptr;
     std::queue<std::string> m_pending_data_queue;
 
 public:

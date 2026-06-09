@@ -6,7 +6,7 @@ EpollBase* Timer::get_epoll_base()
     return epoll_base;
 }
 
-void Timer::add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit)
+void Timer::add_schedule_task(std::move_only_function<void()> callback, size_t tick_interval, TimerUnit unit)
 {
     TimerIO* timer_io = TimerIOPool::acquire();
     timer_io->set_callback(tick_interval * unit, std::move(callback));
@@ -17,12 +17,12 @@ Future<size_t> Timer::sleep_for(size_t tick_interval, TimerUnit unit)
 {
     size_t tick = tick_interval * unit; // Tick in nanoseconds
 
-    return Future<size_t>([tick](Future<size_t>::FutureValue* value)
+    return Future<size_t>([tick](Future<size_t>::FutureValue value)
     {
-        add_schedule_task([tick, value]() mutable
+        add_schedule_task([tick, value = std::move(value)]() mutable
         {
             size_t tick_none_const = tick;
-            value->set_value(tick_none_const);
+            value.set_value(tick_none_const);
         }, tick, TimerUnit::NANOSECOND);
     });
 }

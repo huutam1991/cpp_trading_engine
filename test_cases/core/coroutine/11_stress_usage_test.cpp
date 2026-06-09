@@ -130,7 +130,7 @@ TEST(CoroutineUsageStressTest, ManyFutureWakeupsSequential)
 
     auto fn = [](int i) -> Task<int>
     {
-        int v = co_await Future<int>([i](Future<int>::FutureValue* out) mutable
+        int v = co_await Future<int>([i](Future<int>::FutureValue out) mutable
         {
             out->set_value(i);
         });

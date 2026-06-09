@@ -27,6 +27,6 @@ public:
     };
 
     static EpollBase* get_epoll_base();
-    static void add_schedule_task(std::function<void()> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
+    static void add_schedule_task(std::move_only_function<void()> callback, size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
     static Future<size_t> sleep_for(size_t tick_interval, TimerUnit unit = TimerUnit::MILLISECOND);
 };

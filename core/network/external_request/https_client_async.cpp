@@ -36,9 +36,9 @@ Future<std::string> HttpsClientAsync::send_request(http::verb method, const std:
     m_endpoint = endpoint;
     m_body = std::move(body);
 
-    return Future<std::string>([self = shared_from_this()](Future<std::string>::FutureValue* value) mutable
+    return Future<std::string>([self = shared_from_this()](Future<std::string>::FutureValue value) mutable
     {
-        self->m_future_value = value;
+        self->m_future_value = std::move(value);
 
         beast::get_lowest_layer(self->m_stream).async_connect(
             self->m_resolve_result,
@@ -141,7 +141,7 @@ void HttpsClientAsync::on_read(beast::error_code ec, std::size_t bytes_transferr
 
     if (m_future_value != nullptr)
     {
-        m_future_value->set_value(m_res.body());
+        m_future_value.set_value(m_res.body());
     }
 
     beast::error_code shutdown_ec;

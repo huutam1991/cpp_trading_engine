@@ -1,6 +1,6 @@
 #include "timer_io.h"
 
-void TimerIO::set_callback(size_t interval_ns_value, std::function<void()> callback_value)
+void TimerIO::set_callback(size_t interval_ns_value, std::move_only_function<void()> callback_value)
 {
     interval_ns = interval_ns_value;
     callback = std::move(callback_value);

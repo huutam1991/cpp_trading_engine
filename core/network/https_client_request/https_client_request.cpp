@@ -36,7 +36,7 @@ void HttpsClientRequest::on_disconnect()
     // Set error response for all pending futures
     while (m_response_futures.empty() == false)
     {
-        m_response_futures.front()->set_value(HttpsClientResponse::create_error_response());
+        m_response_futures.front().set_value(HttpsClientResponse::create_error_response());
         m_response_futures.pop();
     }
 }
@@ -54,7 +54,7 @@ Task<void> HttpsClientRequest::wait_for_tcp_data()
         {
             if (m_response_futures.empty() == false)
             {
-                m_response_futures.front()->set_value(std::move(resp));
+                m_response_futures.front().set_value(std::move(resp));
                 m_response_futures.pop();
             }
         }
@@ -138,8 +138,8 @@ Task<HttpsClientResponse> HttpsClientRequest::send_request(const std::string& me
     // Send
     m_tcp_connection->write(request_builder.to_string());
 
-    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue* value) mutable
+    co_return co_await Future<HttpsClientResponse>([this](Future<HttpsClientResponse>::FutureValue value) mutable
     {
-        m_response_futures.push(value);
+        m_response_futures.push(std::move(value));
     });
 }

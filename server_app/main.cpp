@@ -106,12 +106,12 @@ Task<void> test_https_client_websocket(EpollBase* epoll_base)
 
 Future<Json> get_number_future()
 {
-    return Future<Json>([](Future<Json>::FutureValue* value)
+    return Future<Json>([](Future<Json>::FutureValue value)
     {
         // Simulate some async operation
         Json result;
         result["number"] = 42; // Example data
-        value->set_value(result);
+        value.set_value(result);
     });
 }
 

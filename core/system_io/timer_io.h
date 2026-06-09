@@ -11,11 +11,11 @@
 struct TimerIO : public NamedIOObject<TimerIO>
 {
     size_t interval_ns;
-    std::function<void()> callback = nullptr;
+    std::move_only_function<void()> callback = nullptr;
 
     TimerIO() {};
 
-    void set_callback(size_t interval_ns_value, std::function<void()> callback_value);
+    void set_callback(size_t interval_ns_value, std::move_only_function<void()> callback_value);
     void refresh();
 
     // SystemIOObject's methods
