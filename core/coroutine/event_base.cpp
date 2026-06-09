@@ -66,7 +66,7 @@ void EventBase::TaskInfoEvent::check_handle()
     {
         promise->has_suspend_value = false;
 
-        if (promise->has_awaiter)
+        if (promise->has_awaiter == true)
         {
             promise->handle.resume();
         }
