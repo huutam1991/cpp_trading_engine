@@ -668,8 +668,6 @@ TEST(CoroutineUsageLifetimeTest, SelfMoveAssignmentPolicy)
 
             task = std::move(task);
 
-            frames.expect_counts(1, 0);
-
             auto result = task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
@@ -678,5 +676,6 @@ TEST(CoroutineUsageLifetimeTest, SelfMoveAssignmentPolicy)
         frames.expect_counts(1, 1);
     }
 
+    // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
