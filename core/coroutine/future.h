@@ -81,13 +81,13 @@ public:
     void set_value(T& value)
     {
         m_value_object = value;
-        future_set_ready();
+        m_suspending_promise->m_event_base->add_set_suspend_value_event(m_suspending_promise);
     }
 
     void set_value(T&& value)
     {
         m_value_object = std::move(value);
-        future_set_ready();
+        m_suspending_promise->m_event_base->add_set_suspend_value_event(m_suspending_promise);
     }
 
     bool await_ready()
