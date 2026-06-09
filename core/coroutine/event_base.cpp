@@ -58,6 +58,12 @@ void TaskInfo::release()
 
 void EventBase::TaskInfoEvent::check_handle()
 {
+    if (promise == nullptr)
+    {
+        spdlog::error("EventBase - [TaskInfoEvent::check_handle] Promise is nullptr");
+        return;
+    }
+
     if (type == TaskType::RUN)
     {
         spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Running task with promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
