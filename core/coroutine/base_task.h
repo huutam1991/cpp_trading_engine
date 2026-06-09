@@ -35,9 +35,14 @@ struct BaseTask
     BaseTask(BaseTask&& copy) : m_promise{copy.m_promise} { copy.m_promise = nullptr; }
     BaseTask& operator=(BaseTask&& copy)
     {
+        if (this == &copy)
+        {
+            return *this;
+        }
+
         if (m_promise != nullptr)
         {
-            destroy();
+            check_release();
         }
 
         m_promise = copy.m_promise;

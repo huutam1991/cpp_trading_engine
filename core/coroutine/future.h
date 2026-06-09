@@ -13,79 +13,52 @@ struct Future
     class FutureValue
     {
     private:
-        T m_value;
-        std::atomic<bool> m_is_set = false;
-        std::atomic<BasePromiseType*> m_suspending_promise = nullptr;
+        Future<T>* m_future = nullptr;
 
     public:
-        FutureValue() = default;
+        FutureValue(Future<T>* future) : m_future(future) {}
+        FutureValue() = delete;
 
-        // Only allow move constructor and delete copy constructor
-        FutureValue(const FutureValue& copy) = delete;
-        FutureValue(FutureValue&& copy) = delete;
-
-        // Only allow move assignment and delete copy assignment
-        FutureValue& operator=(const FutureValue&) = delete;
-        FutureValue& operator=(FutureValue&&) = delete;
-
-        void set_suspending_promise(BasePromiseType* suspending_promise)
+        // Only allow move constructor and move assignment
+        FutureValue(FutureValue&& copy) : m_future(copy.m_future)
         {
-            m_suspending_promise.store(suspending_promise, std::memory_order_release);
+            copy.m_future = nullptr;
         }
+
+        FutureValue& operator=(FutureValue&& copy)
+        {
+            if (this != &copy)
+            {
+                m_future = copy.m_future;
+                copy.m_future = nullptr;
+            }
+
+            return *this;
+        }
+
+        // Delete copy constructor and copy assignment operator
+        FutureValue(const FutureValue& copy) = delete;
+        FutureValue& operator=(const FutureValue&) = delete;
 
         void set_value(T& value)
         {
-            // Check if this future is already set
-            bool expected = false;
-            if (!m_is_set.compare_exchange_strong(expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
-            {
-                return;
-            }
-
-            m_value = value;
-
-            // Mark future as ready
-            future_set_ready();
+            m_future->set_value(value);
         }
 
         void set_value(T&& value)
         {
-            // Check if this future is already set
-            bool expected = false;
-            if (!m_is_set.compare_exchange_strong(expected, true, std::memory_order_acq_rel, std::memory_order_acquire))
-            {
-                return;
-            }
-
-            m_value = std::move(value);
-
-            // Mark future as ready
-            future_set_ready();
+            m_future->set_value(std::move(value));
         }
-
-        T get_value()
-        {
-            return std::move(m_value);
-        }
-
-    private:
-        void future_set_ready()
-        {
-            // Mark suspending promise as ready
-            BasePromiseType* suspending_promise = m_suspending_promise.load(std::memory_order_acquire);
-            if (suspending_promise != nullptr)
-            {
-                suspending_promise->set_waiting(false);
-            }
-        }
-
     };
 
-    FutureValue m_value;
-    std::function<void(FutureValue*)> m_execute_func;
+private:
+    T m_value_object;
+    BasePromiseType* m_suspending_promise = nullptr;
+    std::function<void(FutureValue)> m_execute_func;
 
+public:
     // Constructor, need to have an execute function
-    template <class F, std::enable_if_t<std::is_invocable_v<F, FutureValue*>, int> = 0>
+    template <class F, std::enable_if_t<std::is_invocable_v<F, FutureValue>, int> = 0>
     Future(F&& execute_func) : m_execute_func(std::forward<F>(execute_func))
     {
     }
@@ -93,17 +66,29 @@ struct Future
     // Delete other constructors
     template <class U,
         std::enable_if_t<
-            !std::is_invocable_v<U, FutureValue*> &&
+            !std::is_invocable_v<U, FutureValue> &&
             !std::is_same_v<std::decay_t<U>, FutureValue>,
             int> = 0>
     Future(U& value) = delete;
 
     template <class U,
         std::enable_if_t<
-            !std::is_invocable_v<U, FutureValue*> &&
+            !std::is_invocable_v<U, FutureValue> &&
             !std::is_same_v<std::decay_t<U>, FutureValue>,
             int> = 0>
     Future(U&& value) = delete;
+
+    void set_value(T& value)
+    {
+        m_value_object = value;
+        future_set_ready();
+    }
+
+    void set_value(T&& value)
+    {
+        m_value_object = std::move(value);
+        future_set_ready();
+    }
 
     bool await_ready()
     {
@@ -115,19 +100,17 @@ struct Future
     {
         // Tricky here, cast promise_type to a pointer of BasePromiseType (suppose all of promise_type is child class of BasePromiseType class)
         promise_type& promise = suspend_handle.promise();
-        BasePromiseType *suspend_base_pt = &promise;
-        suspend_base_pt->set_waiting(true);
-
-        m_value.set_suspending_promise(suspend_base_pt);
+        m_suspending_promise = &promise;
+        m_suspending_promise->has_suspend_value = true;
 
         if (m_execute_func)
         {
-            m_execute_func(&m_value);
+            m_execute_func(FutureValue(this));
         }
     }
 
     T await_resume()
     {
-        return m_value.get_value();
+        return std::move(m_value_object);
     }
 };
