@@ -108,11 +108,13 @@ struct Task : public BaseTask
 
     inline std::future<T> start_running_on(EventBase* event_base)
     {
-        register_on(event_base);
-
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<T>>();
-        return promise->task_value->get_future();
+        std::future<T> future = promise->task_value->get_future();
+
+        register_on(event_base);
+
+        return future;
     }
 };
 
@@ -206,10 +208,12 @@ struct Task<void> : public BaseTask
 
     inline std::future<void> start_running_on(EventBase* event_base)
     {
-        register_on(event_base);
-
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<void>>();
-        return promise->task_value->get_future();
+        std::future<void> future = promise->task_value->get_future();
+
+        register_on(event_base);
+
+        return future;
     }
 };
