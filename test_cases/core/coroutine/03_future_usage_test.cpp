@@ -38,20 +38,22 @@ namespace
 
 TEST(CoroutineUsageFutureTest, AwaitFutureSetFromSameThread)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto fn = []() -> Task<int>
         {
-            out.set_value(42);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(42);
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -59,24 +61,26 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromSameThread)
 
 TEST(CoroutineUsageFutureTest, AwaitFutureSetFromAnotherThread)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto fn = []() -> Task<int>
         {
-            std::thread([out = std::move(out)]() mutable
+            int v = co_await Future<int>([](auto out)
             {
-                std::this_thread::sleep_for(1ms);
-                out.set_value(42);
-            }).detach();
-        });
+                std::thread([out = std::move(out)]() mutable
+                {
+                    std::this_thread::sleep_for(1ms);
+                    out.set_value(42);
+                }).detach();
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -84,19 +88,27 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromAnotherThread)
 
 TEST(CoroutineUsageFutureTest, DoubleSetValueOnlyFirstWins)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto fn = []() -> Task<int>
         {
-            out.set_value(42);
-            out.set_value(999);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(42);
+                out.set_value(999);
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+
+        ASSERT_EQ(wait_result(result), 42);
+
+        task = fn();
+        result = task.start_running_on(test_event_base());
+        ASSERT_NE(wait_result(result), 999);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -104,24 +116,26 @@ TEST(CoroutineUsageFutureTest, DoubleSetValueOnlyFirstWins)
 
 TEST(CoroutineUsageFutureTest, FutureExecuteFunctionRunsOnce)
 {
-    std::atomic<int> execute_count{0};
-
-    auto fn = [&]() -> Task<int>
     {
-        int v = co_await Future<int>([&](auto out)
+        std::atomic<int> execute_count{0};
+
+        auto fn = [&]() -> Task<int>
         {
-            execute_count.fetch_add(1, std::memory_order_relaxed);
-            out.set_value(42);
-        });
+            int v = co_await Future<int>([&](auto out)
+            {
+                execute_count.fetch_add(1, std::memory_order_relaxed);
+                out.set_value(42);
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
-    ASSERT_EQ(execute_count.load(std::memory_order_relaxed), 1);
+        ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(execute_count.load(std::memory_order_relaxed), 1);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
