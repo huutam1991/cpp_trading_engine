@@ -38,40 +38,42 @@ namespace
 
 TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
 {
-    constexpr int N = 100000;
-
-    auto fn = []() -> Task<int>
     {
-        co_return 1;
-    };
+        constexpr int N = 100000;
 
-    auto eb = test_event_base();
-    auto start = std::chrono::high_resolution_clock::now();
+        auto fn = []() -> Task<int>
+        {
+            co_return 1;
+        };
 
-    int total = 0;
-    std::vector<std::future<int>> results;
-    results.reserve(N);
-    for (int i = 0; i < N; ++i)
-    {
-        auto task = fn();
-        auto result = task.start_running_on(eb);
-        results.push_back(std::move(result));
-        // total += wait_result(result);
+        auto eb = test_event_base();
+        auto start = std::chrono::high_resolution_clock::now();
+
+        int total = 0;
+        std::vector<std::future<int>> results;
+        results.reserve(N);
+        for (int i = 0; i < N; ++i)
+        {
+            auto task = fn();
+            auto result = task.start_running_on(eb);
+            results.push_back(std::move(result));
+            // total += wait_result(result);
+        }
+
+        for (auto& result : results)
+        {
+            total += wait_result(result);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        double avg_ns = static_cast<double>(ns) / N;
+
+        spdlog::info("[perf] simple task avg ns: {}", avg_ns);
+
+        ASSERT_EQ(total, N);
+        ASSERT_LT(avg_ns, 100000.0);
     }
-
-    for (auto& result : results)
-    {
-        total += wait_result(result);
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    double avg_ns = static_cast<double>(ns) / N;
-
-    spdlog::info("[perf] simple task avg ns: {}", avg_ns);
-
-    ASSERT_EQ(total, N);
-    ASSERT_LT(avg_ns, 100000.0);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -79,39 +81,41 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
 
 TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
 {
-    constexpr int N = 1000000;
-
-    auto child = []() -> Task<int>
     {
-        co_return 1;
-    };
+        constexpr int N = 1000000;
 
-    auto parent = [&]() -> Task<int>
-    {
-        int v = co_await child();
-        co_return v;
-    };
+        auto child = []() -> Task<int>
+        {
+            co_return 1;
+        };
 
-    auto eb = test_event_base();
+        auto parent = [&]() -> Task<int>
+        {
+            int v = co_await child();
+            co_return v;
+        };
 
-    auto start = std::chrono::high_resolution_clock::now();
+        auto eb = test_event_base();
 
-    int total = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        auto task = parent();
-        auto result = task.start_running_on(eb);
-        // total += wait_result(result);
+        auto start = std::chrono::high_resolution_clock::now();
+
+        int total = 0;
+        for (int i = 0; i < N; ++i)
+        {
+            auto task = parent();
+            auto result = task.start_running_on(eb);
+            // total += wait_result(result);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        double avg_ns = static_cast<double>(ns) / N;
+
+        std::cout << "[perf] task-await-task avg ns: " << avg_ns << std::endl;
+
+        // ASSERT_EQ(total, N);
+        ASSERT_LT(avg_ns, 100000.0);
     }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    double avg_ns = static_cast<double>(ns) / N;
-
-    std::cout << "[perf] task-await-task avg ns: " << avg_ns << std::endl;
-
-    // ASSERT_EQ(total, N);
-    ASSERT_LT(avg_ns, 100000.0);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -119,38 +123,40 @@ TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
 
 TEST(CoroutineUsagePerformanceTest, FutureImmediateWakeupLatencyBudget)
 {
-    constexpr int N = 100000;
-
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        constexpr int N = 100000;
+
+        auto fn = []() -> Task<int>
         {
-            out.set_value(1);
-        });
+            int v = co_await Future<int>([](auto out)
+            {
+                out.set_value(1);
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto eb = test_event_base();
+        auto eb = test_event_base();
 
-    auto start = std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
 
-    int total = 0;
-    for (int i = 0; i < N; ++i)
-    {
-        auto task = fn();
-        auto result = task.start_running_on(eb);
-        // total += wait_result(result);
+        int total = 0;
+        for (int i = 0; i < N; ++i)
+        {
+            auto task = fn();
+            auto result = task.start_running_on(eb);
+            // total += wait_result(result);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        double avg_ns = static_cast<double>(ns) / N;
+
+        std::cout << "[perf] future immediate wakeup avg ns: " << avg_ns << std::endl;
+
+        // ASSERT_EQ(total, N);
+        ASSERT_LT(avg_ns, 100000.0);
     }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-    double avg_ns = static_cast<double>(ns) / N;
-
-    std::cout << "[perf] future immediate wakeup avg ns: " << avg_ns << std::endl;
-
-    // ASSERT_EQ(total, N);
-    ASSERT_LT(avg_ns, 100000.0);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
