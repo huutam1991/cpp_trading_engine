@@ -23,7 +23,8 @@ void BaseTask::destroy()
 {
     if (m_promise != nullptr && m_promise->m_event_base != nullptr)
     {
-        m_promise->m_event_base->add_force_destroy_event(m_promise);
+        m_promise->set_force_destroy();
+        // m_promise->m_event_base->add_force_destroy_event(m_promise);
         m_promise = nullptr;
     }
 }

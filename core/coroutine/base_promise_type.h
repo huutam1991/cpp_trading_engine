@@ -9,7 +9,20 @@ struct BasePromiseType
     EventBase* m_event_base = nullptr;
     bool has_suspend_value = false;
     bool has_awaiter = true;
-    bool force_destroy = false;
     bool is_task_release = false;
     void* task_ptr = nullptr;
+
+private:
+    std::atomic<bool> force_destroy{false};
+
+public:
+    inline void set_force_destroy()
+    {
+        force_destroy.store(true, std::memory_order_release);
+    }
+
+    inline bool get_force_destroy() const
+    {
+        return force_destroy.load(std::memory_order_acquire);
+    }
 };
