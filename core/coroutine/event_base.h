@@ -13,43 +13,10 @@
 
 #include "task_info_event.h"
 
-#define MAX_TASK_INFO 20000
+#define MAX_TASK_INFO 200000
 
 class EventBase;
 struct BasePromiseType;
-
-// struct TaskInfo : public NamedIOObject<TaskInfo>
-// {
-//     std::coroutine_handle<> handle = nullptr;
-//     void* base_promise_type_address = nullptr;
-//     EventBase* event_base = nullptr;
-//     std::chrono::time_point<std::chrono::high_resolution_clock> start;
-//     bool is_first_time = true;
-
-//     void refresh()
-//     {
-//         if (handle != nullptr)
-//         {
-//             handle.destroy();
-//         }
-//         handle = nullptr;
-//         base_promise_type_address = nullptr;
-//         event_base = nullptr;
-//     }
-
-//     void check_handle();
-
-//     // SystemIOObject's methods
-//     virtual int generate_fd() override;
-//     virtual int get_io_events() { return EPOLLIN; }
-//     virtual int activate() override;
-//     virtual int handle_read() override;
-//     virtual int handle_write() override;
-//     virtual void release() override;
-// };
-
-// using TaskInfoPool = CachePool<TaskInfo, MAX_TASK_INFO>;
-// using ReadyTaskQueue = MPSCQueue<TaskInfo*, MAX_TASK_INFO>;
 
 class EventBase
 {
@@ -65,11 +32,6 @@ private:
 public:
     size_t m_event_base_id = 0;
     std::atomic<bool> m_stopping{false};
-    // ReadyTaskQueue m_ready_task_queue;
-
-    void* create_task_info(std::coroutine_handle<> handle, void* base_promise_type_address);
-    void remove_from_event_base(void* id);
-    // void check_to_remove_task(TaskInfo* task_info);
 
     virtual inline void add_run_task_event(BasePromiseType* promise)
     {
