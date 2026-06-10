@@ -176,33 +176,6 @@ void EpollBase::set_ready_task(SystemIOObject* task_info_event)
     eventfd_write(fd, 1);
 }
 
-inline void EpollBase::add_run_task_event(BasePromiseType* promise)
-{
-    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-    task_event->type = TaskInfoEvent::TaskType::RUN;
-    task_event->promise = promise;
-
-    set_ready_task(task_event);
-}
-
-inline void EpollBase::add_set_suspend_value_event(BasePromiseType* promise)
-{
-    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-    task_event->type = TaskInfoEvent::TaskType::SET_SUSPEND_VALUE;
-    task_event->promise = promise;
-
-    set_ready_task(task_event);
-}
-
-inline void EpollBase::add_remove_awaiter_event(BasePromiseType* promise)
-{
-    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-    task_event->type = TaskInfoEvent::TaskType::REMOVE_AWAITER;
-    task_event->promise = promise;
-
-    set_ready_task(task_event);
-}
-
 void EpollBase::stop()
 {
     if (m_shutdown_fd != -1)

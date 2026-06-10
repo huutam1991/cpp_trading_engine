@@ -86,6 +86,11 @@ public:
         m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
     }
 
+    virtual inline void add_force_destroy_event(BasePromiseType* promise)
+    {
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::FORCE_DESTROY, promise});
+    }
+
     virtual void stop();
     virtual void loop();
 };
