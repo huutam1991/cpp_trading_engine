@@ -11,6 +11,8 @@
 #include <queue/mpsc_queue.h>
 #include <system_io/system_io_object.h>
 
+#include "task_info_event.h"
+
 #define MAX_TASK_INFO 200000
 
 class EventBase;
@@ -57,31 +59,6 @@ public:
     virtual ~EventBase() {}
 
 private:
-    enum TaskType
-    {
-        NONE,
-        RUN,
-        SET_SUSPEND_VALUE,
-        REMOVE_AWAITER
-    };
-
-    struct TaskInfoEvent
-    {
-        TaskType type;
-        BasePromiseType* promise;
-
-        TaskInfoEvent() : type(TaskType::NONE), promise(nullptr) {};
-        TaskInfoEvent(std::nullptr_t) : type(TaskType::NONE), promise(nullptr) {}
-        TaskInfoEvent(TaskType type, BasePromiseType* promise) : type(type), promise(promise) {}
-
-        bool operator==(std::nullptr_t) const
-        {
-            return type == TaskType::NONE && promise == nullptr;
-        }
-
-        inline void check_handle();
-    };
-
     using TaskEventQueue = MPSCQueue<TaskInfoEvent, MAX_TASK_INFO>;
     TaskEventQueue m_task_event_queue;
 
@@ -96,17 +73,17 @@ public:
 
     inline void add_run_task_event(BasePromiseType* promise)
     {
-        m_task_event_queue.push(TaskInfoEvent{TaskType::RUN, promise});
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::RUN, promise});
     }
 
     inline void add_set_suspend_value_event(BasePromiseType* promise)
     {
-        m_task_event_queue.push(TaskInfoEvent{TaskType::SET_SUSPEND_VALUE, promise});
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise});
     }
 
     inline void add_remove_awaiter_event(BasePromiseType* promise)
     {
-        m_task_event_queue.push(TaskInfoEvent{TaskType::REMOVE_AWAITER, promise});
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
     }
 
     virtual void stop();
