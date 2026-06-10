@@ -12,7 +12,6 @@ void BaseTask::check_release()
         // If this task is running on an EventBase, mark it as has no waiter by sending an event to that EventBase
         else
         {
-            spdlog::warn("BaseTask - [check_release] Removing awaiter for task with promise: {}, event base id: {}", (void*)m_promise, m_promise->m_event_base->m_event_base_id);
             m_promise->m_event_base->add_remove_awaiter_event(m_promise);
         }
 
@@ -22,10 +21,8 @@ void BaseTask::check_release()
 
 void BaseTask::destroy()
 {
-    spdlog::warn("BaseTask - [destroy] Force destroying task with promise: {}, event base id: {}", (void*)m_promise, m_promise != nullptr && m_promise->m_event_base != nullptr ? m_promise->m_event_base->m_event_base_id : 0);
     if (m_promise != nullptr && m_promise->m_event_base != nullptr)
     {
-        spdlog::warn("BaseTask - [destroy] Force destroying task with promise: {}, event base id: {}", (void*)m_promise, m_promise->m_event_base->m_event_base_id);
         m_promise->m_event_base->add_force_destroy_event(m_promise);
         m_promise = nullptr;
     }
