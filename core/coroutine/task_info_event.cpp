@@ -34,6 +34,7 @@ void TaskInfoEvent::check_handle()
     {
         // spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Destroying promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
         promise->handle.destroy();
+        promise = nullptr;
     }
 }
 
@@ -65,7 +66,6 @@ int TaskInfoEvent::handle_write()
 
 void TaskInfoEvent::release()
 {
-    // spdlog::error("EventBase - [TaskInfoEvent::release] Releasing TaskInfoEvent with promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
     if (this != nullptr)
     {
         delete this;
