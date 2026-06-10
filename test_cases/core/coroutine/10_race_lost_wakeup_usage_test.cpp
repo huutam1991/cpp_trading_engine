@@ -122,42 +122,44 @@ TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
 
 TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
 {
-    constexpr int N = 512;
-
-    std::vector<Task<int>> tasks;
-    std::vector<std::future<int>> results;
-
-    tasks.reserve(N);
-    results.reserve(N);
-
-    auto fn = [](int i) -> Task<int>
     {
-        int v = co_await Future<int>([i](auto out)
+        constexpr int N = 512;
+
+        std::vector<Task<int>> tasks;
+        std::vector<std::future<int>> results;
+
+        tasks.reserve(N);
+        results.reserve(N);
+
+        auto fn = [](int i) -> Task<int>
         {
-            std::thread([out = std::move(out), i]() mutable
+            int v = co_await Future<int>([i](auto out)
             {
-                out.set_value(i);
-            }).detach();
-        });
+                std::thread([out = std::move(out), i]() mutable
+                {
+                    out.set_value(i);
+                }).detach();
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto eb = test_event_base();
+        auto eb = test_event_base();
 
-    for (int i = 0; i < N; ++i)
-    {
-        tasks.emplace_back(fn(i));
-        results.emplace_back(tasks.back().start_running_on(eb));
+        for (int i = 0; i < N; ++i)
+        {
+            tasks.emplace_back(fn(i));
+            results.emplace_back(tasks.back().start_running_on(eb));
+        }
+
+        long long sum = 0;
+        for (auto& f : results)
+        {
+            sum += wait_result(f);
+        }
+
+        ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
-
-    long long sum = 0;
-    for (auto& f : results)
-    {
-        sum += wait_result(f);
-    }
-
-    ASSERT_EQ(sum, (N - 1LL) * N / 2);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
