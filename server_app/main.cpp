@@ -41,7 +41,7 @@ Task<void> test_https_client_request(EpollBase* epoll_base)
     while (true)
     {
         {
-            // MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
+            MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
             HttpsClientResponse response_get = co_await https_client_request.get("/fapi/v1/exchangeInfo");
             // spdlog::info("GET fapi.binance.com/fapi/v1/exchangeInfo response: {} - {}", response_get.status_code, response_get.body);
         }
@@ -152,35 +152,24 @@ int main(int argc, char **argv) {
     // Print update time
     spdlog::info("Server up time: {}", Utils::get_up_time());
 
-    // GatewayManager::instance().init();
-    // OrderManager::instance().init();
-    // SimulatorOrder::init();
+    GatewayManager::instance().init();
+    OrderManager::instance().init();
+    SimulatorOrder::init();
 
-    // // Strategy
-    // // StrategyManager::instance().init();
+    // Strategy
+    StrategyManager::instance().init();
 
-    // // Start HTTPS server - running on EpollBase
-    // EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
-    // HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
-    // epoll_base->start_living_system_io_object(https_server_object);
+    // Start HTTPS server - running on EpollBase
+    EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::SYSTEM_IO_TASK);
+    HttpsServerSocket* https_server_object = new HttpsServerSocket(port);
+    epoll_base->start_living_system_io_object(https_server_object);
 
-    // // Websocket server
-    // WebsocketServerRoutes* websocket_server_routes = new WebsocketServerRoutes(websocket_port, epoll_base);
+    // Websocket server
+    WebsocketServerRoutes* websocket_server_routes = new WebsocketServerRoutes(websocket_port, epoll_base);
 
-    // Test HTTPS client request
+    // // Test HTTPS client request
     // test_https_client_request(epoll_base).start_running_on(epoll_base);
 
-
-    std::thread t(
-        []()
-        {
-            Task<void> task = test_future();
-            task.start_running_on((EventBase*)EventBaseManager::get_event_base_by_id(EventBaseID::ORDER));
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-        }
-    );
-
-    t.join();
 
     // Main loop, only sleep here
     while (true)
