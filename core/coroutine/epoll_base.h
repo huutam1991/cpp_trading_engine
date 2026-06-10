@@ -21,6 +21,5 @@ public:
     void del_fd(int fd, SystemIOObject* ptr);
     void start_living_system_io_object(SystemIOObject* object);
     virtual void stop() override;
-    virtual void set_ready_task(void* task_info) override;
     virtual void loop() override;
 };

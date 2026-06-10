@@ -136,23 +136,6 @@ void EpollBase::stop()
     }
 }
 
-void EpollBase::set_ready_task(void* task_info)
-{
-    SystemIOObject* task = static_cast<SystemIOObject*>(task_info);
-    int fd = task->generate_fd();
-    if (fd < 0)
-    {
-        spdlog::error("EpollBase - [set_ready_task], TaskInfo generate_fd error for fd: {}", fd);
-        return;
-    }
-
-    // Add to epoll
-    add_fd(fd, task);
-
-    // Mark this task is ready
-    eventfd_write(fd, 1);
-}
-
 void EpollBase::loop()
 {
     epoll_event events[MAX_EPOLL_EVENTS];

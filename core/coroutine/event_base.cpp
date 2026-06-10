@@ -118,12 +118,6 @@ void EventBase::stop()
     m_stopping.store(true, std::memory_order_release);
 }
 
-
-void EventBase::set_ready_task(void* task_info)
-{
-    m_ready_task_queue.push(static_cast<TaskInfo*>(task_info));
-}
-
 void EventBase::check_to_remove_task(TaskInfo* task_info)
 {
     // Check if this task is already release, then destroy it's coroutine frame and remove from queue
