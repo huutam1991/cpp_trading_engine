@@ -14,6 +14,19 @@ class EpollBase : public EventBase
     int create_shutdown_event();
     void set_ready_task(SystemIOObject* object);
 
+    struct TaskInfoEventEpoll : public TaskInfoEvent, NamedIOObject<TaskInfoEvent>
+    {
+        // SystemIOObject's methods
+        virtual int generate_fd() override;
+        virtual int get_io_events() { return EPOLLIN; }
+        virtual int activate() override;
+        virtual int handle_read() override;
+        virtual int handle_write() override;
+        virtual void release() override;
+    };
+
+    using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
+
 public:
     EpollBase(size_t id);
     virtual ~EpollBase() override;

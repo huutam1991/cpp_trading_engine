@@ -7,6 +7,37 @@
 
 #define MAX_EPOLL_EVENTS 10000
 
+int EpollBase::TaskInfoEventEpoll::generate_fd()
+{
+    fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    return fd;
+}
+
+int EpollBase::TaskInfoEventEpoll::activate()
+{
+    // Nothing to do for TaskInfoEventEpoll
+    return 0;
+}
+
+int EpollBase::TaskInfoEventEpoll::handle_read()
+{
+    check_handle();
+
+    // Always return -1 to indicate this task is done
+    return -1;
+}
+
+int EpollBase::TaskInfoEventEpoll::handle_write()
+{
+    // Nothing to do for write event
+    return 0;
+}
+
+void EpollBase::TaskInfoEventEpoll::release()
+{
+    TaskInfoEventPool::release(this);
+}
+
 EpollBase::EpollBase(size_t id) : EventBase(id)
 {
     if ((m_epoll_fd = epoll_create1(0)) == -1)
@@ -147,19 +178,28 @@ void EpollBase::set_ready_task(SystemIOObject* task_info_event)
 
 inline void EpollBase::add_run_task_event(BasePromiseType* promise)
 {
-    TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::RUN, promise);
+    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
+    task_event->type = TaskInfoEvent::TaskType::RUN;
+    task_event->promise = promise;
+
     set_ready_task(task_event);
 }
 
 inline void EpollBase::add_set_suspend_value_event(BasePromiseType* promise)
 {
-    TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise);
+    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
+    task_event->type = TaskInfoEvent::TaskType::SET_SUSPEND_VALUE;
+    task_event->promise = promise;
+
     set_ready_task(task_event);
 }
 
 inline void EpollBase::add_remove_awaiter_event(BasePromiseType* promise)
 {
-    TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::REMOVE_AWAITER, promise);
+    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
+    task_event->type = TaskInfoEvent::TaskType::REMOVE_AWAITER;
+    task_event->promise = promise;
+
     set_ready_task(task_event);
 }
 

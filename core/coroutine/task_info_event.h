@@ -5,7 +5,7 @@
 
 struct BasePromiseType;
 
-struct TaskInfoEvent : public NamedIOObject<TaskInfoEvent>
+struct TaskInfoEvent
 {
     enum TaskType
     {
@@ -28,12 +28,4 @@ struct TaskInfoEvent : public NamedIOObject<TaskInfoEvent>
     }
 
     void check_handle();
-
-    // SystemIOObject's methods
-    virtual int generate_fd() override;
-    virtual int get_io_events() { return EPOLLIN; }
-    virtual int activate() override;
-    virtual int handle_read() override;
-    virtual int handle_write() override;
-    virtual void release() override;
 };
