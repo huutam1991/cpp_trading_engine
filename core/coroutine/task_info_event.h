@@ -12,7 +12,8 @@ struct TaskInfoEvent
         NONE,
         RUN,
         SET_SUSPEND_VALUE,
-        REMOVE_AWAITER
+        REMOVE_AWAITER,
+        FORCE_DESTROY
     };
 
     TaskType type;
