@@ -9,6 +9,8 @@ void TaskInfoEvent::check_handle()
         return;
     }
 
+    bool is_force_destroy = false;
+
     if (type == TaskType::RUN)
     {
         // spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Running task with promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
@@ -18,8 +20,9 @@ void TaskInfoEvent::check_handle()
     {
         // spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Setting suspend value for promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
         promise->has_suspend_value = false;
+        is_force_destroy = promise->get_force_destroy();
 
-        if (promise->get_force_destroy() == false)
+        if (is_force_destroy == false)
         {
             promise->handle.resume();
         }
@@ -33,9 +36,10 @@ void TaskInfoEvent::check_handle()
     {
         // spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Force destroying promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
         promise->set_force_destroy();
+        is_force_destroy = true;
     }
 
-    if ((promise->get_force_destroy() == true || promise->has_awaiter == false) && promise->has_suspend_value == false)
+    if ((is_force_destroy == true || promise->has_awaiter == false) && promise->has_suspend_value == false)
     {
         // spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Destroying promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
         promise->handle.destroy();
