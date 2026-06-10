@@ -71,17 +71,17 @@ public:
     void remove_from_event_base(void* id);
     void check_to_remove_task(TaskInfo* task_info);
 
-    inline void add_run_task_event(BasePromiseType* promise)
+    virtual inline void add_run_task_event(BasePromiseType* promise)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::RUN, promise});
     }
 
-    inline void add_set_suspend_value_event(BasePromiseType* promise)
+    virtual inline void add_set_suspend_value_event(BasePromiseType* promise)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise});
     }
 
-    inline void add_remove_awaiter_event(BasePromiseType* promise)
+    virtual inline void add_remove_awaiter_event(BasePromiseType* promise)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
     }

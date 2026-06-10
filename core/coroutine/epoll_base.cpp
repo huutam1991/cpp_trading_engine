@@ -128,6 +128,21 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     }
 }
 
+inline void EpollBase::add_run_task_event(BasePromiseType* promise)
+{
+    // m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::RUN, promise});
+}
+
+inline void EpollBase::add_set_suspend_value_event(BasePromiseType* promise)
+{
+    // m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise});
+}
+
+inline void EpollBase::add_remove_awaiter_event(BasePromiseType* promise)
+{
+    // m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
+}
+
 void EpollBase::stop()
 {
     if (m_shutdown_fd != -1)

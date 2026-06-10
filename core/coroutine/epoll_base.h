@@ -20,6 +20,11 @@ public:
     void mod_fd_events(int fd, SystemIOObject* ptr, uint32_t events);
     void del_fd(int fd, SystemIOObject* ptr);
     void start_living_system_io_object(SystemIOObject* object);
+
+    virtual inline void add_run_task_event(BasePromiseType* promise) override;
+    virtual inline void add_set_suspend_value_event(BasePromiseType* promise) override;
+    virtual inline void add_remove_awaiter_event(BasePromiseType* promise) override;
+
     virtual void stop() override;
     virtual void loop() override;
 };
