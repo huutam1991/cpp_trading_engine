@@ -25,6 +25,7 @@ class EpollBase : public EventBase
         virtual void release() override;
     };
 
+public:
     using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
 
 public:

@@ -13,7 +13,7 @@
 
 #include "task_info_event.h"
 
-#define MAX_TASK_INFO 200000
+#define MAX_TASK_INFO 20000
 
 class EventBase;
 struct BasePromiseType;
