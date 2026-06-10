@@ -62,16 +62,8 @@ struct BaseTask
         check_release();
     }
 
-    void destroy()
-    {
-        if (m_promise != nullptr && m_promise->m_event_base != nullptr)
-        {
-            m_promise->m_event_base->add_force_destroy_event(m_promise);
-            m_promise = nullptr;
-        }
-    }
-
     void check_release();
+    void destroy();
     void register_on(EventBase* event_base);
     bool await_ready();
 

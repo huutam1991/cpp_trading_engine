@@ -22,7 +22,7 @@ HttpsClientRequest::~HttpsClientRequest()
 
     // Need to intendly destroy [m_wait_for_tcp_data_task]
     // [Tam need re-test]
-    // m_wait_for_tcp_data_task.destroy(true);
+    m_wait_for_tcp_data_task.destroy();
 }
 
 void HttpsClientRequest::on_connect()
