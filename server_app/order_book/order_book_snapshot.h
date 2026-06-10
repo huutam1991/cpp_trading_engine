@@ -78,5 +78,5 @@ public:
     double get_ask_volume();
 };
 
-using OrderBookSnapShotPool = SharedCachePool<OrderBookSnapShot, 1000>;
+using OrderBookSnapShotPool = SharedCachePool<OrderBookSnapShot, 10000>;
 using OrderBookSnapShotObject = OrderBookSnapShotPool::ObjectPointer;
