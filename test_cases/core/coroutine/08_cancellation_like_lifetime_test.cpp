@@ -60,24 +60,26 @@ TEST(CoroutineUsageCancellationLikeTest, DestroyUnscheduledSuspendedStyleTaskIsS
 
 TEST(CoroutineUsageCancellationLikeTest, RunningTaskCanCompleteAfterDelayedFuture)
 {
-    auto fn = []() -> Task<int>
     {
-        int v = co_await Future<int>([](auto out)
+        auto fn = []() -> Task<int>
         {
-            std::thread([out = std::move(out)]() mutable
+            int v = co_await Future<int>([](auto out)
             {
-                std::this_thread::sleep_for(5ms);
-                out.set_value(42);
-            }).detach();
-        });
+                std::thread([out = std::move(out)]() mutable
+                {
+                    std::this_thread::sleep_for(5ms);
+                    out.set_value(42);
+                }).detach();
+            });
 
-        co_return v;
-    };
+            co_return v;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
