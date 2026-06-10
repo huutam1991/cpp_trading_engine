@@ -37,24 +37,26 @@ namespace
 
 TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseSequentialStart)
 {
-    constexpr int N = 1000;
-    auto eb = test_event_base();
-
-    auto fn = [](int i) -> Task<int>
     {
-        co_return i;
-    };
+        constexpr int N = 1000;
+        auto eb = test_event_base();
 
-    long long sum = 0;
+        auto fn = [](int i) -> Task<int>
+        {
+            co_return i;
+        };
 
-    for (int i = 0; i < N; ++i)
-    {
-        auto task = fn(i);
-        auto result = task.start_running_on(eb);
-        sum += wait_result(result);
+        long long sum = 0;
+
+        for (int i = 0; i < N; ++i)
+        {
+            auto task = fn(i);
+            auto result = task.start_running_on(eb);
+            sum += wait_result(result);
+        }
+
+        ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
-
-    ASSERT_EQ(sum, (N - 1LL) * N / 2);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -62,32 +64,34 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseSequentialStart)
 
 TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
 {
-    constexpr int N = 1000;
-    auto eb = test_event_base();
-
-    auto fn = [](int i) -> Task<int>
     {
-        co_return i;
-    };
+        constexpr int N = 1000;
+        auto eb = test_event_base();
 
-    std::vector<Task<int>> tasks;
-    std::vector<std::future<int>> results;
-    tasks.reserve(N);
-    results.reserve(N);
+        auto fn = [](int i) -> Task<int>
+        {
+            co_return i;
+        };
 
-    for (int i = 0; i < N; ++i)
-    {
-        tasks.emplace_back(fn(i));
-        results.emplace_back(tasks.back().start_running_on(eb));
+        std::vector<Task<int>> tasks;
+        std::vector<std::future<int>> results;
+        tasks.reserve(N);
+        results.reserve(N);
+
+        for (int i = 0; i < N; ++i)
+        {
+            tasks.emplace_back(fn(i));
+            results.emplace_back(tasks.back().start_running_on(eb));
+        }
+
+        long long sum = 0;
+        for (auto& f : results)
+        {
+            sum += wait_result(f);
+        }
+
+        ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
-
-    long long sum = 0;
-    for (auto& f : results)
-    {
-        sum += wait_result(f);
-    }
-
-    ASSERT_EQ(sum, (N - 1LL) * N / 2);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -95,21 +99,23 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
 
 TEST(CoroutineUsageEventBaseTest, ParentAwaitsChildInsteadOfBlockingFutureGet)
 {
-    auto child = []() -> Task<int>
     {
-        co_return 42;
-    };
+        auto child = []() -> Task<int>
+        {
+            co_return 42;
+        };
 
-    auto parent = [&]() -> Task<int>
-    {
-        int v = co_await child();
-        co_return v;
-    };
+        auto parent = [&]() -> Task<int>
+        {
+            int v = co_await child();
+            co_return v;
+        };
 
-    auto task = parent();
-    auto result = task.start_running_on(test_event_base());
+        auto task = parent();
+        auto result = task.start_running_on(test_event_base());
 
-    ASSERT_EQ(wait_result(result), 42);
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -117,25 +123,27 @@ TEST(CoroutineUsageEventBaseTest, ParentAwaitsChildInsteadOfBlockingFutureGet)
 
 TEST(CoroutineUsageEventBaseTest, TaskLoopAwaitManyTimes)
 {
-    auto step = [](int x) -> Task<int>
     {
-        co_return x + 1;
-    };
-
-    auto fn = [&]() -> Task<int>
-    {
-        int v = 0;
-        for (int i = 0; i < 42; ++i)
+        auto step = [](int x) -> Task<int>
         {
-            v = co_await step(v);
-        }
-        co_return v;
-    };
+            co_return x + 1;
+        };
 
-    auto task = fn();
-    auto result = task.start_running_on(test_event_base());
+        auto fn = [&]() -> Task<int>
+        {
+            int v = 0;
+            for (int i = 0; i < 42; ++i)
+            {
+                v = co_await step(v);
+            }
+            co_return v;
+        };
 
-    ASSERT_EQ(wait_result(result), 42);
+        auto task = fn();
+        auto result = task.start_running_on(test_event_base());
+
+        ASSERT_EQ(wait_result(result), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -143,21 +151,23 @@ TEST(CoroutineUsageEventBaseTest, TaskLoopAwaitManyTimes)
 
 TEST(CoroutineUsageEventBaseTest, DifferentEventBaseIdsCanRunTasks)
 {
-    auto eb1 = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
-    auto eb2 = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_BOOK);
-
-    auto fn = []() -> Task<int>
     {
-        co_return 21;
-    };
+        auto eb1 = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
+        auto eb2 = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER_BOOK);
 
-    auto t1 = fn();
-    auto t2 = fn();
+        auto fn = []() -> Task<int>
+        {
+            co_return 21;
+        };
 
-    auto f1 = t1.start_running_on(eb1);
-    auto f2 = t2.start_running_on(eb2);
+        auto t1 = fn();
+        auto t2 = fn();
 
-    ASSERT_EQ(wait_result(f1) + wait_result(f2), 42);
+        auto f1 = t1.start_running_on(eb1);
+        auto f2 = t2.start_running_on(eb2);
+
+        ASSERT_EQ(wait_result(f1) + wait_result(f2), 42);
+    }
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
