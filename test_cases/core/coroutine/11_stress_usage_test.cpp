@@ -61,34 +61,36 @@ TEST(CoroutineUsageStressTest, ManySimpleTasksSequential)
 
 TEST(CoroutineUsageStressTest, ManySimpleTasksBurst)
 {
-    constexpr int N = 10000;
-
-    auto fn = [](int i) -> Task<int>
     {
-        co_return i;
-    };
+        constexpr int N = 10000;
 
-    std::vector<Task<int>> tasks;
-    std::vector<std::future<int>> results;
+        auto fn = [](int i) -> Task<int>
+        {
+            co_return i;
+        };
 
-    tasks.reserve(N);
-    results.reserve(N);
+        std::vector<Task<int>> tasks;
+        std::vector<std::future<int>> results;
 
-    auto eb = test_event_base();
+        tasks.reserve(N);
+        results.reserve(N);
 
-    for (int i = 0; i < N; ++i)
-    {
-        tasks.emplace_back(fn(i));
-        results.emplace_back(tasks.back().start_running_on(eb));
+        auto eb = test_event_base();
+
+        for (int i = 0; i < N; ++i)
+        {
+            tasks.emplace_back(fn(i));
+            results.emplace_back(tasks.back().start_running_on(eb));
+        }
+
+        long long sum = 0;
+        for (auto& f : results)
+        {
+            sum += wait_result(f);
+        }
+
+        ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
-
-    long long sum = 0;
-    for (auto& f : results)
-    {
-        sum += wait_result(f);
-    }
-
-    ASSERT_EQ(sum, (N - 1LL) * N / 2);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
