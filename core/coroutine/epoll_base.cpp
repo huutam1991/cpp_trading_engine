@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 
 #include "epoll_base.h"
+#include "base_promise_type.h"
 
 #define MAX_EPOLL_EVENTS 10000
 
@@ -128,22 +129,38 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     }
 }
 
+void EpollBase::set_ready_task(SystemIOObject* task_info_event)
+{
+    int fd = task_info_event->generate_fd();
+    if (fd < 0)
+    {
+        spdlog::error("EpollBase - [set_ready_task], TaskInfo generate_fd error for fd: {}", fd);
+        return;
+    }
+
+    // Add to epoll
+    add_fd(fd, task_info_event);
+
+    // Mark this task is ready
+    eventfd_write(fd, 1);
+}
+
 inline void EpollBase::add_run_task_event(BasePromiseType* promise)
 {
     TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::RUN, promise);
-    start_living_system_io_object(task_event);
+    set_ready_task(task_event);
 }
 
 inline void EpollBase::add_set_suspend_value_event(BasePromiseType* promise)
 {
     TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise);
-    start_living_system_io_object(task_event);
+    set_ready_task(task_event);
 }
 
 inline void EpollBase::add_remove_awaiter_event(BasePromiseType* promise)
 {
     TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::REMOVE_AWAITER, promise);
-    start_living_system_io_object(task_event);
+    set_ready_task(task_event);
 }
 
 void EpollBase::stop()

@@ -52,6 +52,7 @@ int TaskInfoEvent::activate()
 int TaskInfoEvent::handle_read()
 {
     check_handle();
+
     // Always return -1 to indicate this task is done
     return -1;
 }
@@ -64,5 +65,9 @@ int TaskInfoEvent::handle_write()
 
 void TaskInfoEvent::release()
 {
-    delete this;
+    // spdlog::error("EventBase - [TaskInfoEvent::release] Releasing TaskInfoEvent with promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
+    if (this != nullptr)
+    {
+        delete this;
+    }
 }
