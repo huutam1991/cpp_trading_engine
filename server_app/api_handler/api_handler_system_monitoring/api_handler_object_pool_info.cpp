@@ -25,7 +25,7 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
         {"Json Value Pool Size", JsonValuePool::size()},
         {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()},
         {"Share String Pool Size", StringPool::size()},
-        {"Task Info Pool Size", TaskInfoPool::size()},
+        // {"Task Info Pool Size", TaskInfoPool::size()},
         {"Timer IO Pool Size", TimerIOPool::size()},
         {"Https Client Socket Connection Pool Size", HttpsSocketConnectionPool::size()},
         {"Https Websocket Connection IO Pool Size", HttpsWebsocketConnectionIOPool::size()}

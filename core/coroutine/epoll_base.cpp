@@ -130,17 +130,20 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
 
 inline void EpollBase::add_run_task_event(BasePromiseType* promise)
 {
-    // m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::RUN, promise});
+    TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::RUN, promise);
+    start_living_system_io_object(task_event);
 }
 
 inline void EpollBase::add_set_suspend_value_event(BasePromiseType* promise)
 {
-    // m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise});
+    TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise);
+    start_living_system_io_object(task_event);
 }
 
 inline void EpollBase::add_remove_awaiter_event(BasePromiseType* promise)
 {
-    // m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
+    TaskInfoEvent* task_event = new TaskInfoEvent(TaskInfoEvent::TaskType::REMOVE_AWAITER, promise);
+    start_living_system_io_object(task_event);
 }
 
 void EpollBase::stop()
