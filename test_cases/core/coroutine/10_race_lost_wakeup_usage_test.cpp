@@ -90,37 +90,39 @@ TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
     EventBaseManager::shutdown_all();
 }
 
-// TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
-// {
-//     constexpr int N = 1000;
+TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
+{
+    {
+        constexpr int N = 1000;
 
-//     auto fn = [](int i) -> Task<int>
-//     {
-//         int v = co_await Future<int>([i](auto out)
-//         {
-//             std::thread([out, i]() mutable
-//             {
-//                 out.set_value(i);
-//             }).detach();
-//         });
+        auto fn = [](int i) -> Task<int>
+        {
+            int v = co_await Future<int>([i](auto out)
+            {
+                std::thread([out = std::move(out), i]() mutable
+                {
+                    out.set_value(i);
+                }).detach();
+            });
 
-//         co_return v;
-//     };
+            co_return v;
+        };
 
-//     long long sum = 0;
+        long long sum = 0;
 
-//     for (int i = 0; i < N; ++i)
-//     {
-//         auto task = fn(i);
-//         auto result = task.start_running_on(test_event_base());
-//         sum += wait_result(result);
-//     }
+        for (int i = 0; i < N; ++i)
+        {
+            auto task = fn(i);
+            auto result = task.start_running_on(test_event_base());
+            sum += wait_result(result);
+        }
 
-//     ASSERT_EQ(sum, (N - 1LL) * N / 2);
+        ASSERT_EQ(sum, (N - 1LL) * N / 2);
+    }
 
-//     // Cleanup event base threads after test
-//     EventBaseManager::shutdown_all();
-// }
+    // Cleanup event base threads after test
+    EventBaseManager::shutdown_all();
+}
 
 TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
 {
