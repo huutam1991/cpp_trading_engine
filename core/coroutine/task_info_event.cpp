@@ -36,3 +36,33 @@ void TaskInfoEvent::check_handle()
         promise->handle.destroy();
     }
 }
+
+int TaskInfoEvent::generate_fd()
+{
+    fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    return fd;
+}
+
+int TaskInfoEvent::activate()
+{
+    // Nothing to do for TaskInfoEvent
+    return 0;
+}
+
+int TaskInfoEvent::handle_read()
+{
+    check_handle();
+    // Always return -1 to indicate this task is done
+    return -1;
+}
+
+int TaskInfoEvent::handle_write()
+{
+    // Nothing to do for write event
+    return 0;
+}
+
+void TaskInfoEvent::release()
+{
+    delete this;
+}

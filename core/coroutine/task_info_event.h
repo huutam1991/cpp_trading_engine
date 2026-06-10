@@ -1,10 +1,11 @@
 #pragma once
 
 #include <cstddef>
+#include <system_io/system_io_object.h>
 
 struct BasePromiseType;
 
-struct TaskInfoEvent
+struct TaskInfoEvent : public NamedIOObject<TaskInfoEvent>
 {
     enum TaskType
     {
@@ -27,4 +28,12 @@ struct TaskInfoEvent
     }
 
     void check_handle();
+
+    // SystemIOObject's methods
+    virtual int generate_fd() override;
+    virtual int get_io_events() { return EPOLLIN; }
+    virtual int activate() override;
+    virtual int handle_read() override;
+    virtual int handle_write() override;
+    virtual void release() override;
 };
