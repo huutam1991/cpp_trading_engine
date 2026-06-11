@@ -127,6 +127,27 @@ std::string Utils::get_string_time_from_utc_nanoseconds(size_t utc_nanoseconds, 
     return "";
 }
 
+std::string Utils::get_duration_string_from_nanoseconds(size_t duration_ns)
+{
+    const size_t seconds = duration_ns / 1'000'000'000ULL;
+    duration_ns %= 1'000'000'000ULL;
+
+    const size_t milliseconds = duration_ns / 1'000'000ULL;
+    duration_ns %= 1'000'000ULL;
+
+    const size_t microseconds = duration_ns / 1'000ULL;
+    const size_t nanoseconds = duration_ns % 1'000ULL;
+
+    std::ostringstream oss;
+
+    oss << seconds << "s "
+        << milliseconds << "ms "
+        << microseconds << "us "
+        << nanoseconds << "ns";
+
+    return oss.str();
+}
+
 std::vector<std::string> Utils::split_string(const std::string& str, const std::string& del)
 {
     std::vector<std::string> res;
