@@ -5,6 +5,7 @@
 
 #include <utils/constants.h>
 #include <utils/utils.h>
+#include <utils/remove_core_dump.h>
 #include <app_constants.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
@@ -132,6 +133,9 @@ int main(int argc, char **argv) {
 
     const int port = atoi(argv[1]);
     const int websocket_port = atoi(argv[2]);
+
+    // Remove old core dump files
+    cleanup_old_core_files();
 
     // Initialize Google’s logging library
     // google::InitGoogleLogging(argv[0]);
