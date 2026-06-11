@@ -169,7 +169,7 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
         epoll_base->del_fd(fd, this);
     }
 
-    std::string endpoint = request->get_query_string();
+    std::string endpoint = request->get_url();
     RequestMethod method = request->get_request_method();
 
     delete request;
@@ -177,14 +177,12 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
     size_t end_time = Utils::get_time_now_in_utc_nanoseconds();
     size_t duration = end_time - start_time;
     std::string start_time_str = Utils::get_string_time_from_utc_nanoseconds(start_time);
-    std::string end_time_str = Utils::get_string_time_from_utc_nanoseconds(end_time);
     std::string duration_str = Utils::get_duration_string_from_nanoseconds(duration);
 
     MongoDB::instance()
         .set_db_and_collection("system_monitoring", "request")
         .insert_one(Json{
             {"start_time", start_time_str},
-            {"end_time", end_time_str},
             {"duration", duration_str},
             {"endpoint", endpoint},
             {"method", enum_reflect::enum_name<RequestMethod>(method)}
