@@ -7,7 +7,7 @@ namespace enum_reflect
 {
     namespace detail
     {
-        #define ENUM_MAX 200  // Max number of enum values to scan
+        #define ENUM_MAX 510  // Max number of enum values to scan
 
         // Get the compiler-specific function signature at compile time
         template<class E, E V>
