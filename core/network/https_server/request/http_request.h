@@ -23,6 +23,7 @@ private:
     ResponseFileType check_file_type(const std::string& name);
 
 protected:
+    std::string m_client_ip;
     std::string m_url;
     std::string m_dir_path;
     std::string m_query_string;
@@ -34,6 +35,9 @@ protected:
 public:
     HttpRequest(const std::string& content, const std::string& dir_path);
     virtual ~HttpRequest() = default;
+
+    void set_client_ip(const std::string& ip) { m_client_ip = ip; }
+    std::string get_client_ip() const { return m_client_ip; }
 
     virtual RequestMethod get_request_method() { return RequestMethod::UNKNOWN; }
     const std::string& get_url();

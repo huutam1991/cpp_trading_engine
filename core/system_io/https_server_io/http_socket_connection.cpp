@@ -123,6 +123,9 @@ int HttpSocketConnection::handle_read()
     // Otherwise, clean save buffer + and execute request
     save_buffer = "";
 
+    // Set client IP to request
+    request->set_client_ip(client_ip);
+
     // Execute request on a single thread
     auto task = execute_request(request);
     task.start_running_on((EventBase*)epoll_base);
