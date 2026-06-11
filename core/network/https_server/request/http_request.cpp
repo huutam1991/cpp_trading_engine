@@ -32,7 +32,6 @@ std::function<HttpResponse(HttpRequest*)> HttpRequest::s_bad_request_getter = ba
 
 HttpRequest::HttpRequest(const std::string& content, const std::string& dir_path) : m_dir_path(dir_path)
 {
-    spdlog::debug("HttpRequest content = \n{}", content);
     deserialize(content);
 }
 
