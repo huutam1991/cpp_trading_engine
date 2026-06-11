@@ -35,6 +35,7 @@ type RequestLog = {
   host: string
   client_ip: string
   user_agent: string
+  response_status: string
 }
 
 type RequestLogResponse = {
@@ -140,6 +141,34 @@ function parseDateTime(value: string) {
 
 function getMethodTone(method: string) {
   return `method-${method.toLowerCase()}`
+}
+
+function getResponseStatusTone(responseStatus: string) {
+  if (responseStatus === 'OK_200' || responseStatus === 'CREATED_201') {
+    return 'response-success'
+  }
+
+  if (responseStatus === 'BAD_REQUEST_400' || responseStatus === 'UNAUTHORIZED_REQUEST_401') {
+    return 'response-warning'
+  }
+
+  if (responseStatus === 'NOT_FOUND_404') {
+    return 'response-not-found'
+  }
+
+  if (responseStatus === 'RISK_ERROR_410') {
+    return 'response-risk'
+  }
+
+  if (responseStatus === 'INTERNAL_SERVER_ERROR_500') {
+    return 'response-error'
+  }
+
+  return 'response-unknown'
+}
+
+function formatResponseStatus(responseStatus: string) {
+  return responseStatus || '–'
 }
 
 function formatDuration(value: string) {
@@ -471,13 +500,13 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-
         <div v-else-if="activeTab === 'request_log'" class="table-card">
           <table v-if="sortedRequestLogs.length > 0" class="request-table">
             <colgroup>
               <col class="col-request-time" />
               <col class="col-request-method" />
               <col class="col-request-endpoint" />
+              <col class="col-request-status" />
               <col class="col-request-duration" />
               <col class="col-request-client-ip" />
               <col class="col-request-host" />
@@ -489,6 +518,7 @@ onBeforeUnmount(() => {
                 <th>Start Time</th>
                 <th>Method</th>
                 <th>Endpoint</th>
+                <th>Status</th>
                 <th>Duration</th>
                 <th>Client IP</th>
                 <th>Host</th>
@@ -499,7 +529,7 @@ onBeforeUnmount(() => {
             <tbody>
               <tr
                 v-for="(log, index) in sortedRequestLogs"
-                :key="`${log.start_time}-${log.method}-${log.endpoint}-${index}`"
+                :key="`${log.start_time}-${log.method}-${log.endpoint}-${log.response_status}-${index}`"
                 class="table-row"
               >
                 <td class="mono-text" data-label="Start Time">{{ log.start_time }}</td>
@@ -509,6 +539,11 @@ onBeforeUnmount(() => {
                   </span>
                 </td>
                 <td class="mono-text function-cell" data-label="Endpoint">{{ log.endpoint }}</td>
+                <td data-label="Status">
+                  <span class="response-status-badge" :class="getResponseStatusTone(log.response_status)">
+                    {{ formatResponseStatus(log.response_status) }}
+                  </span>
+                </td>
                 <td class="mono-text" data-label="Duration">{{ formatDuration(log.duration) }}</td>
                 <td class="mono-text" data-label="Client IP">{{ log.client_ip || '–' }}</td>
                 <td class="mono-text" data-label="Host">{{ log.host || '–' }}</td>
@@ -764,13 +799,14 @@ table {
 .col-core { width: 5%; }
 .col-host { width: 8%; }
 
-.col-request-time { width: 15%; }
-.col-request-method { width: 8%; }
-.col-request-endpoint { width: 24%; }
-.col-request-duration { width: 12%; }
-.col-request-client-ip { width: 13%; }
-.col-request-host { width: 13%; }
-.col-request-user-agent { width: 15%; }
+.col-request-time { width: 14%; }
+.col-request-method { width: 7%; }
+.col-request-endpoint { width: 20%; }
+.col-request-status { width: 13%; }
+.col-request-duration { width: 10%; }
+.col-request-client-ip { width: 12%; }
+.col-request-host { width: 12%; }
+.col-request-user-agent { width: 12%; }
 
 th,
 td {
@@ -807,14 +843,15 @@ td:nth-child(9) {
 
 .request-table td:nth-child(1),
 .request-table td:nth-child(3),
-.request-table td:nth-child(4),
 .request-table td:nth-child(5),
 .request-table td:nth-child(6),
-.request-table td:nth-child(7) {
+.request-table td:nth-child(7),
+.request-table td:nth-child(8) {
   text-align: left;
 }
 
-.request-table td:nth-child(2) {
+.request-table td:nth-child(2),
+.request-table td:nth-child(4) {
   text-align: center;
 }
 
@@ -860,7 +897,8 @@ td:nth-child(9) {
   border: 1px solid #374151;
 }
 
-.method-badge {
+.method-badge,
+.response-status-badge {
   min-width: 58px;
   display: inline-flex;
   align-items: center;
@@ -870,6 +908,11 @@ td:nth-child(9) {
   font-size: 11px;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.response-status-badge {
+  min-width: 108px;
+  white-space: nowrap;
 }
 
 .method-get {
@@ -902,6 +945,42 @@ td:nth-child(9) {
   color: #c4b5fd;
   background: #2e1065;
   border: 1px solid #7c3aed;
+}
+
+.response-success {
+  color: #86efac;
+  background: #14532d;
+  border: 1px solid #16a34a;
+}
+
+.response-warning {
+  color: #fde68a;
+  background: #451a03;
+  border: 1px solid #d97706;
+}
+
+.response-not-found {
+  color: #fca5a5;
+  background: #450a0a;
+  border: 1px solid #dc2626;
+}
+
+.response-risk {
+  color: #c4b5fd;
+  background: #2e1065;
+  border: 1px solid #7c3aed;
+}
+
+.response-error {
+  color: #fecaca;
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+}
+
+.response-unknown {
+  color: #cbd5e1;
+  background: #111827;
+  border: 1px solid #4b5563;
 }
 
 .object-pool-grid {
