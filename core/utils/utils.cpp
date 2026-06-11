@@ -142,8 +142,7 @@ std::string Utils::get_duration_string_from_nanoseconds(size_t duration_ns)
 
     oss << seconds << "s "
         << milliseconds << "ms "
-        << microseconds << "us "
-        << nanoseconds << "ns";
+        << microseconds << "us ";
 
     return oss.str();
 }
