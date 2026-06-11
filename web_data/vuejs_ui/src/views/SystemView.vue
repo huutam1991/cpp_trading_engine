@@ -32,6 +32,9 @@ type RequestLog = {
   start_time: string
   duration: string
   endpoint: string
+  host: string
+  client_ip: string
+  user_agent: string
 }
 
 type RequestLogResponse = {
@@ -63,7 +66,7 @@ type SystemTab = {
 
 const tabs: SystemTab[] = [
   { label: 'Crash Log', value: 'crash_log', description: 'Runtime crash reports' },
-  { label: 'Request', value: 'request_log', description: 'HTTPS request logs' },
+  { label: 'Request', value: 'request_log', description: 'HTTP request logs' },
   { label: 'Object Pool', value: 'object_pool', description: 'Pool metrics' },
 ]
 
@@ -476,6 +479,9 @@ onBeforeUnmount(() => {
               <col class="col-request-method" />
               <col class="col-request-endpoint" />
               <col class="col-request-duration" />
+              <col class="col-request-client-ip" />
+              <col class="col-request-host" />
+              <col class="col-request-user-agent" />
             </colgroup>
 
             <thead>
@@ -484,6 +490,9 @@ onBeforeUnmount(() => {
                 <th>Method</th>
                 <th>Endpoint</th>
                 <th>Duration</th>
+                <th>Client IP</th>
+                <th>Host</th>
+                <th>User Agent</th>
               </tr>
             </thead>
 
@@ -501,6 +510,11 @@ onBeforeUnmount(() => {
                 </td>
                 <td class="mono-text function-cell" data-label="Endpoint">{{ log.endpoint }}</td>
                 <td class="mono-text" data-label="Duration">{{ formatDuration(log.duration) }}</td>
+                <td class="mono-text" data-label="Client IP">{{ log.client_ip || '–' }}</td>
+                <td class="mono-text" data-label="Host">{{ log.host || '–' }}</td>
+                <td class="mono-text user-agent-cell" data-label="User Agent" :title="log.user_agent">
+                  {{ log.user_agent || '–' }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -750,10 +764,13 @@ table {
 .col-core { width: 5%; }
 .col-host { width: 8%; }
 
-.col-request-time { width: 18%; }
-.col-request-method { width: 10%; }
-.col-request-endpoint { width: 52%; }
-.col-request-duration { width: 20%; }
+.col-request-time { width: 15%; }
+.col-request-method { width: 8%; }
+.col-request-endpoint { width: 24%; }
+.col-request-duration { width: 12%; }
+.col-request-client-ip { width: 13%; }
+.col-request-host { width: 13%; }
+.col-request-user-agent { width: 15%; }
 
 th,
 td {
@@ -790,7 +807,10 @@ td:nth-child(9) {
 
 .request-table td:nth-child(1),
 .request-table td:nth-child(3),
-.request-table td:nth-child(4) {
+.request-table td:nth-child(4),
+.request-table td:nth-child(5),
+.request-table td:nth-child(6),
+.request-table td:nth-child(7) {
   text-align: left;
 }
 
@@ -807,6 +827,13 @@ td:nth-child(9) {
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
+}
+
+.user-agent-cell {
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status-badge,
@@ -1019,6 +1046,11 @@ td:nth-child(9) {
   .mono-text {
     word-break: break-word;
     overflow-wrap: anywhere;
+  }
+
+  .user-agent-cell {
+    max-width: none;
+    white-space: normal;
   }
 
   .object-pool-grid {
