@@ -92,19 +92,16 @@ HttpResponse RouteController::check_send_file_from_dashboard_folder(HttpRequest*
 Task<HttpResponse> RouteController::handle_request_base_on_route(HttpRequest* request)
 {
     HttpResponse response;
-    std::string response_str;
 
     try
     {
         // Check route group map first
         response = co_await check_handle_by_route_group(request);
-        response_str = response.get_response_in_string();
 
         // If there is no matching, check the route map
-        if (response_str == "")
+        if (response.get_response_code() == ResponseStatusCode::NOT_FOUND_404)
         {
             response = co_await check_handle_by_route(request);
-            response_str = response.get_response_in_string();
         }
     }
     catch(ApiException const& e)
@@ -118,14 +115,13 @@ Task<HttpResponse> RouteController::handle_request_base_on_route(HttpRequest* re
         co_return HttpRequest::response_internal_error_500();
     }
 
-    if (response_str == "")
+    if (response.get_response_code() == ResponseStatusCode::NOT_FOUND_404)
     {
         response = check_send_file_from_dashboard_folder(request);
-        response_str = response.get_response_in_string();
     }
 
     // If no matching at all, return not found 404 page
-    if (response_str == "")
+    if (response.get_response_code() == ResponseStatusCode::NOT_FOUND_404)
     {
         response = request->response_not_found_404();
     }
