@@ -182,6 +182,7 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
     MongoDB::instance()
         .set_db_and_collection("system_monitoring", "request_log")
         .insert_one(Json{
+            {"created_at_ns", start_time},
             {"start_time", start_time_str},
             {"duration", duration_str},
             {"endpoint", endpoint},
