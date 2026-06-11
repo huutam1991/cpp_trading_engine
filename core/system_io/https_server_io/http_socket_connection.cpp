@@ -175,7 +175,14 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
     }
 
     std::string endpoint = request->get_url();
+    std::string client_ip = request->get_client_ip();
+    std::string host = request->get_header_param("Host");
+    std::string user_agent = request->get_header_param("User-Agent");
     RequestMethod method = request->get_request_method();
+
+    // Check version lowercase for better log consistency
+    host = host != PARAM_NOT_FOUND ? host : request->get_header_param("host");
+    user_agent = user_agent != PARAM_NOT_FOUND ? user_agent : request->get_header_param("user-agent");
 
     delete request;
 
@@ -191,7 +198,10 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
             {"start_time", start_time_str},
             {"duration", duration_str},
             {"endpoint", endpoint},
-            {"method", enum_reflect::enum_name<RequestMethod>(method)}
+            {"method", enum_reflect::enum_name<RequestMethod>(method)},
+            {"client_ip", client_ip},
+            {"host", host},
+            {"user_agent", user_agent}
         });
 
     co_return;
