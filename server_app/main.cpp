@@ -134,6 +134,9 @@ int main(int argc, char **argv) {
     const int port = atoi(argv[1]);
     const int websocket_port = atoi(argv[2]);
 
+    // Init SpdLog format
+    LogInit::init();
+
     // Remove old core dump files
     cleanup_old_core_files();
 
@@ -149,9 +152,6 @@ int main(int argc, char **argv) {
     // Init routes
     add_app_route();
     add_bad_request();
-
-    // Init SpdLog format
-    LogInit::init();
 
     // Print update time
     spdlog::info("Server up time: {}", Utils::get_up_time());
