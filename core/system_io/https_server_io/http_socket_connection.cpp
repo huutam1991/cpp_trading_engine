@@ -180,7 +180,7 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
     std::string duration_str = Utils::get_duration_string_from_nanoseconds(duration);
 
     MongoDB::instance()
-        .set_db_and_collection("system_monitoring", "request")
+        .set_db_and_collection("system_monitoring", "request_log")
         .insert_one(Json{
             {"start_time", start_time_str},
             {"duration", duration_str},
