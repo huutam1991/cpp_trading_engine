@@ -20,6 +20,7 @@ void HttpSocketConnection::refresh()
 {
     server_fd = -1;
     save_buffer = "";
+    client_ip = "";
 }
 
 int HttpSocketConnection::generate_fd()
@@ -34,7 +35,8 @@ int HttpSocketConnection::generate_fd()
     }
     else
     {
-        spdlog::info("HttpSocketConnection::generate_fd - Connection to {}, established (fd = {})", inet_ntoa(client_addr.sin_addr), fd);
+        client_ip = inet_ntoa(client_addr.sin_addr);
+        spdlog::info("HttpSocketConnection::generate_fd - Connection from {}, established (fd = {})", client_ip, fd);
 
         // Set non-blocking
         if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)

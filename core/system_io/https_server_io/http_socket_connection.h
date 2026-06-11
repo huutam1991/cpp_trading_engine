@@ -11,6 +11,7 @@
 struct HttpSocketConnection : public NamedIOObject<HttpSocketConnection>
 {
     int server_fd;
+    std::string client_ip;
     std::string save_buffer;
 
     void set_server_fd(int fd_value);
