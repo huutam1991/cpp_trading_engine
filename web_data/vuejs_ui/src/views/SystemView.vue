@@ -27,6 +27,20 @@ type CrashLogResponse = {
   data: CrashLog[]
 }
 
+type RequestLog = {
+  method: string
+  start_time: string
+  duration: string
+  endpoint: string
+}
+
+type RequestLogResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: RequestLog[]
+}
+
 type ObjectPoolInfoResponse = {
   error: boolean
   status_code: number
@@ -43,12 +57,13 @@ type UpTimeResponse = {
 
 type SystemTab = {
   label: string
-  value: 'crash_log' | 'object_pool'
+  value: 'crash_log' | 'request_log' | 'object_pool'
   description: string
 }
 
 const tabs: SystemTab[] = [
   { label: 'Crash Log', value: 'crash_log', description: 'Runtime crash reports' },
+  { label: 'Request', value: 'request_log', description: 'HTTPS request logs' },
   { label: 'Object Pool', value: 'object_pool', description: 'Pool metrics' },
 ]
 
@@ -56,6 +71,7 @@ const activeTab = ref<SystemTab['value']>('crash_log')
 const loading = ref(false)
 const errorMessage = ref('')
 const crashLogs = ref<CrashLog[]>([])
+const requestLogs = ref<RequestLog[]>([])
 const objectPoolInfo = ref<Record<string, number>>({})
 const upTime = ref('--:--:--')
 
@@ -71,6 +87,12 @@ const sortedCrashLogs = computed(() => {
   })
 })
 
+const sortedRequestLogs = computed(() => {
+  return [...requestLogs.value].sort((left, right) => {
+    return parseDateTime(right.start_time) - parseDateTime(left.start_time)
+  })
+})
+
 const objectPoolEntries = computed(() => {
   return Object.entries(objectPoolInfo.value).map(([name, size]) => ({
     name,
@@ -83,6 +105,10 @@ function getTabCount(tab: SystemTab) {
     return crashLogs.value.length
   }
 
+  if (tab.value === 'request_log') {
+    return requestLogs.value.length
+  }
+
   return objectPoolEntries.value.length
 }
 
@@ -90,6 +116,32 @@ function formatNumber(value: number) {
   return value.toLocaleString('en-US')
 }
 
+function parseDateTime(value: string) {
+  const match = /^(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})$/.exec(value)
+
+  if (!match) {
+    return 0
+  }
+
+  const [, day, month, year, hour, minute, second] = match
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second),
+  ).getTime()
+}
+
+function getMethodTone(method: string) {
+  return `method-${method.toLowerCase()}`
+}
+
+function formatDuration(value: string) {
+  return value.trim() || '–'
+}
 
 function parseUpTime(value: string): number | null {
   const match = /^(\d+):(\d+):(\d+)$/.exec(value)
@@ -147,6 +199,8 @@ async function selectTab(tab: SystemTab['value']) {
 
   if (tab === 'crash_log') {
     await fetchCrashLogs()
+  } else if (tab === 'request_log') {
+    await fetchRequestLogs()
   } else if (tab === 'object_pool') {
     await fetchObjectPoolInfo()
   }
@@ -218,6 +272,37 @@ async function fetchCrashLogs() {
   }
 }
 
+async function fetchRequestLogs() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/request_log`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: RequestLogResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      authStore.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      errorMessage.value = result.msg || 'Failed to fetch request logs.'
+      return
+    }
+
+    requestLogs.value = result.data ?? []
+  } catch (error) {
+    console.error('Fetch request logs error:', error)
+    errorMessage.value = 'Fetch request logs error.'
+  } finally {
+    loading.value = false
+  }
+}
+
 async function fetchObjectPoolInfo() {
   loading.value = true
   errorMessage.value = ''
@@ -254,6 +339,8 @@ async function refreshSystem() {
 
   if (activeTab.value === 'crash_log') {
     await fetchCrashLogs()
+  } else if (activeTab.value === 'request_log') {
+    await fetchRequestLogs()
   } else {
     await fetchObjectPoolInfo()
   }
@@ -262,6 +349,7 @@ async function refreshSystem() {
 onMounted(async () => {
   await Promise.all([
     fetchCrashLogs(),
+    fetchRequestLogs(),
     fetchUpTime(),
   ])
 })
@@ -377,6 +465,48 @@ onBeforeUnmount(() => {
 
           <div v-else class="empty-table">
             No crash logs found.
+          </div>
+        </div>
+
+
+        <div v-else-if="activeTab === 'request_log'" class="table-card">
+          <table v-if="sortedRequestLogs.length > 0" class="request-table">
+            <colgroup>
+              <col class="col-request-time" />
+              <col class="col-request-method" />
+              <col class="col-request-endpoint" />
+              <col class="col-request-duration" />
+            </colgroup>
+
+            <thead>
+              <tr>
+                <th>Start Time</th>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                v-for="(log, index) in sortedRequestLogs"
+                :key="`${log.start_time}-${log.method}-${log.endpoint}-${index}`"
+                class="table-row"
+              >
+                <td class="mono-text" data-label="Start Time">{{ log.start_time }}</td>
+                <td data-label="Method">
+                  <span class="method-badge" :class="getMethodTone(log.method)">
+                    {{ log.method }}
+                  </span>
+                </td>
+                <td class="mono-text function-cell" data-label="Endpoint">{{ log.endpoint }}</td>
+                <td class="mono-text" data-label="Duration">{{ formatDuration(log.duration) }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div v-else class="empty-table">
+            No request logs found.
           </div>
         </div>
 
@@ -620,6 +750,11 @@ table {
 .col-core { width: 5%; }
 .col-host { width: 8%; }
 
+.col-request-time { width: 18%; }
+.col-request-method { width: 10%; }
+.col-request-endpoint { width: 52%; }
+.col-request-duration { width: 20%; }
+
 th,
 td {
   padding: 10px 12px;
@@ -650,6 +785,16 @@ td:nth-child(4),
 td:nth-child(6),
 td:nth-child(8),
 td:nth-child(9) {
+  text-align: center;
+}
+
+.request-table td:nth-child(1),
+.request-table td:nth-child(3),
+.request-table td:nth-child(4) {
+  text-align: left;
+}
+
+.request-table td:nth-child(2) {
   text-align: center;
 }
 
@@ -686,6 +831,50 @@ td:nth-child(9) {
   color: #e5e7eb;
   background: #111827;
   border: 1px solid #374151;
+}
+
+.method-badge {
+  min-width: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.method-get {
+  color: #93c5fd;
+  background: #172554;
+  border: 1px solid #2563eb;
+}
+
+.method-post {
+  color: #86efac;
+  background: #14532d;
+  border: 1px solid #16a34a;
+}
+
+.method-put,
+.method-patch {
+  color: #fde68a;
+  background: #451a03;
+  border: 1px solid #d97706;
+}
+
+.method-delete {
+  color: #fca5a5;
+  background: #450a0a;
+  border: 1px solid #dc2626;
+}
+
+.method-options,
+.method-head {
+  color: #c4b5fd;
+  background: #2e1065;
+  border: 1px solid #7c3aed;
 }
 
 .object-pool-grid {
@@ -821,6 +1010,10 @@ td:nth-child(9) {
   td:nth-child(8)::before { content: 'Caller Line'; }
   td:nth-child(9)::before { content: 'Core'; }
   td:nth-child(10)::before { content: 'Host'; }
+
+  .request-table td::before {
+    content: attr(data-label);
+  }
 
   .function-cell,
   .mono-text {
