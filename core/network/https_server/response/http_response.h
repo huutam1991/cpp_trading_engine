@@ -43,6 +43,7 @@ public:
 
     const HttpResponse& operator=(HttpResponse& response);
     const HttpResponse& operator=(HttpResponse&& response);
+    ResponseStatusCode get_response_code() const { return m_response_code; }
     virtual std::string get_response_in_string();
 
     void add_custom_header(Json& custom_header);

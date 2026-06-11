@@ -31,7 +31,7 @@ void RouteController::add_dashboard_folder(const std::string& dashboard_folder)
     m_dashboard_folder = dashboard_folder;
 }
 
-Task<std::string> RouteController::check_handle_by_route_group(HttpRequest* request)
+Task<HttpResponse> RouteController::check_handle_by_route_group(HttpRequest* request)
 {
     // If the route group is valid, handle the request
     for (auto it = route_group_map.begin(); it != route_group_map.end(); it++)
@@ -46,15 +46,15 @@ Task<std::string> RouteController::check_handle_by_route_group(HttpRequest* requ
                 Route* route = it_route_set->second;
                 RequestHandleFunction& handle_function = route->get_handle_function();
                 HttpResponse response = co_await handle_function(request);
-                co_return response.get_response_in_string();
+                co_return response;
             }
         }
     }
 
-    co_return std::string("");
+    co_return HttpResponse(ResponseStatusCode::NOT_FOUND_404, Json{});
 }
 
-Task<std::string> RouteController::check_handle_by_route(HttpRequest* request)
+Task<HttpResponse> RouteController::check_handle_by_route(HttpRequest* request)
 {
     // If the route is valid, handle the request
     auto it = route_map.find(request->get_url());
@@ -68,61 +68,66 @@ Task<std::string> RouteController::check_handle_by_route(HttpRequest* request)
             Route* route = it_route_set->second;
             RequestHandleFunction& handle_function = route->get_handle_function();
             HttpResponse response = co_await handle_function(request);
-            co_return response.get_response_in_string();
+            co_return response;
         }
     }
 
-    co_return std::string("");
+    co_return HttpResponse(ResponseStatusCode::NOT_FOUND_404, Json{});
 }
 
-std::string RouteController::check_send_file_from_dashboard_folder(HttpRequest* request)
+HttpResponse RouteController::check_send_file_from_dashboard_folder(HttpRequest* request)
 {
     if (m_dashboard_folder != "" && request != nullptr)
     {
         std::string file_path = m_dashboard_folder + request->get_url();
         if (request->check_is_file_path_exist(file_path))
         {
-            return request->send_file_from_directory(file_path).get_response_in_string();
+            return request->send_file_from_directory(file_path);
         }
     }
-    return std::string("");
+
+    return HttpResponse(ResponseStatusCode::NOT_FOUND_404, Json{}); // Return empty response if not found, so that it can continue to check other routes or return 404
 }
 
-Task<std::string> RouteController::handle_request_base_on_route(HttpRequest* request)
+Task<HttpResponse> RouteController::handle_request_base_on_route(HttpRequest* request)
 {
-    std::string response;
+    HttpResponse response;
+    std::string response_str;
 
     try
     {
         // Check route group map first
         response = co_await check_handle_by_route_group(request);
+        response_str = response.get_response_in_string();
 
         // If there is no matching, check the route map
-        if (response == "")
+        if (response_str == "")
         {
             response = co_await check_handle_by_route(request);
+            response_str = response.get_response_in_string();
         }
     }
     catch(ApiException const& e)
     {
         // LOG(ERROR) << "Error: " << e.msg() << std::endl;
-        co_return HttpRequest::response_bad_request_400(e.msg()).get_response_in_string();
+        co_return HttpRequest::response_bad_request_400(e.msg());
     }
     catch(std::exception const& e)
     {
         // LOG(ERROR) << "Error: " << e.what() << std::endl;
-        co_return HttpRequest::response_internal_error_500().get_response_in_string();
+        co_return HttpRequest::response_internal_error_500();
     }
 
-    if (response == "")
+    if (response_str == "")
     {
         response = check_send_file_from_dashboard_folder(request);
+        response_str = response.get_response_in_string();
     }
 
     // If no matching at all, return not found 404 page
-    if (response == "")
+    if (response_str == "")
     {
-        response = request->response_not_found_404().get_response_in_string();
+        response = request->response_not_found_404();
     }
 
     co_return response;

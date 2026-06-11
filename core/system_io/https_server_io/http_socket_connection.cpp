@@ -165,12 +165,13 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
 {
     size_t start_time = Utils::get_time_now_in_utc_nanoseconds();
 
-    std::string response = co_await RouteController::instance().handle_request_base_on_route(request);
+    HttpResponse response = co_await RouteController::instance().handle_request_base_on_route(request);
+    std::string response_str = response.get_response_in_string();
 
-    int res = write_to_socket_io(response.c_str(), response.size());
+    int res = write_to_socket_io(response_str.c_str(), response_str.size());
     if (res == -1)
     {
-        spdlog::error("HttpSocketConnection::send_404_response - write failed, socket fd = {}", fd);
+        spdlog::error("HttpSocketConnection::execute_request - write failed, socket fd = {}", fd);
         epoll_base->del_fd(fd, this);
     }
 
@@ -178,6 +179,7 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
     std::string client_ip = request->get_client_ip();
     std::string host = request->get_header_param("Host");
     std::string user_agent = request->get_header_param("User-Agent");
+    std::string response_status = std::string(enum_reflect::enum_name<ResponseStatusCode>(response.get_response_code()));
     RequestMethod method = request->get_request_method();
 
     // Check version lowercase for better log consistency
@@ -201,7 +203,8 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
             {"method", enum_reflect::enum_name<RequestMethod>(method)},
             {"client_ip", client_ip},
             {"host", host},
-            {"user_agent", user_agent}
+            {"user_agent", user_agent},
+            {"response_status", response_status}
         });
 
     co_return;
