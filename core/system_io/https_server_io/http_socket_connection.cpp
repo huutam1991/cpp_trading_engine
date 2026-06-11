@@ -158,6 +158,8 @@ Task<void> HttpSocketConnection::send_404_response(HttpRequest* request)
 
 Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
 {
+    size_t start_time = Utils::get_time_now_in_utc_nanoseconds();
+
     std::string response = co_await RouteController::instance().handle_request_base_on_route(request);
 
     int res = write_to_socket_io(response.c_str(), response.size());
@@ -167,7 +169,26 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
         epoll_base->del_fd(fd, this);
     }
 
+    std::string endpoint = request->get_query_string();
+    RequestMethod method = request->get_request_method();
+
     delete request;
+
+    size_t end_time = Utils::get_time_now_in_utc_nanoseconds();
+    size_t duration = end_time - start_time;
+    std::string start_time_str = Utils::get_string_time_from_utc_nanoseconds(start_time);
+    std::string end_time_str = Utils::get_string_time_from_utc_nanoseconds(end_time);
+    std::string duration_str = Utils::get_duration_string_from_nanoseconds(duration);
+
+    MongoDB::instance()
+        .set_db_and_collection("system_monitoring", "request")
+        .insert_one(Json{
+            {"start_time", start_time_str},
+            {"end_time", end_time_str},
+            {"duration", duration_str},
+            {"endpoint", endpoint},
+            {"method", enum_reflect::enum_name<RequestMethod>(method)}
+        });
 
     co_return;
 }
