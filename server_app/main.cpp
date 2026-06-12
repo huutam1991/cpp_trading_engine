@@ -5,7 +5,7 @@
 
 #include <utils/constants.h>
 #include <utils/utils.h>
-#include <utils/remove_core_dump.h>
+#include <utils/process_core_dumps.h>
 #include <app_constants.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
     LogInit::init();
 
     // Remove old core dump files
-    cleanup_old_core_files();
+    process_old_core_dumps_on_startup("./http_server_cpp", "production");
 
     // Initialize Google’s logging library
     // google::InitGoogleLogging(argv[0]);
