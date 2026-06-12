@@ -5,17 +5,28 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
+type CrashCallPathFrame = {
+  frame_index: number | string
+  function: string
+  file: string
+  line: string
+}
+
 type CrashLog = {
   app: string
   env: string
-  exit_code: number
   signal: string
   crash_function: string
+  crash_file: string
   crash_line: string
-  caller: string
-  caller_line: string
-  core_file_size: string
-  host: string
+  suspect_function?: string
+  suspect_file?: string
+  suspect_line?: string
+  call_path?: CrashCallPathFrame[]
+  core_file?: string
+  core_file_size_bytes?: number | string
+  backtrace_size?: number | string
+  frame_count?: number | string
   created_at: string
   created_at_ns: number | string
 }
@@ -78,6 +89,7 @@ const crashLogs = ref<CrashLog[]>([])
 const requestLogs = ref<RequestLog[]>([])
 const objectPoolInfo = ref<Record<string, number>>({})
 const upTime = ref('--:--:--')
+const expandedCrashId = ref<string | null>(null)
 
 let upTimeTimer: ReturnType<typeof setInterval> | null = null
 
@@ -173,6 +185,82 @@ function formatResponseStatus(responseStatus: string) {
 
 function formatDuration(value: string) {
   return value.trim() || '–'
+}
+
+function formatFilePath(file?: string) {
+  if (!file) {
+    return '–'
+  }
+
+  const projectPrefix = '/home/huutam1991/projects/personal/cpp_trading_engine/'
+
+  if (file.startsWith(projectPrefix)) {
+    return file.slice(projectPrefix.length)
+  }
+
+  const parts = file.split('/')
+  return parts.length > 2 ? parts.slice(-3).join('/') : file
+}
+
+function formatFunctionName(functionName?: string) {
+  if (!functionName) {
+    return '–'
+  }
+
+  return functionName.replace(/\s+/g, ' ').trim()
+}
+
+function getCrashId(log: CrashLog, index?: number) {
+  return String(log.created_at_ns ?? `${log.created_at}-${index ?? 0}`)
+}
+
+function toggleCrashDetail(log: CrashLog, index: number) {
+  const id = getCrashId(log, index)
+  expandedCrashId.value = expandedCrashId.value === id ? null : id
+}
+
+function getUniqueCallPath(callPath?: CrashCallPathFrame[]) {
+  if (!callPath) {
+    return []
+  }
+
+  const seen = new Set<string>()
+  const uniqueFrames: CrashCallPathFrame[] = []
+
+  for (const frame of callPath) {
+    const key = `${frame.function}|${frame.file}|${frame.line}`
+
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    uniqueFrames.push(frame)
+  }
+
+  return uniqueFrames
+}
+
+function formatBytes(value?: number | string) {
+  const bytes = Number(value)
+
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return '–'
+  }
+
+  const gb = bytes / 1024 / 1024 / 1024
+
+  if (gb >= 1) {
+    return `${gb.toFixed(1)}G`
+  }
+
+  const mb = bytes / 1024 / 1024
+
+  if (mb >= 1) {
+    return `${mb.toFixed(1)}M`
+  }
+
+  return `${Math.round(bytes / 1024)}K`
 }
 
 function parseUpTime(value: string): number | null {
@@ -446,18 +534,14 @@ onBeforeUnmount(() => {
         </div>
 
         <div v-else-if="activeTab === 'crash_log'" class="table-card">
-          <table v-if="sortedCrashLogs.length > 0">
+          <table v-if="sortedCrashLogs.length > 0" class="crash-table">
             <colgroup>
               <col class="col-created" />
               <col class="col-env" />
               <col class="col-signal" />
-              <col class="col-exit" />
-              <col class="col-function" />
-              <col class="col-line" />
-              <col class="col-caller" />
-              <col class="col-caller-line" />
-              <col class="col-core" />
-              <col class="col-host" />
+              <col class="col-crash-function" />
+              <col class="col-crash-line" />
+              <col class="col-crash-file" />
             </colgroup>
 
             <thead>
@@ -465,33 +549,93 @@ onBeforeUnmount(() => {
                 <th>Created At</th>
                 <th>Env</th>
                 <th>Signal</th>
-                <th>Exit</th>
                 <th>Crash Function</th>
                 <th>Line</th>
-                <th>Caller</th>
-                <th>Caller Line</th>
-                <th>Core</th>
-                <th>Host</th>
+                <th>Crash File</th>
               </tr>
             </thead>
 
             <tbody>
-              <tr
-                v-for="log in sortedCrashLogs"
-                :key="String(log.created_at_ns)"
-                class="table-row"
+              <template
+                v-for="(log, index) in sortedCrashLogs"
+                :key="getCrashId(log, index)"
               >
-                <td class="mono-text">{{ log.created_at }}</td>
-                <td><span class="type-badge">{{ log.env }}</span></td>
-                <td><span class="status-badge tone-reject">{{ log.signal }}</span></td>
-                <td>{{ log.exit_code }}</td>
-                <td class="mono-text function-cell">{{ log.crash_function }}</td>
-                <td>{{ log.crash_line || '–' }}</td>
-                <td class="mono-text function-cell">{{ log.caller }}</td>
-                <td>{{ log.caller_line || '–' }}</td>
-                <td>{{ log.core_file_size }}</td>
-                <td class="mono-text">{{ log.host }}</td>
-              </tr>
+                <tr
+                  class="table-row clickable-row"
+                  :class="{ expanded: expandedCrashId === getCrashId(log, index) }"
+                  @click="toggleCrashDetail(log, index)"
+                >
+                  <td class="mono-text" data-label="Created At">{{ log.created_at }}</td>
+                  <td data-label="Env"><span class="type-badge">{{ log.env }}</span></td>
+                  <td data-label="Signal"><span class="status-badge tone-reject">{{ log.signal }}</span></td>
+                  <td class="mono-text function-cell" data-label="Crash Function">
+                    {{ formatFunctionName(log.crash_function) }}
+                  </td>
+                  <td class="mono-text" data-label="Line">{{ log.crash_line || '–' }}</td>
+                  <td class="mono-text function-cell" data-label="Crash File">
+                    {{ formatFilePath(log.crash_file) }}
+                  </td>
+                </tr>
+
+                <tr
+                  v-if="expandedCrashId === getCrashId(log, index)"
+                  class="crash-detail-row"
+                >
+                  <td colspan="6">
+                    <div class="crash-detail-card">
+                      <div class="crash-detail-grid">
+                        <div class="crash-detail-block">
+                          <span class="detail-label">Suspect Function</span>
+                          <strong class="mono-text">{{ formatFunctionName(log.suspect_function) }}</strong>
+                        </div>
+
+                        <div class="crash-detail-block">
+                          <span class="detail-label">Suspect File</span>
+                          <strong class="mono-text">
+                            {{ formatFilePath(log.suspect_file) }}:{{ log.suspect_line || '–' }}
+                          </strong>
+                        </div>
+
+                        <div class="crash-detail-block">
+                          <span class="detail-label">Core File</span>
+                          <strong class="mono-text">{{ log.core_file || '–' }}</strong>
+                        </div>
+
+                        <div class="crash-detail-block">
+                          <span class="detail-label">Core Size</span>
+                          <strong class="mono-text">{{ formatBytes(log.core_file_size_bytes) }}</strong>
+                        </div>
+                      </div>
+
+                      <div class="call-path-section">
+                        <div class="call-path-title">Call Path</div>
+
+                        <ol v-if="getUniqueCallPath(log.call_path).length > 0" class="call-path-list">
+                          <li
+                            v-for="frame in getUniqueCallPath(log.call_path)"
+                            :key="`${frame.frame_index}-${frame.file}-${frame.line}-${frame.function}`"
+                            class="call-path-item"
+                          >
+                            <div class="call-path-index mono-text">#{{ frame.frame_index }}</div>
+                            <div class="call-path-content">
+                              <div class="call-path-function mono-text">
+                                {{ formatFunctionName(frame.function) }}
+                              </div>
+                              <div class="call-path-file mono-text">
+                                {{ formatFilePath(frame.file) }}:{{ frame.line || '–' }}
+                              </div>
+                            </div>
+                          </li>
+                        </ol>
+
+                        <div v-else class="empty-call-path">
+                          No call path available.
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
 
@@ -788,16 +932,12 @@ table {
   table-layout: fixed;
 }
 
-.col-created { width: 10%; }
-.col-env { width: 6%; }
-.col-signal { width: 7%; }
-.col-exit { width: 4%; }
-.col-function { width: 30%; }
-.col-line { width: 4%; }
-.col-caller { width: 28%; }
-.col-caller-line { width: 6%; }
-.col-core { width: 5%; }
-.col-host { width: 8%; }
+.col-created { width: 13%; }
+.col-env { width: 7%; }
+.col-signal { width: 8%; }
+.col-crash-function { width: 36%; }
+.col-crash-line { width: 6%; }
+.col-crash-file { width: 30%; }
 
 .col-request-time { width: 14%; }
 .col-request-method { width: 7%; }
@@ -832,12 +972,9 @@ td {
   text-align: left;
 }
 
-td:nth-child(2),
-td:nth-child(3),
-td:nth-child(4),
-td:nth-child(6),
-td:nth-child(8),
-td:nth-child(9) {
+.crash-table td:nth-child(2),
+.crash-table td:nth-child(3),
+.crash-table td:nth-child(5) {
   text-align: center;
 }
 
@@ -856,6 +993,14 @@ td:nth-child(9) {
 }
 
 .table-row:hover {
+  background: #273449;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row.expanded {
   background: #273449;
 }
 
@@ -895,6 +1040,96 @@ td:nth-child(9) {
   color: #e5e7eb;
   background: #111827;
   border: 1px solid #374151;
+}
+
+.crash-detail-row td {
+  padding: 0;
+  background: #172033;
+  border-bottom: 1px solid #374151;
+}
+
+.crash-detail-card {
+  padding: 16px;
+  background: #172033;
+}
+
+.crash-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.crash-detail-block {
+  padding: 12px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 9px;
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.call-path-section {
+  padding: 12px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 9px;
+}
+
+.call-path-title {
+  margin-bottom: 10px;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.call-path-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.call-path-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 10px;
+  padding: 10px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+}
+
+.call-path-index {
+  color: #93c5fd;
+  font-weight: 900;
+}
+
+.call-path-function {
+  color: #f8fafc;
+  line-height: 1.45;
+}
+
+.call-path-file {
+  margin-top: 4px;
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.empty-call-path {
+  color: #9ca3af;
+  font-size: 12px;
 }
 
 .method-badge,
@@ -1034,6 +1269,10 @@ td:nth-child(9) {
   .system-panel {
     min-height: unset;
   }
+
+  .crash-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1106,19 +1345,22 @@ td:nth-child(9) {
     font-weight: 800;
   }
 
-  td:nth-child(1)::before { content: 'Created At'; }
-  td:nth-child(2)::before { content: 'Env'; }
-  td:nth-child(3)::before { content: 'Signal'; }
-  td:nth-child(4)::before { content: 'Exit'; }
-  td:nth-child(5)::before { content: 'Crash'; }
-  td:nth-child(6)::before { content: 'Line'; }
-  td:nth-child(7)::before { content: 'Caller'; }
-  td:nth-child(8)::before { content: 'Caller Line'; }
-  td:nth-child(9)::before { content: 'Core'; }
-  td:nth-child(10)::before { content: 'Host'; }
-
+  .crash-table td::before,
   .request-table td::before {
     content: attr(data-label);
+  }
+
+  .crash-detail-row {
+    margin: -8px 0 14px;
+  }
+
+  .crash-detail-row td {
+    display: block;
+    padding: 0;
+  }
+
+  .crash-detail-row td::before {
+    display: none;
   }
 
   .function-cell,
