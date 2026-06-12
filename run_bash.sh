@@ -89,75 +89,75 @@ elif [[ $code -ne 0 ]]; then
     echo "Process exited with non-zero code: ${code}"
 fi
 
-if [[ "$is_crash" == "true" ]]; then
-    latest_core=""
-    trace_file=""
-    frame0=""
-    frame1=""
-    crash_function=""
-    caller=""
-    crash_line=""
-    caller_line=""
-    core_size=""
+# if [[ "$is_crash" == "true" ]]; then
+#     latest_core=""
+#     trace_file=""
+#     frame0=""
+#     frame1=""
+#     crash_function=""
+#     caller=""
+#     crash_line=""
+#     caller_line=""
+#     core_size=""
 
-    latest_core=$(ls -t /tmp/core.http_server_cpp.* 2>/dev/null | head -n 1)
+#     latest_core=$(ls -t /tmp/core.http_server_cpp.* 2>/dev/null | head -n 1)
 
-    if [[ -n "$latest_core" ]]; then
-        trace_file="/tmp/http_server_cpp_crash_${now}.log"
+#     if [[ -n "$latest_core" ]]; then
+#         trace_file="/tmp/http_server_cpp_crash_${now}.log"
 
-        gdb -batch \
-            -ex "set pagination off" \
-            -ex "thread apply all bt full" \
-            ./http_server_cpp "$latest_core" \
-            > "$trace_file" 2>&1
+#         gdb -batch \
+#             -ex "set pagination off" \
+#             -ex "thread apply all bt full" \
+#             ./http_server_cpp "$latest_core" \
+#             > "$trace_file" 2>&1
 
-        frame0=$(grep -m 1 "^#0" "$trace_file")
-        frame1=$(grep -m 1 "^#1" "$trace_file")
+#         frame0=$(grep -m 1 "^#0" "$trace_file")
+#         frame1=$(grep -m 1 "^#1" "$trace_file")
 
-        crash_function=$(echo "$frame0" | sed -E 's/^#0 +0x[0-9a-f]+ in ([^(]+).*/\1/')
-        caller=$(echo "$frame1" | sed -E 's/^#1 +0x[0-9a-f]+ in ([^(]+).*/\1/')
+#         crash_function=$(echo "$frame0" | sed -E 's/^#0 +0x[0-9a-f]+ in ([^(]+).*/\1/')
+#         caller=$(echo "$frame1" | sed -E 's/^#1 +0x[0-9a-f]+ in ([^(]+).*/\1/')
 
-        crash_line=$(echo "$frame0" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
-        caller_line=$(echo "$frame1" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
+#         crash_line=$(echo "$frame0" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
+#         caller_line=$(echo "$frame1" | grep -oE ':[0-9]+' | tail -n 1 | tr -d ':')
 
-        core_size=$(du -h "$latest_core" | cut -f1)
-    else
-        echo "No core file found"
-    fi
+#         core_size=$(du -h "$latest_core" | cut -f1)
+#     else
+#         echo "No core file found"
+#     fi
 
-    created_at_ns=$(date -u +%s%N)
+#     created_at_ns=$(date -u +%s%N)
 
-    if command -v mongosh >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
-        mongosh "${MONGO_URI}/${DB_NAME}" --quiet --eval "
-            db.${COLLECTION_NAME}.insertOne({
-                app: 'cpp_trading_engine',
-                env: '${ENV_NAME}',
-                exit_code: ${code},
-                signal: '${signal}',
-                crash_function: $(jq -Rn --arg v "$crash_function" '$v'),
-                crash_line: $(jq -Rn --arg v "$crash_line" '$v'),
-                caller: $(jq -Rn --arg v "$caller" '$v'),
-                caller_line: $(jq -Rn --arg v "$caller_line" '$v'),
-                core_file_size: $(jq -Rn --arg v "$core_size" '$v'),
-                core_file: $(jq -Rn --arg v "$latest_core" '$v'),
-                host: $(jq -Rn --arg v "$(hostname)" '$v'),
-                created_at: new Date(),
-                created_at_ns: NumberLong(\"${created_at_ns}\")
-            });
-        "
-    else
-        echo "mongosh or jq not found, skip MongoDB crash insert"
-    fi
+#     if command -v mongosh >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+#         mongosh "${MONGO_URI}/${DB_NAME}" --quiet --eval "
+#             db.${COLLECTION_NAME}.insertOne({
+#                 app: 'cpp_trading_engine',
+#                 env: '${ENV_NAME}',
+#                 exit_code: ${code},
+#                 signal: '${signal}',
+#                 crash_function: $(jq -Rn --arg v "$crash_function" '$v'),
+#                 crash_line: $(jq -Rn --arg v "$crash_line" '$v'),
+#                 caller: $(jq -Rn --arg v "$caller" '$v'),
+#                 caller_line: $(jq -Rn --arg v "$caller_line" '$v'),
+#                 core_file_size: $(jq -Rn --arg v "$core_size" '$v'),
+#                 core_file: $(jq -Rn --arg v "$latest_core" '$v'),
+#                 host: $(jq -Rn --arg v "$(hostname)" '$v'),
+#                 created_at: new Date(),
+#                 created_at_ns: NumberLong(\"${created_at_ns}\")
+#             });
+#         "
+#     else
+#         echo "mongosh or jq not found, skip MongoDB crash insert"
+#     fi
 
-    if [[ -n "$latest_core" ]]; then
-        rm -f "$latest_core"
-        echo "Deleted core file: $latest_core"
-    fi
+#     if [[ -n "$latest_core" ]]; then
+#         rm -f "$latest_core"
+#         echo "Deleted core file: $latest_core"
+#     fi
 
-    if [[ -n "$trace_file" ]]; then
-        rm -f "$trace_file"
-        echo "Deleted trace file: $trace_file"
-    fi
-fi
+#     if [[ -n "$trace_file" ]]; then
+#         rm -f "$trace_file"
+#         echo "Deleted trace file: $trace_file"
+#     fi
+# fi
 
 exit $code
