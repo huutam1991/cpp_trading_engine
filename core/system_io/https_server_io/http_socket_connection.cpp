@@ -9,7 +9,7 @@
 
 #include "http_socket_connection.h"
 
-#define BUFFER_SIZE 8192
+#define BUFFER_READ_SIZE 8192
 
 void HttpSocketConnection::set_server_fd(int fd_value)
 {
@@ -72,8 +72,8 @@ int HttpSocketConnection::activate()
 
 int HttpSocketConnection::handle_read()
 {
-    char buffer[BUFFER_SIZE];
-    char temp_buffer[BUFFER_SIZE];
+    char buffer[BUFFER_READ_SIZE];
+    char temp_buffer[BUFFER_READ_SIZE];
     int read_bytes = 0;
     int buffer_length = 0;
 
@@ -212,7 +212,7 @@ Task<void> HttpSocketConnection::execute_request(HttpRequest* request)
 
 int HttpSocketConnection::read_buffer(char* const buffer)
 {
-    return ::read(fd, buffer, BUFFER_SIZE);
+    return ::read(fd, buffer, BUFFER_READ_SIZE);
 }
 
 int HttpSocketConnection::write_to_socket_io(const char* buffer, std::uint32_t size)
