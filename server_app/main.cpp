@@ -133,12 +133,13 @@ int main(int argc, char **argv) {
 
     const int port = atoi(argv[1]);
     const int websocket_port = atoi(argv[2]);
+    const std::string env_name = argv[3];
 
     // Init SpdLog format
     LogInit::init();
 
     // Remove old core dump files
-    process_old_core_dumps_on_startup("./http_server_cpp", "production");
+    process_old_core_dumps_on_startup("./http_server_cpp", env_name);
 
     // Initialize Google’s logging library
     // google::InitGoogleLogging(argv[0]);

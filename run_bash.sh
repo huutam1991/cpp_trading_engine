@@ -39,7 +39,7 @@ echo "PORT=${PORT}, WEBSOCKET_PORT=${WEBSOCKET_PORT}"
 echo "SCRIPT_PID=$$"
 echo "---------------------------------------------------------------"
 
-./http_server_cpp "$PORT" "$WEBSOCKET_PORT" web_data
+./http_server_cpp "$PORT" "$WEBSOCKET_PORT" "$ENV_NAME" web_data
 
 code=$?
 now=$(date '+%F_%H-%M-%S')
