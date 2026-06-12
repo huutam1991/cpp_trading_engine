@@ -83,6 +83,26 @@ static std::vector<StackFrameInfo> parse_stack_frames(const std::string& backtra
     return frames;
 }
 
+
+static std::string extract_current_thread_backtrace(const std::string& backtrace)
+{
+    const std::string marker = "[Current thread is ";
+
+    size_t start = backtrace.find(marker);
+    if (start == std::string::npos)
+    {
+        return backtrace;
+    }
+
+    size_t next_thread = backtrace.find("\nThread ", start + marker.size());
+    if (next_thread == std::string::npos)
+    {
+        return backtrace.substr(start);
+    }
+
+    return backtrace.substr(start, next_thread - start);
+}
+
 static bool is_project_frame(const StackFrameInfo& frame)
 {
     return !frame.file.empty() &&
@@ -105,7 +125,8 @@ Json parse_crash_backtrace_to_json(const std::string& backtrace)
         }
     }
 
-    auto frames = parse_stack_frames(backtrace);
+    std::string crash_thread_backtrace = extract_current_thread_backtrace(backtrace);
+    auto frames = parse_stack_frames(crash_thread_backtrace);
 
     result["signal"] = signal;
     result["frame_count"] = frames.size();
