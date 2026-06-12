@@ -292,20 +292,37 @@ ShareString JsonParseNew::parse_value_string(size_t& start_pos)
 {
     size_t start = start_pos;
     size_t end = start_pos;
+    bool escaped = false;
 
-    while (end < m_size && m_object_string[end] != '"')
+    while (end < m_size)
     {
+        char c = m_object_string[end];
+
+        if (escaped)
+        {
+            escaped = false;
+            ++end;
+            continue;
+        }
+
+        if (c == '\\')
+        {
+            escaped = true;
+            ++end;
+            continue;
+        }
+
+        if (c == '"')
+        {
+            start_pos = end + 1;
+            return get_sub_string(start, end);
+        }
+
         ++end;
     }
 
-    if (end >= m_size)
-    {
-        m_is_valid = false;
-        return {};
-    }
-
-    start_pos = end + 1;
-    return get_sub_string(start, end);
+    m_is_valid = false;
+    return {};
 }
 
 Json JsonParseNew::parse_value_number(size_t& start_pos)
