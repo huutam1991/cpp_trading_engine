@@ -9,7 +9,7 @@
 
 #include "http_socket_connection.h"
 
-#define BUFFER_SIZE 2048
+#define BUFFER_SIZE 8192
 
 void HttpSocketConnection::set_server_fd(int fd_value)
 {
