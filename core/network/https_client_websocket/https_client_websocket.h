@@ -34,6 +34,8 @@ public:
         std::function<Task<void>()> on_disconnect,
         std::function<Task<void>()> on_close);
 
+    ~HttpsClientWebsocket();
+
     void write(std::string message);
     void write_ping(const std::string& payload = "");
     void write_pong(const std::string& payload = "");

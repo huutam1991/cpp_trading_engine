@@ -25,6 +25,16 @@ HttpsClientWebsocket::HttpsClientWebsocket(
 {
 }
 
+HttpsClientWebsocket::~HttpsClientWebsocket()
+{
+    spdlog::debug("HttpsClientWebsocket::~HttpsClientWebsocket - Destroying Websocket [{}]", m_name);
+
+    m_send_ping_task.destroy();
+    m_tcp_connection = nullptr;
+    m_rest_request = nullptr;
+    m_websocket_session = nullptr;
+}
+
 void HttpsClientWebsocket::on_tcp_connect()
 {
     spdlog::info("HttpsClientWebsocket::on_tcp_connect - Connected to {}:{}", m_name, m_tcp_connection->get_port());
@@ -127,13 +137,17 @@ Task<void> HttpsClientWebsocket::send_switch_protocol_request()
 
 Task<void> HttpsClientWebsocket::send_ping_at_15_second_interval()
 {
-    while (is_websocket_connected())
+    while (true)
     {
         co_await Timer::sleep_for(15000);
+
+        if (is_websocket_connected() == false)
+        {
+            co_return;
+        }
+
         write_ping("");
     }
-
-    co_return;
 }
 
 void HttpsClientWebsocket::write(std::string message)
