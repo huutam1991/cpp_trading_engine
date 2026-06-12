@@ -1195,9 +1195,9 @@ td {
 }
 
 .response-not-found {
-  color: #fca5a5;
-  background: #450a0a;
-  border: 1px solid #dc2626;
+  color: #facc15;
+  background: rgba(120, 53, 15, 0.35);
+  border: 1px solid rgba(180, 83, 9, 0.45);
 }
 
 .response-risk {
