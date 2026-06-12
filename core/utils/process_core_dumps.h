@@ -105,8 +105,7 @@ static std::string extract_current_thread_backtrace(const std::string& backtrace
 
 static bool is_project_frame(const StackFrameInfo& frame)
 {
-    return !frame.file.empty() &&
-           frame.file.find("/home/huutam1991/projects/personal/cpp_trading_engine/") != std::string::npos;
+    return !frame.file.empty() && frame.file.find("cpp_trading_engine/") != std::string::npos;
 }
 
 Json parse_crash_backtrace_to_json(const std::string& backtrace)
