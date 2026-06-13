@@ -72,19 +72,19 @@ int HttpSocketConnection::activate()
 
 int HttpSocketConnection::handle_read()
 {
-    std::string buffer;
+    char buffer[BUFFER_READ_SIZE * 10];
     char temp_buffer[BUFFER_READ_SIZE];
     int read_bytes = 0;
     int buffer_length = 0;
 
     if ((read_bytes = read_buffer(temp_buffer)) >= 0)
     {
-        buffer.append(temp_buffer, read_bytes);
+        memcpy(buffer + buffer_length, temp_buffer, read_bytes);
         buffer_length += read_bytes;
 
         while ((read_bytes = read_buffer(temp_buffer)) > 0)
         {
-            buffer.append(temp_buffer, read_bytes);
+            memcpy(buffer + buffer_length, temp_buffer, read_bytes);
             buffer_length += read_bytes;
         }
 
@@ -98,7 +98,7 @@ int HttpSocketConnection::handle_read()
         return -1;
     }
 
-    std::string message = save_buffer + buffer;
+    std::string message = save_buffer + std::string(buffer);
     HttpRequest* request = HttpRequest::CreateNewHttpRequest(message.c_str(), "web_data"); // Temporarily hard code path: web_data
 
     // Check if request is nullptr (wrong format), return error 404
