@@ -9,18 +9,30 @@
 
 int EpollBase::TaskInfoEventEpoll::generate_fd()
 {
+#ifdef TEST_MODE_ONLY
+    task_event_generate_fd_count.fetch_add(1, std::memory_order_relaxed);
+#endif
+
     fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     return fd;
 }
 
 int EpollBase::TaskInfoEventEpoll::activate()
 {
+#ifdef TEST_MODE_ONLY
+    task_event_activate_count.fetch_add(1, std::memory_order_relaxed);
+#endif
+
     // Nothing to do for TaskInfoEventEpoll
     return 0;
 }
 
 int EpollBase::TaskInfoEventEpoll::handle_read()
 {
+#ifdef TEST_MODE_ONLY
+    task_event_handle_read_count.fetch_add(1, std::memory_order_relaxed);
+#endif
+
     check_handle();
 
     // Always return -1 to indicate this task is done
@@ -29,12 +41,20 @@ int EpollBase::TaskInfoEventEpoll::handle_read()
 
 int EpollBase::TaskInfoEventEpoll::handle_write()
 {
+#ifdef TEST_MODE_ONLY
+    task_event_handle_write_count.fetch_add(1, std::memory_order_relaxed);
+#endif
+
     // Nothing to do for write event
     return 0;
 }
 
 void EpollBase::TaskInfoEventEpoll::release()
 {
+#ifdef TEST_MODE_ONLY
+    task_event_release_count.fetch_add(1, std::memory_order_relaxed);
+#endif
+
     TaskInfoEventPool::release(this);
 }
 

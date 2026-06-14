@@ -14,6 +14,7 @@ class EpollBase : public EventBase
     int create_shutdown_event();
     void set_ready_task(SystemIOObject* object);
 
+public:
     struct TaskInfoEventEpoll : public TaskInfoEvent, NamedIOObject<TaskInfoEvent>
     {
         // SystemIOObject's methods
@@ -23,9 +24,25 @@ class EpollBase : public EventBase
         virtual int handle_read() override;
         virtual int handle_write() override;
         virtual void release() override;
+
+#ifdef TEST_MODE_ONLY
+        inline static std::atomic<int64_t> task_event_generate_fd_count{0};
+        inline static std::atomic<int64_t> task_event_activate_count{0};
+        inline static std::atomic<int64_t> task_event_handle_read_count{0};
+        inline static std::atomic<int64_t> task_event_handle_write_count{0};
+        inline static std::atomic<int64_t> task_event_release_count{0};
+
+        static void reset_task_event_counters()
+        {
+            task_event_generate_fd_count.store(0, std::memory_order_relaxed);
+            task_event_activate_count.store(0, std::memory_order_relaxed);
+            task_event_handle_read_count.store(0, std::memory_order_relaxed);
+            task_event_handle_write_count.store(0, std::memory_order_relaxed);
+            task_event_release_count.store(0, std::memory_order_relaxed);
+        }
+#endif
     };
 
-public:
     using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
 
 public:
