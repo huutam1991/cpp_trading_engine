@@ -55,6 +55,8 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
         auto result = task.start_running_on(test_event_base());
     }
 
+    std::this_thread::sleep_for(10ms);
+
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
@@ -72,7 +74,7 @@ TEST(CoroutineUsageFailureTest, ExceptionBeforeAwaitPolicy)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+            auto result = task.start_running_on(test_event_base());
         (void)result;
     }
 
