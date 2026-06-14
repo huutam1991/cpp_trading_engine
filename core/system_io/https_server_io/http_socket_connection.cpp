@@ -72,23 +72,18 @@ int HttpSocketConnection::activate()
 
 int HttpSocketConnection::handle_read()
 {
-    char buffer[BUFFER_READ_SIZE * 10];
+    std::string buffer;
     char temp_buffer[BUFFER_READ_SIZE];
     int read_bytes = 0;
-    int buffer_length = 0;
 
     if ((read_bytes = read_buffer(temp_buffer)) >= 0)
     {
-        memcpy(buffer + buffer_length, temp_buffer, read_bytes);
-        buffer_length += read_bytes;
+        buffer.append(temp_buffer, read_bytes);
 
         while ((read_bytes = read_buffer(temp_buffer)) > 0)
         {
-            memcpy(buffer + buffer_length, temp_buffer, read_bytes);
-            buffer_length += read_bytes;
+            buffer.append(temp_buffer, read_bytes);
         }
-
-        buffer[buffer_length] = '\0';
     }
     else
     {
@@ -98,7 +93,7 @@ int HttpSocketConnection::handle_read()
         return -1;
     }
 
-    std::string message = save_buffer + std::string(buffer);
+    std::string message = save_buffer + buffer;
     HttpRequest* request = HttpRequest::CreateNewHttpRequest(message.c_str(), "web_data"); // Temporarily hard code path: web_data
 
     // Check if request is nullptr (wrong format), return error 404
@@ -114,7 +109,7 @@ int HttpSocketConnection::handle_read()
     // Post request is invalid format when it's is separated into 2 buffer, that's why we need to save the first buffer
     if (request->is_valid_format() == false)
     {
-        save_buffer += std::string(buffer);
+        save_buffer += buffer;
 
         delete request;
         return 0;
