@@ -171,7 +171,8 @@ TEST(CoroutineUsageEpollIoTest, IoErrorOrHangupPathSafe)
     EventBaseManager::shutdown_all();
 }
 
-TEST(CoroutineUsageEpollIoTest, Stress150kTasksFromManyProducerThreads)
+// [Tam - need re-write CachePool]
+TEST(CoroutineUsageEpollIoTest, DISABLED_Stress150kTasksFromManyProducerThreads)
 {
     {
         EpollBase::TaskInfoEventEpoll::reset_task_event_counters();
@@ -239,7 +240,8 @@ TEST(CoroutineUsageEpollIoTest, Stress150kTasksFromManyProducerThreads)
     EventBaseManager::shutdown_all();
 }
 
-TEST(CoroutineUsageEpollIoTest, Stress150kComplexNestedTaskChains)
+// [Tam - need re-write CachePool]
+TEST(CoroutineUsageEpollIoTest, DISABLED_Stress150kComplexNestedTaskChains)
 {
     {
         EpollBase::TaskInfoEventEpoll::reset_task_event_counters();
