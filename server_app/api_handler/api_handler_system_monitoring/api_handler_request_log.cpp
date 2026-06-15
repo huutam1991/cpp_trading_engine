@@ -28,6 +28,14 @@ Task<HttpResponse> APIHandlerRequestLog::child_handle()
         request_log.remove_field("created_at_ns"); // Remove created_at_ns field
     });
 
+    // Remove request logs if there are too many logs (keep only the latest 300 logs)
+    if (request_log.size() > 300)
+    {
+        MongoDB::instance()
+            .set_db_and_collection("system_monitoring", "request_log")
+            .drop();
+    }
+
     Json response;
     response["msg"] = "Find request logs successfully";
     response["data"] = request_log;
