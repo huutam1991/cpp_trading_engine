@@ -58,6 +58,8 @@ TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
         }
     }
 
+    std::this_thread::sleep_for(10ms);
+
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
@@ -87,6 +89,8 @@ TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
             ASSERT_EQ(wait_result(result), 1);
         }
     }
+
+    std::this_thread::sleep_for(10ms);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -121,6 +125,8 @@ TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
 
         ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
+
+    std::this_thread::sleep_for(10ms);
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
