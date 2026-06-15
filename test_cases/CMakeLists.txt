@@ -3,9 +3,18 @@ project(test_cases)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# TSAN
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=thread -g -O1")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+
+# ASAN
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=address -fno-omit-frame-pointer -g")
+
+# USAN
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=undefined -fno-omit-frame-pointer -g")
+
+# Normal test
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -g")
 
 # Get real root of the project
