@@ -92,6 +92,8 @@ TEST(CoroutineUsageStressTest, ManySimpleTasksBurst)
         ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
 
+    std::this_thread::sleep_for(10ms); // Ensure all tasks are completed before shutting down
+
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
