@@ -614,6 +614,8 @@ TEST(CoroutineUsageLifetimeTest, PendingFutureTaskFrameNotFreedWhileTaskWrapperA
         ASSERT_LE(frames.free(), 1);
     }
 
+    std::this_thread::sleep_for(10ms);
+
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
