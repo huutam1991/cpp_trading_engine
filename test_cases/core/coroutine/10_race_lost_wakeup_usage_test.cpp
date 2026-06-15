@@ -167,6 +167,8 @@ TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
         ASSERT_EQ(sum, (N - 1LL) * N / 2);
     }
 
+    std::this_thread::sleep_for(10ms);
+
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
 }
