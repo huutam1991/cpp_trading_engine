@@ -74,7 +74,7 @@ TEST(CachePoolTest, MultiProducerMultiConsumer)
     std::vector<std::thread> clients;
     for (int c = 0; c < NUM_CLIENTS; ++c)
     {
-        clients.emplace_back([&]()
+        clients.emplace_back([c]()
         {
             for (size_t i = 0; i < 10000; i++)
             {
