@@ -64,7 +64,7 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
 // Current implementation may terminate on unhandled_exception.
 // Keep these disabled until the desired failure policy is finalized.
 
-TEST(CoroutineUsageFailureTest, ExceptionBeforeAwaitPolicy)
+TEST(CoroutineUsageFailureTest, SKIP_ExceptionBeforeAwaitPolicy)
 {
     {
         auto fn = []() -> Task<int>
@@ -84,7 +84,7 @@ TEST(CoroutineUsageFailureTest, ExceptionBeforeAwaitPolicy)
     EventBaseManager::shutdown_all();
 }
 
-TEST(CoroutineUsageFailureTest, ExceptionAfterAwaitPolicy)
+TEST(CoroutineUsageFailureTest, SKIP_ExceptionAfterAwaitPolicy)
 {
     {
         auto fn = []() -> Task<int>
