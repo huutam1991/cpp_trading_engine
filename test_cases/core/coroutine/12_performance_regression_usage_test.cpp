@@ -84,13 +84,13 @@ TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
     {
         constexpr int N = 100000;
 
-        auto child = []() -> Task<int>
+        auto parent = []() -> Task<int>
         {
-            co_return 1;
-        };
+            auto child = []() -> Task<int>
+            {
+                co_return 1;
+            };
 
-        auto parent = [&]() -> Task<int>
-        {
             int v = co_await child();
             co_return v;
         };
@@ -116,6 +116,8 @@ TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
         // ASSERT_EQ(total, N);
         ASSERT_LT(avg_ns, 100000.0);
     }
+
+    std::this_thread::sleep_for(100ms); // Ensure all tasks are completed before shutting down
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
@@ -157,6 +159,8 @@ TEST(CoroutineUsagePerformanceTest, FutureImmediateWakeupLatencyBudget)
         // ASSERT_EQ(total, N);
         ASSERT_LT(avg_ns, 100000.0);
     }
+
+    std::this_thread::sleep_for(100ms); // Ensure all tasks are completed before shutting down
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
