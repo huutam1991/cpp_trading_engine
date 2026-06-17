@@ -7,28 +7,9 @@
 #include <utils/spin_lock.h>
 #include <utils/thread_pinning.h>
 #include <enum_reflect/enum_reflect.h>
+#include "event_base_id.h"
 #include "event_base.h"
 #include "epoll_base.h"
-
-enum EpollBaseID
-{
-    SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
-    GATEWAY,                  // Gateway
-};
-
-enum EventBaseID
-{
-    ORDER = 2,                // OrderManager
-    ORDER_BOOK,               // OrderBookManager
-
-    MARKET_MAKER_STRATEGY,    // Strategy - Market Maker
-    BUY_SPOT_STRATEGY,        // Strategy - Buy Spot
-    MEAN_REVERSION_STRATEGY,  // Strategy - Mean Reversion Strategy
-    PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
-    TREND_FOLLOW_STRATEGY,    // Strategy - Trend Follow
-    NO_STRATEGY,              // Strategy - No Strategy
-    TOTAL
-};
 
 class EventBaseManager
 {
@@ -62,6 +43,10 @@ public:
             {
                 // Pin each event base thread to a specific core
                 ThreadPinning::pin_thread_to_core(static_cast<int>(event_base->m_event_base_id));
+
+                // Set the thread-local variable CURRENT_EVENT_BASE to the event base's ID
+                CURRENT_EVENT_BASE = event_base->m_event_base_id;
+
                 event_base->loop();
             });
 
