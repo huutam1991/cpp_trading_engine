@@ -6,12 +6,14 @@
 
 enum EpollBaseID
 {
+    NONE = -1,
     SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
     GATEWAY,                  // Gateway
 };
 
 enum EventBaseID
 {
+    NONE = -1,
     ORDER = 2,                // OrderManager
     ORDER_BOOK,               // OrderBookManager
 
@@ -25,4 +27,4 @@ enum EventBaseID
 };
 
 
-inline thread_local size_t CURRENT_EVENT_BASE = EventBaseID::TOTAL;
+inline thread_local int CURRENT_EVENT_BASE = EventBaseID::NONE;
