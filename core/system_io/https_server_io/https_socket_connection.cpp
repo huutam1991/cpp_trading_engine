@@ -10,6 +10,9 @@ void HttpsSocketConnection::set_ssl_context(TlsContext* tls_context)
 void HttpsSocketConnection::refresh()
 {
     fd = -1;
+    server_fd = -1;
+    save_buffer = "";
+    client_ip = "";
 }
 
 int HttpsSocketConnection::generate_fd()

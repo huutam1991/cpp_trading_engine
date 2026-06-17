@@ -18,6 +18,7 @@ void HttpSocketConnection::set_server_fd(int fd_value)
 
 void HttpSocketConnection::refresh()
 {
+    fd = -1;
     server_fd = -1;
     save_buffer = "";
     client_ip = "";
