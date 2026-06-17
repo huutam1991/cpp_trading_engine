@@ -147,7 +147,7 @@ void TlsWrapper::shutdown_and_free()
 {
     if (ssl)
     {
-        SSL_shutdown(ssl);
+        // SSL_shutdown(ssl);
         SSL_free(ssl);
         ssl = nullptr;
     }
