@@ -1,5 +1,6 @@
 #pragma once
 
+#include <metric/trace_transfer.h>
 #include "base_promise_type.h"
 
 struct BaseTask
@@ -18,6 +19,9 @@ struct BaseTask
 
     // std::coroutine_handle<promise_type> handle = nullptr;
     BasePromiseType* m_promise = nullptr;
+
+    // For metric tracing
+    TraceTransfer trace;
 
     BaseTask(std::nullptr_t) : m_promise(nullptr) {}
     BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise) {}
