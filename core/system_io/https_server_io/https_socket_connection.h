@@ -27,4 +27,4 @@ struct HttpsSocketConnection : public HttpSocketConnection
     virtual int write_to_socket_io(const char* buffer, std::uint32_t size) override;
 };
 
-using HttpsSocketConnectionPool = CachePool<HttpsSocketConnection, 100>;
+using HttpsSocketConnectionPool = CachePool<HttpsSocketConnection, 1000>;
