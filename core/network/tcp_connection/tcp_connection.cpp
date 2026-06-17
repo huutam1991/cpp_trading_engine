@@ -14,6 +14,11 @@ TCPConnection::~TCPConnection()
 {
     m_waiting_data_value = nullptr;
 
+    if (m_reconnect_task != nullptr)
+    {
+        m_reconnect_task.destroy();
+    }
+
     if (m_io_object != nullptr)
     {
         m_io_object->set_on_connect_callback(nullptr);
@@ -96,6 +101,8 @@ Task<void> TCPConnection::re_connect()
     // Retry connection after 5 seconds
     co_await Timer::sleep_for(5000);
     connect();
+
+    m_reconnect_task = nullptr;
 }
 
 void TCPConnection::on_disconnect()
@@ -107,7 +114,8 @@ void TCPConnection::on_disconnect()
         m_on_disconnect();
     }
 
-    re_connect().start_running_on(m_epoll_base);
+    m_reconnect_task = re_connect();
+    m_reconnect_task.start_running_on(m_epoll_base);
 }
 
 void TCPConnection::on_response_received(const char* buffer, std::uint32_t size)

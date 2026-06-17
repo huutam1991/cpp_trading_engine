@@ -38,7 +38,10 @@ public:
 
 private:
     void connect();
-    Task<void> re_connect();
     void on_disconnect();
     void on_response_received(const char* buffer, std::uint32_t size);
+
+    // Reconnect logic
+    Task<void> m_reconnect_task = nullptr;
+    Task<void> re_connect();
 };
