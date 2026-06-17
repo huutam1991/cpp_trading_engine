@@ -26,6 +26,12 @@ int HttpsSocketConnection::activate()
 
 int HttpsSocketConnection::handle_read()
 {
+    if (tls_wrapper == nullptr)
+    {
+        spdlog::error("HttpsSocketConnection::handle_read - tls_wrapper is null, socket fd = {}", fd);
+        return -1;
+    }
+
     // Continue with ssl_accept if it's not finish yet
     if (tls_wrapper->is_handshake_done() == false)
     {
@@ -41,6 +47,12 @@ int HttpsSocketConnection::handle_read()
 
 int HttpsSocketConnection::handle_write()
 {
+    if (tls_wrapper == nullptr)
+    {
+        spdlog::error("HttpsSocketConnection::handle_write - tls_wrapper is null, socket fd = {}", fd);
+        return -1;
+    }
+
     // Continue with ssl_accept if it's not finish yet
     if (tls_wrapper->is_handshake_done() == false)
     {
