@@ -2,6 +2,8 @@
 
 #include <cstddef>
 
+// TODO: Remove EpollBaseID, use prefix EPOLL_ to detect EpollBase when creating event base in EventBaseManager
+
 enum EpollBaseID
 {
     SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
