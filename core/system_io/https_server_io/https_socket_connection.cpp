@@ -7,6 +7,11 @@ void HttpsSocketConnection::set_ssl_context(TlsContext* tls_context)
     tls_wrapper = new TlsWrapper(tls_context);
 }
 
+void HttpsSocketConnection::refresh()
+{
+    fd = -1;
+}
+
 int HttpsSocketConnection::generate_fd()
 {
     fd = HttpSocketConnection::generate_fd();

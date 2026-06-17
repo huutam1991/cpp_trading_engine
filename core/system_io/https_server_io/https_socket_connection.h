@@ -12,6 +12,7 @@ struct HttpsSocketConnection : public HttpSocketConnection
     TlsWrapper* tls_wrapper = nullptr;
 
     void set_ssl_context(TlsContext* tls_context);
+    void refresh();
 
     // SystemIOObject's methods
     virtual int generate_fd() override;
