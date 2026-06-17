@@ -27,6 +27,7 @@ enum EventBaseID
     PRICE_ARBITRAGE_STRATEGY, // Strategy - Price Arbitrage
     TREND_FOLLOW_STRATEGY,    // Strategy - Trend Follow
     NO_STRATEGY,              // Strategy - No Strategy
+    TOTAL
 };
 
 class EventBaseManager
