@@ -23,6 +23,7 @@
 
 // System monitoring
 #include <api_handler/api_handler_system_monitoring/api_handler_object_pool_info.h>
+#include <api_handler/api_handler_system_monitoring/api_handler_flow_metric.h>
 #include <api_handler/api_handler_system_monitoring/api_handler_crash_log.h>
 #include <api_handler/api_handler_system_monitoring/api_handler_request_log.h>
 #include <api_handler/api_handler_system_monitoring/api_handler_up_time.h>
@@ -383,6 +384,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/object_pool_info")
     {
         co_return co_await APIHandlerObjectPoolInfo(request).handle();
+    };
+
+    // System monitoring - Flow Metric
+    ADD_ROUTE(RequestMethod::GET, "/flow_metric")
+    {
+        co_return co_await APIHandlerFlowMetric(request).handle();
     };
 
     // System monitoring - Crash log
