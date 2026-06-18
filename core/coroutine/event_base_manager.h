@@ -11,8 +11,6 @@
 #include "event_base.h"
 #include "epoll_base.h"
 
-// TODO: Remove EventBaseID, use prefix EPOLL_ to detect EpollBase when creating event base in EventBaseManager
-
 class EventBaseManager
 {
 public:
