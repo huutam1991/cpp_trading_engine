@@ -2,18 +2,12 @@
 
 #include <cstddef>
 
-// TODO: Remove EpollBaseID, use prefix EPOLL_ to detect EpollBase when creating event base in EventBaseManager
-
-enum EpollBaseID
-{
-    EPOLL_SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
-    EPOLL_GATEWAY,                  // Gateway
-};
-
 enum EventBaseID
 {
     NONE = -1,
-    ORDER = 2,                // OrderManager
+    EPOLL_SYSTEM_IO_TASK = 0, // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
+    EPOLL_GATEWAY,            // Gateway
+    ORDER,                    // OrderManager
     ORDER_BOOK,               // OrderBookManager
 
     MARKET_MAKER_STRATEGY,    // Strategy - Market Maker

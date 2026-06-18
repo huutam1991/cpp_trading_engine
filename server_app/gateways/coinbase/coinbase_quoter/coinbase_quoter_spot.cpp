@@ -13,7 +13,7 @@ CoinbaseQuoterSpot::CoinbaseQuoterSpot(const std::string& key) : CoinbaseQuoter(
     m_ws_port = m_is_testnet == true ? COINBASE_ADVANCE_REALNET_WS_PORT : COINBASE_ADVANCE_REALNET_WS_PORT;
 
     // Event base: GATEWAY
-    m_event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_GATEWAY);
+    m_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY);
 
     init_websocket();
 }

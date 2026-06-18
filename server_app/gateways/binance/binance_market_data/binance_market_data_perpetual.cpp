@@ -14,7 +14,7 @@ BinanceMarketDataPerpetual::BinanceMarketDataPerpetual(const std::string& url, c
     m_port(port)
 {
     // Default is GATEWAY
-    m_event_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_GATEWAY);
+    m_event_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY);
 }
 
 BinanceMarketDataPerpetual::~BinanceMarketDataPerpetual()

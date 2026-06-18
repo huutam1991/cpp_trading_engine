@@ -10,7 +10,7 @@ class DBHelper
 public:
     static EpollBase* get_epoll_base()
     {
-        static EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_SYSTEM_IO_TASK);
+        static EpollBase* epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK);
         return epoll_base;
     }
 };

@@ -23,7 +23,7 @@ namespace
 
     inline EventBase* test_epoll_base()
     {
-        return EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_SYSTEM_IO_TASK);
+        return EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK);
     }
 }
 

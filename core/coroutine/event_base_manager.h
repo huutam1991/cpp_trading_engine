@@ -11,16 +11,15 @@
 #include "event_base.h"
 #include "epoll_base.h"
 
-// TODO: Remove EpollBaseID, use prefix EPOLL_ to detect EpollBase when creating event base in EventBaseManager
+// TODO: Remove EventBaseID, use prefix EPOLL_ to detect EpollBase when creating event base in EventBaseManager
 
 class EventBaseManager
 {
 public:
-    template <typename T>
-    static EventBase* get_event_base_by_id(T id)
+    static EventBase* get_event_base_by_id(EventBaseID id)
     {
         static SpinLock spin_lock;
-        std::unordered_map<T, std::shared_ptr<EventBase>>& event_base_list = get_event_bases<T>();
+        std::unordered_map<EventBaseID, std::shared_ptr<EventBase>>& event_base_list = get_event_bases();
         std::vector<std::thread>& event_base_threads = get_event_base_threads();
 
         SpinLockGuard lock(spin_lock);
@@ -30,9 +29,10 @@ public:
         {
             std::shared_ptr<EventBase> event_base;
 
-            if constexpr (std::is_same_v<T, EpollBaseID>)
+            std::string_view id_str = enum_reflect::enum_name(id);
+            if (id_str.starts_with("EPOLL_"))
             {
-                event_base = std::make_shared<EpollBase>(static_cast<EpollBaseID>(id));
+                event_base = std::make_shared<EpollBase>(static_cast<EventBaseID>(id));
             }
             else
             {
@@ -60,10 +60,9 @@ public:
         return it->second.get();
     }
 
-    template <typename T>
-    static std::unordered_map<T, std::shared_ptr<EventBase>>& get_event_bases()
+    static std::unordered_map<EventBaseID, std::shared_ptr<EventBase>>& get_event_bases()
     {
-        static std::unordered_map<T, std::shared_ptr<EventBase>> event_bases;
+        static std::unordered_map<EventBaseID, std::shared_ptr<EventBase>> event_bases;
         return event_bases;
     }
 
@@ -76,15 +75,9 @@ public:
     static void shutdown_all()
     {
         // Signal all event bases to stop
-        std::unordered_map<EventBaseID, std::shared_ptr<EventBase>>& event_base_list = get_event_bases<EventBaseID>();
-        std::unordered_map<EpollBaseID, std::shared_ptr<EventBase>>& epoll_base_list = get_event_bases<EpollBaseID>();
+        std::unordered_map<EventBaseID, std::shared_ptr<EventBase>>& event_base_list = get_event_bases();
         {
             for (auto& [id, event_base] : event_base_list)
-            {
-                event_base->stop();
-            }
-
-            for (auto& [id, event_base] : epoll_base_list)
             {
                 event_base->stop();
             }
@@ -100,7 +93,6 @@ public:
         }
 
         event_base_list.clear();
-        epoll_base_list.clear();
         event_base_threads.clear();
     }
 };
