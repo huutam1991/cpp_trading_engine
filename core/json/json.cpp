@@ -41,7 +41,7 @@ Json& Json::operator[](const std::string_view& key)
 {
     check_create_json_object();
     JsonObject* json_object = (JsonObject*)m_value;
-    return (*json_object)[key.data()];
+    return (*json_object)[key];
 }
 
 Json& Json::operator[](size_t index)

@@ -40,6 +40,13 @@ public:
         return it->second;
     }
 
+    Json& operator[](const std::string_view& key)
+    {
+        m_is_array = false; // This is an object, not an array
+        auto [it, inserted] = m_object.emplace(key, Json());
+        return it->second;
+    }
+
     Json& operator[](size_t index)
     {
         m_is_array = true; // This is an array, not an object
