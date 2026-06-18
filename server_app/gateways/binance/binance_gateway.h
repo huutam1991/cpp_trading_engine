@@ -20,7 +20,7 @@ class BinanceGateway : public Gateway
 
     std::vector<Instrument> m_instruments;
 
-    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
+    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_GATEWAY);
 
 protected:
     virtual ExchangeId get_exchange() override;

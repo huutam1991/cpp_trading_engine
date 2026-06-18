@@ -5,7 +5,7 @@
 
 class BinanceQuoter
 {
-    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
+    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_GATEWAY);
 
     std::string getTimestamp();
     std::string getSignature(std::string& query);

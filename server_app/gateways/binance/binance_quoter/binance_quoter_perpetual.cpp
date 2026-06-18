@@ -9,7 +9,7 @@
 #include <time/measure_time.h>
 
 BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
-    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY)}
+    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_GATEWAY)}
 {
     m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
     m_client->add_header("X-MBX-APIKEY", m_api_key);
@@ -47,7 +47,7 @@ void BinanceQuoterPerpetual::init_websocket()
     }
 
     // Event base: GATEWAY
-    EventBase* event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::GATEWAY);
+    EventBase* event_base = EventBaseManager::get_event_base_by_id(EpollBaseID::EPOLL_GATEWAY);
 
     auto task = this->get_listen_key();
     m_listen_key = task.start_running_on(event_base).get();

@@ -6,9 +6,8 @@
 
 enum EpollBaseID
 {
-    NONE = -1,
-    SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
-    GATEWAY,                  // Gateway
+    EPOLL_SYSTEM_IO_TASK = 0,       // All of tasks belong to system IO like: timer, socket, saving data to DB, ...
+    EPOLL_GATEWAY,                  // Gateway
 };
 
 enum EventBaseID
