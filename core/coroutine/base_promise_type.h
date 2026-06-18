@@ -1,5 +1,6 @@
 #pragma once
 
+#include <metric/trace_transfer.h>
 #include "event_base.h"
 
 struct BasePromiseType
@@ -9,6 +10,9 @@ struct BasePromiseType
     EventBase* m_event_base = nullptr;
     bool has_suspend_value = false;
     bool has_awaiter = true;
+
+    // For metric tracing
+    TraceTransfer trace;
 
 private:
     std::atomic<bool> force_destroy{false};

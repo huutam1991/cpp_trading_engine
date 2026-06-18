@@ -32,6 +32,9 @@ void BaseTask::destroy()
 void BaseTask::register_on(EventBase* event_base)
 {
     m_promise->m_event_base = event_base;
+
+    m_promise->trace.record_enqueue(event_base->m_event_base_id);
+
     event_base->add_run_task_event(m_promise);
 }
 
