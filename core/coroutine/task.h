@@ -122,8 +122,6 @@ struct Task : public BaseTask
         constexpr std::string_view function = Function;
         constexpr std::size_t line = Line;
 
-        spdlog::warn("Task<void>::start_running_on called at {}:{}:{}", file, function, line);
-
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<T>>();
 
@@ -231,8 +229,6 @@ struct Task<void> : public BaseTask
         constexpr std::string_view file = File;
         constexpr std::string_view function = Function;
         constexpr std::size_t line = Line;
-
-        spdlog::warn("Task<void>::start_running_on called at {}:{}:{}", file, function, line);
 
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<void>>();
