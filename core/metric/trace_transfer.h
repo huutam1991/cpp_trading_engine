@@ -25,6 +25,7 @@ struct TraceTransfer
     {
         delay_ns = Utils::get_time_now_in_utc_nanoseconds() - enqueue_ns;
         update_metric();
+        update_max();
     }
 
     void update_metric()
@@ -32,5 +33,14 @@ struct TraceTransfer
         auto& metric = FlowTracing::metric(from, to);
         metric.count.fetch_add(1, std::memory_order_relaxed);
         metric.total_delay_ns.fetch_add(delay_ns, std::memory_order_relaxed);
+    }
+
+    void update_max()
+    {
+        auto& metric = FlowTracing::metric(from, to);
+        auto old = metric.max_delay_ns.load(std::memory_order_relaxed);
+
+        while (delay_ns > old && !metric.max_delay_ns.compare_exchange_weak(old, delay_ns, std::memory_order_relaxed))
+        {}
     }
 };
