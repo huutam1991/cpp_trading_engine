@@ -96,6 +96,7 @@ public:
 
     Json& operator[](const char* key);
     Json& operator[](const std::string& key);
+    Json& operator[](const std::string_view& key);
     Json& operator[](size_t index);
 
     template <typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
