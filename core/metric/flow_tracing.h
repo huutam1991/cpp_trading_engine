@@ -8,6 +8,64 @@
 
 class FlowTracing
 {
+private:
+    struct FlowCallsiteKey
+    {
+        size_t from = 0;
+        size_t to = 0;
+
+        const char* file = "";
+        const char* function = "";
+        uint32_t line = 0;
+
+        bool operator==(const FlowCallsiteKey& other) const
+        {
+            return from == other.from &&
+                   to == other.to &&
+                   line == other.line &&
+                   std::strcmp(file, other.file) == 0 &&
+                   std::strcmp(function, other.function) == 0;
+        }
+    };
+
+    struct FlowCallsiteKeyHash
+    {
+        size_t operator()(const FlowCallsiteKey& key) const
+        {
+            size_t h = 1469598103934665603ULL;
+
+            auto mix_u64 = [&](uint64_t v)
+            {
+                h ^= v;
+                h *= 1099511628211ULL;
+            };
+
+            auto mix_str = [&](const char* s)
+            {
+                if (s == nullptr)
+                {
+                    return;
+                }
+
+                while (*s)
+                {
+                    h ^= static_cast<unsigned char>(*s++);
+                    h *= 1099511628211ULL;
+                }
+            };
+
+            mix_u64(key.from);
+            mix_u64(key.to);
+            mix_u64(key.line);
+            mix_str(key.file);
+            mix_str(key.function);
+
+            return h;
+        }
+    };
+
+    using MetricMap = std::unordered_map<FlowCallsiteKey, std::unique_ptr<FlowMetric>, FlowCallsiteKeyHash>;
+
 public:
 
     static constexpr size_t MAX_EVENT_BASES = static_cast<size_t>(EventBaseID::TOTAL);

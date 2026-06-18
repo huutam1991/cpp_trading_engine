@@ -64,7 +64,7 @@ struct BaseTask
 
     void check_release();
     void destroy();
-    void register_on(EventBase* event_base);
+    void register_on(EventBase* event_base, const std::source_location& loc = std::source_location::current());
     bool await_ready();
 
     template<class promise_type>

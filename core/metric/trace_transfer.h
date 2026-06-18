@@ -1,5 +1,7 @@
 #pragma once
 
+#include <source_location>
+
 #include <utils/utils.h>
 #include <coroutine/event_base_manager.h>
 
@@ -13,7 +15,7 @@ struct TraceTransfer
     uint64_t enqueue_ns;
     uint64_t delay_ns;
 
-    void record_enqueue(EventBaseID to_id)
+    void record_enqueue(EventBaseID to_id, const std::source_location& loc)
     {
         from = static_cast<EventBaseID>(CURRENT_EVENT_BASE);
         to = to_id;
