@@ -11,6 +11,7 @@
 #include <queue/mpsc_queue.h>
 #include <system_io/system_io_object.h>
 
+#include "event_base_id.h"
 #include "task_info_event.h"
 
 #define MAX_TASK_INFO 200000
@@ -22,7 +23,7 @@ class EventBase
 {
 public:
     EventBase() {}
-    EventBase(size_t id) : m_event_base_id {id} {}
+    EventBase(EventBaseID id) : m_event_base_id {(id)} {}
     virtual ~EventBase() {}
 
 private:
@@ -30,7 +31,7 @@ private:
     TaskEventQueue m_task_event_queue;
 
 public:
-    size_t m_event_base_id = 0;
+    EventBaseID m_event_base_id = EventBaseID::NONE;
     std::atomic<bool> m_stopping{false};
 
     virtual inline void add_run_task_event(BasePromiseType* promise)

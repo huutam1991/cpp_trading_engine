@@ -58,7 +58,7 @@ void EpollBase::TaskInfoEventEpoll::release()
     TaskInfoEventPool::release(this);
 }
 
-EpollBase::EpollBase(size_t id) : EventBase(id)
+EpollBase::EpollBase(EventBaseID id) : EventBase(id)
 {
     if ((m_epoll_fd = epoll_create1(0)) == -1)
     {

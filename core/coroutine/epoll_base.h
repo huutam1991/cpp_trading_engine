@@ -46,7 +46,7 @@ public:
     using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
 
 public:
-    EpollBase(size_t id);
+    EpollBase(EventBaseID id);
     virtual ~EpollBase() override;
 
     void mod_fd_events(int fd, SystemIOObject* ptr, uint32_t events);
