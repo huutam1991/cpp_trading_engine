@@ -10,7 +10,9 @@ struct FixedString
     constexpr FixedString(const char (&str)[N])
     {
         for (std::size_t i = 0; i < N; ++i)
+        {
             value[i] = str[i];
+        }
     }
 
     constexpr operator std::string_view() const
