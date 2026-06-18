@@ -4,7 +4,12 @@
 #include <cstddef>
 #include <future>
 
+#include <utils/fixed_string.h>
+
 #include "base_task.h"
+
+#define start_running_on(event_base) \
+    template start_running_on_macro<FixedString{__FILE__}, FixedString{__func__}, __LINE__>(event_base)
 
 template<class T>
 struct Task : public BaseTask
@@ -110,8 +115,15 @@ struct Task : public BaseTask
         }
     }
 
-    inline std::future<T> start_running_on(EventBase* event_base, const std::source_location& loc = std::source_location::current())
+    template <FixedString File, FixedString Function, std::size_t Line>
+    constexpr inline std::future<T> start_running_on_macro(EventBase* event_base)
     {
+        constexpr std::string_view file = File;
+        constexpr std::string_view function = Function;
+        constexpr std::size_t line = Line;
+
+        spdlog::warn("Task<void>::start_running_on called at {}:{}:{}", file, function, line);
+
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<T>>();
 
@@ -213,8 +225,15 @@ struct Task<void> : public BaseTask
         return;
     }
 
-    inline std::future<void> start_running_on(EventBase* event_base, const std::source_location& loc = std::source_location::current())
+    template <FixedString File, FixedString Function, std::size_t Line>
+    constexpr inline std::future<void> start_running_on_macro(EventBase* event_base)
     {
+        constexpr std::string_view file = File;
+        constexpr std::string_view function = Function;
+        constexpr std::size_t line = Line;
+
+        spdlog::warn("Task<void>::start_running_on called at {}:{}:{}", file, function, line);
+
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<void>>();
 
