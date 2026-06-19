@@ -32,6 +32,11 @@ struct TraceTransfer
 
     void record_execute()
     {
+        if (update_metric_func == nullptr && update_max_func == nullptr)
+        {
+            return;
+        }
+
         delay_ns = Utils::get_time_now_in_utc_nanoseconds() - enqueue_ns;
 
         if (update_metric_func != nullptr)
