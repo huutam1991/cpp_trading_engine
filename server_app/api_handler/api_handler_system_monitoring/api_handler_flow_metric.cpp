@@ -13,7 +13,7 @@ Task<HttpResponse> APIHandlerFlowMetric::child_handle()
 {
     Json response;
     response["msg"] = "Find crash logs successfully";
-    response["data"] = FlowTracing::get_json_data();
+    // response["data"] = FlowTracing::get_json_data();
     response["status_code"] = OK_200;
     response["error"] = false;
 

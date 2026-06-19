@@ -11,5 +11,5 @@ struct FlowMetric
     std::atomic<uint64_t> total_delay_ns{0};
     std::atomic<uint64_t> max_delay_ns{0};
 
-    constexpr FlowCallSite callsite{File, Function, Line};
+    // constexpr FlowCallSite callsite{File, Function, Line};
 };

@@ -7,7 +7,14 @@
 
 #include "flow_tracing.h"
 
-struct TraceTransfer
+struct TraceTransferParent
+{
+    virtual void record_enqueue(EventBaseID to_id) = 0;
+    virtual void record_execute() = 0;
+};
+
+template <FixedString File, FixedString Function, size_t Line>
+struct TraceTransfer : TraceTransferParent
 {
     EventBaseID from;
     EventBaseID to;
@@ -15,8 +22,7 @@ struct TraceTransfer
     uint64_t enqueue_ns;
     uint64_t delay_ns;
 
-    template <FixedString File, FixedString Function, size_t Line>
-    void record_enqueue(EventBaseID to_id)
+    virtual void record_enqueue(EventBaseID to_id) override
     {
         from = CURRENT_EVENT_BASE;
         to = to_id;
@@ -24,15 +30,13 @@ struct TraceTransfer
         enqueue_ns = Utils::get_time_now_in_utc_nanoseconds();
     }
 
-    template <FixedString File, FixedString Function, size_t Line>
-    void record_execute()
+    virtual void record_execute() override
     {
         delay_ns = Utils::get_time_now_in_utc_nanoseconds() - enqueue_ns;
-        update_metric<File, Function, Line>();
-        update_max<File, Function, Line>();
+        update_metric();
+        update_max();
     }
 
-    template <FixedString File, FixedString Function, size_t Line>
     void update_metric()
     {
         auto& metric = FlowTracing::metric<File, Function, Line>(from, to);
@@ -40,7 +44,6 @@ struct TraceTransfer
         metric.total_delay_ns.fetch_add(delay_ns, std::memory_order_relaxed);
     }
 
-    template <FixedString File, FixedString Function, size_t Line>
     void update_max()
     {
         auto& metric = FlowTracing::metric<File, Function, Line>(from, to);

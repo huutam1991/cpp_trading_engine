@@ -85,7 +85,7 @@ public:
         {
             for (size_t to = 0; to < MAX_EVENT_BASES; ++to)
             {
-                const FlowMetric<File, Function, Line>& metric_data = metric(static_cast<EventBaseID>(from), static_cast<EventBaseID>(to));
+                const FlowMetric<File, Function, Line>& metric_data = metric<File, Function, Line>(static_cast<EventBaseID>(from), static_cast<EventBaseID>(to));
                 if (metric_data.count.load(std::memory_order_relaxed) > 0)
                 {
                     Json metric_json;

@@ -64,8 +64,22 @@ struct BaseTask
 
     void check_release();
     void destroy();
-    void register_on(EventBase* event_base, const std::source_location& loc = std::source_location::current());
     bool await_ready();
+
+    template <FixedString File, FixedString Function, std::size_t Line>
+    void register_on(EventBase* event_base)
+    {
+        m_promise->m_event_base = event_base;
+        m_promise->trace->record_enqueue(event_base->m_event_base_id);
+
+        event_base->add_run_task_event(m_promise);
+    }
+
+    void run_on(EventBase* event_base)
+    {
+        m_promise->m_event_base = event_base;
+        event_base->add_run_task_event(m_promise);
+    }
 
     template<class promise_type>
     void await_suspend(std::coroutine_handle<promise_type> suspend_handle)
@@ -79,6 +93,6 @@ struct BaseTask
         m_promise->m_suspending_promise = suspend_base_pt;
 
         // Running this task on EventBase
-        register_on(suspend_base_pt->m_event_base);
+        run_on(suspend_base_pt->m_event_base);
     }
 };
