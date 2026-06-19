@@ -6,6 +6,9 @@
 #include <iostream>
 
 #include <utils/fixed_string.h>
+#include <json/json.h>
+
+#include "trace_transfer.h"
 
 struct FlowCallSite
 {
@@ -13,9 +16,7 @@ struct FlowCallSite
     std::string_view function;
     size_t line;
 
-    FlowCallSite(std::string_view file, std::string_view function, size_t line)
-        : file(file), function(function), line(line)
-    {}
+    Json (*get_json_data)();
 };
 
 struct FlowCallSiteManager
@@ -26,9 +27,9 @@ struct FlowCallSiteManager
         return call_sites;
     }
 
-    static void add_call_site(std::string_view file, std::string_view function, size_t line)
+    static void add_call_site(std::string_view file, std::string_view function, size_t line, Json (*get_json_data)())
     {
-        all_call_sites().emplace_back(file, function, line);
+        all_call_sites().push_back({file, function, line, get_json_data});
     }
 };
 
@@ -38,7 +39,7 @@ struct FlowCallSiteRegister
     FlowCallSiteRegister()
     {
         constexpr std::string_view file = trim_project_path(File);
-        FlowCallSiteManager::add_call_site(file, Function, Line);
+        FlowCallSiteManager::add_call_site(file, Function, Line, &FlowTracing::get_json_data_by_call_size<File, Function, Line>);
     }
 
     static constexpr std::string_view trim_project_path(std::string_view path)

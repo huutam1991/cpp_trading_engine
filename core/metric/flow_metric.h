@@ -1,7 +1,7 @@
 #pragma once
 
 #include <atomic>
-#include "flow_call_site.h"
+#include <utils/fixed_string.h>
 
 template <FixedString File, FixedString Function, size_t Line>
 struct FlowMetric
