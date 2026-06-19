@@ -9,7 +9,7 @@
 #include "base_task.h"
 
 #define start_running_on(event_base) \
-    template start_running_on_macro<FixedString{__FILE__}, FixedString{__func__}, __LINE__>(event_base)
+    template start_running_on_macro<FixedString{__FILE__}, FixedString{__PRETTY_FUNCTION__}, __LINE__>(event_base)
 
 template<class T>
 struct Task : public BaseTask
@@ -122,6 +122,8 @@ struct Task : public BaseTask
         constexpr std::string_view function = Function;
         constexpr std::size_t line = Line;
 
+        (void)FlowCallSiteKey<File, Function, Line>::register_instance;
+
         Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<T>>();
 
@@ -229,6 +231,8 @@ struct Task<void> : public BaseTask
         constexpr std::string_view file = File;
         constexpr std::string_view function = Function;
         constexpr std::size_t line = Line;
+
+        (void)FlowCallSiteKey<File, Function, Line>::register_instance;
 
         Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
         promise->task_value = std::make_unique<std::promise<void>>();
