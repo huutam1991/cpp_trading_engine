@@ -38,21 +38,7 @@ struct FlowCallSiteRegister
 {
     FlowCallSiteRegister()
     {
-        constexpr std::string_view file = trim_project_path(File);
-        FlowCallSiteManager::add_call_site(file, Function, Line, &FlowTracing::get_json_data_by_call_size<File, Function, Line>);
-    }
-
-    static constexpr std::string_view trim_project_path(std::string_view path)
-    {
-        constexpr std::string_view marker = "cpp_trading_engine/";
-
-        auto pos = path.find(marker);
-        if (pos != std::string_view::npos)
-        {
-            return path.substr(pos + marker.size());
-        }
-
-        return path;
+        FlowCallSiteManager::add_call_site(File, Function, Line, &FlowTracing::get_json_data_by_call_size<File, Function, Line>);
     }
 };
 
