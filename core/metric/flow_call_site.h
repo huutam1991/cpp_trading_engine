@@ -28,7 +28,6 @@ struct FlowCallSiteManager
 
     static void add_call_site(std::string_view file, std::string_view function, size_t line)
     {
-        std::cout << "Adding call site: " << file << ":" << function << ":" << line << std::endl;
         all_call_sites().emplace_back(file, function, line);
     }
 };
@@ -38,7 +37,21 @@ struct FlowCallSiteRegister
 {
     FlowCallSiteRegister()
     {
-        FlowCallSiteManager::add_call_site(File, Function, Line);
+        constexpr std::string_view file = trim_project_path(File);
+        FlowCallSiteManager::add_call_site(file, Function, Line);
+    }
+
+    static constexpr std::string_view trim_project_path(std::string_view path)
+    {
+        constexpr std::string_view marker = "cpp_trading_engine/";
+
+        auto pos = path.find(marker);
+        if (pos != std::string_view::npos)
+        {
+            return path.substr(pos + marker.size());
+        }
+
+        return path;
     }
 };
 
