@@ -78,7 +78,7 @@ public:
     }
 
     template <FixedString File, FixedString Function, size_t Line>
-    static Json get_json_data()
+    static Json get_json_data_by_call_size()
     {
         Json data;
         for (size_t from = 0; from < MAX_EVENT_BASES; ++from)
@@ -101,6 +101,25 @@ public:
                 }
             }
         }
+
+        return data;
+    }
+
+    static Json get_json_data()
+    {
+        Json data;
+
+        // for (const FlowCallSite& callsite : FlowCallSiteManager::all_call_sites())
+        // {
+        //     Json callsite_data = get_json_data_by_call_size<callsite.file, callsite.function, callsite.line>();
+        //     if (!callsite_data.is_object() || callsite_data.size() == 0)
+        //     {
+        //         continue; // Skip empty data
+        //     }
+
+        //     std::string key = std::string(callsite.file) + ":" + std::string(callsite.function) + ":" + std::to_string(callsite.line);
+        //     data[key] = std::move(callsite_data);
+        // }
 
         return data;
     }
