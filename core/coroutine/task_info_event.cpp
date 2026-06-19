@@ -14,11 +14,7 @@ void TaskInfoEvent::check_handle()
     if (type == TaskType::RUN)
     {
         // spdlog::warn("EventBase - [TaskInfoEvent::check_handle] Running task with promise: {}, event base id: {}", (void*)promise, promise->m_event_base->m_event_base_id);
-        if (promise->trace != nullptr)
-        {
-            promise->trace->record_execute();
-        }
-
+        promise->trace.record_execute();
         promise->handle.resume();
     }
     else if (type == TaskType::SET_SUSPEND_VALUE)

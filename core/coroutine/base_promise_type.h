@@ -12,7 +12,7 @@ struct BasePromiseType
     bool has_awaiter = true;
 
     // For metric tracing
-    std::unique_ptr<TraceTransferParent> trace = nullptr;
+    TraceTransfer trace;
 
 private:
     std::atomic<bool> force_destroy{false};
