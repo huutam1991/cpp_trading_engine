@@ -19,5 +19,4 @@ enum EventBaseID
     TOTAL
 };
 
-
-inline thread_local int CURRENT_EVENT_BASE = EventBaseID::NONE;
+inline thread_local EventBaseID CURRENT_EVENT_BASE = EventBaseID::NONE;
