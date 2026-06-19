@@ -93,6 +93,8 @@ public:
                     metric_json["bytes"] = metric_data.bytes.load(std::memory_order_relaxed);
                     metric_json["total_delay_ns"] = metric_data.total_delay_ns.load(std::memory_order_relaxed);
                     metric_json["max_delay_ns"] = metric_data.max_delay_ns.load(std::memory_order_relaxed);
+                    metric_json["file"] = std::string(metric_data.file) + ":" + std::to_string(metric_data.line);
+                    metric_json["function"] = std::string(metric_data.function);
 
                     std::string_view from_str = enum_reflect::enum_name(static_cast<EventBaseID>(from));
                     std::string_view to_str = enum_reflect::enum_name(static_cast<EventBaseID>(to));
