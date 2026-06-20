@@ -63,6 +63,51 @@ type ObjectPoolInfoResponse = {
   data: Record<string, number>
 }
 
+type FlowMetricEntry = {
+  file: string
+  total_delay_ns: number | string
+  bytes: number | string
+  function: string
+  max_delay_ns: number | string
+  count: number | string
+}
+
+type FlowMetricResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: Record<string, Record<string, FlowMetricEntry[]>>
+}
+
+type FlowMetricRow = {
+  id: string
+  from: string
+  to: string
+  total_delay_ns: number
+  count: number
+  max_delay_ns: number
+  bytes: number
+  entries: FlowMetricEntry[]
+}
+
+type FlowGraphNode = {
+  id: string
+  x: number
+  y: number
+  incoming: number
+  outgoing: number
+}
+
+type FlowGraphEdge = FlowMetricRow & {
+  source: FlowGraphNode
+  target: FlowGraphNode
+  strokeWidth: number
+  path: string
+  labelX: number
+  labelY: number
+  selfLoop: boolean
+}
+
 type UpTimeResponse = {
   error: boolean
   status_code: number
@@ -72,7 +117,7 @@ type UpTimeResponse = {
 
 type SystemTab = {
   label: string
-  value: 'crash_log' | 'request_log' | 'object_pool'
+  value: 'crash_log' | 'request_log' | 'object_pool' | 'flow_metric'
   description: string
 }
 
@@ -80,6 +125,7 @@ const tabs: SystemTab[] = [
   { label: 'Crash Log', value: 'crash_log', description: 'Runtime crash reports' },
   { label: 'Request', value: 'request_log', description: 'HTTP request logs' },
   { label: 'Object Pool', value: 'object_pool', description: 'Pool metrics' },
+  { label: 'Flow Metric', value: 'flow_metric', description: 'Engine flow latency' },
 ]
 
 const activeTab = ref<SystemTab['value']>('crash_log')
@@ -88,10 +134,22 @@ const errorMessage = ref('')
 const crashLogs = ref<CrashLog[]>([])
 const requestLogs = ref<RequestLog[]>([])
 const objectPoolInfo = ref<Record<string, number>>({})
+const flowMetric = ref<Record<string, Record<string, FlowMetricEntry[]>>>({})
 const upTime = ref('--:--:--')
 const expandedCrashId = ref<string | null>(null)
+const expandedFlowId = ref<string | null>(null)
+const flowSvgRef = ref<SVGSVGElement | null>(null)
+const flowNodePositions = ref<Record<string, { x: number; y: number }>>({})
+const draggingFlowNode = ref<{ id: string; offsetX: number; offsetY: number } | null>(null)
 
 let upTimeTimer: ReturnType<typeof setInterval> | null = null
+
+const flowNodeHalfWidth = 76
+const flowNodeHalfHeight = 28
+const flowGraphMinWidth = 1420
+const flowGraphMinHeight = 600
+const flowGraphHorizontalPadding = 220
+const flowGraphVerticalPadding = 110
 
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -116,6 +174,164 @@ const objectPoolEntries = computed(() => {
   }))
 })
 
+const flowMetricRows = computed<FlowMetricRow[]>(() => {
+  const rows: FlowMetricRow[] = []
+
+  for (const [from, targetMap] of Object.entries(flowMetric.value)) {
+    for (const [to, entries] of Object.entries(targetMap ?? {})) {
+      const totalDelay = entries.reduce((sum, entry) => sum + toNumber(entry.total_delay_ns), 0)
+      const count = entries.reduce((sum, entry) => sum + toNumber(entry.count), 0)
+      const maxDelay = entries.reduce((max, entry) => Math.max(max, toNumber(entry.max_delay_ns)), 0)
+      const bytes = entries.reduce((sum, entry) => sum + toNumber(entry.bytes), 0)
+
+      rows.push({
+        id: `${from}->${to}`,
+        from,
+        to,
+        total_delay_ns: totalDelay,
+        count,
+        max_delay_ns: maxDelay,
+        bytes,
+        entries,
+      })
+    }
+  }
+
+  return rows.sort((left, right) => right.total_delay_ns - left.total_delay_ns)
+})
+
+const selectedFlowRow = computed(() => {
+  return flowMetricRows.value.find((row) => row.id === expandedFlowId.value) ?? null
+})
+
+const flowGraph = computed(() => {
+  const rows = flowMetricRows.value
+  const nodeIds = new Set<string>()
+
+  for (const row of rows) {
+    nodeIds.add(row.from)
+    nodeIds.add(row.to)
+  }
+
+  const ids = [...nodeIds]
+  const incomingMap = new Map<string, number>()
+  const outgoingMap = new Map<string, number>()
+  const childrenMap = new Map<string, Set<string>>()
+
+  for (const id of ids) {
+    incomingMap.set(id, 0)
+    outgoingMap.set(id, 0)
+    childrenMap.set(id, new Set<string>())
+  }
+
+  for (const row of rows) {
+    outgoingMap.set(row.from, (outgoingMap.get(row.from) ?? 0) + row.count)
+    incomingMap.set(row.to, (incomingMap.get(row.to) ?? 0) + row.count)
+
+    if (row.from !== row.to) {
+      childrenMap.get(row.from)?.add(row.to)
+    }
+  }
+
+  const depthMap = new Map<string, number>()
+  const roots = ids.filter((id) => (incomingMap.get(id) ?? 0) === 0)
+  const queue = (roots.length > 0 ? roots : ids).map((id) => ({ id, depth: 0 }))
+
+  while (queue.length > 0) {
+    const item = queue.shift()!
+    const currentDepth = depthMap.get(item.id)
+
+    if (currentDepth !== undefined && currentDepth >= item.depth) {
+      continue
+    }
+
+    depthMap.set(item.id, item.depth)
+
+    for (const child of childrenMap.get(item.id) ?? []) {
+      queue.push({ id: child, depth: item.depth + 1 })
+    }
+  }
+
+  for (const id of ids) {
+    if (!depthMap.has(id)) {
+      depthMap.set(id, 0)
+    }
+  }
+
+  const columns = new Map<number, string[]>()
+
+  for (const id of ids) {
+    const depth = depthMap.get(id) ?? 0
+    const column = columns.get(depth) ?? []
+    column.push(id)
+    columns.set(depth, column)
+  }
+
+  const orderedColumns = [...columns.entries()].sort(([left], [right]) => left - right)
+  const maxColumnSize = Math.max(1, ...orderedColumns.map(([, column]) => column.length))
+  const width = Math.max(flowGraphMinWidth, orderedColumns.length * 260 + flowGraphHorizontalPadding * 2)
+  const height = Math.max(flowGraphMinHeight, maxColumnSize * 150 + flowGraphVerticalPadding * 2)
+  const nodes = new Map<string, FlowGraphNode>()
+
+  orderedColumns.forEach(([, column], columnIndex) => {
+    const sortedColumn = [...column].sort((left, right) => {
+      const leftWeight = (incomingMap.get(left) ?? 0) + (outgoingMap.get(left) ?? 0)
+      const rightWeight = (incomingMap.get(right) ?? 0) + (outgoingMap.get(right) ?? 0)
+      return rightWeight - leftWeight || left.localeCompare(right)
+    })
+
+    const leftPadding = flowGraphHorizontalPadding
+    const rightPadding = flowGraphHorizontalPadding + 80
+    const usableWidth = Math.max(1, width - leftPadding - rightPadding)
+    const x = orderedColumns.length === 1
+      ? width / 2 - 40
+      : leftPadding + columnIndex * (usableWidth / Math.max(1, orderedColumns.length - 1))
+    const usableHeight = Math.max(1, height - flowGraphVerticalPadding * 2)
+    const yGap = usableHeight / (sortedColumn.length + 1)
+
+    sortedColumn.forEach((id, rowIndex) => {
+      const defaultY = flowGraphVerticalPadding + yGap * (rowIndex + 1)
+      const savedPosition = flowNodePositions.value[id]
+
+      nodes.set(id, {
+        id,
+        x: savedPosition?.x ?? x,
+        y: savedPosition?.y ?? defaultY,
+        incoming: incomingMap.get(id) ?? 0,
+        outgoing: outgoingMap.get(id) ?? 0,
+      })
+    })
+  })
+
+  const maxTotalDelay = Math.max(1, ...rows.map((row) => row.total_delay_ns))
+  const edges: FlowGraphEdge[] = rows.map((row) => {
+    const source = nodes.get(row.from)!
+    const target = nodes.get(row.to)!
+    const selfLoop = row.from === row.to
+    const path = selfLoop
+      ? `M ${source.x + 72} ${source.y - 18} C ${source.x + 160} ${source.y - 95}, ${source.x + 160} ${source.y + 95}, ${source.x + 72} ${source.y + 18}`
+      : `M ${source.x + 76} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${(source.x + target.x) / 2} ${target.y}, ${target.x - 76} ${target.y}`
+
+    return {
+      ...row,
+      source,
+      target,
+      selfLoop,
+      strokeWidth: 2 + Math.min(8, (row.total_delay_ns / maxTotalDelay) * 8),
+      path,
+      labelX: selfLoop ? source.x + 145 : (source.x + target.x) / 2,
+      labelY: selfLoop ? source.y : (source.y + target.y) / 2 - 12,
+    }
+  })
+
+  return {
+    nodes: [...nodes.values()],
+    edges,
+    width,
+    height,
+  }
+})
+
 function getTabCount(tab: SystemTab) {
   if (tab.value === 'crash_log') {
     return crashLogs.value.length
@@ -125,11 +341,52 @@ function getTabCount(tab: SystemTab) {
     return requestLogs.value.length
   }
 
-  return objectPoolEntries.value.length
+  if (tab.value === 'object_pool') {
+    return objectPoolEntries.value.length
+  }
+
+  return flowMetricRows.value.length
 }
 
 function formatNumber(value: number) {
   return value.toLocaleString('en-US')
+}
+
+function toNumber(value: number | string | undefined) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function formatNs(value: number | string | undefined) {
+  const ns = toNumber(value)
+
+  if (ns <= 0) {
+    return '0 ns'
+  }
+
+  if (ns >= 1_000_000_000) {
+    return `${(ns / 1_000_000_000).toFixed(3)} s`
+  }
+
+  if (ns >= 1_000_000) {
+    return `${(ns / 1_000_000).toFixed(3)} ms`
+  }
+
+  if (ns >= 1_000) {
+    return `${(ns / 1_000).toFixed(3)} µs`
+  }
+
+  return `${formatNumber(Math.round(ns))} ns`
+}
+
+function formatAvgNs(totalDelay: number | string | undefined, count: number | string | undefined) {
+  const parsedCount = toNumber(count)
+
+  if (parsedCount <= 0) {
+    return '–'
+  }
+
+  return formatNs(toNumber(totalDelay) / parsedCount)
 }
 
 function parseDateTime(value: string) {
@@ -217,6 +474,75 @@ function getCrashId(log: CrashLog, index?: number) {
 function toggleCrashDetail(log: CrashLog, index: number) {
   const id = getCrashId(log, index)
   expandedCrashId.value = expandedCrashId.value === id ? null : id
+}
+
+function toggleFlowDetail(row: FlowMetricRow) {
+  expandedFlowId.value = expandedFlowId.value === row.id ? null : row.id
+}
+
+function getFlowPointerPosition(event: PointerEvent) {
+  const svg = flowSvgRef.value
+
+  if (!svg) {
+    return { x: 0, y: 0 }
+  }
+
+  const point = svg.createSVGPoint()
+  point.x = event.clientX
+  point.y = event.clientY
+
+  const screenCtm = svg.getScreenCTM()
+
+  if (!screenCtm) {
+    return { x: 0, y: 0 }
+  }
+
+  const transformed = point.matrixTransform(screenCtm.inverse())
+
+  return {
+    x: transformed.x,
+    y: transformed.y,
+  }
+}
+
+function startDragFlowNode(event: PointerEvent, node: FlowGraphNode) {
+  const position = getFlowPointerPosition(event)
+  draggingFlowNode.value = {
+    id: node.id,
+    offsetX: position.x - node.x,
+    offsetY: position.y - node.y,
+  }
+
+  ;(event.currentTarget as SVGElement | null)?.setPointerCapture?.(event.pointerId)
+}
+
+function dragFlowNode(event: PointerEvent) {
+  const dragging = draggingFlowNode.value
+
+  if (!dragging) {
+    return
+  }
+
+  const position = getFlowPointerPosition(event)
+  const nextX = position.x - dragging.offsetX
+  const nextY = position.y - dragging.offsetY
+
+  flowNodePositions.value = {
+    ...flowNodePositions.value,
+    [dragging.id]: {
+      x: Math.max(flowNodeHalfWidth, Math.min(flowGraph.value.width - flowNodeHalfWidth, nextX)),
+      y: Math.max(flowNodeHalfHeight, Math.min(flowGraph.value.height - flowNodeHalfHeight, nextY)),
+    },
+  }
+}
+
+function stopDragFlowNode() {
+  draggingFlowNode.value = null
+}
+
+function resetFlowLayout() {
+  flowNodePositions.value = {}
+  draggingFlowNode.value = null
 }
 
 function getUniqueCallPath(callPath?: CrashCallPathFrame[]) {
@@ -323,6 +649,8 @@ async function selectTab(tab: SystemTab['value']) {
     await fetchRequestLogs()
   } else if (tab === 'object_pool') {
     await fetchObjectPoolInfo()
+  } else if (tab === 'flow_metric') {
+    await fetchFlowMetric()
   }
 }
 
@@ -454,6 +782,37 @@ async function fetchObjectPoolInfo() {
   }
 }
 
+async function fetchFlowMetric() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/flow_metric`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: FlowMetricResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      authStore.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      errorMessage.value = result.msg || 'Failed to fetch flow metrics.'
+      return
+    }
+
+    flowMetric.value = result.data ?? {}
+  } catch (error) {
+    console.error('Fetch flow metric error:', error)
+    errorMessage.value = 'Fetch flow metric error.'
+  } finally {
+    loading.value = false
+  }
+}
+
 async function refreshSystem() {
   await fetchUpTime()
 
@@ -461,8 +820,10 @@ async function refreshSystem() {
     await fetchCrashLogs()
   } else if (activeTab.value === 'request_log') {
     await fetchRequestLogs()
-  } else {
+  } else if (activeTab.value === 'object_pool') {
     await fetchObjectPoolInfo()
+  } else {
+    await fetchFlowMetric()
   }
 }
 
@@ -470,6 +831,7 @@ onMounted(async () => {
   await Promise.all([
     fetchCrashLogs(),
     fetchRequestLogs(),
+    fetchFlowMetric(),
     fetchUpTime(),
   ])
 })
@@ -720,6 +1082,173 @@ onBeforeUnmount(() => {
 
           <div v-if="objectPoolEntries.length === 0" class="empty-table">
             No object pool data found.
+          </div>
+        </div>
+
+
+        <div v-else-if="activeTab === 'flow_metric'" class="flow-metric-board">
+          <template v-if="flowMetricRows.length > 0">
+            <div class="flow-graph-card">
+              <div class="flow-graph-header">
+                <div>
+                  <h2>Trading Engine Data Flow</h2>
+                  <p>Drag nodes anywhere inside the canvas. Arrows and labels will follow automatically.</p>
+                </div>
+
+                <div class="flow-graph-summary">
+                  <span>{{ flowGraph.nodes.length }} nodes</span>
+                  <span>{{ flowGraph.edges.length }} edges</span>
+                  <button class="flow-reset-button" @click="resetFlowLayout">Reset Layout</button>
+                </div>
+              </div>
+
+              <div class="flow-graph-scroll">
+                <svg
+                  ref="flowSvgRef"
+                  class="flow-graph-svg"
+                  :viewBox="`0 0 ${flowGraph.width} ${flowGraph.height}`"
+                  :style="{ height: `${flowGraph.height}px` }"
+                  preserveAspectRatio="xMidYMid meet"
+                  role="img"
+                  aria-label="Trading engine flow metric graph"
+                  @pointermove="dragFlowNode"
+                  @pointerup="stopDragFlowNode"
+                  @pointercancel="stopDragFlowNode"
+                  @mouseleave="stopDragFlowNode"
+                >
+                  <defs>
+                    <marker
+                      id="flow-arrow-head"
+                      markerWidth="10"
+                      markerHeight="10"
+                      refX="8"
+                      refY="3"
+                      orient="auto"
+                      markerUnits="strokeWidth"
+                    >
+                      <path d="M 0 0 L 8 3 L 0 6 z" class="flow-arrow-head" />
+                    </marker>
+                  </defs>
+
+                  <g class="flow-edge-layer">
+                    <g
+                      v-for="edge in flowGraph.edges"
+                      :key="edge.id"
+                      class="flow-edge-group"
+                      :class="{ selected: expandedFlowId === edge.id }"
+                      @click="toggleFlowDetail(edge)"
+                    >
+                      <path
+                        class="flow-edge-hitbox"
+                        :d="edge.path"
+                      />
+                      <path
+                        class="flow-edge"
+                        :d="edge.path"
+                        :stroke-width="edge.strokeWidth"
+                        marker-end="url(#flow-arrow-head)"
+                      />
+
+                      <foreignObject
+                        :x="edge.labelX - 88"
+                        :y="edge.labelY - 23"
+                        width="176"
+                        height="46"
+                        class="flow-edge-label-foreign"
+                      >
+                        <div class="flow-edge-label" xmlns="http://www.w3.org/1999/xhtml">
+                          <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
+                          <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
+                        </div>
+                      </foreignObject>
+                    </g>
+                  </g>
+
+                  <g class="flow-node-layer">
+                    <g
+                      v-for="node in flowGraph.nodes"
+                      :key="node.id"
+                      class="flow-node-group"
+                      :class="{ dragging: draggingFlowNode?.id === node.id }"
+                      :transform="`translate(${node.x}, ${node.y})`"
+                      @pointerdown.stop="startDragFlowNode($event, node)"
+                    >
+                      <rect x="-76" y="-28" width="152" height="56" rx="14" class="flow-node-box" />
+                      <text y="-4" text-anchor="middle" class="flow-node-title">{{ node.id }}</text>
+                      <text y="16" text-anchor="middle" class="flow-node-subtitle">
+                        in {{ formatNumber(node.incoming) }} / out {{ formatNumber(node.outgoing) }}
+                      </text>
+                    </g>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <div v-if="selectedFlowRow" class="flow-detail">
+              <div class="flow-detail-header">
+                <div>
+                  <div class="flow-detail-title">{{ selectedFlowRow.from }} → {{ selectedFlowRow.to }}</div>
+                  <div class="flow-detail-subtitle">
+                    Total {{ formatNs(selectedFlowRow.total_delay_ns) }} · Count {{ formatNumber(selectedFlowRow.count) }} · Max {{ formatNs(selectedFlowRow.max_delay_ns) }} · Avg {{ formatAvgNs(selectedFlowRow.total_delay_ns, selectedFlowRow.count) }}
+                  </div>
+                </div>
+
+                <button class="flow-close-button" @click="expandedFlowId = null">×</button>
+              </div>
+
+              <table class="flow-detail-table">
+                <colgroup>
+                  <col class="col-flow-function" />
+                  <col class="col-flow-file" />
+                  <col class="col-flow-total" />
+                  <col class="col-flow-count" />
+                  <col class="col-flow-max" />
+                  <col class="col-flow-avg" />
+                  <col class="col-flow-bytes" />
+                </colgroup>
+
+                <thead>
+                  <tr>
+                    <th>Function</th>
+                    <th>File</th>
+                    <th>Total Delay</th>
+                    <th>Count</th>
+                    <th>Max Delay</th>
+                    <th>Avg</th>
+                    <th>Bytes</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr
+                    v-for="(entry, entryIndex) in selectedFlowRow.entries"
+                    :key="`${selectedFlowRow.id}-${entry.file}-${entry.function}-${entryIndex}`"
+                  >
+                    <td class="mono-text function-cell" data-label="Function">
+                      {{ formatFunctionName(entry.function) }}
+                    </td>
+                    <td class="mono-text function-cell" data-label="File">
+                      {{ formatFilePath(entry.file) }}
+                    </td>
+                    <td class="mono-text" data-label="Total Delay">
+                      {{ formatNs(entry.total_delay_ns) }}
+                      <small>{{ formatNumber(toNumber(entry.total_delay_ns)) }} ns</small>
+                    </td>
+                    <td class="mono-text" data-label="Count">{{ formatNumber(toNumber(entry.count)) }}</td>
+                    <td class="mono-text" data-label="Max Delay">
+                      {{ formatNs(entry.max_delay_ns) }}
+                      <small>{{ formatNumber(toNumber(entry.max_delay_ns)) }} ns</small>
+                    </td>
+                    <td class="mono-text" data-label="Avg">{{ formatAvgNs(entry.total_delay_ns, entry.count) }}</td>
+                    <td class="mono-text" data-label="Bytes">{{ formatNumber(toNumber(entry.bytes)) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <div v-else class="empty-table">
+            No flow metrics found.
           </div>
         </div>
 
@@ -1218,6 +1747,272 @@ td {
   border: 1px solid #4b5563;
 }
 
+
+.flow-metric-board {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.flow-graph-card {
+  overflow: hidden;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 10px;
+}
+
+.flow-graph-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid #374151;
+}
+
+.flow-graph-header h2 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.flow-graph-header p {
+  margin: 5px 0 0;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.flow-graph-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flow-graph-summary span {
+  padding: 6px 9px;
+  color: #bfdbfe;
+  background: #172554;
+  border: 1px solid #2563eb;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.flow-reset-button {
+  height: 28px;
+  padding: 0 10px;
+  color: #cbd5e1;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.flow-reset-button:hover {
+  color: #ffffff;
+  background: #273449;
+  border-color: #4b5563;
+}
+
+.flow-graph-scroll {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.16) 1px, transparent 0),
+    #111827;
+  background-size: 24px 24px;
+}
+
+.flow-graph-svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  touch-action: none;
+  user-select: none;
+}
+
+.flow-arrow-head {
+  fill: #60a5fa;
+}
+
+.flow-edge-group {
+  cursor: pointer;
+}
+
+.flow-edge-hitbox {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 26;
+}
+
+.flow-edge {
+  fill: none;
+  stroke: #60a5fa;
+  stroke-linecap: round;
+  opacity: 0.72;
+  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.22));
+}
+
+.flow-edge-group:hover .flow-edge,
+.flow-edge-group.selected .flow-edge {
+  stroke: #22c55e;
+  opacity: 1;
+}
+
+.flow-edge-group.selected .flow-arrow-head {
+  fill: #22c55e;
+}
+
+.flow-edge-label-foreign {
+  pointer-events: none;
+  overflow: visible;
+}
+
+.flow-edge-label {
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  color: #cbd5e1;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid #374151;
+  border-radius: 9px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+}
+
+.flow-edge-label strong {
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.flow-edge-label span {
+  margin-top: 2px;
+  color: #9ca3af;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.flow-node-group {
+  cursor: grab;
+}
+
+.flow-node-group.dragging {
+  cursor: grabbing;
+}
+
+.flow-node-group.dragging .flow-node-box {
+  stroke: #22c55e;
+  filter: drop-shadow(0 0 18px rgba(34, 197, 94, 0.34));
+}
+
+.flow-node-box {
+  fill: #1e3a5f;
+  stroke: #3b82f6;
+  stroke-width: 1.2;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.28));
+}
+
+.flow-node-title {
+  fill: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.flow-node-subtitle {
+  fill: #bfdbfe;
+  font-size: 9px;
+  font-weight: 800;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.flow-detail {
+  padding: 14px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 9px;
+}
+
+.flow-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.flow-detail-title {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.flow-detail-subtitle {
+  margin-top: 5px;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.flow-close-button {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #cbd5e1;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.flow-close-button:hover {
+  color: #ffffff;
+  background: #273449;
+}
+
+.flow-detail-table {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.col-flow-function { width: 30%; }
+.col-flow-file { width: 24%; }
+.col-flow-total { width: 13%; }
+.col-flow-count { width: 9%; }
+.col-flow-max { width: 11%; }
+.col-flow-avg { width: 8%; }
+.col-flow-bytes { width: 5%; }
+
+.flow-detail-table td:nth-child(3),
+.flow-detail-table td:nth-child(4),
+.flow-detail-table td:nth-child(5),
+.flow-detail-table td:nth-child(6),
+.flow-detail-table td:nth-child(7) {
+  text-align: right;
+}
+
+.flow-detail-table small {
+  display: block;
+  margin-top: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+}
+
 .object-pool-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(260px, 1fr));
@@ -1346,7 +2141,8 @@ td {
   }
 
   .crash-table td::before,
-  .request-table td::before {
+  .request-table td::before,
+  .flow-detail-table td::before {
     content: attr(data-label);
   }
 
@@ -1361,6 +2157,22 @@ td {
 
   .crash-detail-row td::before {
     display: none;
+  }
+
+  .flow-card {
+    padding: 14px;
+  }
+
+  .flow-detail {
+    padding: 12px;
+  }
+
+  .flow-detail-table td:nth-child(3),
+  .flow-detail-table td:nth-child(4),
+  .flow-detail-table td:nth-child(5),
+  .flow-detail-table td:nth-child(6),
+  .flow-detail-table td:nth-child(7) {
+    text-align: left;
   }
 
   .function-cell,
