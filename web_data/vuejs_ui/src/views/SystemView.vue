@@ -144,6 +144,7 @@ const draggingFlowNode = ref<{ id: string; offsetX: number; offsetY: number } | 
 
 let upTimeTimer: ReturnType<typeof setInterval> | null = null
 let flowMetricTimer: ReturnType<typeof setInterval> | null = null
+let isFetchingFlowMetric = false
 
 const flowNodeHalfWidth = 90
 const flowNodeHalfHeight = 34
@@ -237,27 +238,48 @@ const flowGraph = computed(() => {
   }
 
   const depthMap = new Map<string, number>()
-  const roots = ids.filter((id) => (incomingMap.get(id) ?? 0) === 0)
-  const queue = (roots.length > 0 ? roots : ids).map((id) => ({ id, depth: 0 }))
+  const visited = new Set<string>()
+  const roots = ids
+    .filter((id) => (incomingMap.get(id) ?? 0) === 0 && (outgoingMap.get(id) ?? 0) > 0)
+    .sort((left, right) => {
+      const leftWeight = (incomingMap.get(left) ?? 0) + (outgoingMap.get(left) ?? 0)
+      const rightWeight = (incomingMap.get(right) ?? 0) + (outgoingMap.get(right) ?? 0)
+      return rightWeight - leftWeight || left.localeCompare(right)
+    })
 
-  while (queue.length > 0) {
-    const item = queue.shift()!
-    const currentDepth = depthMap.get(item.id)
+  function visitFlowComponent(startIds: string[]) {
+    const queue = startIds.map((id) => ({ id, depth: depthMap.get(id) ?? 0 }))
 
-    if (currentDepth !== undefined && currentDepth >= item.depth) {
-      continue
-    }
+    while (queue.length > 0) {
+      const item = queue.shift()!
 
-    depthMap.set(item.id, item.depth)
+      if (visited.has(item.id)) {
+        continue
+      }
 
-    for (const child of childrenMap.get(item.id) ?? []) {
-      queue.push({ id: child, depth: item.depth + 1 })
+      visited.add(item.id)
+      depthMap.set(item.id, item.depth)
+
+      for (const child of childrenMap.get(item.id) ?? []) {
+        if (!visited.has(child)) {
+          queue.push({ id: child, depth: item.depth + 1 })
+        }
+      }
     }
   }
 
+  // Main DAG-like path first. The visited set makes layout safe even when the
+  // backend reports cyclic flows such as A -> B -> C -> A.
+  if (roots.length > 0) {
+    visitFlowComponent(roots)
+  }
+
+  // Handle pure cycles or disconnected components that have no zero-indegree root.
+  // They are laid out as independent components instead of allowing level growth forever.
   for (const id of ids) {
-    if (!depthMap.has(id)) {
+    if (!visited.has(id)) {
       depthMap.set(id, 0)
+      visitFlowComponent([id])
     }
   }
 
@@ -793,6 +815,12 @@ async function fetchObjectPoolInfo() {
 }
 
 async function fetchFlowMetric(showLoading = true) {
+  if (isFetchingFlowMetric) {
+    return
+  }
+
+  isFetchingFlowMetric = true
+
   if (showLoading) {
     loading.value = true
   }
@@ -821,6 +849,8 @@ async function fetchFlowMetric(showLoading = true) {
     console.error('Fetch flow metric error:', error)
     errorMessage.value = 'Fetch flow metric error.'
   } finally {
+    isFetchingFlowMetric = false
+
     if (showLoading) {
       loading.value = false
     }
@@ -838,7 +868,9 @@ function startFlowMetricTimer() {
   stopFlowMetricTimer()
 
   flowMetricTimer = setInterval(() => {
-    void fetchFlowMetric(false)
+    if (activeTab.value === 'flow_metric') {
+      void fetchFlowMetric(false)
+    }
   }, 500)
 }
 
