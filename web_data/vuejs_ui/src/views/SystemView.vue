@@ -122,13 +122,13 @@ type SystemTab = {
 }
 
 const tabs: SystemTab[] = [
+  { label: 'Flow Metric', value: 'flow_metric', description: 'Engine flow latency' },
   { label: 'Crash Log', value: 'crash_log', description: 'Runtime crash reports' },
   { label: 'Request', value: 'request_log', description: 'HTTP request logs' },
   { label: 'Object Pool', value: 'object_pool', description: 'Pool metrics' },
-  { label: 'Flow Metric', value: 'flow_metric', description: 'Engine flow latency' },
 ]
 
-const activeTab = ref<SystemTab['value']>('crash_log')
+const activeTab = ref<SystemTab['value']>('flow_metric')
 const loading = ref(false)
 const errorMessage = ref('')
 const crashLogs = ref<CrashLog[]>([])
@@ -143,13 +143,14 @@ const flowNodePositions = ref<Record<string, { x: number; y: number }>>({})
 const draggingFlowNode = ref<{ id: string; offsetX: number; offsetY: number } | null>(null)
 
 let upTimeTimer: ReturnType<typeof setInterval> | null = null
+let flowMetricTimer: ReturnType<typeof setInterval> | null = null
 
-const flowNodeHalfWidth = 76
-const flowNodeHalfHeight = 28
+const flowNodeHalfWidth = 90
+const flowNodeHalfHeight = 34
 const flowGraphMinWidth = 1420
-const flowGraphMinHeight = 600
-const flowGraphHorizontalPadding = 220
-const flowGraphVerticalPadding = 110
+const flowGraphMinHeight = 620
+const flowGraphHorizontalPadding = 240
+const flowGraphVerticalPadding = 120
 
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -269,8 +270,8 @@ const flowGraph = computed(() => {
 
   const orderedColumns = [...columns.entries()].sort(([left], [right]) => left - right)
   const maxColumnSize = Math.max(1, ...orderedColumns.map(([, column]) => column.length))
-  const width = Math.max(flowGraphMinWidth, orderedColumns.length * 260 + flowGraphHorizontalPadding * 2)
-  const height = Math.max(flowGraphMinHeight, maxColumnSize * 150 + flowGraphVerticalPadding * 2)
+  const width = Math.max(flowGraphMinWidth, orderedColumns.length * 310 + flowGraphHorizontalPadding * 2)
+  const height = Math.max(flowGraphMinHeight, maxColumnSize * 180 + flowGraphVerticalPadding * 2)
   const nodes = new Map<string, FlowGraphNode>()
 
   orderedColumns.forEach(([, column], columnIndex) => {
@@ -309,8 +310,8 @@ const flowGraph = computed(() => {
     const target = nodes.get(row.to)!
     const selfLoop = row.from === row.to
     const path = selfLoop
-      ? `M ${source.x + 72} ${source.y - 18} C ${source.x + 160} ${source.y - 95}, ${source.x + 160} ${source.y + 95}, ${source.x + 72} ${source.y + 18}`
-      : `M ${source.x + 76} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${(source.x + target.x) / 2} ${target.y}, ${target.x - 76} ${target.y}`
+      ? `M ${source.x + flowNodeHalfWidth - 4} ${source.y - 20} C ${source.x + 168} ${source.y - 100}, ${source.x + 168} ${source.y + 100}, ${source.x + flowNodeHalfWidth - 4} ${source.y + 20}`
+      : `M ${source.x + flowNodeHalfWidth} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${(source.x + target.x) / 2} ${target.y}, ${target.x - flowNodeHalfWidth} ${target.y}`
 
     return {
       ...row,
@@ -782,8 +783,10 @@ async function fetchObjectPoolInfo() {
   }
 }
 
-async function fetchFlowMetric() {
-  loading.value = true
+async function fetchFlowMetric(showLoading = true) {
+  if (showLoading) {
+    loading.value = true
+  }
   errorMessage.value = ''
 
   try {
@@ -809,8 +812,25 @@ async function fetchFlowMetric() {
     console.error('Fetch flow metric error:', error)
     errorMessage.value = 'Fetch flow metric error.'
   } finally {
-    loading.value = false
+    if (showLoading) {
+      loading.value = false
+    }
   }
+}
+
+function stopFlowMetricTimer() {
+  if (flowMetricTimer) {
+    clearInterval(flowMetricTimer)
+    flowMetricTimer = null
+  }
+}
+
+function startFlowMetricTimer() {
+  stopFlowMetricTimer()
+
+  flowMetricTimer = setInterval(() => {
+    void fetchFlowMetric(false)
+  }, 500)
 }
 
 async function refreshSystem() {
@@ -829,15 +849,17 @@ async function refreshSystem() {
 
 onMounted(async () => {
   await Promise.all([
+    fetchFlowMetric(),
     fetchCrashLogs(),
     fetchRequestLogs(),
-    fetchFlowMetric(),
     fetchUpTime(),
   ])
+  startFlowMetricTimer()
 })
 
 onBeforeUnmount(() => {
   stopUpTimeTimer()
+  stopFlowMetricTimer()
 })
 </script>
 
@@ -1150,10 +1172,10 @@ onBeforeUnmount(() => {
                       />
 
                       <foreignObject
-                        :x="edge.labelX - 88"
-                        :y="edge.labelY - 23"
-                        width="176"
-                        height="46"
+                        :x="edge.labelX - 100"
+                        :y="edge.labelY - 27"
+                        width="200"
+                        height="54"
                         class="flow-edge-label-foreign"
                       >
                         <div class="flow-edge-label" xmlns="http://www.w3.org/1999/xhtml">
@@ -1173,9 +1195,9 @@ onBeforeUnmount(() => {
                       :transform="`translate(${node.x}, ${node.y})`"
                       @pointerdown.stop="startDragFlowNode($event, node)"
                     >
-                      <rect x="-76" y="-28" width="152" height="56" rx="14" class="flow-node-box" />
-                      <text y="-4" text-anchor="middle" class="flow-node-title">{{ node.id }}</text>
-                      <text y="16" text-anchor="middle" class="flow-node-subtitle">
+                      <rect x="-90" y="-34" width="180" height="68" rx="16" class="flow-node-box" />
+                      <text y="-6" text-anchor="middle" class="flow-node-title">{{ node.id }}</text>
+                      <text y="18" text-anchor="middle" class="flow-node-subtitle">
                         in {{ formatNumber(node.incoming) }} / out {{ formatNumber(node.outgoing) }}
                       </text>
                     </g>
@@ -1873,12 +1895,12 @@ td {
 }
 
 .flow-edge-label {
-  min-height: 40px;
+  min-height: 48px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 5px 8px;
+  padding: 6px 10px;
   color: #cbd5e1;
   background: rgba(17, 24, 39, 0.92);
   border: 1px solid #374151;
@@ -1888,14 +1910,14 @@ td {
 
 .flow-edge-label strong {
   color: #f8fafc;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 900;
 }
 
 .flow-edge-label span {
   margin-top: 2px;
   color: #9ca3af;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -1921,14 +1943,14 @@ td {
 
 .flow-node-title {
   fill: #ffffff;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 900;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 .flow-node-subtitle {
   fill: #bfdbfe;
-  font-size: 9px;
+  font-size: 10.5px;
   font-weight: 800;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
