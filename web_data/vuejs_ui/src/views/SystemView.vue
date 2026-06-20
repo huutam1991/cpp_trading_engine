@@ -149,8 +149,10 @@ const flowNodeHalfWidth = 90
 const flowNodeHalfHeight = 34
 const flowGraphMinWidth = 1420
 const flowGraphMinHeight = 620
-const flowGraphHorizontalPadding = 240
+const flowGraphHorizontalPadding = 220
 const flowGraphVerticalPadding = 120
+const flowGraphColumnGap = 320
+const flowGraphRowGap = 185
 
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -270,8 +272,10 @@ const flowGraph = computed(() => {
 
   const orderedColumns = [...columns.entries()].sort(([left], [right]) => left - right)
   const maxColumnSize = Math.max(1, ...orderedColumns.map(([, column]) => column.length))
-  const width = Math.max(flowGraphMinWidth, orderedColumns.length * 310 + flowGraphHorizontalPadding * 2)
-  const height = Math.max(flowGraphMinHeight, maxColumnSize * 180 + flowGraphVerticalPadding * 2)
+  // Keep the SVG coordinate width stable so nodes/labels do not shrink when more columns/edges appear.
+  // More graph complexity should change spacing/height, not scale down the whole canvas.
+  const width = flowGraphMinWidth
+  const height = Math.max(flowGraphMinHeight, maxColumnSize * flowGraphRowGap + flowGraphVerticalPadding * 2)
   const nodes = new Map<string, FlowGraphNode>()
 
   orderedColumns.forEach(([, column], columnIndex) => {
@@ -282,11 +286,16 @@ const flowGraph = computed(() => {
     })
 
     const leftPadding = flowGraphHorizontalPadding
-    const rightPadding = flowGraphHorizontalPadding + 80
+    const rightPadding = flowGraphHorizontalPadding
     const usableWidth = Math.max(1, width - leftPadding - rightPadding)
+    const actualColumnGap = orderedColumns.length <= 1
+      ? 0
+      : Math.min(flowGraphColumnGap, usableWidth / Math.max(1, orderedColumns.length - 1))
+    const graphWidth = actualColumnGap * Math.max(0, orderedColumns.length - 1)
+    const startX = leftPadding + Math.max(0, (usableWidth - graphWidth) / 2)
     const x = orderedColumns.length === 1
-      ? width / 2 - 40
-      : leftPadding + columnIndex * (usableWidth / Math.max(1, orderedColumns.length - 1))
+      ? width / 2
+      : startX + columnIndex * actualColumnGap
     const usableHeight = Math.max(1, height - flowGraphVerticalPadding * 2)
     const yGap = usableHeight / (sortedColumn.length + 1)
 
@@ -1114,7 +1123,7 @@ onBeforeUnmount(() => {
               <div class="flow-graph-header">
                 <div>
                   <h2>Trading Engine Data Flow</h2>
-                  <p>Drag nodes anywhere inside the canvas. Click an arrow to explore the flow details, including the associated functions and source files.</p>
+                  <p>Drag nodes anywhere inside the canvas. Arrows and labels will follow automatically.</p>
                 </div>
 
                 <div class="flow-graph-summary">
