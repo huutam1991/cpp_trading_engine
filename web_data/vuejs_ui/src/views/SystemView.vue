@@ -1114,7 +1114,7 @@ onBeforeUnmount(() => {
               <div class="flow-graph-header">
                 <div>
                   <h2>Trading Engine Data Flow</h2>
-                  <p>Drag nodes anywhere inside the canvas. Arrows and labels will follow automatically.</p>
+                  <p>Drag nodes anywhere inside the canvas. Click an arrow to explore the flow details, including the associated functions and source files.</p>
                 </div>
 
                 <div class="flow-graph-summary">
