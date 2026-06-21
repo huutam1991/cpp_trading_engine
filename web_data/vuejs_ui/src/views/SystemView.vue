@@ -157,6 +157,8 @@ const flowGraphHorizontalPadding = 220
 const flowGraphVerticalPadding = 120
 const flowGraphColumnGap = 320
 const flowGraphRowGap = 185
+const flowLayoutStorageKey = 'system-view.flow-metric.node-positions.v1'
+
 
 const activeTabInfo = computed(() => {
   return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
@@ -518,6 +520,103 @@ function toggleFlowDetail(row: FlowMetricRow) {
   expandedFlowId.value = expandedFlowId.value === row.id ? null : row.id
 }
 
+function getFlowMetricNodeIds(metric: Record<string, Record<string, FlowMetricEntry[]>> = flowMetric.value) {
+  const ids = new Set<string>()
+
+  for (const [from, targetMap] of Object.entries(metric)) {
+    ids.add(from)
+
+    for (const to of Object.keys(targetMap ?? {})) {
+      ids.add(to)
+    }
+  }
+
+  return ids
+}
+
+function clampFlowNodePosition(position: { x: number; y: number }) {
+  return {
+    x: Math.max(flowNodeHalfWidth, Math.min(flowGraph.value.width - flowNodeHalfWidth, position.x)),
+    y: Math.max(flowNodeHalfHeight, Math.min(flowGraph.value.height - flowNodeHalfHeight, position.y)),
+  }
+}
+
+function loadFlowNodePositions() {
+  try {
+    const rawPositions = window.localStorage.getItem(flowLayoutStorageKey)
+
+    if (!rawPositions) {
+      return
+    }
+
+    const parsed = JSON.parse(rawPositions) as Record<string, { x: number; y: number }>
+    const nextPositions: Record<string, { x: number; y: number }> = {}
+
+    for (const [id, position] of Object.entries(parsed ?? {})) {
+      const x = Number(position?.x)
+      const y = Number(position?.y)
+
+      if (!id || !Number.isFinite(x) || !Number.isFinite(y)) {
+        continue
+      }
+
+      nextPositions[id] = clampFlowNodePosition({ x, y })
+    }
+
+    flowNodePositions.value = nextPositions
+  } catch (error) {
+    console.warn('Failed to load saved flow layout:', error)
+    window.localStorage.removeItem(flowLayoutStorageKey)
+  }
+}
+
+function saveFlowNodePositions() {
+  try {
+    if (Object.keys(flowNodePositions.value).length === 0) {
+      window.localStorage.removeItem(flowLayoutStorageKey)
+      return
+    }
+
+    window.localStorage.setItem(flowLayoutStorageKey, JSON.stringify(flowNodePositions.value))
+  } catch (error) {
+    console.warn('Failed to save flow layout:', error)
+  }
+}
+
+function syncFlowNodePositionsWithMetric() {
+  const nodeIds = getFlowMetricNodeIds()
+
+  if (nodeIds.size === 0) {
+    return
+  }
+
+  let changed = false
+  const nextPositions: Record<string, { x: number; y: number }> = {}
+
+  for (const [id, position] of Object.entries(flowNodePositions.value)) {
+    if (!nodeIds.has(id)) {
+      changed = true
+      continue
+    }
+
+    const clamped = clampFlowNodePosition(position)
+    nextPositions[id] = clamped
+
+    if (clamped.x !== position.x || clamped.y !== position.y) {
+      changed = true
+    }
+  }
+
+  if (Object.keys(nextPositions).length !== Object.keys(flowNodePositions.value).length) {
+    changed = true
+  }
+
+  if (changed) {
+    flowNodePositions.value = nextPositions
+    saveFlowNodePositions()
+  }
+}
+
 function getFlowPointerPosition(event: PointerEvent) {
   const svg = flowSvgRef.value
 
@@ -567,20 +666,21 @@ function dragFlowNode(event: PointerEvent) {
 
   flowNodePositions.value = {
     ...flowNodePositions.value,
-    [dragging.id]: {
-      x: Math.max(flowNodeHalfWidth, Math.min(flowGraph.value.width - flowNodeHalfWidth, nextX)),
-      y: Math.max(flowNodeHalfHeight, Math.min(flowGraph.value.height - flowNodeHalfHeight, nextY)),
-    },
+    [dragging.id]: clampFlowNodePosition({ x: nextX, y: nextY }),
   }
+
+  saveFlowNodePositions()
 }
 
 function stopDragFlowNode() {
   draggingFlowNode.value = null
+  saveFlowNodePositions()
 }
 
 function resetFlowLayout() {
   flowNodePositions.value = {}
   draggingFlowNode.value = null
+  saveFlowNodePositions()
 }
 
 function getUniqueCallPath(callPath?: CrashCallPathFrame[]) {
@@ -851,6 +951,7 @@ async function fetchFlowMetric(showLoading = true) {
     }
 
     flowMetric.value = result.data ?? {}
+    syncFlowNodePositionsWithMetric()
   } catch (error) {
     console.error('Fetch flow metric error:', error)
     errorMessage.value = 'Fetch flow metric error.'
@@ -895,6 +996,8 @@ async function refreshSystem() {
 }
 
 onMounted(async () => {
+  loadFlowNodePositions()
+
   await Promise.all([
     fetchFlowMetric(),
     fetchCrashLogs(),
