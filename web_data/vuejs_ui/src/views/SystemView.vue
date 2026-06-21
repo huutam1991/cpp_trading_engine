@@ -1216,18 +1216,22 @@ onBeforeUnmount(() => {
                       />
 
                       <foreignObject
-                        :x="edge.labelX - 100"
+                        :x="edge.labelX - 105"
                         :y="edge.labelY - 27"
-                        width="200"
+                        width="210"
                         height="54"
                         class="flow-edge-label-foreign"
                       >
                         <div class="flow-edge-label" xmlns="http://www.w3.org/1999/xhtml">
-                          <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
-                          <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
-                          <span class="mono-text">p50 {{ formatNs(edge.entries?.[0]?.p50) }}</span>
-                          <span class="mono-text">p90 {{ formatNs(edge.entries?.[0]?.p90) }}</span>
-                          <span class="mono-text">p99 {{ formatNs(edge.entries?.[0]?.p99) }}</span>
+                          <div class="flow-edge-label-main">
+                            <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
+                            <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
+                          </div>
+                          <div class="flow-edge-label-percentiles">
+                            <span class="mono-text">p50 {{ formatNs(edge.entries?.[0]?.p50) }}</span>
+                            <span class="mono-text">p90 {{ formatNs(edge.entries?.[0]?.p90) }}</span>
+                            <span class="mono-text">p99 {{ formatNs(edge.entries?.[0]?.p99) }}</span>
+                          </div>
                         </div>
                       </foreignObject>
                     </g>
@@ -1952,10 +1956,10 @@ td {
 
 .flow-edge-label {
   min-height: 48px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(78px, 1fr) minmax(92px, auto);
+  column-gap: 10px;
   align-items: center;
-  justify-content: center;
   padding: 6px 10px;
   color: #cbd5e1;
   background: rgba(17, 24, 39, 0.92);
@@ -1964,10 +1968,27 @@ td {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
 }
 
+.flow-edge-label-main,
+.flow-edge-label-percentiles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.flow-edge-label-main {
+  align-items: flex-start;
+}
+
+.flow-edge-label-percentiles {
+  align-items: flex-start;
+}
+
 .flow-edge-label strong {
   color: #f8fafc;
   font-size: 13px;
   font-weight: 900;
+  line-height: 1.2;
 }
 
 .flow-edge-label span {
@@ -1975,6 +1996,8 @@ td {
   color: #9ca3af;
   font-size: 11px;
   font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
 }
 
 .flow-node-group {
