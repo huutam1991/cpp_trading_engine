@@ -56,9 +56,10 @@ Task<Json> BinanceGateway::get_exchange_info_perpetual()
 void BinanceGateway::get_spot_symbols_info()
 {
     auto task = get_exchange_info();
-    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY));
+    auto future = task.get_future();
 
-    Json exchange_info = task.get_future().get();
+    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY));
+    Json exchange_info = future.get();
 
     exchange_info["symbols"].for_each([this](Json& data)
     {
@@ -86,9 +87,10 @@ void BinanceGateway::get_spot_symbols_info()
 void BinanceGateway::get_perpetual_symbols_info()
 {
     auto task = get_exchange_info_perpetual();
-    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY));
+    auto future = task.get_future();
 
-    Json exchange_info = task.get_future().get();
+    task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY));
+    Json exchange_info = future.get();
 
     exchange_info["symbols"].for_each([this](Json& data)
     {

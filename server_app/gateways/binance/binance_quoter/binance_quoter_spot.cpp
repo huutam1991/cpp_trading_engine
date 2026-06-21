@@ -40,9 +40,10 @@ void BinanceQuoterSpot::init_websocket()
 {
     // Get listen key
     auto task = this->get_listen_key();
-    task.start_running_on(m_epoll_base);
+    auto future = task.get_future();
 
-    m_listen_key = task.get_future().get();
+    task.start_running_on(m_epoll_base);
+    m_listen_key = future.get();
 
     m_websocket = std::make_shared<HttpsClientWebsocket>(m_epoll_base, m_ws_url, std::stoi(m_ws_port), "/ws",
         // on_connect
