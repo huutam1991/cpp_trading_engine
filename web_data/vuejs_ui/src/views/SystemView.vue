@@ -149,8 +149,8 @@ let upTimeTimer: ReturnType<typeof setInterval> | null = null
 let flowMetricTimer: ReturnType<typeof setInterval> | null = null
 let isFetchingFlowMetric = false
 
-const flowNodeHalfWidth = 90
-const flowNodeHalfHeight = 34
+const flowNodeHalfWidth = 108
+const flowNodeHalfHeight = 41
 const flowGraphMinWidth = 1420
 const flowGraphMinHeight = 620
 const flowGraphHorizontalPadding = 220
@@ -344,7 +344,7 @@ const flowGraph = computed(() => {
     const target = nodes.get(row.to)!
     const selfLoop = row.from === row.to
     const path = selfLoop
-      ? `M ${source.x + flowNodeHalfWidth - 4} ${source.y - 20} C ${source.x + 168} ${source.y - 100}, ${source.x + 168} ${source.y + 100}, ${source.x + flowNodeHalfWidth - 4} ${source.y + 20}`
+      ? `M ${source.x + flowNodeHalfWidth - 4} ${source.y - 24} C ${source.x + 195} ${source.y - 112}, ${source.x + 195} ${source.y + 112}, ${source.x + flowNodeHalfWidth - 4} ${source.y + 24}`
       : `M ${source.x + flowNodeHalfWidth} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${(source.x + target.x) / 2} ${target.y}, ${target.x - flowNodeHalfWidth} ${target.y}`
 
     return {
@@ -352,12 +352,12 @@ const flowGraph = computed(() => {
       source,
       target,
       selfLoop,
-      strokeWidth: 2 + Math.min(8, (row.total_delay_ns / maxTotalDelay) * 8),
+      strokeWidth: 2.3 + Math.min(9.2, (row.total_delay_ns / maxTotalDelay) * 9.2),
       path,
       // Self-loop labels need to sit outside the node box. The label itself is
-      // 210px wide and is rendered from labelX - 105, so source.x + 215 puts
-      // its left edge at source.x + 110, safely past the node's right edge.
-      labelX: selfLoop ? Math.min(width - 115, source.x + 215) : (source.x + target.x) / 2,
+      // 252px wide and is rendered from labelX - 126, so source.x + 250 puts
+      // its left edge at source.x + 124, safely past the enlarged node's right edge.
+      labelX: selfLoop ? Math.min(width - 136, source.x + 250) : (source.x + target.x) / 2,
       labelY: selfLoop ? source.y : (source.y + target.y) / 2 - 12,
     }
   })
@@ -1219,10 +1219,10 @@ onBeforeUnmount(() => {
                       />
 
                       <foreignObject
-                        :x="edge.labelX - 105"
-                        :y="edge.labelY - 27"
-                        width="210"
-                        height="54"
+                        :x="edge.labelX - 126"
+                        :y="edge.labelY - 32"
+                        width="252"
+                        height="64"
                         class="flow-edge-label-foreign"
                       >
                         <div class="flow-edge-label" xmlns="http://www.w3.org/1999/xhtml">
@@ -1249,9 +1249,9 @@ onBeforeUnmount(() => {
                       :transform="`translate(${node.x}, ${node.y})`"
                       @pointerdown.stop="startDragFlowNode($event, node)"
                     >
-                      <rect x="-90" y="-34" width="180" height="68" rx="16" class="flow-node-box" />
-                      <text y="-6" text-anchor="middle" class="flow-node-title">{{ node.id }}</text>
-                      <text y="18" text-anchor="middle" class="flow-node-subtitle">
+                      <rect x="-108" y="-41" width="216" height="82" rx="18" class="flow-node-box" />
+                      <text y="-8" text-anchor="middle" class="flow-node-title">{{ node.id }}</text>
+                      <text y="22" text-anchor="middle" class="flow-node-subtitle">
                         in {{ formatNumber(node.incoming) }} / out {{ formatNumber(node.outgoing) }}
                       </text>
                     </g>
@@ -1420,7 +1420,7 @@ onBeforeUnmount(() => {
   color: #cbd5e1;
   background: #111827;
   border: 1px solid #374151;
-  border-radius: 9px;
+  border-radius: 11px;
 }
 
 .up-time-label {
@@ -1500,7 +1500,7 @@ onBeforeUnmount(() => {
   color: #cbd5e1;
   background: #111827;
   border: 1px solid #374151;
-  border-radius: 9px;
+  border-radius: 11px;
   font-size: 24px;
   cursor: pointer;
 }
@@ -1678,7 +1678,7 @@ td {
   padding: 12px;
   background: #111827;
   border: 1px solid #374151;
-  border-radius: 9px;
+  border-radius: 11px;
 }
 
 .detail-label {
@@ -1695,7 +1695,7 @@ td {
   padding: 12px;
   background: #111827;
   border: 1px solid #374151;
-  border-radius: 9px;
+  border-radius: 11px;
 }
 
 .call-path-title {
@@ -1958,16 +1958,16 @@ td {
 }
 
 .flow-edge-label {
-  min-height: 48px;
+  min-height: 58px;
   display: grid;
-  grid-template-columns: minmax(78px, 1fr) minmax(92px, auto);
-  column-gap: 10px;
+  grid-template-columns: minmax(96px, 1fr) minmax(110px, auto);
+  column-gap: 14px;
   align-items: center;
-  padding: 6px 10px;
+  padding: 8px 12px;
   color: #cbd5e1;
   background: rgba(17, 24, 39, 0.92);
   border: 1px solid #374151;
-  border-radius: 9px;
+  border-radius: 11px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
 }
 
@@ -1989,16 +1989,16 @@ td {
 
 .flow-edge-label strong {
   color: #f8fafc;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
-  line-height: 1.2;
+  line-height: 1.18;
 }
 
 .flow-edge-label span {
-  margin-top: 2px;
+  margin-top: 3px;
   color: #9ca3af;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12.5px;
+  font-weight: 850;
   line-height: 1.15;
   white-space: nowrap;
 }
@@ -2019,21 +2019,21 @@ td {
 .flow-node-box {
   fill: #1e3a5f;
   stroke: #3b82f6;
-  stroke-width: 1.2;
+  stroke-width: 1.4;
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.28));
 }
 
 .flow-node-title {
   fill: #ffffff;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
 .flow-node-subtitle {
   fill: #bfdbfe;
-  font-size: 10.5px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 850;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 
@@ -2041,7 +2041,7 @@ td {
   padding: 14px;
   background: #111827;
   border: 1px solid #374151;
-  border-radius: 9px;
+  border-radius: 11px;
 }
 
 .flow-detail-header {
