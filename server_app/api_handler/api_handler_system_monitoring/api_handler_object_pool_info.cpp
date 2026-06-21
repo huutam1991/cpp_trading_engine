@@ -7,6 +7,7 @@
 #include <cache/share_string.h>
 #include <coroutine/event_base.h>
 #include <order_book/order_book_snapshot.h>
+#include <order_book/order_book.h>
 #include <system_io/timer_io.h>
 #include <system_io/https_server_io/https_socket_connection.h>
 #include <system_io/https_websocket_server_io/https_websocket_connection_io.h>
@@ -24,6 +25,7 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
         {"Json Object Pool Size", JsonObjectPool::size()},
         {"Json Value Pool Size", JsonValuePool::size()},
         {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()},
+        {"Order Book Update Pool Size", OrderBookUpdatePool::size()},
         {"Share String Pool Size", StringPool::size()},
         {"Task Info Event Pool Size", EpollBase::TaskInfoEventPool::size()},
         {"Timer IO Pool Size", TimerIOPool::size()},
