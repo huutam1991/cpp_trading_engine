@@ -28,7 +28,6 @@ struct TraceTransfer
         enqueue_ns = Utils::get_time_now_in_utc_nanoseconds();
 
         update_metric_func = &TraceTransfer::update_metric<File, Function, Line>;
-        update_max_func = &TraceTransfer::update_max<File, Function, Line>;
     }
 
     void record_execute()
@@ -44,27 +43,12 @@ struct TraceTransfer
         {
             (this->*update_metric_func)();
         }
-        if (update_max_func != nullptr)
-        {
-            (this->*update_max_func)();
-        }
     }
 
     template <FixedString File, FixedString Function, size_t Line>
     void update_metric()
     {
         auto& metric = FlowTracing::metric<File, Function, Line>(from, to);
-        metric.count.fetch_add(1, std::memory_order_relaxed);
-        metric.total_delay_ns.fetch_add(delay_ns, std::memory_order_relaxed);
-    }
-
-    template <FixedString File, FixedString Function, size_t Line>
-    void update_max()
-    {
-        auto& metric = FlowTracing::metric<File, Function, Line>(from, to);
-        auto old = metric.max_delay_ns.load(std::memory_order_relaxed);
-
-        while (delay_ns > old && !metric.max_delay_ns.compare_exchange_weak(old, delay_ns, std::memory_order_relaxed))
-        {}
+        metric.record(delay_ns);
     }
 };

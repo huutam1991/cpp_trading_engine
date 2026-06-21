@@ -93,6 +93,9 @@ public:
                     metric_json["bytes"] = metric_data.bytes.load(std::memory_order_relaxed);
                     metric_json["total_delay_ns"] = metric_data.total_delay_ns.load(std::memory_order_relaxed);
                     metric_json["max_delay_ns"] = metric_data.max_delay_ns.load(std::memory_order_relaxed);
+                    metric_json["p50"] = metric_data.percentile(0.5);
+                    metric_json["p90"] = metric_data.percentile(0.9);
+                    metric_json["p99"] = metric_data.percentile(0.99);
                     metric_json["file"] = std::string(metric_data.file) + ":" + std::to_string(metric_data.line);
                     metric_json["function"] = std::string(metric_data.function);
 
