@@ -28,9 +28,34 @@ public:
         pos += len;
     }
 
-    inline std::string finish()
+    virtual inline std::string finish()
     {
         return std::string(m_ptr, pos);
+    }
+};
+
+// Write to a std::string
+class JsonStringBuilderDynamic : public JsonStringBuilder
+{
+    std::string m_str;
+
+public:
+    JsonStringBuilderDynamic() : JsonStringBuilder(nullptr)
+    {}
+
+    virtual inline void write_char(char c) override
+    {
+        m_str.push_back(c);
+    }
+
+    virtual inline void write_raw(const char* data, size_t len) override
+    {
+        m_str.append(data, len);
+    }
+
+    virtual inline std::string finish() override
+    {
+        return m_str;
     }
 };
 
@@ -42,18 +67,19 @@ class JsonFileWriter : public JsonStringBuilder
 public:
     JsonFileWriter(std::ofstream& o) : JsonStringBuilder(nullptr), out(o) {}
 
-    virtual inline void write_char(char c)
+    virtual inline void write_char(char c) override
     {
         out.put(c);
     }
 
-    virtual inline void write_raw(const char* data, size_t len)
+    virtual inline void write_raw(const char* data, size_t len) override
     {
         out.write(data, len);
     }
 
-    inline void finish()
+    virtual inline std::string finish() override
     {
         out.flush();
+        return "";
     }
 };
