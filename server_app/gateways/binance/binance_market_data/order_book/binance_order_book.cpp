@@ -285,7 +285,7 @@ void BinanceOrderBook::apply_update(Json& update)
             .quantity = quantity
         };
 
-        OrderBookManager::instance().publish_order_book_data(update);
+        OrderBookManager::instance().publish_order_book_data(std::move(update));
     });
 
     // Apply bids
