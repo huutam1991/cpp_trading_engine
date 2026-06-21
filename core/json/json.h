@@ -279,6 +279,16 @@ public:
         return builder.finish();
     }
 
+    inline std::string get_string_value_dynamic() const
+    {
+        // Write the JSON value to a dynamic string builder
+        JsonStringBuilderDynamic builder;
+
+        write_string_value(builder);
+
+        return builder.finish();
+    }
+
     inline void write_string_value(JsonStringBuilder& builder) const
     {
         if (m_value)

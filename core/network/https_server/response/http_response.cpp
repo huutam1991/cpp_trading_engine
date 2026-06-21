@@ -11,7 +11,7 @@ HttpResponse::HttpResponse() : m_response_code(OK_200)
 
 HttpResponse::HttpResponse(ResponseStatusCode response_code, const Json& json) : m_response_code(response_code)
 {
-    m_content = new std::string(json.get_string_value());
+    m_content = new std::string(json.get_string_value_dynamic());
     m_is_json_format = true;
 }
 
