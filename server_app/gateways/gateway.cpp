@@ -47,9 +47,10 @@ std::vector<Instrument> Gateway::fetch_instruments()
 void Gateway::check_remove_canceled_orders(std::string symbol)
 {
     // Get open orders from gateway
-    std::unordered_set<OrderId> open_orders_from_gateway = get_open_orders_on_exchange(std::move(symbol))
-        .start_running_on(m_event_base)
-        .get();
+    auto task = get_open_orders_on_exchange(std::move(symbol));
+    task.start_running_on(m_event_base);
+
+    std::unordered_set<OrderId> open_orders_from_gateway = task.get_future().get();
 
     // Get open orders from OrderManager
     std::vector<OrderId> open_orders = OrderManager::instance().get_open_orders();

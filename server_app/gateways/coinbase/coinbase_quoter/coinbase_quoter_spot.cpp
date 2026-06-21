@@ -35,8 +35,8 @@ std::string& CoinbaseQuoterSpot::get_port()
 void CoinbaseQuoterSpot::init_websocket()
 {
     // Get listen key
-    auto task = this->get_listen_key();
-    m_listen_key = task.start_running_on(m_event_base).get();
+    // auto task = this->get_listen_key();
+    // m_listen_key = task.start_running_on(m_event_base).get();
 }
 
 Task<std::string> CoinbaseQuoterSpot::get_listen_key()
