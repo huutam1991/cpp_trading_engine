@@ -70,6 +70,9 @@ type FlowMetricEntry = {
   function: string
   max_delay_ns: number | string
   count: number | string
+  p50?: number | string
+  p90?: number | string
+  p99?: number | string
 }
 
 type FlowMetricResponse = {
@@ -1222,6 +1225,9 @@ onBeforeUnmount(() => {
                         <div class="flow-edge-label" xmlns="http://www.w3.org/1999/xhtml">
                           <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
                           <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
+                          <span class="mono-text">p50 {{ formatNs(edge.entries?.[0]?.p50) }}</span>
+                          <span class="mono-text">p90 {{ formatNs(edge.entries?.[0]?.p90) }}</span>
+                          <span class="mono-text">p99 {{ formatNs(edge.entries?.[0]?.p99) }}</span>
                         </div>
                       </foreignObject>
                     </g>
@@ -1252,7 +1258,7 @@ onBeforeUnmount(() => {
                 <div>
                   <div class="flow-detail-title">{{ selectedFlowRow.from }} → {{ selectedFlowRow.to }}</div>
                   <div class="flow-detail-subtitle">
-                    Total {{ formatNs(selectedFlowRow.total_delay_ns) }} · Count {{ formatNumber(selectedFlowRow.count) }} · Max {{ formatNs(selectedFlowRow.max_delay_ns) }} · Avg {{ formatAvgNs(selectedFlowRow.total_delay_ns, selectedFlowRow.count) }}
+                    Total {{ formatNs(selectedFlowRow.total_delay_ns) }} · Count {{ formatNumber(selectedFlowRow.count) }} · Max {{ formatNs(selectedFlowRow.max_delay_ns) }} · Avg {{ formatAvgNs(selectedFlowRow.total_delay_ns, selectedFlowRow.count) }} · P50 {{ formatNs(selectedFlowRow.entries?.[0]?.p50) }} · P90 {{ formatNs(selectedFlowRow.entries?.[0]?.p90) }} · P99 {{ formatNs(selectedFlowRow.entries?.[0]?.p99) }}
                   </div>
                 </div>
 
@@ -1267,6 +1273,9 @@ onBeforeUnmount(() => {
                   <col class="col-flow-count" />
                   <col class="col-flow-max" />
                   <col class="col-flow-avg" />
+                  <col class="col-flow-avg" />
+                  <col class="col-flow-avg" />
+                  <col class="col-flow-avg" />
                   <col class="col-flow-bytes" />
                 </colgroup>
 
@@ -1278,6 +1287,9 @@ onBeforeUnmount(() => {
                     <th>Count</th>
                     <th>Max Delay</th>
                     <th>Avg</th>
+                    <th>P50</th>
+                    <th>P90</th>
+                    <th>P99</th>
                     <th>Bytes</th>
                   </tr>
                 </thead>
@@ -1303,6 +1315,9 @@ onBeforeUnmount(() => {
                       <small>{{ formatNumber(toNumber(entry.max_delay_ns)) }} ns</small>
                     </td>
                     <td class="mono-text" data-label="Avg">{{ formatAvgNs(entry.total_delay_ns, entry.count) }}</td>
+                    <td class="mono-text" data-label="P50">{{ formatNs(entry.p50) }}</td>
+                    <td class="mono-text" data-label="P90">{{ formatNs(entry.p90) }}</td>
+                    <td class="mono-text" data-label="P99">{{ formatNs(entry.p99) }}</td>
                     <td class="mono-text" data-label="Bytes">{{ formatNumber(toNumber(entry.bytes)) }}</td>
                   </tr>
                 </tbody>
