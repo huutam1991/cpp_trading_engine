@@ -55,7 +55,7 @@ public:
 
     virtual inline std::string finish() override
     {
-        return m_str;
+        return std::move(m_str);
     }
 };
 
