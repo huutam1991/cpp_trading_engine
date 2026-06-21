@@ -354,7 +354,10 @@ const flowGraph = computed(() => {
       selfLoop,
       strokeWidth: 2 + Math.min(8, (row.total_delay_ns / maxTotalDelay) * 8),
       path,
-      labelX: selfLoop ? source.x + 145 : (source.x + target.x) / 2,
+      // Self-loop labels need to sit outside the node box. The label itself is
+      // 210px wide and is rendered from labelX - 105, so source.x + 215 puts
+      // its left edge at source.x + 110, safely past the node's right edge.
+      labelX: selfLoop ? Math.min(width - 115, source.x + 215) : (source.x + target.x) / 2,
       labelY: selfLoop ? source.y : (source.y + target.y) / 2 - 12,
     }
   })
