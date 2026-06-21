@@ -28,10 +28,10 @@ private:
 
 private:
     Task<void> run_update_order_book_data(OrderBookSnapShotObject snapshot);
-    Task<void> run_update_order_book_data(OrderBookUpdate update);
+    Task<void> run_update_order_book_data(OrderBookUpdateObject update);
 
     OrderBook& get_or_create_order_book(const OrderBookSnapShotObject& snapshot);
-    OrderBook& get_or_create_order_book(const OrderBookUpdate& update);
+    OrderBook& get_or_create_order_book(const OrderBookUpdateObject& update);
 
     double get_snapshot_reference_price(const OrderBookSnapShotObject& snapshot) const noexcept;
 
@@ -39,9 +39,9 @@ public:
     void register_update(std::function<void(OrderBookSnapShotObject)> callback);
 
     template<class T>
-    void publish_order_book_data(T&& update)
+    void publish_order_book_data(T update)
     {
-        auto task = run_update_order_book_data(std::forward<T>(update));
+        auto task = run_update_order_book_data(update);
         task.start_running_on(m_event_base);
     }
 

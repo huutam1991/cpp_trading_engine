@@ -42,9 +42,9 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookSnapShotObj
     return *(inserted_it->second);
 }
 
-OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookUpdate& update)
+OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookUpdateObject& update)
 {
-    const Instrument* instrument = update.instrument;
+    const Instrument* instrument = update->instrument;
 
     auto it = m_order_books.find(instrument);
 
@@ -55,7 +55,7 @@ OrderBook& OrderBookManager::get_or_create_order_book(const OrderBookUpdate& upd
 
     auto order_book = std::make_unique<OrderBook>(
         instrument,
-        update.price,
+        update->price,
         instrument->price_precision,
         m_depth
     );
@@ -116,15 +116,15 @@ Task<void> OrderBookManager::run_update_order_book_data(OrderBookSnapShotObject 
     co_return;
 }
 
-Task<void> OrderBookManager::run_update_order_book_data(OrderBookUpdate update)
+Task<void> OrderBookManager::run_update_order_book_data(OrderBookUpdateObject update)
 {
-    if (update.instrument == nullptr)
+    if (update->instrument == nullptr)
     {
         co_return;
     }
 
     OrderBook& order_book = get_or_create_order_book(update);
-    order_book.apply_update(update);
+    order_book.apply_update(*update);
 
     OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
 

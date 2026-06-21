@@ -277,15 +277,14 @@ void BinanceOrderBook::apply_update(Json& update)
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        OrderBookUpdate update{
-            .instrument = m_instrument,
-            .side = OrderBookSideType::Ask,
-            .type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
-            .price = price,
-            .quantity = quantity
-        };
+        OrderBookUpdateObject update_object = OrderBookUpdatePool::acquire();
+        update_object->instrument = m_instrument;
+        update_object->side = OrderBookSideType::Ask;
+        update_object->type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update;
+        update_object->price = price;
+        update_object->quantity = quantity;
 
-        OrderBookManager::instance().publish_order_book_data(std::move(update));
+        OrderBookManager::instance().publish_order_book_data(update_object);
     });
 
     // Apply bids
@@ -294,13 +293,13 @@ void BinanceOrderBook::apply_update(Json& update)
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        OrderBookUpdate update{
-            .instrument = m_instrument,
-            .side = OrderBookSideType::Bid,
-            .type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
-            .price = price,
-            .quantity = quantity
-        };
-        OrderBookManager::instance().publish_order_book_data(std::move(update));
+        OrderBookUpdateObject update_object = OrderBookUpdatePool::acquire();
+        update_object->instrument = m_instrument;
+        update_object->side = OrderBookSideType::Bid;
+        update_object->type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update;
+        update_object->price = price;
+        update_object->quantity = quantity;
+
+        OrderBookManager::instance().publish_order_book_data(update_object);
     });
 }

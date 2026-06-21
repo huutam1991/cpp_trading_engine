@@ -384,3 +384,7 @@ private:
     const Instrument* m_instrument = nullptr;
     double m_rebase_delta;
 };
+
+
+using OrderBookUpdatePool = SharedCachePool<OrderBookUpdate, 100000>;
+using OrderBookUpdateObject = OrderBookUpdatePool::ObjectPointer;
