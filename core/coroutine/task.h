@@ -75,7 +75,7 @@ struct Task : public BaseTask
 
         // Promise value
         T value;
-        std::shared_ptr<std::promise<T>> task_value = nullptr;
+        std::unique_ptr<std::promise<T>> task_value = nullptr;
     };
 
     Task(std::nullptr_t) : BaseTask(nullptr) {}
@@ -115,8 +115,20 @@ struct Task : public BaseTask
         }
     }
 
+    std::future<T> get_future()
+    {
+        Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
+
+        if (promise->task_value == nullptr)
+        {
+            promise->task_value = std::make_unique<std::promise<T>>();
+        }
+
+        return promise->task_value->get_future();
+    }
+
     template <FixedString File, FixedString Function, std::size_t Line>
-    constexpr inline std::future<T> start_running_on_macro(EventBase* event_base)
+    constexpr inline void start_running_on_macro(EventBase* event_base)
     {
         constexpr std::string_view file = File;
         constexpr std::string_view function = Function;
@@ -124,12 +136,7 @@ struct Task : public BaseTask
 
         (void)FlowCallSiteKey<File, Function, Line>::register_instance;
 
-        Task<T>::promise_type* promise = (Task<T>::promise_type*)m_promise;
-        promise->task_value = std::make_unique<std::promise<T>>();
-
         register_on<File, Function, Line>(event_base);
-
-        return promise->task_value->get_future();
     }
 };
 
@@ -225,8 +232,20 @@ struct Task<void> : public BaseTask
         return;
     }
 
+    std::future<void> get_future()
+    {
+        Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
+
+        if (promise->task_value == nullptr)
+        {
+            promise->task_value = std::make_unique<std::promise<void>>();
+        }
+
+        return promise->task_value->get_future();
+    }
+
     template <FixedString File, FixedString Function, std::size_t Line>
-    constexpr inline std::future<void> start_running_on_macro(EventBase* event_base)
+    constexpr inline void start_running_on_macro(EventBase* event_base)
     {
         constexpr std::string_view file = File;
         constexpr std::string_view function = Function;
@@ -234,11 +253,6 @@ struct Task<void> : public BaseTask
 
         (void)FlowCallSiteKey<File, Function, Line>::register_instance;
 
-        Task<void>::promise_type* promise = (Task<void>::promise_type*)m_promise;
-        promise->task_value = std::make_unique<std::promise<void>>();
-
         register_on<File, Function, Line>(event_base);
-
-        return promise->task_value->get_future();
     }
 };
