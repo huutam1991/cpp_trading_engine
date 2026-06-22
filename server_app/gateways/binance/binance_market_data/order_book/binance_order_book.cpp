@@ -271,35 +271,37 @@ void BinanceOrderBook::check_apply_update(Json& update)
 
 void BinanceOrderBook::apply_update(Json& update)
 {
+    std::vector<OrderBookUpdate> updates;
+
     // Apply asks
-    update["a"].for_each([this](Json& level)
+    update["a"].for_each([this, &updates](Json& level)
     {
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        OrderBookUpdateObject update_object = OrderBookUpdatePool::acquire();
-        update_object->instrument = m_instrument;
-        update_object->side = OrderBookSideType::Ask;
-        update_object->type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update;
-        update_object->price = price;
-        update_object->quantity = quantity;
-
-        OrderBookManager::instance().publish_order_book_data(update_object);
+        updates.emplace_back(
+            m_instrument,
+            OrderBookSideType::Ask,
+            quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
+            price,
+            quantity
+        );
     });
 
     // Apply bids
-    update["b"].for_each([this](Json& level)
+    update["b"].for_each([this, &updates](Json& level)
     {
         double price = std::stod((std::string)level[0]);
         double quantity = std::stod((std::string)level[1]);
 
-        OrderBookUpdateObject update_object = OrderBookUpdatePool::acquire();
-        update_object->instrument = m_instrument;
-        update_object->side = OrderBookSideType::Bid;
-        update_object->type = quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update;
-        update_object->price = price;
-        update_object->quantity = quantity;
-
-        OrderBookManager::instance().publish_order_book_data(update_object);
+        updates.emplace_back(
+            m_instrument,
+            OrderBookSideType::Bid,
+            quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
+            price,
+            quantity
+        );
     });
+
+    OrderBookManager::instance().publish_order_book_data(std::move(updates));
 }

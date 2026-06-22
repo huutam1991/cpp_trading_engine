@@ -29,9 +29,11 @@ private:
 private:
     Task<void> run_update_order_book_data(OrderBookSnapShotObject snapshot);
     Task<void> run_update_order_book_data(OrderBookUpdateObject update);
+    Task<void> run_update_order_book_data(std::vector<OrderBookUpdate> updates);
 
     OrderBook& get_or_create_order_book(const OrderBookSnapShotObject& snapshot);
     OrderBook& get_or_create_order_book(const OrderBookUpdateObject& update);
+    OrderBook& get_or_create_order_book(const OrderBookUpdate& update);
 
     double get_snapshot_reference_price(const OrderBookSnapShotObject& snapshot) const noexcept;
 
