@@ -30,7 +30,7 @@ Task<HttpResponse> APIHandlerInstrumentList::child_handle()
 
     // Response
     Json response;
-    response["orders"] = data;
+    response["instruments"] = data;
     response["msg"] = "Get instrument list successfully";
     response["status_code"] = OK_200;
     response["error"] = false;
