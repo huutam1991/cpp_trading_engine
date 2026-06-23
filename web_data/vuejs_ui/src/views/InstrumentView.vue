@@ -293,10 +293,9 @@ async function subscribeInstrument() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        instrument: selectedInstrument.value.symbol,
+        method: 'subscribe',
         symbol: selectedInstrument.value.symbol,
         exchange_id: selectedInstrument.value.exchange_id,
-        instrument_type: selectedInstrument.value.instrument_type,
       }),
     })
 
