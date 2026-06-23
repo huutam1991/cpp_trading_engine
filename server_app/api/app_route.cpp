@@ -13,6 +13,7 @@
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 
 // Instrument
+#include <api_handler/api_handler_instrument/api_handler_instrument_list.h>
 #include <api_handler/api_handler_instrument/api_handler_instrument_subscribe.h>
 
 // Order
@@ -350,13 +351,19 @@ void add_app_route()
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
     };
 
-    // Get subscribed instruments
+    // Instrument - Get instruments list
+    ADD_ROUTE(RequestMethod::GET, "/instrument_list")
+    {
+        co_return co_await APIHandlerInstrumentList(request).handle();
+    };
+
+    // Instrument - Get subscribed instruments
     ADD_ROUTE(RequestMethod::GET, "/instrument_subscribe")
     {
         co_return co_await APIHandlerInstrumentSubscribe(request).handle();
     };
 
-    // Update instrument - subscribe/unsubscribe
+    // Instrument - Update instrument - subscribe/unsubscribe
     ADD_ROUTE(RequestMethod::POST, "/instrument_subscribe")
     {
         co_return co_await APIHandlerInstrumentSubscribe(request).handle();
