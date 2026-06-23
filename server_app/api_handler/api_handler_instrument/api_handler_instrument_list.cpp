@@ -23,6 +23,7 @@ Task<HttpResponse> APIHandlerInstrumentList::child_handle()
 
             instruments.for_each([&data](Json& instrument)
             {
+                instrument.remove_field("_id");
                 data.push_back(instrument);
             });
         }
