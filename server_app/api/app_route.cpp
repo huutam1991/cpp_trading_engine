@@ -351,11 +351,11 @@ void add_app_route()
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
     };
 
-    // Instrument - Get instruments list
-    ADD_ROUTE(RequestMethod::GET, "/instrument_list")
-    {
-        co_return co_await APIHandlerInstrumentList(request).handle();
-    };
+    // // Instrument - Get instruments list
+    // ADD_ROUTE(RequestMethod::GET, "/instrument_list")
+    // {
+    //     co_return co_await APIHandlerInstrumentList(request).handle();
+    // };
 
     // Instrument - Get subscribed instruments
     ADD_ROUTE(RequestMethod::GET, "/instrument_subscribe")
