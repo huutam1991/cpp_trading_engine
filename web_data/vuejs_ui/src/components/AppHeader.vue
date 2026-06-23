@@ -12,6 +12,10 @@
         Gateway
       </RouterLink>
 
+      <RouterLink to="/instrument">
+        Instrument
+      </RouterLink>
+
       <RouterLink to="/orderbook">
         OrderBook
       </RouterLink>

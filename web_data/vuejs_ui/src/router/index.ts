@@ -28,6 +28,11 @@ const router = createRouter({
           component: () => import('@/views/GatewayView.vue'),
         },
         {
+          path: 'instrument',
+          name: 'instrument',
+          component: () => import('@/views/InstrumentView.vue'),
+        },
+        {
           path: 'orderbook',
           name: 'orderbook',
           component: () => import('@/views/OrderBookView.vue'),
