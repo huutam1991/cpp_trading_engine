@@ -160,7 +160,12 @@ Task<void> OrderBookManager::run_update_order_book_data(OrderBookUpdateObject up
 
 Task<void> OrderBookManager::run_update_order_book_data(std::vector<OrderBookUpdate> updates)
 {
-    OrderBook* order_book_ptr = nullptr;
+    if (updates.empty())
+    {
+        co_return;
+    }
+
+    OrderBook& order_book = get_or_create_order_book(updates[0]);
 
     for (const auto& update : updates)
     {
@@ -169,13 +174,10 @@ Task<void> OrderBookManager::run_update_order_book_data(std::vector<OrderBookUpd
             continue;
         }
 
-        OrderBook& order_book = get_or_create_order_book(update);
         order_book.apply_update(update);
-
-        order_book_ptr = &order_book;
     }
 
-    OrderBookSnapShotObject output_snapshot = order_book_ptr->get_order_book_snapshot(m_publish_levels);
+    OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
 
     for (auto& callback : m_update_callbacks)
     {
