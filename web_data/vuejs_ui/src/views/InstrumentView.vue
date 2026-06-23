@@ -39,7 +39,7 @@ type SubscribeResponse = {
 type ExchangeTab = {
   label: string
   value: string
-  tone: 'all' | 'binance' | 'coinbase' | 'gemini' | 'default'
+  tone: 'subscribed' | 'all' | 'binance' | 'coinbase' | 'gemini' | 'default'
 }
 
 type SortKey =
@@ -71,6 +71,7 @@ const exchangeTabs = computed<ExchangeTab[]>(() => {
     .sort()
 
   return [
+    { label: 'Subscribed', value: 'subscribed', tone: 'subscribed' },
     { label: 'All', value: 'all', tone: 'all' },
     ...exchanges.map((exchange) => ({
       label: exchange,
@@ -86,10 +87,16 @@ const activeTabInfo = computed(() => {
 
 const filteredInstruments = computed(() => {
   const query = searchText.value.trim().toUpperCase()
+  const sourceInstruments =
+    activeExchange.value === 'subscribed'
+      ? subscribedInstruments.value
+      : instruments.value
 
-  return instruments.value.filter((instrument) => {
+  return sourceInstruments.filter((instrument) => {
     const exchangeMatched =
-      activeExchange.value === 'all' || instrument.exchange_id === activeExchange.value
+      activeExchange.value === 'subscribed' ||
+      activeExchange.value === 'all' ||
+      instrument.exchange_id === activeExchange.value
 
     if (!exchangeMatched) {
       return false
@@ -143,6 +150,10 @@ function exchangeTone(exchange: string): ExchangeTab['tone'] {
 }
 
 function getExchangeCount(tab: ExchangeTab) {
+  if (tab.value === 'subscribed') {
+    return subscribedInstruments.value.length
+  }
+
   if (tab.value === 'all') {
     return instruments.value.length
   }
@@ -294,8 +305,8 @@ async function subscribeInstrument() {
       },
       body: JSON.stringify({
         method: 'subscribe',
+        exchange: selectedInstrument.value.exchange_id,
         symbol: selectedInstrument.value.symbol,
-        exchange_id: selectedInstrument.value.exchange_id,
       }),
     })
 
@@ -306,12 +317,14 @@ async function subscribeInstrument() {
       return
     }
 
-    if (!response.ok || result.error) {
+    const backendFailed = (result.msg || '').toLowerCase().includes('failed to subscribe')
+
+    if (!response.ok || result.error || backendFailed) {
       subscribeMessage.value = result.msg || 'Failed to subscribe instrument.'
       return
     }
 
-    subscribedInstruments.value.push(selectedInstrument.value)
+    await fetchSubscribedInstruments()
     subscribeMessage.value = result.msg || 'Instrument subscribed.'
   } catch (error) {
     console.error('Subscribe instrument error:', error)
@@ -632,6 +645,7 @@ onMounted(() => {
   font-size: 12px;
 }
 
+.filter-card.tone-subscribed .filter-content strong { color: #34d399; }
 .filter-card.tone-all .filter-content strong { color: #e5e7eb; }
 .filter-card.tone-binance .filter-content strong { color: #facc15; }
 .filter-card.tone-coinbase .filter-content strong { color: #60a5fa; }

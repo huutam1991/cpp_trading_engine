@@ -351,11 +351,61 @@ void add_app_route()
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
     };
 
-    // // Instrument - Get instruments list
-    // ADD_ROUTE(RequestMethod::GET, "/instrument_list")
-    // {
-    //     co_return co_await APIHandlerInstrumentList(request).handle();
-    // };
+    // Instrument - Get instruments list
+    ADD_ROUTE(RequestMethod::GET, "/instrument_list")
+    {
+        co_return co_await APIHandlerInstrumentList(request).handle();
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_1")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_2")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_3")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_4")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_5")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_6")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_7")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_8")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_9")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
+
+    ADD_ROUTE(RequestMethod::GET, "/nothing_10")
+    {
+        co_return HttpResponse(OK_200, Json());
+    };
 
     // Instrument - Get subscribed instruments
     ADD_ROUTE(RequestMethod::GET, "/instrument_subscribe")
