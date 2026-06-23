@@ -33,7 +33,7 @@ type SubscribeResponse = {
   error: boolean
   status_code: number
   msg: string
-  data?: Instrument[]
+  data?: Instrument[] | null
 }
 
 type ExchangeTab = {
@@ -54,7 +54,7 @@ type SortKey =
 type SortDirection = 'asc' | 'desc'
 
 const loading = ref(false)
-const subscribing = ref(false)
+const subscriptionAction = ref<'subscribe' | 'unsubscribe' | null>(null)
 const errorMessage = ref('')
 const subscribeMessage = ref('')
 const instruments = ref<Instrument[]>([])
@@ -288,13 +288,21 @@ async function fetchSubscribedInstruments() {
   }
 }
 
-async function subscribeInstrument() {
-  if (!selectedInstrument.value || selectedIsSubscribed.value) {
+async function changeInstrumentSubscription(method: 'subscribe' | 'unsubscribe') {
+  if (!selectedInstrument.value) {
     return
   }
 
-  subscribing.value = true
+  const alreadySubscribed = selectedIsSubscribed.value
+
+  if ((method === 'subscribe' && alreadySubscribed) || (method === 'unsubscribe' && !alreadySubscribed)) {
+    return
+  }
+
+  subscriptionAction.value = method
   subscribeMessage.value = ''
+
+  const selected = selectedInstrument.value
 
   try {
     const response = await fetch(`${API_BASE_URL}/instrument_subscribe`, {
@@ -304,9 +312,9 @@ async function subscribeInstrument() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        method: 'subscribe',
-        exchange: selectedInstrument.value.exchange_id,
-        symbol: selectedInstrument.value.symbol,
+        method,
+        exchange: selected.exchange_id,
+        symbol: selected.symbol,
       }),
     })
 
@@ -317,21 +325,30 @@ async function subscribeInstrument() {
       return
     }
 
-    const backendFailed = (result.msg || '').toLowerCase().includes('failed to subscribe')
+    const normalizedMessage = (result.msg || '').toLowerCase()
+    const backendFailed = normalizedMessage.includes(`failed to ${method}`)
 
     if (!response.ok || result.error || backendFailed) {
-      subscribeMessage.value = result.msg || 'Failed to subscribe instrument.'
+      subscribeMessage.value = result.msg || `Failed to ${method} instrument.`
       return
     }
 
     await fetchSubscribedInstruments()
-    subscribeMessage.value = result.msg || 'Instrument subscribed.'
+    subscribeMessage.value = result.msg || `Instrument ${method === 'subscribe' ? 'subscribed' : 'unsubscribed'}.`
   } catch (error) {
-    console.error('Subscribe instrument error:', error)
-    subscribeMessage.value = 'Subscribe instrument error.'
+    console.error(`${method} instrument error:`, error)
+    subscribeMessage.value = `${method === 'subscribe' ? 'Subscribe' : 'Unsubscribe'} instrument error.`
   } finally {
-    subscribing.value = false
+    subscriptionAction.value = null
   }
+}
+
+function subscribeInstrument() {
+  return changeInstrumentSubscription('subscribe')
+}
+
+function unsubscribeInstrument() {
+  return changeInstrumentSubscription('unsubscribe')
 }
 
 async function startInstrumentView() {
@@ -508,11 +525,19 @@ onMounted(() => {
             </div>
 
             <button
-              class="subscribe-button"
-              :disabled="selectedIsSubscribed || subscribing"
-              @click="subscribeInstrument"
+              :class="selectedIsSubscribed ? 'unsubscribe-button' : 'subscribe-button'"
+              :disabled="subscriptionAction !== null"
+              @click="selectedIsSubscribed ? unsubscribeInstrument() : subscribeInstrument()"
             >
-              {{ selectedIsSubscribed ? 'Subscribed' : subscribing ? 'Subscribing...' : 'Subscribe' }}
+              {{
+                subscriptionAction === 'subscribe'
+                  ? 'Subscribing...'
+                  : subscriptionAction === 'unsubscribe'
+                    ? 'Unsubscribing...'
+                    : selectedIsSubscribed
+                      ? 'Unsubscribe'
+                      : 'Subscribe'
+              }}
             </button>
 
             <p v-if="subscribeMessage" class="subscribe-message">
@@ -915,17 +940,27 @@ td {
   word-break: break-all;
 }
 
-.subscribe-button {
+.subscribe-button,
+.unsubscribe-button {
   width: 100%;
   height: 42px;
   margin-top: 14px;
-  color: #d1fae5;
-  background: #1f3a35;
-  border: 1px solid #2f6f5f;
   border-radius: 9px;
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;
+}
+
+.subscribe-button {
+  color: #d1fae5;
+  background: #1f3a35;
+  border: 1px solid #2f6f5f;
+}
+
+.unsubscribe-button {
+  color: #fecaca;
+  background: #3f1d1d;
+  border: 1px solid #7f1d1d;
 }
 
 .subscribe-button:hover:not(:disabled) {
@@ -933,7 +968,13 @@ td {
   background: #245247;
 }
 
-.subscribe-button:disabled {
+.unsubscribe-button:hover:not(:disabled) {
+  color: #ffffff;
+  background: #5f2424;
+}
+
+.subscribe-button:disabled,
+.unsubscribe-button:disabled {
   color: #9ca3af;
   background: #111827;
   border-color: #374151;
