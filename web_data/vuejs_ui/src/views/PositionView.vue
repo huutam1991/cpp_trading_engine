@@ -37,9 +37,8 @@ type PositionListResponse = {
 type PositionTab = {
   label: string
   value: string
-  sides: string[]
-  icon: string
-  tone: 'all' | 'long' | 'short' | 'profit' | 'loss'
+  count: number
+  tone: 'all' | 'exchange'
 }
 
 type SortKey =
@@ -60,31 +59,40 @@ const activeTab = ref('all')
 const sortKey = ref<SortKey | null>(null)
 const sortDirection = ref<SortDirection>('asc')
 
-const tabs: PositionTab[] = [
-  { label: 'All', value: 'all', sides: [], icon: '◇', tone: 'all' },
-  { label: 'Long', value: 'long', sides: ['LONG'], icon: '▲', tone: 'long' },
-  { label: 'Short', value: 'short', sides: ['SHORT'], icon: '▼', tone: 'short' },
-  { label: 'Profit', value: 'profit', sides: [], icon: '+', tone: 'profit' },
-  { label: 'Loss', value: 'loss', sides: [], icon: '-', tone: 'loss' },
-]
+const tabs = computed<PositionTab[]>(() => {
+  const exchangeIds = Array.from(
+    new Set(
+      positions.value
+        .map((position) => position.instrument.exchange_id)
+        .filter((exchangeId): exchangeId is string => Boolean(exchangeId)),
+    ),
+  ).sort((left, right) => left.localeCompare(right))
+
+  return [
+    {
+      label: 'All',
+      value: 'all',
+      count: positions.value.length,
+      tone: 'all',
+    },
+    ...exchangeIds.map((exchangeId) => ({
+      label: exchangeId,
+      value: exchangeId,
+      count: positions.value.filter(
+        (position) => position.instrument.exchange_id === exchangeId,
+      ).length,
+      tone: 'exchange' as const,
+    })),
+  ]
+})
 
 const filteredPositions = computed(() => {
-  const tab = tabs.find((item) => item.value === activeTab.value)
-
-  if (!tab || tab.value === 'all') {
+  if (activeTab.value === 'all') {
     return positions.value
   }
 
-  if (tab.value === 'profit') {
-    return positions.value.filter((position) => toNumber(position.pnl) > 0)
-  }
-
-  if (tab.value === 'loss') {
-    return positions.value.filter((position) => toNumber(position.pnl) < 0)
-  }
-
-  return positions.value.filter((position) =>
-    tab.sides.includes(position.side.toUpperCase()),
+  return positions.value.filter(
+    (position) => position.instrument.exchange_id === activeTab.value,
   )
 })
 
@@ -105,7 +113,12 @@ const sortedPositions = computed(() => {
 const isDetailOpen = computed(() => selectedPosition.value !== null)
 
 const activeTabInfo = computed<PositionTab>(() => {
-  return tabs.find((tab) => tab.value === activeTab.value) ?? tabs[0]!
+  return tabs.value.find((tab) => tab.value === activeTab.value) ?? tabs.value[0] ?? {
+    label: 'All',
+    value: 'all',
+    count: 0,
+    tone: 'all',
+  }
 })
 
 const totalPnl = computed(() => {
@@ -157,24 +170,6 @@ function sortPositions(key: SortKey) {
   sortDirection.value = 'asc'
 }
 
-function getTabCount(tab: PositionTab) {
-  if (tab.value === 'all') {
-    return positions.value.length
-  }
-
-  if (tab.value === 'profit') {
-    return positions.value.filter((position) => toNumber(position.pnl) > 0).length
-  }
-
-  if (tab.value === 'loss') {
-    return positions.value.filter((position) => toNumber(position.pnl) < 0).length
-  }
-
-  return positions.value.filter((position) =>
-    tab.sides.includes(position.side.toUpperCase()),
-  ).length
-}
-
 async function fetchPositions(showLoading = false) {
   if (isFetchingPositions) {
     return
@@ -207,6 +202,15 @@ async function fetchPositions(showLoading = false) {
     }
 
     positions.value = result.positions ?? []
+
+    if (
+      activeTab.value !== 'all' &&
+      !positions.value.some(
+        (position) => position.instrument.exchange_id === activeTab.value,
+      )
+    ) {
+      activeTab.value = 'all'
+    }
 
     if (
       selectedPosition.value &&
@@ -358,7 +362,7 @@ onBeforeUnmount(() => {
         >
           <span class="filter-content">
             <strong>{{ tab.label }}</strong>
-            <small>{{ getTabCount(tab) }} positions</small>
+            <small>{{ tab.count }} positions</small>
           </span>
         </button>
       </aside>
@@ -672,18 +676,9 @@ onBeforeUnmount(() => {
   color: #e5e7eb;
 }
 
-.tone-long .filter-icon,
-.filter-card.tone-long .filter-content strong,
-.tone-profit .filter-icon,
-.filter-card.tone-profit .filter-content strong {
-  color: #34d399;
-}
-
-.tone-short .filter-icon,
-.filter-card.tone-short .filter-content strong,
-.tone-loss .filter-icon,
-.filter-card.tone-loss .filter-content strong {
-  color: #f87171;
+.tone-exchange .filter-icon,
+.filter-card.tone-exchange .filter-content strong {
+  color: #facc15;
 }
 
 .filter-content {
