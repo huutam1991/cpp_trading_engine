@@ -1,12 +1,12 @@
-#include <api_handler/api_handler_position/api_handler_position.h>
+#include <api_handler/api_handler_position/api_handler_position_list.h>
 #include <gateways/gateway_manager.h>
 
-APIHandlerPosition::APIHandlerPosition(HttpRequest* request) : APIHandler(request)
+APIHandlerPositionList::APIHandlerPositionList(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
 }
 
-Task<HttpResponse> APIHandlerPosition::child_handle()
+Task<HttpResponse> APIHandlerPositionList::child_handle()
 {
     // Only support BINANCE for now
     auto gateway_binance = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);

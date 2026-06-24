@@ -2,10 +2,10 @@
 
 #include <api_handler/api_handler.h>
 
-class APIHandlerPosition : public APIHandler
+class APIHandlerPositionList : public APIHandler
 {
 public:
-    APIHandlerPosition(HttpRequest* request);
+    APIHandlerPositionList(HttpRequest* request);
 
 private:
     virtual Task<HttpResponse> child_handle();
