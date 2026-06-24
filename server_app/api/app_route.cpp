@@ -109,6 +109,24 @@ void add_app_route()
         co_return HttpResponse(OK_200, response);
     };
 
+    ADD_ROUTE(RequestMethod::POST, "/test_binance_request")
+    {
+        auto gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
+        auto task = gateway->get_positions();
+
+        std::future<Json> future = task.get_future();
+        task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK));
+
+        Json positions = future.get();
+
+        Json response;
+        response["message"] = "OK";
+        response["positions"] = positions;
+        response["status"] = "Request successful";
+
+        co_return HttpResponse(OK_200, response);
+    };
+
     ADD_ROUTE(RequestMethod::DELETE, "/delete_test")
     {
         Json response;
