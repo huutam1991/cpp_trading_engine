@@ -72,7 +72,8 @@ private:
     static void add_instrument_to_list(ExchangeId exchange_id, const Instrument& instrument);
     static std::unordered_map<std::string, SavableObject<Instrument>>& get_cache_subscribed_instruments();
 
-    static std::unordered_map<std::string, const Instrument*>& get_instrument_list(ExchangeId exchange_id, InstrumentType instrument_type, StoreType store_type)
+public:
+    static std::unordered_map<std::string, const Instrument*>& get_instrument_list(ExchangeId exchange_id, InstrumentType instrument_type, StoreType store_type = StoreType::BY_SYMBOL)
     {
         using InstrumentList = std::unordered_map<std::string, const Instrument*>;
         static InstrumentList instrument_list[ExchangeId::TOTAL_EXCHANGES][InstrumentType::TOTAL_INSTRUMENTS][StoreType::TOTAL_STORE_TYPES];
