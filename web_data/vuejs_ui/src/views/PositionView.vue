@@ -41,23 +41,10 @@ type PositionTab = {
   tone: 'all' | 'exchange'
 }
 
-type SortKey =
-  | 'instrument'
-  | 'side'
-  | 'position_amt'
-  | 'entry_price'
-  | 'mark_price'
-  | 'pnl'
-
-type SortDirection = 'asc' | 'desc'
-
 const loading = ref(false)
 const errorMessage = ref('')
 const positions = ref<Position[]>([])
-const selectedPosition = ref<Position | null>(null)
 const activeTab = ref('all')
-const sortKey = ref<SortKey | null>(null)
-const sortDirection = ref<SortDirection>('asc')
 
 const tabs = computed<PositionTab[]>(() => {
   const exchangeIds = Array.from(
@@ -96,22 +83,6 @@ const filteredPositions = computed(() => {
   )
 })
 
-const sortedPositions = computed(() => {
-  if (!sortKey.value) {
-    return filteredPositions.value
-  }
-
-  return [...filteredPositions.value].sort((left, right) => {
-    const leftValue = getSortValue(left, sortKey.value!)
-    const rightValue = getSortValue(right, sortKey.value!)
-
-    const result = compareSortValues(leftValue, rightValue)
-    return sortDirection.value === 'asc' ? result : -result
-  })
-})
-
-const isDetailOpen = computed(() => selectedPosition.value !== null)
-
 const activeTabInfo = computed<PositionTab>(() => {
   return tabs.value.find((tab) => tab.value === activeTab.value) ?? tabs.value[0] ?? {
     label: 'All',
@@ -122,52 +93,11 @@ const activeTabInfo = computed<PositionTab>(() => {
 })
 
 const totalPnl = computed(() => {
-  return positions.value.reduce((sum, position) => sum + toNumber(position.pnl), 0)
+  return filteredPositions.value.reduce((sum, position) => sum + toNumber(position.pnl), 0)
 })
 
 function getPositionKey(position: Position) {
   return `${position.instrument.exchange_id}:${position.instrument.symbol}:${position.side}`
-}
-
-function getSortValue(position: Position, key: SortKey): string | number {
-  switch (key) {
-    case 'instrument':
-      return position.instrument.symbol
-    case 'side':
-      return position.side
-    case 'position_amt':
-      return toNumber(position.position_amt)
-    case 'entry_price':
-      return toNumber(position.entry_price)
-    case 'mark_price':
-      return toNumber(position.mark_price)
-    case 'pnl':
-      return toNumber(position.pnl)
-  }
-}
-
-function compareSortValues(left: string | number, right: string | number) {
-  const leftNumber = Number(left)
-  const rightNumber = Number(right)
-
-  if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) {
-    return leftNumber - rightNumber
-  }
-
-  return String(left).localeCompare(String(right), undefined, {
-    numeric: true,
-    sensitivity: 'base',
-  })
-}
-
-function sortPositions(key: SortKey) {
-  if (sortKey.value === key) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    return
-  }
-
-  sortKey.value = key
-  sortDirection.value = 'asc'
 }
 
 async function fetchPositions(showLoading = false) {
@@ -211,25 +141,6 @@ async function fetchPositions(showLoading = false) {
     ) {
       activeTab.value = 'all'
     }
-
-    if (
-      selectedPosition.value &&
-      !positions.value.some(
-        (position) => getPositionKey(position) === getPositionKey(selectedPosition.value!),
-      )
-    ) {
-      selectedPosition.value = null
-    }
-
-    if (selectedPosition.value) {
-      const updatedPosition = positions.value.find(
-        (position) => getPositionKey(position) === getPositionKey(selectedPosition.value!),
-      )
-
-      if (updatedPosition) {
-        selectedPosition.value = updatedPosition
-      }
-    }
   } catch (error) {
     console.error('Fetch position list error:', error)
     errorMessage.value = 'Fetch position list error.'
@@ -262,23 +173,6 @@ function refreshPositions() {
 
 function selectTab(tab: string) {
   activeTab.value = tab
-
-  if (
-    selectedPosition.value &&
-    !filteredPositions.value.some(
-      (position) => getPositionKey(position) === getPositionKey(selectedPosition.value!),
-    )
-  ) {
-    selectedPosition.value = null
-  }
-}
-
-function selectPosition(position: Position) {
-  selectedPosition.value = position
-}
-
-function closeDetail() {
-  selectedPosition.value = null
 }
 
 function toNumber(value: string | number) {
@@ -346,7 +240,7 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="positions-page">
-    <section class="positions-layout" :class="{ 'detail-open': isDetailOpen }">
+    <section class="positions-layout">
       <aside class="filter-panel">
         <div class="filter-header">
           <h2>Filters</h2>
@@ -398,80 +292,77 @@ onBeforeUnmount(() => {
         </div>
 
         <div
-          v-else
-          class="positions-table-card"
+          v-else-if="filteredPositions.length === 0"
+          class="empty-table"
         >
-          <table v-if="filteredPositions.length > 0">
-            <thead>
-              <tr>
-                <th class="sortable-header" @click="sortPositions('instrument')">Instrument</th>
-                <th class="sortable-header" @click="sortPositions('side')">Side</th>
-                <th class="sortable-header" @click="sortPositions('position_amt')">Position Amt</th>
-                <th class="sortable-header" @click="sortPositions('entry_price')">Entry Price</th>
-                <th class="sortable-header" @click="sortPositions('mark_price')">Mark Price</th>
-                <th class="sortable-header" @click="sortPositions('pnl')">PnL</th>
-                <th v-if="!isDetailOpen">Exchange Symbol</th>
-              </tr>
-            </thead>
+          No positions found.
+        </div>
 
-            <tbody>
-              <tr
-                v-for="position in sortedPositions"
-                :key="getPositionKey(position)"
-                class="position-row"
-                :class="{
-                  selected: selectedPosition && getPositionKey(selectedPosition) === getPositionKey(position),
-                  long: position.side.toUpperCase() === 'LONG',
-                  short: position.side.toUpperCase() === 'SHORT',
-                }"
-                @click="selectPosition(position)"
-              >
-                <td>
-                  <div class="instrument-cell">
-                    <strong>{{ position.instrument.symbol }}</strong>
-                    <small>
-                      <span>{{ position.instrument.exchange_id }}</span>
-                      <i>·</i>
-                      {{ position.instrument.instrument_type }}
-                    </small>
-                  </div>
-                </td>
-
-                <td>
-                  <span
-                    class="side-badge"
-                    :class="sideClass(position.side)"
-                  >
-                    {{ position.side }}
-                  </span>
-                </td>
-
-                <td>{{ formatNumber(position.position_amt) }}</td>
-                <td>{{ formatPrice(position.entry_price) }}</td>
-                <td>{{ formatPrice(position.mark_price) }}</td>
-
-                <td>
-                  <span
-                    class="pnl-badge"
-                    :class="pnlClass(position.pnl)"
-                  >
-                    {{ formatPnl(position.pnl) }}
-                  </span>
-                </td>
-
-                <td v-if="!isDetailOpen" class="mono-text">
-                  {{ position.instrument.exchange_symbol }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div
-            v-else
-            class="empty-table"
+        <div v-else class="position-card-grid">
+          <article
+            v-for="position in filteredPositions"
+            :key="getPositionKey(position)"
+            class="position-card"
           >
-            No positions found.
-          </div>
+            <header class="position-card-header">
+              <div class="instrument-title">
+                <strong>{{ position.instrument.symbol }}</strong>
+                <small>
+                  <span>{{ position.instrument.exchange_id }}</span>
+                  <i>·</i>
+                  {{ position.instrument.instrument_type }}
+                </small>
+              </div>
+
+              <span
+                class="side-badge"
+                :class="sideClass(position.side)"
+              >
+                {{ position.side }}
+              </span>
+            </header>
+
+            <section class="position-metrics">
+              <div class="metric-row">
+                <span>Position</span>
+                <strong>{{ formatNumber(position.position_amt) }}</strong>
+              </div>
+
+              <div class="metric-row">
+                <span>Entry</span>
+                <strong>{{ formatPrice(position.entry_price) }}</strong>
+              </div>
+
+              <div class="metric-row">
+                <span>Mark</span>
+                <strong>{{ formatPrice(position.mark_price) }}</strong>
+              </div>
+
+              <div class="metric-row">
+                <span>PnL</span>
+                <strong
+                  class="pnl-badge"
+                  :class="pnlClass(position.pnl)"
+                >
+                  {{ formatPnl(position.pnl) }}
+                </strong>
+              </div>
+            </section>
+
+            <footer class="instrument-strip">
+              <span class="exchange-text">{{ position.instrument.exchange_id }}</span>
+              <i>·</i>
+              <span class="mono-text">{{ position.instrument.exchange_symbol }}</span>
+              <i>·</i>
+              <span>{{ position.instrument.instrument_type }}</span>
+              <i>·</i>
+              <span>Lot {{ position.instrument.lot_size }}</span>
+              <i>·</i>
+              <span>Tick {{ position.instrument.tick_size }}</span>
+              <i>·</i>
+              <span>Precision {{ position.instrument.price_precision }}</span>
+            </footer>
+          </article>
         </div>
 
         <div class="table-footer">
@@ -482,87 +373,6 @@ onBeforeUnmount(() => {
           </span>
         </div>
       </section>
-
-      <aside v-if="selectedPosition" class="detail-panel">
-        <div
-          v-if="!selectedPosition"
-          class="empty-detail"
-        >
-          <h2>Position Details</h2>
-          <p>Click a position row to inspect all fields.</p>
-        </div>
-
-        <div
-          v-else
-          class="position-detail"
-        >
-          <div class="detail-header">
-            <div>
-              <h2>Position Details</h2>
-              <p>
-                <span class="mono-text">{{ selectedPosition.instrument.symbol }}</span>
-                <span
-                  class="side-badge"
-                  :class="sideClass(selectedPosition.side)"
-                >
-                  {{ selectedPosition.side }}
-                </span>
-              </p>
-            </div>
-
-            <button
-              class="detail-close"
-              @click="closeDetail"
-            >
-              ×
-            </button>
-          </div>
-
-          <section class="detail-card">
-            <h3>Position Info</h3>
-
-            <div class="detail-row">
-              <span>Side</span>
-              <strong>
-                <span
-                  class="side-badge"
-                  :class="sideClass(selectedPosition.side)"
-                >
-                  {{ selectedPosition.side }}
-                </span>
-              </strong>
-            </div>
-
-            <div class="detail-row"><span>Position Amt</span><strong>{{ formatNumber(selectedPosition.position_amt) }}</strong></div>
-            <div class="detail-row"><span>Entry Price</span><strong>{{ formatPrice(selectedPosition.entry_price) }}</strong></div>
-            <div class="detail-row"><span>Mark Price</span><strong>{{ formatPrice(selectedPosition.mark_price) }}</strong></div>
-
-            <div class="detail-row">
-              <span>PnL</span>
-              <strong>
-                <span
-                  class="pnl-badge"
-                  :class="pnlClass(selectedPosition.pnl)"
-                >
-                  {{ formatPnl(selectedPosition.pnl) }}
-                </span>
-              </strong>
-            </div>
-          </section>
-
-          <section class="detail-card">
-            <h3>Instrument</h3>
-
-            <div class="detail-row"><span>Symbol</span><strong>{{ selectedPosition.instrument.symbol }}</strong></div>
-            <div class="detail-row"><span>Exchange</span><strong class="exchange-text">{{ selectedPosition.instrument.exchange_id }}</strong></div>
-            <div class="detail-row"><span>Instrument Type</span><strong>{{ selectedPosition.instrument.instrument_type }}</strong></div>
-            <div class="detail-row"><span>Exchange Symbol</span><strong>{{ selectedPosition.instrument.exchange_symbol }}</strong></div>
-            <div class="detail-row"><span>Lot Size</span><strong>{{ selectedPosition.instrument.lot_size }}</strong></div>
-            <div class="detail-row"><span>Tick Size</span><strong>{{ selectedPosition.instrument.tick_size }}</strong></div>
-            <div class="detail-row"><span>Price Precision</span><strong>{{ selectedPosition.instrument.price_precision }}</strong></div>
-          </section>
-        </div>
-      </aside>
     </section>
   </main>
 </template>
@@ -580,13 +390,8 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
-.positions-layout.detail-open {
-  grid-template-columns: 220px minmax(860px, 1fr) 430px;
-}
-
 .filter-panel,
-.positions-panel,
-.detail-panel {
+.positions-panel {
   background: #111827;
   border: 1px solid #374151;
   border-radius: 12px;
@@ -603,14 +408,8 @@ onBeforeUnmount(() => {
   padding: 22px;
 }
 
-.detail-panel {
-  min-height: 720px;
-  padding: 22px;
-}
-
 .filter-header,
-.positions-header,
-.detail-header {
+.positions-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -622,8 +421,7 @@ onBeforeUnmount(() => {
 }
 
 .filter-header h2,
-.positions-header h1,
-.detail-header h2 {
+.positions-header h1 {
   margin: 0;
   color: #ffffff;
   font-size: 18px;
@@ -671,12 +469,10 @@ onBeforeUnmount(() => {
   border-color: #3b82f6;
 }
 
-.tone-all .filter-icon,
 .filter-card.tone-all .filter-content strong {
   color: #e5e7eb;
 }
 
-.tone-exchange .filter-icon,
 .filter-card.tone-exchange .filter-content strong {
   color: #facc15;
 }
@@ -707,8 +503,7 @@ onBeforeUnmount(() => {
   font-size: 13px;
 }
 
-.refresh-button,
-.detail-close {
+.refresh-button {
   width: 42px;
   height: 42px;
   display: inline-flex;
@@ -723,8 +518,7 @@ onBeforeUnmount(() => {
   transition: none;
 }
 
-.refresh-button:hover,
-.detail-close:hover {
+.refresh-button:hover {
   color: #ffffff;
   background: #1f2937;
   border-color: #4b5563;
@@ -751,85 +545,42 @@ onBeforeUnmount(() => {
   border-color: #7f1d1d;
 }
 
-.positions-table-card {
-  min-height: 420px;
-  overflow: auto;
+.position-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.position-card {
+  min-height: unset;
+  padding: 16px;
   background: #1f2937;
   border: 1px solid #374151;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  padding: 5px 16px;
+.position-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #374151;
-  text-align: right;
-  white-space: nowrap;
 }
 
-th:first-child,
-td:first-child {
-  text-align: left;
-}
-
-th {
-  color: #9ca3af;
-  background: #1f2937;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-th.sortable-header {
-  cursor: pointer;
-  user-select: none;
-  transition: none;
-}
-
-th.sortable-header:hover {
-  color: #ffffff;
-  background: #273449;
-}
-
-th.sortable-header:active {
-  background: #1e3a5f;
-}
-
-td {
-  color: #f8fafc;
-  font-size: 13px;
-}
-
-.position-row {
-  cursor: pointer;
-  transition: none;
-}
-
-.position-row:hover {
-  background: #273449;
-}
-
-.position-row.selected {
-  background: #1e3a5f;
-}
-
-.instrument-cell {
+.instrument-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
-.instrument-cell strong {
+.instrument-title strong {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
 }
 
-.instrument-cell small {
+.instrument-title small {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -838,21 +589,82 @@ td {
   font-weight: 700;
 }
 
-.instrument-cell small span,
+.instrument-title small span,
 .exchange-text {
   color: #facc15;
 }
 
-.side-badge,
-.pnl-badge {
+.side-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 46px;
-  padding: 3px 8px;
+  min-width: 52px;
+  padding: 4px 8px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 800;
+}
+
+.position-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.metric-row {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 9px;
+}
+
+.metric-row span {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.metric-row strong {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.pnl-badge,
+.footer-pnl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 12px !important;
+  font-weight: 800;
+}
+
+.instrument-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 12px;
+  color: #cbd5e1;
+  border-top: 1px solid #374151;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.instrument-strip i {
+  color: #64748b;
+  font-style: normal;
 }
 
 .long-text,
@@ -887,108 +699,12 @@ td {
 
 .footer-pnl {
   margin-left: 16px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 11px !important;
 }
 
-.empty-detail {
-  min-height: 660px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  text-align: center;
-}
-
-.empty-detail h2 {
-  margin: 0 0 10px;
-  color: #ffffff;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.empty-detail p {
-  max-width: 280px;
-  margin: 0;
-  line-height: 1.5;
-}
-
-.position-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.detail-header {
-  padding-bottom: 14px;
-  border-bottom: 1px solid #374151;
-}
-
-.detail-header p {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 6px 0 0;
-  color: #9ca3af;
-  font-size: 13px;
-}
-
-.detail-card {
-  padding: 14px 16px;
-  background: #1f2937;
-  border: 1px solid #374151;
-  border-radius: 10px;
-}
-
-.detail-card h3 {
-  margin: 0 0 14px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 900;
-}
-
-.detail-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 32px;
-  padding: 3px 0;
-}
-
-.detail-row span {
-  color: #9ca3af;
-  font-size: 13px;
-}
-
-.detail-row span.long-text,
-.detail-row span.profit-text {
-  color: #34d399;
-}
-
-.detail-row span.short-text,
-.detail-row span.loss-text {
-  color: #f87171;
-}
-
-.detail-row strong {
-  color: #f8fafc;
-  font-size: 13px;
-  font-weight: 800;
-  text-align: right;
-  word-break: break-all;
-}
-
-@media (max-width: 1500px) {
-  .positions-layout {
-    grid-template-columns: 260px minmax(620px, 1fr);
-  }
-
-  .detail-panel {
-    grid-column: 1 / -1;
+@media (max-width: 1300px) {
+  .position-card-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -998,9 +714,14 @@ td {
   }
 
   .filter-panel,
-  .positions-panel,
-  .detail-panel {
+  .positions-panel {
     min-height: unset;
+  }
+}
+
+@media (max-width: 700px) {
+  .position-metrics {
+    grid-template-columns: 1fr;
   }
 }
 </style>
