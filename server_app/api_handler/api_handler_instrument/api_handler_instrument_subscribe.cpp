@@ -2,6 +2,8 @@
 #include <instrument/instrument.h>
 #include <spdlog/spdlog.h>
 
+#include <gateways/gateway_manager.h>
+
 APIHandlerInstrumentSubscribe::APIHandlerInstrumentSubscribe(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
@@ -31,13 +33,19 @@ Task<HttpResponse> APIHandlerInstrumentSubscribe::child_handle()
         std::string method = m_request->get_body_param_string("method");
         std::string exchange = m_request->get_body_param_string("exchange");
         std::string symbol = m_request->get_body_param_string("symbol");
+        ExchangeId exchange_id = enum_reflect::enum_value<ExchangeId>(exchange);
+
+        auto gateway = GatewayManager::instance().get_gateway(exchange_id);
+        const Instrument* instrument = Instrument::get_instrument_by_symbol(exchange_id, symbol);
 
         if (method == "subscribe")
         {
-            if (Instrument::add_subscribed_instrument(enum_reflect::enum_value<ExchangeId>(exchange), symbol) == true)
+            if (Instrument::add_subscribed_instrument(exchange_id, symbol) == true)
             {
                 response["msg"] = "Subscribe instrument with exchange: [" + exchange + "], symbol: [" + symbol + "] successfully";
                 response["data"] = nullptr;
+
+                gateway->subscribe_instrument(instrument);
             }
             else
             {
@@ -47,10 +55,12 @@ Task<HttpResponse> APIHandlerInstrumentSubscribe::child_handle()
         }
         else if (method == "unsubscribe")
         {
-            if (Instrument::remove_subscribed_instrument(enum_reflect::enum_value<ExchangeId>(exchange), symbol) == true)
+            if (Instrument::remove_subscribed_instrument(exchange_id, symbol) == true)
             {
                 response["msg"] = "Unsubscribe instrument with exchange: [" + exchange + "], symbol: [" + symbol + "] successfully";
                 response["data"] = nullptr;
+
+                gateway->unsubscribe_instrument(instrument);
             }
             else
             {
