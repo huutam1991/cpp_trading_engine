@@ -27,6 +27,7 @@ Task<Json> BinanceQuoter::get_balances()
 Task<Json> BinanceQuoter::get_positions()
 {
     HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    client.add_header("X-MBX-APIKEY", m_api_key);
     co_return co_await send_binance_request(RequestMethod::GET, "/fapi/v3/positionRisk", "", &client);
 }
 

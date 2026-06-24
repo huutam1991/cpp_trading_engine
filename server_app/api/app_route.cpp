@@ -112,12 +112,7 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/test_binance_request")
     {
         auto gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-        auto task = gateway->get_positions();
-
-        std::future<Json> future = task.get_future();
-        task.start_running_on(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK));
-
-        Json positions = future.get();
+        Json positions = co_await gateway->get_positions();
 
         Json response;
         response["message"] = "OK";
