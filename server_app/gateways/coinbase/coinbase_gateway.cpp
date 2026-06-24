@@ -161,3 +161,8 @@ Task<Json> CoinbaseGateway::get_balances()
 
     co_return balances["balances"];
 }
+
+Task<Json> CoinbaseGateway::get_positions()
+{
+    co_return {};
+}

@@ -32,6 +32,7 @@ public:
     virtual void subscribe_instrument(const Instrument* instrument) override {}
     virtual void unsubscribe_instrument(const Instrument* instrument) override {}
     virtual Task<Json> get_balances() override;
+    virtual Task<Json> get_positions() override;
 
 private:
     void on_depth_update(const std::string& symbol, Json& payload);
