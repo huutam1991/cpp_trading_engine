@@ -329,16 +329,6 @@ onBeforeUnmount(() => {
               </div>
 
               <div class="metric-row">
-                <span>Entry</span>
-                <strong>{{ formatPrice(position.entry_price) }}</strong>
-              </div>
-
-              <div class="metric-row">
-                <span>Mark</span>
-                <strong>{{ formatPrice(position.mark_price) }}</strong>
-              </div>
-
-              <div class="metric-row">
                 <span>PnL</span>
                 <strong
                   class="pnl-badge"
@@ -346,6 +336,16 @@ onBeforeUnmount(() => {
                 >
                   {{ formatPnl(position.pnl) }}
                 </strong>
+              </div>
+
+              <div class="metric-row">
+                <span>Entry</span>
+                <strong>{{ formatPrice(position.entry_price) }}</strong>
+              </div>
+
+              <div class="metric-row">
+                <span>Mark</span>
+                <strong>{{ formatPrice(position.mark_price) }}</strong>
               </div>
             </section>
 
@@ -643,9 +643,9 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   width: fit-content;
-  padding: 4px 9px;
-  border-radius: 6px;
-  font-size: 12px !important;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px !important;
   font-weight: 800;
 }
 
@@ -667,18 +667,53 @@ onBeforeUnmount(() => {
   font-style: normal;
 }
 
-.long-text,
-.profit-text {
+.long-text {
   color: #34d399;
   background: #1f3a35;
   border: 1px solid #2f6f5f;
 }
 
-.short-text,
-.loss-text {
+.short-text {
   color: #f87171;
   background: #3b2b2b;
   border: 1px solid #7f1d1d;
+}
+
+.profit-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 10px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: #22c55e !important;;
+
+    background: rgba(34, 197, 94, 0.18);
+
+    border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.loss-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 10px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: #f87171 !important;
+
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .flat-text {
