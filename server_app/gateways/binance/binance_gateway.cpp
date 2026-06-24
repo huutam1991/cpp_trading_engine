@@ -283,8 +283,13 @@ Task<Json> BinanceGateway::get_positions()
     Json data;
 
     Json positions = co_await m_quoter_perpetual.get_positions();
+    spdlog::warn("positions: {}", positions);
+
     positions.for_each([&data](Json& position)
     {
+        spdlog::warn("symbol of position: {}", (std::string)position["symbol"]);
+        spdlog::warn("position: {}", position);
+
         const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(
             ExchangeId::BINANCE,
             InstrumentType::PERPETUAL,
