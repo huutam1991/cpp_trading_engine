@@ -217,8 +217,8 @@ private:
 
     FORCE_INLINE static PoolBuffer& get_pool_buffer()
     {
-        static PoolBuffer* pool_buffer = new PoolBuffer();
-        return *pool_buffer;
+        static PoolBuffer pool_buffer;
+        return pool_buffer;
     }
 
 public:
