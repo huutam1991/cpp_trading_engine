@@ -295,6 +295,7 @@ Task<Json> BinanceGateway::get_positions()
         std::string side = position_amt > 0 ? "LONG" : (position_amt < 0 ? "SHORT" : "FLAT");
 
         Json p;
+        p["exchange"] = enum_reflect::enum_name(instrument->exchange_id);
         p["symbol"] = instrument->symbol;
         p["pnl"] = position["unRealizedProfit"];
         p["entry_price"] = position["entryPrice"];
