@@ -26,6 +26,7 @@ public:
     BinanceQuoter(const std::string& key);
 
     Task<Json> get_balances();
+    Task<Json> get_positions();
 
     virtual Task<Json> get_open_orders(std::string symbol) = 0;
     virtual Task<void> cancel_all(std::string symbol) = 0;

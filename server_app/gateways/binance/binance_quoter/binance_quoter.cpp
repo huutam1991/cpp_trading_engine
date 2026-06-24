@@ -24,6 +24,12 @@ Task<Json> BinanceQuoter::get_balances()
     co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "", &client);
 }
 
+Task<Json> BinanceQuoter::get_positions()
+{
+    HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    co_return co_await send_binance_request(RequestMethod::GET, "/fapi/v3/positionRisk", "", &client);
+}
+
 std::string BinanceQuoter::getTimestamp()
 {
 	long long ms_since_epoch = duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();

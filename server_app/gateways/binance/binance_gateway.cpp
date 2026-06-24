@@ -277,3 +277,29 @@ Task<Json> BinanceGateway::get_balances()
 
     co_return balances["balances"];
 }
+
+Task<Json> BinanceGateway::get_positions()
+{
+    Json positions = co_await m_quoter_perpetual.get_positions();
+
+    positions.for_each([](Json& position)
+    {
+        // position.remove_field("symbol");
+        // position.remove_field("positionAmt");
+        // position.remove_field("entryPrice");
+        // position.remove_field("markPrice");
+        // position.remove_field("unRealizedProfit");
+        // position.remove_field("liquidationPrice");
+        // position.remove_field("leverage");
+        // position.remove_field("maxNotionalValue");
+        // position.remove_field("marginType");
+        // position.remove_field("isolatedMargin");
+        // position.remove_field("isAutoAddMargin");
+        // position.remove_field("positionSide");
+        // position.remove_field("notional");
+        // position.remove_field("isolatedWallet");
+        // position.remove_field("updateTime");
+    });
+
+    co_return positions;
+}

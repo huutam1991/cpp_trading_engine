@@ -42,4 +42,5 @@ public:
 
     // Util methods
     virtual Task<Json> get_balances() = 0;
+    virtual Task<Json> get_positions() = 0;
 };
