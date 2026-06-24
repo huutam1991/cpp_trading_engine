@@ -189,9 +189,6 @@ void BinanceGateway::unsubscribe_instrument(const Instrument* instrument)
     {
         m_market_data_perpetual.unsubscribe_instrument(instrument);
     }
-
-    m_market_data_spot.start();
-    m_market_data_perpetual.start(instrument);
 }
 
 Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(std::string symbol)

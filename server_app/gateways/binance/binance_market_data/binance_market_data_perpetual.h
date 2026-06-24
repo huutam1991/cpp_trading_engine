@@ -22,7 +22,7 @@ public:
     void subscribe_instrument(const Instrument* instrument);
     void unsubscribe_instrument(const Instrument* instrument)
     {
-        // m_instruments.erase(std::remove(m_instruments.begin(), m_instruments.end(), instrument), m_instruments.end());
+        m_market_data.erase(instrument);
     }
 
 private:
