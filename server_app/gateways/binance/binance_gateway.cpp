@@ -280,26 +280,30 @@ Task<Json> BinanceGateway::get_balances()
 
 Task<Json> BinanceGateway::get_positions()
 {
-    Json positions = co_await m_quoter_perpetual.get_positions();
+    Json data;
 
-    positions.for_each([](Json& position)
+    Json positions = co_await m_quoter_perpetual.get_positions();
+    positions.for_each([&data](Json& position)
     {
-        // position.remove_field("symbol");
-        // position.remove_field("positionAmt");
-        // position.remove_field("entryPrice");
-        // position.remove_field("markPrice");
-        // position.remove_field("unRealizedProfit");
-        // position.remove_field("liquidationPrice");
-        // position.remove_field("leverage");
-        // position.remove_field("maxNotionalValue");
-        // position.remove_field("marginType");
-        // position.remove_field("isolatedMargin");
-        // position.remove_field("isAutoAddMargin");
-        // position.remove_field("positionSide");
-        // position.remove_field("notional");
-        // position.remove_field("isolatedWallet");
-        // position.remove_field("updateTime");
+        const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(
+            ExchangeId::BINANCE,
+            InstrumentType::PERPETUAL,
+            (std::string)position["symbol"]
+        );
+
+        double position_amt = std::stod((std::string)position["positionAmt"]);
+        std::string side = position_amt > 0 ? "LONG" : (position_amt < 0 ? "SHORT" : "FLAT");
+
+        Json p;
+        p["symbol"] = instrument->symbol;
+        p["pnl"] = position["unRealizedProfit"];
+        p["entry_price"] = position["entryPrice"];
+        p["mark_price"] = position["markPrice"];
+        p["position_amt"] = position_amt;
+        p["side"] = side;
+
+        data.push_back(p);
     });
 
-    co_return positions;
+    co_return data;
 }
