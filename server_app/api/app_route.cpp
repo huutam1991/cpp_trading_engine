@@ -19,6 +19,9 @@
 // Order
 #include <api_handler/api_handler_order/api_handler_order_list.h>
 
+// Position
+#include <api_handler/api_handler_position/api_handler_position_list.h>
+
 // Simulator Order
 #include <api_handler/api_handler_simulator_order/api_handler_simulator_order.h>
 
@@ -386,6 +389,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/order_list")
     {
         co_return co_await APIHandlerOrderList(request).handle();
+    };
+
+    // Get position list
+    ADD_ROUTE(RequestMethod::GET, "/position_list")
+    {
+        co_return co_await APIHandlerPositionList(request).handle();
     };
 
     // Simulator order - GET
