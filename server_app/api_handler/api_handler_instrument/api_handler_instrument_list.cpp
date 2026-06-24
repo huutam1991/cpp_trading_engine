@@ -1,6 +1,7 @@
 #include <api_handler/api_handler_instrument/api_handler_instrument_list.h>
 #include <spdlog/spdlog.h>
 #include <mongo_db/mongo_db.h>
+#include <enum_reflect/enum_reflect.h>
 #include <instrument/instrument.h>
 
 APIHandlerInstrumentList::APIHandlerInstrumentList(HttpRequest* request) : APIHandler(request)
@@ -17,15 +18,14 @@ Task<HttpResponse> APIHandlerInstrumentList::child_handle()
     {
         if (collection_name != "subscribed_instruments")
         {
-            Json instruments= MongoDB::instance()
-                .set_db_and_collection("instrument", collection_name)
-                .find_many();
+            ExchangeId exchange_id = enum_reflect::enum_value<ExchangeId>(collection_name);
 
-            instruments.for_each([&data](Json& instrument)
+            // Get instrument list for this exchange, only support PERPETUAL instrument type for now
+            auto instruments = Instrument::get_instrument_list(exchange_id, InstrumentType::PERPETUAL);
+            for (const auto& [symbol, instrument] : instruments)
             {
-                instrument.remove_field("_id");
-                data.push_back(instrument);
-            });
+                data.push_back(instrument->to_json());
+            }
         }
     }
 
