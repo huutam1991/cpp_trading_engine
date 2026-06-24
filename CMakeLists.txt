@@ -5,6 +5,18 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -fcoroutines")
 
+# Full TSAN
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=thread -fno-omit-frame-pointer -g -O1")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+
+# TSAN
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=thread -fno-omit-frame-pointer -g -O1")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
+
+# ASAN + USAN
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=address,undefined -fno-omit-frame-pointer -g")
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
+
 find_package(mongocxx REQUIRED)
 find_package(bsoncxx REQUIRED)
 find_package(OpenSSL REQUIRED)
