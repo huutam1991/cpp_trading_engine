@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { API_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 
@@ -51,6 +51,8 @@ type Gateway = {
 const loading = ref(false)
 const errorMessage = ref('')
 const gateways = ref<Gateway[]>([])
+const gatewayFetchInterval = ref<ReturnType<typeof setInterval> | null>(null)
+const isFetching = ref(false)
 
 function normalizeGatewayStatus(status?: string): GatewayStatus {
   const normalized = (status ?? '').toLowerCase()
@@ -154,8 +156,15 @@ function mapGateway(item: GatewayListItem): Gateway {
   }
 }
 
-async function fetchGateways() {
-  loading.value = true
+async function fetchGateways(showLoading = false) {
+  if (isFetching.value) return
+
+  isFetching.value = true
+
+  if (showLoading) {
+    loading.value = true
+  }
+
   errorMessage.value = ''
 
   try {
@@ -176,11 +185,26 @@ async function fetchGateways() {
       return
     }
 
-    gateways.value = (result.data ?? []).map(mapGateway)
+    gateways.value = (result.data ?? [])
+      .map(mapGateway)
+      .sort((a, b) => {
+        if (a.status === b.status) {
+          return a.name.localeCompare(b.name)
+        }
+
+        if (a.status === 'connected') return -1
+        if (b.status === 'connected') return 1
+
+        if (a.status === 'reconnecting') return -1
+        if (b.status === 'reconnecting') return 1
+
+        return 0
+      })
   } catch (error) {
     console.error('Fetch gateway list error:', error)
     errorMessage.value = 'Fetch gateway list error.'
   } finally {
+    isFetching.value = false
     loading.value = false
   }
 }
@@ -192,7 +216,18 @@ function statusText(status: GatewayStatus) {
 }
 
 onMounted(() => {
-  fetchGateways()
+  fetchGateways(true)
+
+  gatewayFetchInterval.value = setInterval(() => {
+    fetchGateways(false)
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (gatewayFetchInterval.value) {
+    clearInterval(gatewayFetchInterval.value)
+    gatewayFetchInterval.value = null
+  }
 })
 </script>
 
@@ -201,16 +236,6 @@ onMounted(() => {
     <div class="page-header">
       <h1>Gateway</h1>
       <p>Manage and monitor exchange gateways and connections.</p>
-    </div>
-
-    <div class="gateway-toolbar">
-      <button
-        class="button secondary"
-        :disabled="loading"
-        @click="fetchGateways"
-      >
-        ↻ Refresh
-      </button>
     </div>
 
     <div
@@ -408,12 +433,6 @@ onMounted(() => {
 .page-header p {
   margin: 0;
   color: #9ca3af;
-}
-
-.gateway-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 14px;
 }
 
 .panel-message {
