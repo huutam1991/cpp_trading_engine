@@ -1,4 +1,4 @@
-#include <api_handler/api_handler_gateway/api_handler_exchage_id_list.h>
+#include <api_handler/api_handler_gateway/api_handler_exchange_id_list.h>
 #include <instrument/instrument.h>
 
 APIHandlerExchangeIdList::APIHandlerExchangeIdList(HttpRequest* request) : APIHandler(request)
@@ -8,7 +8,7 @@ APIHandlerExchangeIdList::APIHandlerExchangeIdList(HttpRequest* request) : APIHa
 
 Task<HttpResponse> APIHandlerExchangeIdList::child_handle()
 {
-    Json exchnage_id_list;
+    Json exchange_id_list;
 
     for (ExchangeId exchange_id = ExchangeId::NONE_EXCHANGE; exchange_id < ExchangeId::TOTAL_EXCHANGES; exchange_id = static_cast<ExchangeId>(static_cast<int>(exchange_id) + 1)  )
     {
@@ -17,13 +17,13 @@ Task<HttpResponse> APIHandlerExchangeIdList::child_handle()
             continue; // Skip NONE_EXCHANGE exchange ID
         }
 
-        exchnage_id_list.push_back(enum_reflect::enum_name(exchange_id));
+        exchange_id_list.push_back(enum_reflect::enum_name(exchange_id));
     }
 
     // Response
     Json response;
-    response["data"] = exchnage_id_list;
-    response["msg"] = "Get exchange ID list successfully";
+    response["data"] = exchange_id_list;
+    response["msg"] = "Get Exchange ID list successfully";
     response["status_code"] = OK_200;
     response["error"] = false;
 

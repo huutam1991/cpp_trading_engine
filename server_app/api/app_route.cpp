@@ -14,7 +14,7 @@
 
 // Gateway
 #include <api_handler/api_handler_gateway/api_handler_gateway_list.h>
-#include <api_handler/api_handler_gateway/api_handler_exchage_id_list.h>
+#include <api_handler/api_handler_gateway/api_handler_exchange_id_list.h>
 
 // Instrument
 #include <api_handler/api_handler_instrument/api_handler_instrument_list.h>
