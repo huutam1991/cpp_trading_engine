@@ -49,10 +49,68 @@ const noticeTone = ref<NoticeTone>('info')
 const fieldConfigs = ref<AccountFieldConfig[]>([])
 const accounts = ref<Account[]>([])
 const selectedExchangeId = ref('')
+const selectedFilterExchangeId = ref('ALL')
 const selectedAccount = ref<Account | null>(null)
+const viewMode = ref<'list' | 'create'>('list')
 const formValues = ref<Record<string, string>>({})
 const sortKey = ref<SortKey | null>(null)
 const sortDirection = ref<SortDirection>('asc')
+
+type ExchangeFilter = {
+  value: string
+  label: string
+  count: number
+}
+
+const exchangeFilters = computed<ExchangeFilter[]>(() => {
+  const filters: ExchangeFilter[] = [
+    {
+      value: 'ALL',
+      label: 'All',
+      count: accounts.value.length,
+    },
+  ]
+
+  fieldConfigs.value.forEach((config) => {
+    filters.push({
+      value: config.exchange_id,
+      label: config.exchange_id,
+      count: accounts.value.filter(
+        (account) => account.exchange_id === config.exchange_id,
+      ).length,
+    })
+  })
+
+  accounts.value.forEach((account) => {
+    if (!filters.some((filter) => filter.value === account.exchange_id)) {
+      filters.push({
+        value: account.exchange_id,
+        label: account.exchange_id,
+        count: accounts.value.filter(
+          (currentAccount) => currentAccount.exchange_id === account.exchange_id,
+        ).length,
+      })
+    }
+  })
+
+  return filters
+})
+
+const filteredAccounts = computed(() => {
+  if (selectedFilterExchangeId.value === 'ALL') {
+    return accounts.value
+  }
+
+  return accounts.value.filter(
+    (account) => account.exchange_id === selectedFilterExchangeId.value,
+  )
+})
+
+const activeFilterInfo = computed(() => {
+  return exchangeFilters.value.find(
+    (filter) => filter.value === selectedFilterExchangeId.value,
+  ) ?? exchangeFilters.value[0]
+})
 
 const selectedFieldConfig = computed(() => {
   return fieldConfigs.value.find(
@@ -70,10 +128,10 @@ const visibleInputFieldNames = computed(() => {
 
 const sortedAccounts = computed(() => {
   if (!sortKey.value) {
-    return accounts.value
+    return filteredAccounts.value
   }
 
-  return [...accounts.value].sort((left, right) => {
+  return [...filteredAccounts.value].sort((left, right) => {
     const result = String(left[sortKey.value!] ?? '').localeCompare(
       String(right[sortKey.value!] ?? ''),
       undefined,
@@ -129,6 +187,33 @@ function selectExchange(exchangeId: string) {
   visibleInputFieldNames.value.forEach((fieldName) => {
     formValues.value[fieldName] = ''
   })
+}
+
+function selectFilter(exchangeId: string) {
+  selectedFilterExchangeId.value = exchangeId
+
+  if (
+    selectedAccount.value &&
+    exchangeId !== 'ALL' &&
+    selectedAccount.value.exchange_id !== exchangeId
+  ) {
+    selectedAccount.value = null
+  }
+}
+
+function openCreateAccount() {
+  selectedAccount.value = null
+  noticeMessage.value = ''
+  viewMode.value = 'create'
+
+  if (!selectedExchangeId.value && fieldConfigs.value.length > 0) {
+    selectExchange(fieldConfigs.value[0]!.exchange_id)
+  }
+}
+
+function backToAccountList() {
+  viewMode.value = 'list'
+  noticeMessage.value = ''
 }
 
 function selectAccount(account: Account) {
@@ -317,91 +402,55 @@ onMounted(() => {
 
 <template>
   <main class="accounts-page">
-    <section class="accounts-layout" :class="{ 'detail-open': isDetailOpen }">
+    <section
+      v-if="viewMode === 'list'"
+      class="accounts-layout"
+      :class="{ 'detail-open': isDetailOpen }"
+    >
       <aside class="filter-panel">
         <div class="filter-header">
-          <h2>Create</h2>
-          <span class="filter-total">{{ fieldConfigs.length }}</span>
+          <h2>Filters</h2>
+          <span class="filter-total">{{ filteredAccounts.length }}</span>
         </div>
 
-        <div class="create-card">
-          <label class="field-label">Exchange</label>
-          <select
-            v-model="selectedExchangeId"
-            class="form-control"
-            @change="selectExchange(selectedExchangeId)"
-          >
-            <option
-              v-for="config in fieldConfigs"
-              :key="config.exchange_id"
-              :value="config.exchange_id"
-            >
-              {{ config.exchange_id }}
-            </option>
-          </select>
-
-          <div class="exchange-summary">
-            <strong>{{ selectedExchangeId || 'No Exchange' }}</strong>
-            <small>{{ selectedExchangeAccountCount }} accounts</small>
-          </div>
-
-          <form class="account-form" @submit.prevent="addAccount">
-            <div
-              v-for="fieldName in visibleInputFieldNames"
-              :key="fieldName"
-              class="form-group"
-            >
-              <label class="field-label">{{ formatLabel(fieldName) }}</label>
-              <input
-                v-model="formValues[fieldName]"
-                class="form-control mono-text"
-                :type="isSecretField(fieldName) ? 'password' : 'text'"
-                :placeholder="fieldName"
-                autocomplete="off"
-              >
-            </div>
-
-            <div
-              v-if="noticeMessage"
-              class="notice-card"
-              :class="`tone-${noticeTone}`"
-            >
-              {{ noticeMessage }}
-            </div>
-
-            <button
-              class="submit-button"
-              :disabled="!canSubmit"
-              type="submit"
-            >
-              {{ submitting ? 'Creating...' : 'Create Account' }}
-            </button>
-
-            <button
-              class="clear-button"
-              type="button"
-              @click="clearForm()"
-            >
-              Clear
-            </button>
-          </form>
-        </div>
+        <button
+          v-for="filter in exchangeFilters"
+          :key="filter.value"
+          class="filter-card tone-all"
+          :class="{ active: selectedFilterExchangeId === filter.value }"
+          @click="selectFilter(filter.value)"
+        >
+          <span class="filter-content">
+            <strong>{{ filter.label }}</strong>
+            <small>{{ filter.count }} accounts</small>
+          </span>
+        </button>
       </aside>
 
       <section class="accounts-panel">
         <div class="accounts-header">
           <div>
             <h1>Accounts</h1>
-            <p>Account list</p>
+            <p>{{ activeFilterInfo?.label ?? 'All' }} accounts</p>
           </div>
 
-          <button
-            class="refresh-button"
-            :disabled="loading"
-            @click="refreshAccounts"
-          >
-            ↻
-          </button>
+          <div class="header-actions">
+            <button
+              class="create-account-button"
+              type="button"
+              @click="openCreateAccount"
+            >
+              + New Account
+            </button>
+
+            <button
+              class="refresh-button"
+              :disabled="loading"
+              @click="refreshAccounts"
+            >
+              ↻
+            </button>
+          </div>
         </div>
 
         <div
@@ -422,7 +471,7 @@ onMounted(() => {
           v-else
           class="accounts-table-card"
         >
-          <table v-if="accounts.length > 0">
+          <table v-if="filteredAccounts.length > 0">
             <thead>
               <tr>
                 <th class="sortable-header" @click="sortAccounts('exchange_id')">Exchange</th>
@@ -455,8 +504,8 @@ onMounted(() => {
                   </div>
                 </td>
 
-                <td class="mono-text">{{ maskSecret(account.api_key) }}</td>
-                <td v-if="!isDetailOpen" class="mono-text">{{ maskSecret(account.api_secret) }}</td>
+                <td class="mono-text">{{ maskSecret(account.api_key ?? '') }}</td>
+                <td v-if="!isDetailOpen" class="mono-text">{{ maskSecret(account.api_secret ?? '') }}</td>
                 <td v-if="!isDetailOpen">
                   {{ Math.max(accountFields(account).length - 3, 0) }} fields
                 </td>
@@ -473,8 +522,8 @@ onMounted(() => {
         </div>
 
         <div class="table-footer">
-          Showing {{ accounts.length > 0 ? 1 : 0 }} to {{ accounts.length }} of
-          {{ accounts.length }} accounts
+          Showing {{ filteredAccounts.length > 0 ? 1 : 0 }} to {{ filteredAccounts.length }} of
+          {{ filteredAccounts.length }} accounts
         </div>
       </section>
 
@@ -521,12 +570,103 @@ onMounted(() => {
             >
               <span>{{ formatLabel(fieldName) }}</span>
               <strong class="mono-text">
-                {{ isSecretField(fieldName) ? maskSecret(selectedAccount[fieldName]) : selectedAccount[fieldName] }}
+                {{ isSecretField(fieldName) ? maskSecret(selectedAccount[fieldName] ?? '') : (selectedAccount[fieldName] ?? '–') }}
               </strong>
             </div>
           </section>
         </div>
       </aside>
+    </section>
+
+    <section
+      v-else
+      class="create-layout"
+    >
+      <section class="create-panel">
+        <div class="accounts-header">
+          <div>
+            <h1>Create Account</h1>
+            <p>Select exchange and enter required credentials</p>
+          </div>
+
+          <button
+            class="back-button"
+            type="button"
+            @click="backToAccountList"
+          >
+            ← Accounts
+          </button>
+        </div>
+
+        <div class="create-content-card">
+          <div class="create-form-grid">
+            <div class="form-group">
+              <label class="field-label">Exchange</label>
+              <select
+                v-model="selectedExchangeId"
+                class="form-control"
+                @change="selectExchange(selectedExchangeId)"
+              >
+                <option
+                  v-for="config in fieldConfigs"
+                  :key="config.exchange_id"
+                  :value="config.exchange_id"
+                >
+                  {{ config.exchange_id }}
+                </option>
+              </select>
+            </div>
+
+            <div class="exchange-summary create-summary">
+              <strong>{{ selectedExchangeId || 'No Exchange' }}</strong>
+              <small>{{ selectedExchangeAccountCount }} accounts</small>
+            </div>
+          </div>
+
+          <form class="account-form create-account-form" @submit.prevent="addAccount">
+            <div
+              v-for="fieldName in visibleInputFieldNames"
+              :key="fieldName"
+              class="form-group"
+            >
+              <label class="field-label">{{ formatLabel(fieldName) }}</label>
+              <input
+                v-model="formValues[fieldName]"
+                class="form-control mono-text"
+                :type="isSecretField(fieldName) ? 'password' : 'text'"
+                :placeholder="fieldName"
+                autocomplete="off"
+              >
+            </div>
+
+            <div
+              v-if="noticeMessage"
+              class="notice-card"
+              :class="`tone-${noticeTone}`"
+            >
+              {{ noticeMessage }}
+            </div>
+
+            <div class="form-actions">
+              <button
+                class="submit-button"
+                :disabled="!canSubmit"
+                type="submit"
+              >
+                {{ submitting ? 'Creating...' : 'Create Account' }}
+              </button>
+
+              <button
+                class="clear-button"
+                type="button"
+                @click="clearForm()"
+              >
+                Clear
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
     </section>
   </main>
 </template>
@@ -606,6 +746,96 @@ onMounted(() => {
   border: 1px solid #3b82f6;
   border-radius: 999px;
   font-weight: 800;
+}
+
+.filter-card {
+  width: 100%;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  color: #e5e7eb;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: none;
+}
+
+.filter-card:hover {
+  background: #273449;
+  border-color: #4b5563;
+}
+
+.filter-card.active {
+  background: #1e3a5f;
+  border-color: #3b82f6;
+}
+
+.filter-card.tone-all .filter-content strong {
+  color: #60a5fa;
+}
+
+.filter-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-content strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.filter-content small {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.create-layout {
+  display: grid;
+  grid-template-columns: minmax(760px, 1fr);
+}
+
+.create-panel {
+  min-height: 720px;
+  padding: 22px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 12px;
+}
+
+.create-content-card {
+  max-width: 720px;
+  padding: 18px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+}
+
+.create-form-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(220px, 280px);
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.create-summary {
+  margin: 0;
+}
+
+.create-account-form {
+  max-width: 520px;
+}
+
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 .create-card {
@@ -746,6 +976,34 @@ onMounted(() => {
 
 .accounts-header {
   margin-bottom: 18px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.create-account-button,
+.back-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  color: #ffffff;
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: none;
+}
+
+.create-account-button:hover,
+.back-button:hover {
+  background: #244b7d;
 }
 
 .accounts-header p {
