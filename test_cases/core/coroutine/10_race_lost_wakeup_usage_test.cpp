@@ -53,7 +53,8 @@ TEST(CoroutineUsageRaceTest, FutureCompletesImmediatelyNoLostWakeup)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 1);
         }
     }
@@ -85,7 +86,8 @@ TEST(CoroutineUsageRaceTest, FutureCompletesFromThreadNoLostWakeup)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 1);
         }
     }
@@ -119,7 +121,8 @@ TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsSequential)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn(i);
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             sum += wait_result(result);
         }
 
@@ -161,7 +164,8 @@ TEST(CoroutineUsageRaceTest, ManyFuturesCompleteFromThreadsBurst)
         for (int i = 0; i < N; ++i)
         {
             tasks.emplace_back(fn(i));
-            results.emplace_back(tasks.back().start_running_on(eb));
+            results.emplace_back(tasks.back().get_future());
+            tasks.back().start_running_on(eb);
         }
 
         long long sum = 0;

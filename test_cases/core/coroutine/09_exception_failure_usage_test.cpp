@@ -52,7 +52,8 @@ TEST(CoroutineUsageFailureTest, FutureNeverCompletesLeavesResultPending)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
     }
 
     std::this_thread::sleep_for(10ms);
@@ -74,7 +75,8 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionBeforeAwaitPolicy)
         };
 
         auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
         (void)result;
     }
 
@@ -99,7 +101,8 @@ TEST(CoroutineUsageFailureTest, DISABLED_ExceptionAfterAwaitPolicy)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
         (void)result;
     }
 

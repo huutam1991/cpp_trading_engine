@@ -75,7 +75,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyImmediatelyAfterScheduleDoesNotCrash
 
     {
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
         (void)result;
     }
 
@@ -104,7 +105,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyWrapperWhileSuspendedOnNeverCompleti
 
     {
         auto task = fn();
-        auto result = task.start_running_on(test_event_base()).get();
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         // ASSERT_EQ(result.wait_for(20ms), std::future_status::timeout);
     }
@@ -148,7 +150,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyParentWhileChildStillRunningPolicy)
 
     {
         auto task = parent();
-        auto result = task.start_running_on(test_event_base()).get();
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
     }
 
     settle();
@@ -202,7 +205,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, CrossThreadSetValueAfterTaskDestroyPolicy)
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
 
             captured_future.get();
 
@@ -246,7 +250,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveSuspendedTaskWrapperThenCompleteRelease
 
     {
         auto task1 = fn();
-        auto result = task1.start_running_on(test_event_base());
+        auto result = task1.get_future();
+        task1.start_running_on(test_event_base());
 
         // ASSERT_EQ(result.wait_for(1ms), std::future_status::timeout);
 
@@ -291,7 +296,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, MoveAssignOverUnscheduledTaskWhileOtherIsSu
         auto task1 = immediate(); // unscheduled frame
         auto task2 = delayed();   // frame that will be scheduled and suspended
 
-        auto result2 = task2.start_running_on(test_event_base());
+        auto result2 = task2.get_future();
+        task2.start_running_on(test_event_base());
 
         task1 = std::move(task2);
 
@@ -331,7 +337,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, SelfMoveActiveTaskWrapperPolicy)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wself-move"

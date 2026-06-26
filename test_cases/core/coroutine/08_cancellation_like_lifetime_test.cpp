@@ -76,7 +76,8 @@ TEST(CoroutineUsageCancellationLikeTest, RunningTaskCanCompleteAfterDelayedFutur
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }

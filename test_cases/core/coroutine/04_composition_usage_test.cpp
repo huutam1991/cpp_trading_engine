@@ -50,7 +50,8 @@ TEST(CoroutineUsageCompositionTest, TaskAwaitsFutureThenReturns)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -79,7 +80,8 @@ TEST(CoroutineUsageCompositionTest, ChildTaskAwaitsFuture)
         };
 
         auto task = parent();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -114,7 +116,8 @@ TEST(CoroutineUsageCompositionTest, ChainTaskFutureTaskFuture)
         };
 
         auto task = root();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -142,7 +145,8 @@ TEST(CoroutineUsageCompositionTest, SeveralAsyncSteps)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 27);
     }

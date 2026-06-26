@@ -130,7 +130,8 @@ TEST(CoroutineUsageLifetimeTest, DestroyTaskAfterCompletionReleasesCoroutineFram
             auto task = fn();
             frames.expect_counts(1, 0);
 
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
 
             ASSERT_EQ(frames.alloc(), 1);
@@ -161,7 +162,8 @@ TEST(CoroutineUsageLifetimeTest, DestroyVoidTaskAfterCompletionReleasesCoroutine
             auto task = fn();
             frames.expect_counts(1, 0);
 
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             wait_done(result);
 
             ASSERT_EQ(ran.load(std::memory_order_relaxed), 1);
@@ -217,7 +219,8 @@ TEST(CoroutineUsageLifetimeTest, RepeatedCreateRunDestroyReleasesEveryFrame)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn(i);
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), i);
         }
 
@@ -246,7 +249,8 @@ TEST(CoroutineUsageLifetimeTest, MoveConstructedTaskReleasesOnlyOnceAfterRun)
             auto task2 = std::move(task1);
             frames.expect_counts(1, 0);
 
-            auto result = task2.start_running_on(test_event_base());
+            auto result = task2.get_future();
+            task2.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -278,7 +282,8 @@ TEST(CoroutineUsageLifetimeTest, MovedFromTaskDestructorDoesNotReleaseFrameOwned
 
         frames.expect_counts(1, 0);
 
-        auto result = moved_to.start_running_on(test_event_base());
+        auto result = moved_to.get_future();
+        moved_to.start_running_on(test_event_base());
         ASSERT_EQ(wait_result(result), 42);
     }
 
@@ -304,7 +309,8 @@ TEST(CoroutineUsageLifetimeTest, MovedToTaskReleasesFrameWhenDestroyed)
                 moved_to = std::move(moved_from);
             }
 
-            auto result = moved_to.start_running_on(test_event_base());
+            auto result = moved_to.get_future();
+            moved_to.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -328,7 +334,8 @@ TEST(CoroutineUsageLifetimeTest, MoveAssignOverCompletedTaskReleasesOldAndNewFra
 
         {
             auto task1 = fn(1);
-            auto result1 = task1.start_running_on(test_event_base());
+            auto result1 = task1.get_future();
+            task1.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result1), 1);
 
             auto task2 = fn(42);
@@ -340,7 +347,8 @@ TEST(CoroutineUsageLifetimeTest, MoveAssignOverCompletedTaskReleasesOldAndNewFra
             ASSERT_EQ(frames.alloc(), 2);
             ASSERT_GE(frames.free(), 1);
 
-            auto result2 = task1.start_running_on(test_event_base());
+            auto result2 = task1.get_future();
+            task1.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result2), 42);
         }
 
@@ -373,7 +381,8 @@ TEST(CoroutineUsageLifetimeTest, MoveAssignOverUnscheduledTaskReleasesOldFrame)
             ASSERT_EQ(frames.alloc(), 2);
             ASSERT_GE(frames.free(), 1);
 
-            auto result = task1.start_running_on(test_event_base());
+            auto result = task1.get_future();
+            task1.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -397,7 +406,8 @@ TEST(CoroutineUsageLifetimeTest, TemporaryTaskReturnedFromFunctionReleasesFrame)
 
         {
             auto task = make_task();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -431,7 +441,8 @@ TEST(CoroutineUsageLifetimeTest, TaskStoredInVectorAndMovedByReallocationRelease
             for (int i = 0; i < N; ++i)
             {
                 tasks.emplace_back(fn(i));
-                results.emplace_back(tasks.back().start_running_on(eb));
+                results.emplace_back(tasks.back().get_future());
+                tasks.back().start_running_on(eb);
             }
 
             long long sum = 0;
@@ -474,7 +485,8 @@ TEST(CoroutineUsageLifetimeTest, ParentAwaitChildReleasesBothFrames)
             ASSERT_EQ(frames.alloc(), 1);
             ASSERT_EQ(frames.free(), 0);
 
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -509,7 +521,8 @@ TEST(CoroutineUsageLifetimeTest, DeepAwaitChainReleasesAllFrames)
 
         {
             auto task = root();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 10);
         }
 
@@ -538,7 +551,8 @@ TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureReleasesFrameAfterCompletion)
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -571,7 +585,8 @@ TEST(CoroutineUsageLifetimeTest, TaskAwaitingFutureFromThreadReleasesFrameAfterC
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -600,7 +615,8 @@ TEST(CoroutineUsageLifetimeTest, PendingFutureTaskFrameNotFreedWhileTaskWrapperA
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
 
             frames.expect_counts(1, 0);
         }
@@ -643,7 +659,8 @@ TEST(CoroutineUsageLifetimeTest, DestroyRunningTaskWaitingOnFutureThenExternalCo
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
 
             captured_future.get();
         }
@@ -675,7 +692,8 @@ TEST(CoroutineUsageLifetimeTest, SelfMoveAssignmentPolicy)
 
             task = std::move(task);
 
-            auto result = task.start_running_on(test_event_base());
+            auto result = task.get_future();
+            task.start_running_on(test_event_base());
             ASSERT_EQ(wait_result(result), 42);
         }
 
@@ -740,7 +758,8 @@ TEST(CoroutineUsageLifetimeStressTest, ManyTasksHundredThreadsComplexSuspendLife
             for (int i = 0; i < TASKS_PER_THREAD; ++i)
             {
                 tasks.emplace_back(root());
-                results.emplace_back(tasks.back().start_running_on(eb));
+                results.emplace_back(tasks.back().get_future());
+                tasks.back().start_running_on(eb);
 
                 if (tasks.size() >= 128)
                 {

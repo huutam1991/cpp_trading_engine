@@ -51,7 +51,8 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseSequentialStart)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn(i);
-            auto result = task.start_running_on(eb);
+            auto result = task.get_future();
+            task.start_running_on(eb);
             sum += wait_result(result);
         }
 
@@ -81,7 +82,9 @@ TEST(CoroutineUsageEventBaseTest, ManyTasksOnSameEventBaseBurst)
         for (int i = 0; i < N; ++i)
         {
             tasks.emplace_back(fn(i));
-            results.emplace_back(tasks.back().start_running_on(eb));
+            auto result = tasks.back().get_future();
+            results.emplace_back(std::move(result));
+            tasks.back().start_running_on(eb);
         }
 
         long long sum = 0;
@@ -114,7 +117,8 @@ TEST(CoroutineUsageEventBaseTest, ParentAwaitsChildInsteadOfBlockingFutureGet)
         };
 
         auto task = parent();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -142,7 +146,8 @@ TEST(CoroutineUsageEventBaseTest, TaskLoopAwaitManyTimes)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -165,8 +170,10 @@ TEST(CoroutineUsageEventBaseTest, DifferentEventBaseIdsCanRunTasks)
         auto t1 = fn();
         auto t2 = fn();
 
-        auto f1 = t1.start_running_on(eb1);
-        auto f2 = t2.start_running_on(eb2);
+        auto f1 = t1.get_future();
+        t1.start_running_on(eb1);
+        auto f2 = t2.get_future();
+        t2.start_running_on(eb2);
 
         ASSERT_EQ(wait_result(f1) + wait_result(f2), 42);
     }

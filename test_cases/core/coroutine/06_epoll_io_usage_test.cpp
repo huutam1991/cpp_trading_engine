@@ -39,7 +39,8 @@ TEST(CoroutineUsageEpollIoTest, ReadableFdWakesTask)
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_epoll_base());
+            auto result = task.get_future();
+            task.start_running_on(test_epoll_base());
 
             ASSERT_EQ(wait_result(result), 42);
         }
@@ -84,7 +85,9 @@ TEST(CoroutineUsageEpollIoTest, MultipleIoObjects)
             for (int i = 0; i < N; ++i)
             {
                 tasks.emplace_back(fn(i));
-                results.emplace_back(tasks.back().start_running_on(eb));
+                auto result = tasks.back().get_future();
+                tasks.back().start_running_on(eb);
+                results.emplace_back(std::move(result));
             }
 
             long long sum = 0;
@@ -120,7 +123,8 @@ TEST(CoroutineUsageEpollIoTest, IoCloseCleanupIsSafe)
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_epoll_base());
+            auto result = task.get_future();
+            task.start_running_on(test_epoll_base());
 
             ASSERT_EQ(wait_result(result), 7);
         }
@@ -152,7 +156,8 @@ TEST(CoroutineUsageEpollIoTest, IoErrorOrHangupPathSafe)
 
         {
             auto task = fn();
-            auto result = task.start_running_on(test_epoll_base());
+            auto result = task.get_future();
+            task.start_running_on(test_epoll_base());
 
             ASSERT_EQ(wait_result(result), 42);
         }
@@ -202,7 +207,8 @@ TEST(CoroutineUsageEpollIoTest, DISABLED_Stress150kTasksFromManyProducerThreads)
                     int v = t * TASKS_PER_THREAD + i;
 
                     auto task = fn(v);
-                    auto result = task.start_running_on(eb);
+                    auto result = task.get_future();
+                    task.start_running_on(eb);
 
                     local_sum += wait_result(result);
                 }
@@ -299,7 +305,8 @@ TEST(CoroutineUsageEpollIoTest, DISABLED_Stress150kComplexNestedTaskChains)
                     int start = t * ROOTS_PER_THREAD + i;
 
                     auto task = root(start);
-                    auto result = task.start_running_on(eb);
+                    auto result = task.get_future();
+                    task.start_running_on(eb);
 
                     int out = wait_result(result);
 
