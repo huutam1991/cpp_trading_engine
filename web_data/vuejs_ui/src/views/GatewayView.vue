@@ -7,14 +7,6 @@ import { useRouter } from 'vue-router'
 const auth = useAuthStore()
 const router = useRouter()
 
-const gotoInstrument = () => {
-  router.push({ name: 'instrument' })
-}
-
-const gotoAccount = () => {
-  router.push({ name: 'account' })
-}
-
 type GatewayStatus = 'connected' | 'disconnected' | 'reconnecting'
 
 type GatewayListItem = {
@@ -219,6 +211,15 @@ async function fetchGateways(showLoading = false) {
   }
 }
 
+
+function gotoInstrument() {
+  router.push({ name: 'instrument' })
+}
+
+function gotoAccount() {
+  router.push({ name: 'account' })
+}
+
 function statusText(status: GatewayStatus) {
   if (status === 'connected') return 'Connected'
   if (status === 'reconnecting') return 'Reconnecting'
@@ -335,21 +336,23 @@ onUnmounted(() => {
             </strong>
           </div>
 
-          <div
-            class="stat-card clickable"
+          <button
+            type="button"
+            class="metric-card metric-button"
             @click="gotoInstrument"
           >
-            <div class="stat-title">Instruments</div>
-            <div class="stat-value">{{ gateway.instruments }}</div>
-          </div>
+            <span>Instruments</span>
+            <strong>{{ gateway.instruments }}</strong>
+          </button>
 
-          <div
-            class="stat-card clickable"
+          <button
+            type="button"
+            class="metric-card metric-button"
             @click="gotoAccount"
           >
-            <div class="stat-title">Accounts</div>
-            <div class="stat-value">{{ gateway.accounts }}</div>
-          </div>
+            <span>Accounts</span>
+            <strong>{{ gateway.accounts }}</strong>
+          </button>
 
           <div class="metric-card">
             <span>Messages / 1m</span>
@@ -506,16 +509,6 @@ onUnmounted(() => {
   color: #9ca3af;
 }
 
-.clickable {
-  cursor: pointer;
-  transition: all .2s ease;
-}
-
-.clickable:hover {
-  border-color: #3b82f6;
-  transform: translateY(-1px);
-}
-
 .status-pill {
   padding: 5px 12px;
   border-radius: 999px;
@@ -580,12 +573,29 @@ onUnmounted(() => {
 }
 
 .metric-card {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+
   padding: 14px;
+
+  text-align: left;
+  color: inherit;
 
   background: #1f2937;
 
   border: 1px solid #374151;
   border-radius: 10px;
+}
+
+.metric-button {
+  cursor: pointer;
+}
+
+.metric-button:hover {
+  border-color: #60a5fa;
+  background: #243244;
 }
 
 .metric-card span {
