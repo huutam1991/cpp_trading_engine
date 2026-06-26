@@ -10,9 +10,15 @@ Task<HttpResponse> APIHandlerGatewayList::child_handle()
 {
     std::vector<std::shared_ptr<Gateway>> gateways = GatewayManager::instance().get_all_gateways();
 
+    Json gateway_list;
+    for (const std::shared_ptr<Gateway>& gateway : gateways)
+    {
+        gateway_list.push_back(gateway->get_status());
+    }
+
     // Response
     Json response;
-    response["data"] = gateways;
+    response["data"] = gateway_list;
     response["msg"] = "Get gateway list successfully";
     response["status_code"] = OK_200;
     response["error"] = false;
