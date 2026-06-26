@@ -46,7 +46,7 @@ public:
         static inline GatewayAccountRegister register_instance;
     };
 
-    GatewayAccount(const std::string& key)
+    GatewayAccount()
     {
         (void)GatewayAccountKey::register_instance; // Ensure the static instance is created
     }
