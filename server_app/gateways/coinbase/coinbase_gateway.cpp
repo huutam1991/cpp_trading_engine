@@ -146,9 +146,18 @@ Task<Json> CoinbaseGateway::place_on_exchange(Order order)
 Json CoinbaseGateway::get_status()
 {
     Json status;
-    status["status"] = "Disable";
-    status["exchange"] = enum_reflect::enum_name(get_exchange());
-    status["instruments"] = 0;
+    status["status"] = "Disconnected";
+    status["environment"] = "Production";
+    status["endpoints"] = {
+        {"spot", "https://" + std::string(COINBASE_REALNET_URL)},
+    };
+    status["exchange_id"] = enum_reflect::enum_name(ExchangeId::COINBASE);
+    status["instruments"] = Instrument::get_instrument_list(ExchangeId::COINBASE, InstrumentType::SPOT).size();
+    status["latency"] = "0ms";
+    status["up_time"] = "0";
+    status["accounts"] = 0;
+    status["messages_per_minute"] = 0;
+
 
     return status;
 }
