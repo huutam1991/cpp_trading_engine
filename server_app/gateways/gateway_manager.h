@@ -16,6 +16,7 @@ private:
 
 public:
     void init();
+    std::vector<std::shared_ptr<Gateway>> get_all_gateways();
     std::shared_ptr<Gateway> get_gateway(ExchangeId gateway);
     std::shared_ptr<Gateway> get_gateway(const std::string& gateway);
 };

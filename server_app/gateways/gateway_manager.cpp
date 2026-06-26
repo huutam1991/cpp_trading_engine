@@ -58,6 +58,18 @@ void GatewayManager::init()
     }
 }
 
+std::vector<std::shared_ptr<Gateway>> GatewayManager::get_all_gateways()
+{
+    std::vector<std::shared_ptr<Gateway>> gateways;
+
+    for (const auto& [exchange_id, gateway] : m_gateways)
+    {
+        gateways.push_back(gateway);
+    }
+
+    return gateways;
+}
+
 std::shared_ptr<Gateway> GatewayManager::get_gateway(ExchangeId gateway_enum)
 {
     if (m_gateways.find(gateway_enum) != m_gateways.end())
