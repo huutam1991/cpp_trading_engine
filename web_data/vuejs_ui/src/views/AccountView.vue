@@ -1287,4 +1287,83 @@ td {
   grid-template-columns: 1fr;
 }
 
+
+
+/* Create account correct centered block patch */
+.create-panel {
+  box-sizing: border-box;
+}
+
+.create-panel .create-form-card,
+.create-panel .create-card,
+.create-panel .form-card,
+.create-panel .credential-card,
+.create-panel .account-create-card {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.create-panel .create-form,
+.create-panel form {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.create-panel .create-form-top,
+.create-panel .exchange-input-row,
+.create-panel .exchange-row,
+.create-panel .create-exchange-row {
+  display: block;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.create-panel .form-group,
+.create-panel .exchange-select-wrap,
+.create-panel .exchange-field,
+.create-panel .exchange-summary-card,
+.create-panel .selected-exchange-card,
+.create-panel .exchange-info-card {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.create-panel input,
+.create-panel select {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.create-panel .create-form-grid,
+.create-panel .create-fields-grid,
+.create-panel .credential-grid {
+  width: 100%;
+  max-width: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  box-sizing: border-box;
+}
+
+.create-panel .form-actions,
+.create-panel .create-actions,
+.create-panel .button-row {
+  width: 100%;
+  max-width: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.create-panel .form-actions button,
+.create-panel .create-actions button,
+.create-panel .button-row button {
+  width: 100%;
+}
+
 </style>
