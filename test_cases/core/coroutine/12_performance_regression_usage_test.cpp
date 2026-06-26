@@ -58,7 +58,7 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
             auto result = task.get_future();
             task.start_running_on(eb);
             // results.push_back(std::move(result));
-            // total += wait_result(result);
+            total += wait_result(result);
         }
 
         for (auto& result : results)
