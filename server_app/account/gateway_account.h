@@ -33,6 +33,29 @@ public:
             auto& field_names_map = get_field_names_map();
             field_names_map.insert(std::make_pair(exchange_id, field_names));
         }
+
+        static Json get_all_accounts_field_names()
+        {
+            Json result;
+
+            for (const auto& [exchange_id, field_names] : get_field_names_map())
+            {
+                Json exchange_json;
+                Json field_names_json;
+
+                for (const auto& field_name : field_names)
+                {
+                    field_names_json.push_back(field_name);
+                }
+
+                exchange_json["field_names"] = field_names_json;
+                exchange_json["exchange_id"] = enum_reflect::enum_name(exchange_id);
+
+                result.push_back(exchange_json);
+            }
+
+            return result;
+        }
     };
 
     struct GatewayAccountRegister
