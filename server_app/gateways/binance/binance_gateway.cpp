@@ -262,7 +262,9 @@ Task<Json> BinanceGateway::place_on_exchange(Order order)
 Json BinanceGateway::get_status()
 {
     Json status;
+    status["status"] = "Active";
     status["exchange"] = enum_reflect::enum_name(get_exchange());
+    status["instruments"] = Instrument::get_instrument_list(ExchangeId::BINANCE, InstrumentType::PERPETUAL).size();
 
     return status;
 }

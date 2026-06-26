@@ -146,7 +146,9 @@ Task<Json> CoinbaseGateway::place_on_exchange(Order order)
 Json CoinbaseGateway::get_status()
 {
     Json status;
+    status["status"] = "Disable";
     status["exchange"] = enum_reflect::enum_name(get_exchange());
+    status["instruments"] = 0;
 
     return status;
 }
