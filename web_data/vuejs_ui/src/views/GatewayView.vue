@@ -254,15 +254,6 @@ function statusText(status: GatewayStatus) {
             </div>
           </section>
         </div>
-        <div class="instrument-section">
-            <InstrumentPanel
-                title="Gateway Instruments"
-                subtitle="Available instruments from this gateway."
-                :instruments="instruments"
-                mode="gateway"
-                @open="openOrderBook"
-            />
-        </div>
       </article>
     </div>
   </section>
