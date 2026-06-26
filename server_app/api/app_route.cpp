@@ -14,6 +14,7 @@
 
 // Gateway
 #include <api_handler/api_handler_gateway/api_handler_gateway_list.h>
+#include <api_handler/api_handler_gateway/api_handler_exchage_id_list.h>
 
 // Instrument
 #include <api_handler/api_handler_instrument/api_handler_instrument_list.h>
@@ -374,6 +375,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::GET, "/gateway_list")
     {
         co_return co_await APIHandlerGatewayList(request).handle();
+    };
+
+    // Gateway - Get exchange ID list
+    ADD_ROUTE(RequestMethod::GET, "/exchange_id_list")
+    {
+        co_return co_await APIHandlerExchangeIdList(request).handle();
     };
 
     // Instrument - Get instruments list
