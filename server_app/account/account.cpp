@@ -15,3 +15,10 @@ Json Account::load_account_by_key(const std::string& key)
         .set_db_and_collection(APP_INFO_DB_NAME, "account")
         .find_one("key", key);
 }
+
+Json Account::load_all_accounts()
+{
+    return MongoDB::instance()
+        .set_db_and_collection(APP_INFO_DB_NAME, "account")
+        .find_many();
+}
