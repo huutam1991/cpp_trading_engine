@@ -3,6 +3,7 @@
 #include <coroutine/event_base_manager.h>
 
 #include <gateways/gateway.h>
+#include <gateways/binance/binance_account.h>
 #include <gateways/binance/binance_quoter/binance_quoter_spot.h>
 #include <gateways/binance/binance_quoter/binance_quoter_perpetual.h>
 #include <gateways/binance/binance_market_data/binance_market_data_spot.h>
@@ -10,6 +11,8 @@
 
 class BinanceGateway : public Gateway
 {
+    BinanceAccount m_account;
+
     // Quoter
     BinanceQuoterSpot m_quoter_spot;
     BinanceQuoterPerpetual m_quoter_perpetual;

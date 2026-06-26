@@ -11,6 +11,7 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
     Json account = Account::load_account_by_key(key);
+    m_account.from_json(account);
     bool is_testnet = account["is_testnet"];
 
     // Update url + port for market data SPOT
