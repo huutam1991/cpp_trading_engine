@@ -8,10 +8,11 @@
 #include <api_handler/api_handler_user/api_handler_user_login.h>
 
 // Account
+#include <api_handler/api_handler_account/api_handler_account_field_name_list.h>
+#include <api_handler/api_handler_account/api_handler_account_list.h>
 #include <api_handler/api_handler_account/api_handler_add_account.h>
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
-#include <api_handler/api_handler_account/api_handler_account_field_name_list.h>
 
 // Gateway
 #include <api_handler/api_handler_gateway/api_handler_gateway_list.h>
@@ -352,6 +353,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/login")
     {
         co_return co_await APIHandlerUserLogin(request).handle();
+    };
+
+    // Account - Get account list
+    ADD_ROUTE(RequestMethod::GET, "/account_list")
+    {
+        co_return co_await APIHandlerAccountList(request).handle();
     };
 
     // Account - Get account field name list
