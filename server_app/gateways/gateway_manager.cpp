@@ -47,6 +47,11 @@ void GatewayManager::init()
         }
     });
 
+    // Temporarily add Coinbase gateway for testing
+    auto coinbase_gateway = std::make_shared<CoinbaseGateway>("test_key");
+    coinbase_gateway->init();
+    m_gateways.insert(std::make_pair(ExchangeId::COINBASE, coinbase_gateway));
+
     // Subscribe instruments for gateways
     std::vector<const Instrument*> subscribed_instruments = Instrument::get_subscribed_instruments();
     for (const Instrument* instrument : subscribed_instruments)
