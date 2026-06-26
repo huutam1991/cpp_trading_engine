@@ -139,7 +139,7 @@ function closeDetail() {
   selectedAccount.value = null
 }
 
-function maskSecret(value: string) {
+function maskSecret(value: string | null | undefined) {
   if (!value) {
     return '–'
   }
