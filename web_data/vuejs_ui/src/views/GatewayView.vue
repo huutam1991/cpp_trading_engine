@@ -2,8 +2,18 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { API_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
 const auth = useAuthStore()
+const router = useRouter()
+
+const gotoInstrument = () => {
+  router.push({ name: 'instrument' })
+}
+
+const gotoAccount = () => {
+  router.push({ name: 'account' })
+}
 
 type GatewayStatus = 'connected' | 'disconnected' | 'reconnecting'
 
@@ -325,14 +335,20 @@ onUnmounted(() => {
             </strong>
           </div>
 
-          <div class="metric-card">
-            <span>Instruments</span>
-            <strong>{{ gateway.instruments }}</strong>
+          <div
+            class="stat-card clickable"
+            @click="gotoInstrument"
+          >
+            <div class="stat-title">Instruments</div>
+            <div class="stat-value">{{ gateway.instruments }}</div>
           </div>
 
-          <div class="metric-card">
-            <span>Accounts</span>
-            <strong>{{ gateway.accounts }}</strong>
+          <div
+            class="stat-card clickable"
+            @click="gotoAccount"
+          >
+            <div class="stat-title">Accounts</div>
+            <div class="stat-value">{{ gateway.accounts }}</div>
           </div>
 
           <div class="metric-card">
@@ -488,6 +504,16 @@ onUnmounted(() => {
 .gateway-subtitle {
   margin: 8px 0 0;
   color: #9ca3af;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.clickable:hover {
+  border-color: #3b82f6;
+  transform: translateY(-1px);
 }
 
 .status-pill {
