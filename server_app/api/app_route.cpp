@@ -12,6 +12,9 @@
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
 #include <api_handler/api_handler_account/api_handler_activate_account_balances.h>
 
+// Gateway
+#include <api_handler/api_handler_gateway/api_handler_gateway_list.h>
+
 // Instrument
 #include <api_handler/api_handler_instrument/api_handler_instrument_list.h>
 #include <api_handler/api_handler_instrument/api_handler_instrument_subscribe.h>
@@ -365,6 +368,12 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
     {
         co_return co_await APIHandlerActivateAccountBalances(request).handle();
+    };
+
+    // Gateway - Get gateway list
+    ADD_ROUTE(RequestMethod::GET, "/gateway_list")
+    {
+        co_return co_await APIHandlerGatewayList(request).handle();
     };
 
     // Instrument - Get instruments list
