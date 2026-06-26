@@ -19,10 +19,12 @@ public:
 
         static void register_account()
         {
-            Json dummy_object = T::to_json();
+            T dummy_object;
+
+            Json dummy_json = dummy_object.to_json();
             std::vector<std::string> field_names;
 
-            dummy_object.for_each_with_key([&](const std::string& key, Json& value)
+            dummy_json.for_each_with_key([&](const std::string& key, Json& value)
             {
                 field_names.push_back(key);
             });
