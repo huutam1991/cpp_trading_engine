@@ -1,9 +1,30 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { API_BASE_URL } from '@/config/env'
+import { useAuthStore } from '@/stores/auth'
 
-import InstrumentPanel from '@/components/instrument/InstrumentPanel.vue'
-import type { Instrument } from '@/components/instrument/InstrumentRow.vue'
+const auth = useAuthStore()
 
 type GatewayStatus = 'connected' | 'disconnected' | 'reconnecting'
+
+type GatewayListItem = {
+  messages_per_minute?: number
+  up_time?: string
+  latency?: string
+  instruments?: number
+  exchange_id?: string
+  endpoints?: Record<string, string>
+  accounts?: number
+  environment?: string
+  status?: string
+}
+
+type GatewayListResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: GatewayListItem[]
+}
 
 type Gateway = {
   id: string
@@ -18,6 +39,8 @@ type Gateway = {
   accounts: number
   messages1m: number
   lastUpdate: string
+  protocol: string
+  compression: string
   events: {
     level: 'info' | 'warn' | 'error'
     time: string
@@ -25,70 +48,141 @@ type Gateway = {
   }[]
 }
 
-const gateways: Gateway[] = [
-  {
-    id: 'binance_futures',
-    name: 'Binance Futures',
-    exchange: 'Binance Futures',
-    environment: 'Production',
-    endpoint: 'wss://fstream.binance.com',
-    status: 'connected',
-    uptime: '2d 14h 36m',
-    latencyMs: 18.4,
-    instruments: 320,
-    accounts: 2,
-    messages1m: 12540,
-    lastUpdate: '10:15:30',
-    events: [
-      { level: 'info', time: '10:15:12', message: 'Heartbeat received' },
-      { level: 'info', time: '10:14:42', message: 'OrderBook snapshot updated: BTCUSDT' },
-      { level: 'warn', time: '10:14:10', message: 'High latency detected: 245ms' },
-    ],
-  },
-  {
-    id: 'coinbase',
-    name: 'Coinbase',
-    exchange: 'Coinbase',
-    environment: 'Production',
-    endpoint: 'wss://ws-feed.exchange.coinbase.com',
-    status: 'disconnected',
-    uptime: '-',
-    latencyMs: null,
-    instruments: 120,
-    accounts: 1,
-    messages1m: 0,
-    lastUpdate: '-',
-    events: [
-      { level: 'error', time: '10:10:05', message: 'Connection closed: No route to host' },
-    ],
-  },
-]
+const loading = ref(false)
+const errorMessage = ref('')
+const gateways = ref<Gateway[]>([])
 
-const instruments: Instrument[] = [
-  {
-    symbol: 'BTC-USDC-PERPETUAL',
-    base: 'BTC',
-    quote: 'USDC',
-    type: 'perpetual',
-    status: 'active',
-    tickSize: 0.1,
-    lotSize: 0.001,
-    minQty: 0.001,
-  },
-  {
-    symbol: 'ETH-USDT-PERPETUAL',
-    base: 'ETH',
-    quote: 'USDT',
-    type: 'perpetual',
-    status: 'active',
-    tickSize: 0.01,
-    lotSize: 0.01,
-    minQty: 0.01,
-  },
-]
+function normalizeGatewayStatus(status?: string): GatewayStatus {
+  const normalized = (status ?? '').toLowerCase()
 
-function openOrderBook(instrument: Instrument) {
-  console.log('open orderbook:', instrument.symbol)
+  if (normalized === 'connected') return 'connected'
+  if (normalized === 'reconnecting') return 'reconnecting'
+  return 'disconnected'
+}
+
+function parseLatencyMs(latency?: string) {
+  if (!latency) {
+    return null
+  }
+
+  const value = Number.parseFloat(latency.replace('ms', '').trim())
+  return Number.isFinite(value) ? value : null
+}
+
+function formatGatewayName(exchangeId?: string) {
+  if (!exchangeId) {
+    return 'Unknown Gateway'
+  }
+
+  return exchangeId
+    .toLowerCase()
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function getPrimaryEndpoint(endpoints?: Record<string, string>) {
+  if (!endpoints || Object.keys(endpoints).length === 0) {
+    return 'wss://stream.placeholder.local'
+  }
+
+  const [type, url] = Object.entries(endpoints)[0]!
+  return `${type}: ${url}`
+}
+
+function getProtocol(endpoints?: Record<string, string>) {
+  const urls = Object.values(endpoints ?? {})
+
+  if (urls.some((url) => url.startsWith('wss://') || url.startsWith('ws://'))) {
+    return 'WebSocket'
+  }
+
+  if (urls.some((url) => url.startsWith('http://') || url.startsWith('https://'))) {
+    return 'REST'
+  }
+
+  return 'WebSocket'
+}
+
+function getCurrentTime() {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Singapore',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(new Date())
+}
+
+function buildEvents(item: GatewayListItem, status: GatewayStatus) {
+  const now = getCurrentTime()
+  const exchange = item.exchange_id ?? 'UNKNOWN'
+
+  if (status === 'connected') {
+    return [
+      { level: 'info' as const, time: now, message: `${exchange} gateway connected` },
+      { level: 'info' as const, time: now, message: `Market data running: ${(item.messages_per_minute ?? 0).toLocaleString()} msg/min` },
+      { level: 'info' as const, time: now, message: `Latency updated: ${item.latency ?? '0ms'}` },
+    ]
+  }
+
+  return [
+    { level: 'error' as const, time: now, message: `${exchange} gateway disconnected` },
+    { level: 'warn' as const, time: now, message: 'Waiting for reconnect signal' },
+  ]
+}
+
+function mapGateway(item: GatewayListItem): Gateway {
+  const status = normalizeGatewayStatus(item.status)
+
+  return {
+    id: item.exchange_id ?? 'UNKNOWN',
+    name: formatGatewayName(item.exchange_id),
+    exchange: item.exchange_id ?? 'UNKNOWN',
+    environment: item.environment ?? 'Production',
+    endpoint: getPrimaryEndpoint(item.endpoints),
+    status,
+    uptime: item.up_time && item.up_time !== '0' ? item.up_time : '-',
+    latencyMs: parseLatencyMs(item.latency),
+    instruments: item.instruments ?? 0,
+    accounts: item.accounts ?? 0,
+    messages1m: item.messages_per_minute ?? 0,
+    lastUpdate: getCurrentTime(),
+    protocol: getProtocol(item.endpoints),
+    compression: 'Enabled',
+    events: buildEvents(item, status),
+  }
+}
+
+async function fetchGateways() {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/gateway_list`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: GatewayListResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      auth.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      errorMessage.value = result.msg || 'Failed to fetch gateway list.'
+      return
+    }
+
+    gateways.value = (result.data ?? []).map(mapGateway)
+  } catch (error) {
+    console.error('Fetch gateway list error:', error)
+    errorMessage.value = 'Fetch gateway list error.'
+  } finally {
+    loading.value = false
+  }
 }
 
 function statusText(status: GatewayStatus) {
@@ -96,6 +190,10 @@ function statusText(status: GatewayStatus) {
   if (status === 'reconnecting') return 'Reconnecting'
   return 'Disconnected'
 }
+
+onMounted(() => {
+  fetchGateways()
+})
 </script>
 
 <template>
@@ -105,7 +203,41 @@ function statusText(status: GatewayStatus) {
       <p>Manage and monitor exchange gateways and connections.</p>
     </div>
 
-    <div class="gateway-list">
+    <div class="gateway-toolbar">
+      <button
+        class="button secondary"
+        :disabled="loading"
+        @click="fetchGateways"
+      >
+        ↻ Refresh
+      </button>
+    </div>
+
+    <div
+      v-if="loading"
+      class="panel-message"
+    >
+      Loading gateways...
+    </div>
+
+    <div
+      v-else-if="errorMessage"
+      class="panel-message error-message"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <div
+      v-else-if="gateways.length === 0"
+      class="panel-message"
+    >
+      No gateways found.
+    </div>
+
+    <div
+      v-else
+      class="gateway-list"
+    >
       <article
         v-for="gateway in gateways"
         :key="gateway.id"
@@ -210,12 +342,12 @@ function statusText(status: GatewayStatus) {
 
             <div class="info-row">
               <span>Protocol</span>
-              <strong>WebSocket</strong>
+              <strong>{{ gateway.protocol }}</strong>
             </div>
 
             <div class="info-row">
               <span>Compression</span>
-              <strong>Enabled</strong>
+              <strong>{{ gateway.compression }}</strong>
             </div>
           </section>
 
@@ -276,6 +408,24 @@ function statusText(status: GatewayStatus) {
 .page-header p {
   margin: 0;
   color: #9ca3af;
+}
+
+.gateway-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.panel-message {
+  padding: 22px;
+  color: #d1d5db;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 14px;
+}
+
+.error-message {
+  color: #f87171;
 }
 
 .gateway-list {
