@@ -271,7 +271,7 @@ Json BinanceGateway::get_status()
     status["exchange_id"] = enum_reflect::enum_name(ExchangeId::BINANCE);
     status["instruments"] = Instrument::get_instrument_list(ExchangeId::BINANCE, InstrumentType::PERPETUAL).size();
     status["latency"] = "18.4ms";
-    status["up_time"] = "2d 14h, 36m";
+    status["up_time"] = "2d 14h 36m";
     status["accounts"] = 1;
     status["messages_per_minute"] = 12532;
 
