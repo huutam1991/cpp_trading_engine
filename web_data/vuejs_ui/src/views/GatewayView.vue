@@ -339,18 +339,28 @@ onUnmounted(() => {
           <button
             type="button"
             class="metric-card metric-button"
+            aria-label="Open Instrument view"
+            title="Open Instrument view"
             @click="gotoInstrument"
           >
-            <span>Instruments</span>
+            <span class="metric-button-header">
+              <span>Instruments</span>
+              <span class="metric-link-icon">↗</span>
+            </span>
             <strong>{{ gateway.instruments }}</strong>
           </button>
 
           <button
             type="button"
             class="metric-card metric-button"
+            aria-label="Open Account view"
+            title="Open Account view"
             @click="gotoAccount"
           >
-            <span>Accounts</span>
+            <span class="metric-button-header">
+              <span>Accounts</span>
+              <span class="metric-link-icon">↗</span>
+            </span>
             <strong>{{ gateway.accounts }}</strong>
           </button>
 
@@ -590,12 +600,64 @@ onUnmounted(() => {
 }
 
 .metric-button {
+  position: relative;
   cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .metric-button:hover {
+  transform: translateY(-2px);
   border-color: #60a5fa;
   background: #243244;
+  box-shadow: 0 8px 18px rgba(96, 165, 250, 0.16);
+}
+
+.metric-button:active {
+  transform: translateY(0);
+}
+
+.metric-button-header {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px !important;
+}
+
+.metric-button-header span {
+  margin-bottom: 0 !important;
+}
+
+.metric-link-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  color: #93c5fd !important;
+  font-size: 13px !important;
+  font-weight: 700;
+
+  background: rgba(59, 130, 246, 0.16);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 999px;
+
+  transition:
+    color 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.metric-button:hover .metric-link-icon {
+  color: white !important;
+  background: rgba(59, 130, 246, 0.32);
+  border-color: rgba(147, 197, 253, 0.75);
 }
 
 .metric-card span {
