@@ -44,7 +44,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskIntReturnsValue)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -65,7 +66,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskVoidCompletes)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         wait_done(result);
         ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
@@ -90,7 +92,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskBodyDoesNotRunBeforeScheduled)
 
         ASSERT_EQ(counter.load(std::memory_order_relaxed), 0);
 
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 7);
         ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);
@@ -112,7 +115,8 @@ TEST(CoroutineUsageBasicTaskTest, TaskExecutesExactlyOnce)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 100);
         ASSERT_EQ(counter.load(std::memory_order_relaxed), 1);

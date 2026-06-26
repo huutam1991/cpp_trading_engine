@@ -50,7 +50,8 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromSameThread)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -77,7 +78,8 @@ TEST(CoroutineUsageFutureTest, AwaitFutureSetFromAnotherThread)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -101,12 +103,14 @@ TEST(CoroutineUsageFutureTest, DoubleSetValueOnlyFirstWins)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
 
         task = fn();
-        result = task.start_running_on(test_event_base());
+        result = task.get_future();
+        task.start_running_on(test_event_base());
         ASSERT_NE(wait_result(result), 999);
     }
 
@@ -131,7 +135,8 @@ TEST(CoroutineUsageFutureTest, FutureExecuteFunctionRunsOnce)
         };
 
         auto task = fn();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
         ASSERT_EQ(execute_count.load(std::memory_order_relaxed), 1);

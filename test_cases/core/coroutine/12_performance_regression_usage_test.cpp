@@ -55,8 +55,9 @@ TEST(CoroutineUsagePerformanceTest, SimpleTaskDispatchLatencyBudget)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn();
-            auto result = task.start_running_on(eb);
-            results.push_back(std::move(result));
+            auto result = task.get_future();
+            task.start_running_on(eb);
+            // results.push_back(std::move(result));
             // total += wait_result(result);
         }
 
@@ -103,7 +104,8 @@ TEST(CoroutineUsagePerformanceTest, TaskAwaitTaskLatencyBudget)
         for (int i = 0; i < N; ++i)
         {
             auto task = parent();
-            auto result = task.start_running_on(eb);
+            auto result = task.get_future();
+            task.start_running_on(eb);
             // total += wait_result(result);
         }
 
@@ -146,7 +148,8 @@ TEST(CoroutineUsagePerformanceTest, FutureImmediateWakeupLatencyBudget)
         for (int i = 0; i < N; ++i)
         {
             auto task = fn();
-            auto result = task.start_running_on(eb);
+            auto result = task.get_future();
+            task.start_running_on(eb);
             // total += wait_result(result);
         }
 

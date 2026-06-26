@@ -50,7 +50,8 @@ TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsChildValue)
         };
 
         auto task = parent();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -77,7 +78,8 @@ TEST(CoroutineUsageAwaitTaskTest, ParentAwaitsVoidChild)
         };
 
         auto task = parent();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 1);
     }
@@ -104,7 +106,8 @@ TEST(CoroutineUsageAwaitTaskTest, NestedTaskChain)
         };
 
         auto task = a();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
@@ -130,7 +133,8 @@ TEST(CoroutineUsageAwaitTaskTest, MultipleSequentialAwaits)
         };
 
         auto task = parent();
-        auto result = task.start_running_on(test_event_base());
+        auto result = task.get_future();
+        task.start_running_on(test_event_base());
 
         ASSERT_EQ(wait_result(result), 42);
     }
