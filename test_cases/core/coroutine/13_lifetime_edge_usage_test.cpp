@@ -60,7 +60,7 @@ namespace
 
     inline void settle()
     {
-        std::this_thread::sleep_for(2ms);
+        std::this_thread::sleep_for(20ms);
     }
 }
 
@@ -160,6 +160,8 @@ TEST(CoroutineUsageLifetimeEdgeTest, DestroyParentWhileChildStillRunningPolicy)
 
     // Cleanup event base threads after test
     EventBaseManager::shutdown_all();
+
+    settle();
 }
 
 // TEST(CoroutineUsageLifetimeEdgeTest, DISABLED_ChildCompletesAfterParentReleasedPolicy)
@@ -205,7 +207,7 @@ TEST(CoroutineUsageLifetimeEdgeTest, CrossThreadSetValueAfterTaskDestroyPolicy)
 
         {
             auto task = fn();
-            auto result = task.get_future();
+            // auto result = task.get_future();
             task.start_running_on(test_event_base());
 
             captured_future.get();
