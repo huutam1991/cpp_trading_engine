@@ -796,11 +796,14 @@ onMounted(() => {
 }
 
 .create-layout {
-  display: grid;
-  grid-template-columns: minmax(760px, 1fr);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 140px);
 }
 
 .create-panel {
+  width: min(900px, 100%);
   min-height: 720px;
   padding: 22px;
   background: #111827;
