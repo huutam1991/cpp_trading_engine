@@ -13,6 +13,7 @@
 enum ExchangeId
 {
     BINANCE,
+    BINANCE_TESTNET,
     COINBASE,
     TOTAL_EXCHANGES
 };
