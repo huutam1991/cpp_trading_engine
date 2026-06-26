@@ -10,8 +10,13 @@ Task<HttpResponse> APIHandlerExchangeIdList::child_handle()
 {
     Json exchnage_id_list;
 
-    for (ExchangeId exchange_id = ExchangeId::BINANCE; exchange_id < ExchangeId::TOTAL_EXCHANGES; exchange_id = static_cast<ExchangeId>(static_cast<int>(exchange_id) + 1)  )
+    for (ExchangeId exchange_id = ExchangeId::NONE_EXCHANGE; exchange_id < ExchangeId::TOTAL_EXCHANGES; exchange_id = static_cast<ExchangeId>(static_cast<int>(exchange_id) + 1)  )
     {
+        if (exchange_id == ExchangeId::NONE_EXCHANGE)
+        {
+            continue; // Skip NONE_EXCHANGE exchange ID
+        }
+
         exchnage_id_list.push_back(enum_reflect::enum_name(exchange_id));
     }
 
