@@ -416,8 +416,8 @@ onMounted(() => {
         <button
           v-for="filter in exchangeFilters"
           :key="filter.value"
-          class="filter-card tone-all"
-          :class="{ active: selectedFilterExchangeId === filter.value }"
+          class="filter-card"
+          :class="{ active: selectedFilterExchangeId === filter.value, 'tone-all': filter.value === 'ALL', 'tone-exchange': filter.value !== 'ALL' }"
           @click="selectFilter(filter.value)"
         >
           <span class="filter-content">
@@ -777,6 +777,10 @@ onMounted(() => {
 
 .filter-card.tone-all .filter-content strong {
   color: #60a5fa;
+}
+
+.filter-card.tone-exchange .filter-content strong {
+  color: #facc15;
 }
 
 .filter-content {
