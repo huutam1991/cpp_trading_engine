@@ -1,12 +1,15 @@
 #pragma once
 
 #include <gateways/gateway.h>
+#include <gateways/coinbase/coinbase_account.h>
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_spot.h>
 #include <gateways/coinbase/coinbase_quoter/coinbase_quoter_perpetual.h>
 #include <gateways/coinbase/coinbase_market_data/coinbase_market_data.h>
 
 class CoinbaseGateway : public Gateway
 {
+    CoinbaseAccount m_account;
+
     // Quoter
     CoinbaseQuoterSpot m_quoter_spot;
     CoinbaseQuoterPerpetual m_quoter_perpetual;
