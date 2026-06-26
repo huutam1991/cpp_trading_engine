@@ -821,10 +821,8 @@ onMounted(() => {
 
 .create-form-grid {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(220px, 280px);
+  grid-template-columns: 1fr;
   gap: 14px;
-  align-items: end;
-  margin-bottom: 14px;
 }
 
 .create-summary {
@@ -884,6 +882,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
+
+  width: 100%;
 }
 
 .field-label {
@@ -903,6 +903,7 @@ onMounted(() => {
   outline: none;
   font-size: 13px;
   font-weight: 700;
+
 }
 
 .form-control:focus {
@@ -1250,4 +1251,36 @@ td {
     min-height: unset;
   }
 }
+
+/* Create account alignment polish */
+.create-panel .create-form-top,
+.create-panel .exchange-input-row,
+.create-panel .exchange-row,
+.create-panel .create-exchange-row {
+  display: block;
+  width: 100%;
+}
+
+.create-panel .exchange-select-wrap,
+.create-panel .exchange-field,
+.create-panel select,
+.create-panel input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.create-panel .exchange-summary-card,
+.create-panel .selected-exchange-card,
+.create-panel .exchange-info-card {
+  width: 100%;
+  margin-top: 14px;
+  box-sizing: border-box;
+}
+
+.create-panel .create-form-grid,
+.create-panel .create-fields-grid,
+.create-panel .credential-grid {
+  grid-template-columns: 1fr;
+}
+
 </style>
