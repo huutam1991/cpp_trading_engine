@@ -12,6 +12,10 @@
         Gateway
       </RouterLink>
 
+      <RouterLink to="/account">
+        Account
+      </RouterLink>
+
       <RouterLink to="/instrument">
         Instrument
       </RouterLink>
