@@ -143,6 +143,14 @@ Task<Json> CoinbaseGateway::place_on_exchange(Order order)
     co_return response;
 }
 
+Json CoinbaseGateway::get_status()
+{
+    Json status;
+    status["exchange"] = enum_reflect::enum_name(get_exchange());
+
+    return status;
+}
+
 Task<Json> CoinbaseGateway::get_balances()
 {
     Json balances = co_await m_quoter_spot.get_balances();

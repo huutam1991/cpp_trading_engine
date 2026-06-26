@@ -41,6 +41,7 @@ public:
     virtual void unsubscribe_instrument(const Instrument* instrument) = 0;
 
     // Util methods
+    virtual Json get_status() = 0;
     virtual Task<Json> get_balances() = 0;
     virtual Task<Json> get_positions() = 0;
 };

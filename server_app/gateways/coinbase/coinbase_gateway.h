@@ -31,6 +31,9 @@ public:
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
     virtual void subscribe_instrument(const Instrument* instrument) override {}
     virtual void unsubscribe_instrument(const Instrument* instrument) override {}
+
+    // Util methods
+    virtual Json get_status() override;
     virtual Task<Json> get_balances() override;
     virtual Task<Json> get_positions() override;
 
