@@ -51,7 +51,11 @@ public:
         (void)GatewayAccountKey::register_instance; // Ensure the static instance is created
     }
 
+protected:
+    std::string m_key_name;
+
+public:
     virtual ExchangeId get_exchange_id() const = 0;
     virtual Json to_json() const = 0;
-    virtual void from_json(const Json& data) = 0;
+    virtual void from_json(Json& data) = 0;
 };
