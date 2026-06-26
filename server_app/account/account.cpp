@@ -18,7 +18,14 @@ Json Account::load_account_by_key(const std::string& key)
 
 Json Account::load_all_accounts()
 {
-    return MongoDB::instance()
+    Json accounts = MongoDB::instance()
         .set_db_and_collection(APP_INFO_DB_NAME, "account")
         .find_many();
+
+    accounts.for_each([&](Json& account)
+    {
+        account.remove_field("_id"); // Remove MongoDB internal field
+    });
+
+    return accounts;
 }
