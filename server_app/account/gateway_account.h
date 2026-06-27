@@ -82,6 +82,7 @@ protected:
 
 public:
     virtual ExchangeId get_exchange_id() const = 0;
+    virtual Task<bool> validate_account() = 0;
     virtual Json to_json() const = 0;
     virtual void from_json(Json& data) = 0;
 };
