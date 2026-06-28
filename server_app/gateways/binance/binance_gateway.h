@@ -11,12 +11,6 @@
 
 class BinanceGateway : public Gateway
 {
-    BinanceAccount m_account;
-
-    // Quoter
-    BinanceQuoterSpot m_quoter_spot;
-    BinanceQuoterPerpetual m_quoter_perpetual;
-
     // Market data
     BinanceMarketDataSpot m_market_data_spot;
     BinanceMarketDataPerpetual m_market_data_perpetual;
@@ -28,10 +22,6 @@ class BinanceGateway : public Gateway
 protected:
     virtual ExchangeId get_exchange() override;
     virtual std::vector<Instrument> fetch_instruments() override;
-    virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
-    virtual Task<void> cancel_all_on_exchange(std::string symbol) override;
-    virtual Task<Json> cancel_on_exchange(Order order) override;
-    virtual Task<Json> place_on_exchange(Order order) override;
 
 public:
     BinanceGateway(const std::string& key);
@@ -42,8 +32,6 @@ public:
 
     // Util methods
     virtual Json get_status() override;
-    virtual Task<Json> get_balances() override;
-    virtual Task<Json> get_positions() override;
 
 private:
     Task<Json> get_exchange_info();

@@ -5,24 +5,11 @@
 #include <account/account_db.h>
 
 BinanceGateway::BinanceGateway(const std::string& key) :
-    m_quoter_spot(key),
-    m_quoter_perpetual(key),
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
-    Json account = AccountDB::load_account_by_key(key);
-    m_account.from_json(account);
-    bool is_testnet = account["is_testnet"];
-
-    // Update url + port for market data SPOT
-    std::string md_spot_url  = is_testnet == true ? BINANCE_TESTNET_SPOT_WS_URL : BINANCE_SPOT_WS_URL;
-    std::string md_spot_port = is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
-    m_market_data_spot.update_url_and_port(md_spot_url, md_spot_port);
-
-    // Update url + port for market data PERPETUAL
-    std::string md_perpetual_url  = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL  : BINANCE_FUTURES_WS_URL;
-    std::string md_perpetual_port = is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
-    m_market_data_perpetual.update_url_and_port(md_perpetual_url, md_perpetual_port);
+    m_market_data_spot.update_url_and_port(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT);
+    m_market_data_perpetual.update_url_and_port(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT);
 }
 
 ExchangeId BinanceGateway::get_exchange()
@@ -192,74 +179,6 @@ void BinanceGateway::unsubscribe_instrument(const Instrument* instrument)
     }
 }
 
-Task<std::unordered_set<OrderId>> BinanceGateway::get_open_orders_on_exchange(std::string symbol)
-{
-    std::unordered_set<OrderId> res;
-
-    // Currently, only implement for SPOT
-    Json open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
-
-    // Add order_id to [res]
-    if (open_orders.is_array() == true)
-    {
-        open_orders.for_each([&res](Json& order)
-        {
-            if (order.has_field("clientOrderId"))
-            {
-                OrderId order_id = AppUtils::parse_order_id(order["clientOrderId"]);
-
-                if (order_id != 0)
-                {
-                    res.insert(order_id);
-                }
-            }
-        });
-
-    }
-
-    co_return res;
-}
-
-Task<void> BinanceGateway::cancel_all_on_exchange(std::string symbol)
-{
-    co_await m_quoter_spot.cancel_all(symbol);
-    co_await m_quoter_perpetual.cancel_all(symbol);
-
-    co_return;
-}
-
-Task<Json> BinanceGateway::cancel_on_exchange(Order order)
-{
-    // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    BinanceQuoter* quoter = order.instrument->instrument_type == InstrumentType::SPOT ?
-        (BinanceQuoter*)&m_quoter_spot :
-        (BinanceQuoter*)&m_quoter_perpetual;
-
-    co_return co_await quoter->cancel(std::move(order));
-}
-
-Task<Json> BinanceGateway::place_on_exchange(Order order)
-{
-    // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    BinanceQuoter* quoter = order.instrument->instrument_type == InstrumentType::SPOT ?
-        (BinanceQuoter*)&m_quoter_spot :
-        (BinanceQuoter*)&m_quoter_perpetual;
-
-    Json response = co_await quoter->place(order);
-
-    // Check if order is rejected
-    if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
-    {
-        order.status = Order::REJECTED;
-        order.error.code = (int)response["code"];
-        order.error.message = response["msg"];
-        order.last_updated = Utils::get_time_now_in_utc_nanoseconds();
-        OrderManager::instance().update_order(order);
-    }
-
-    co_return response;
-}
-
 Json BinanceGateway::get_status()
 {
     Json status;
@@ -277,58 +196,4 @@ Json BinanceGateway::get_status()
     status["messages_per_minute"] = 12532;
 
     return status;
-}
-
-Task<Json> BinanceGateway::get_balances()
-{
-    Json balances = co_await m_quoter_spot.get_balances();
-
-    balances["balances"].for_each([](Json& balance)
-    {
-        balance["available"] = std::stod((std::string)balance["free"]) + std::stod((std::string)balance["locked"]);
-
-        balance.remove_field("btcValuation");
-        balance.remove_field("withdrawing");
-        balance.remove_field("ipoable");
-        balance.remove_field("locked");
-        balance.remove_field("freeze");
-        balance.remove_field("free");
-    });
-
-    co_return balances["balances"];
-}
-
-Task<Json> BinanceGateway::get_positions()
-{
-    Json positions = co_await m_quoter_perpetual.get_positions();
-    if (positions.is_array() == false)
-    {
-        co_return {};
-    }
-
-    Json data;
-
-    positions.for_each([&data](Json& position)
-    {
-        const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(
-            ExchangeId::BINANCE,
-            InstrumentType::PERPETUAL,
-            (std::string)position["symbol"]
-        );
-
-        double position_amt = std::stod((std::string)position["positionAmt"]);
-        std::string side = position_amt > 0 ? "LONG" : (position_amt < 0 ? "SHORT" : "FLAT");
-
-        Json p;
-        p["instrument"] = instrument->to_json();
-        p["pnl"] = position["unRealizedProfit"];
-        p["entry_price"] = position["entryPrice"];
-        p["mark_price"] = position["markPrice"];
-        p["position_amt"] = position_amt;
-        p["side"] = side;
-
-        data.push_back(p);
-    });
-
-    co_return data;
 }
