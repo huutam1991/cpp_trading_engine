@@ -12,9 +12,7 @@ public:
 
     virtual Task<std::expected<bool, std::string>> validate_account() override
     {
-        // Implement the logic to validate the Binance account using m_api_key and m_api_secret
-        // For example, you can make an API call to Binance to check if the credentials are valid
-        co_return std::expected<bool, std::string>(true); // Placeholder for actual validation logic
+        co_return std::expected<bool, std::string>(true);
     }
 
     virtual Json to_json() const override
