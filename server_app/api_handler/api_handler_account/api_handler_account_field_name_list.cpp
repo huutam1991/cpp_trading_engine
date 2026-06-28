@@ -10,7 +10,7 @@ Task<HttpResponse> APIHandlerAccountFieldNameList::child_handle()
 {
     Json response;
 
-    response["data"] = GatewayAccountManager::get_all_accounts_field_names();
+    response["data"] = AccountManager::get_all_accounts_field_names();
     response["msg"] = "Get account field name list successfully";
     response["status_code"] = OK_200;
     response["error"] = false;
