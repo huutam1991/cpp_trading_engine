@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <expected>
 
 #include <json/json.h>
 #include <instrument/instrument.h>
@@ -82,7 +83,7 @@ protected:
 
 public:
     virtual ExchangeId get_exchange_id() const = 0;
-    virtual Task<bool> validate_account() = 0;
+    virtual Task<std::expected<bool, std::string>> validate_account() = 0;
     virtual Json to_json() const = 0;
     virtual void from_json(Json& data) = 0;
 };
