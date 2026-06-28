@@ -37,7 +37,8 @@ void StrategyMarketMakerStateRun::end()
     m_pnl.reset();
 
     // Send cancel all of placed order
-    m_gateway->cancel_all(m_instrument->exchange_symbol);
+    // [Tam temporarily comment out - OrderEntry refactor]
+    // m_gateway->cancel_all(m_instrument->exchange_symbol);
 }
 
 void StrategyMarketMakerStateRun::on_config_change()
@@ -176,7 +177,8 @@ Task<void> StrategyMarketMakerStateRun::task_close_far_orders()
         if (price_distance > m_config.clear_orders_gap)
         {
             // spdlog::info("task_close_far_orders, clear_orders_gap: cancel order at price: {}, distance: {}, price: {}", order.price, price_distance, m_current_price);
-            m_gateway->cancel(order);
+            // [Tam temporarily comment out - OrderEntry refactor]
+            // m_gateway->cancel(order);
         }
     }
 
@@ -377,8 +379,9 @@ void StrategyMarketMakerStateRun::quote_orders_at_price(double price)
         Order buy_order  = get_limit_order(Order::Side::BUY, buy_volumes[i]->price, buy_quantity);
         Order sell_order = get_limit_order(Order::Side::SELL, sell_volumes[i]->price, sell_quantity);
 
-        m_gateway->place(buy_order);
-        m_gateway->place(sell_order);
+        // [Tam temporarily comment out - OrderEntry refactor]
+        // m_gateway->place(buy_order);
+        // m_gateway->place(sell_order);
     }
 
     spdlog::info("=============================================================================================");

@@ -13,7 +13,9 @@ Task<HttpResponse> APIHandlerPositionList::child_handle()
 
     // Response
     Json response;
-    response["positions"] = co_await gateway_binance->get_positions();
+    // [Tam temporarily comment out - OrderEntry refactor]
+    // response["positions"] = co_await gateway_binance->get_positions();
+    response["positions"] = {};
     response["msg"] = "Get position list successfully";
     response["status_code"] = OK_200;
     response["error"] = false;

@@ -1,10 +1,13 @@
 #include <network/https_client_request/https_client_request.h>
 
 #include <gateways/binance/binance_gateway.h>
+#include <gateways/binance/binance_order_entry.h>
 #include <app_utils/app_utils.h>
 #include <account/account_db.h>
 
 BinanceGateway::BinanceGateway(const std::string& key) :
+    m_key(key),
+    m_epoll_base((EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)),
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
@@ -15,6 +18,11 @@ BinanceGateway::BinanceGateway(const std::string& key) :
 ExchangeId BinanceGateway::get_exchange()
 {
     return ExchangeId::BINANCE;
+}
+
+std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry()
+{
+    return std::make_shared<BinanceOrderEntry>(m_key, m_epoll_base);
 }
 
 std::vector<Instrument> BinanceGateway::fetch_instruments()

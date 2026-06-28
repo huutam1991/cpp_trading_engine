@@ -29,7 +29,9 @@ Task<HttpResponse> APIHandlerActivateAccountBalances::child_handle()
     std::string exchange = activate_accounts[0]["exchange"];
 
     // Use coroutine
-    Json balances = co_await GatewayManager::instance().get_gateway(exchange)->get_balances();
+    // [Tam temporarily comment out - OrderEntry refactor]
+    // Json balances = co_await GatewayManager::instance().get_gateway(exchange)->get_balances();
+    Json balances;
     // spdlog::debug("balances: {}", balances);
 
     // Form response data from [balances] + [symbols_set]

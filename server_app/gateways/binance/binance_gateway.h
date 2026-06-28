@@ -11,16 +11,18 @@
 
 class BinanceGateway : public Gateway
 {
+    std::string m_key;
+    EpollBase* m_epoll_base = nullptr;
+
     // Market data
     BinanceMarketDataSpot m_market_data_spot;
     BinanceMarketDataPerpetual m_market_data_perpetual;
 
     std::vector<Instrument> m_instruments;
 
-    EpollBase* m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY);
-
 protected:
     virtual ExchangeId get_exchange() override;
+    virtual std::shared_ptr<OrderEntry> get_order_entry() override;
     virtual std::vector<Instrument> fetch_instruments() override;
 
 public:

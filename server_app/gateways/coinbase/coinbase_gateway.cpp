@@ -82,67 +82,9 @@ ExchangeId CoinbaseGateway::get_exchange()
     return ExchangeId::COINBASE;
 }
 
-Task<std::unordered_set<OrderId>> CoinbaseGateway::get_open_orders_on_exchange(std::string symbol)
+std::shared_ptr<OrderEntry> CoinbaseGateway::get_order_entry()
 {
-    std::unordered_set<OrderId> res;
-
-    // Currently, only implement for SPOT
-    Json open_orders = co_await m_quoter_spot.get_open_orders(std::move(symbol));
-
-    // Add order_id to [res]
-    if (open_orders.is_array() == true)
-    {
-        open_orders.for_each([&res](Json& order)
-        {
-            if (order.has_field("clientOrderId"))
-            {
-                OrderId order_id = AppUtils::parse_order_id(order["clientOrderId"]);
-
-                if (order_id != 0)
-                {
-                    res.insert(order_id);
-                }
-            }
-        });
-
-    }
-
-    co_return res;
-}
-
-Task<void> CoinbaseGateway::cancel_all_on_exchange(std::string symbol)
-{
-    // Currently, only implement for SPOT
-    co_await m_quoter_spot.cancel_all(std::move(symbol));
-
-    co_return;
-}
-
-Task<Json> CoinbaseGateway::cancel_on_exchange(Order order)
-{
-    // Currently, only implement for SPOT
-    co_return co_await m_quoter_spot.cancel(std::move(order));
-}
-
-Task<Json> CoinbaseGateway::place_on_exchange(Order order)
-{
-    // Get [m_quoter_spot] or [m_quoter_perpetual] base on ExchangeType of [order]
-    CoinbaseQuoter* quoter = order.instrument->instrument_type == InstrumentType::SPOT ?
-        (CoinbaseQuoter*)&m_quoter_spot :
-        (CoinbaseQuoter*)&m_quoter_perpetual;
-
-    Json response = co_await quoter->place(order);
-
-    // Check if order is rejected
-    if (response.has_field("code") && response["code"].is_object() == false && (long)response["code"] < 0)
-    {
-        order.status = Order::REJECTED;
-        OrderManager::instance().update_order(order);
-    }
-
-    // co_return quoter->get_trade_result_from_response(response);
-
-    co_return response;
+    return nullptr;
 }
 
 Json CoinbaseGateway::get_status()
@@ -162,28 +104,4 @@ Json CoinbaseGateway::get_status()
 
 
     return status;
-}
-
-Task<Json> CoinbaseGateway::get_balances()
-{
-    Json balances = co_await m_quoter_spot.get_balances();
-
-    balances["balances"].for_each([](Json& balance)
-    {
-        balance["available"] = std::stod((std::string)balance["free"]) + std::stod((std::string)balance["locked"]);
-
-        balance.remove_field("btcValuation");
-        balance.remove_field("withdrawing");
-        balance.remove_field("ipoable");
-        balance.remove_field("locked");
-        balance.remove_field("freeze");
-        balance.remove_field("free");
-    });
-
-    co_return balances["balances"];
-}
-
-Task<Json> CoinbaseGateway::get_positions()
-{
-    co_return {};
 }

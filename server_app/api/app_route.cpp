@@ -121,7 +121,9 @@ void add_app_route()
     ADD_ROUTE(RequestMethod::POST, "/test_binance_request")
     {
         auto gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
-        Json positions = co_await gateway->get_positions();
+        // [Tam temporarily comment out - OrderEntry refactor]
+        // Json positions = co_await gateway->get_positions();
+        Json positions;
 
         Json response;
         response["message"] = "OK";
@@ -336,9 +338,10 @@ void add_app_route()
 
         spdlog::info("API: /test_place - Placing order: {}", order.to_json());
 
-        GatewayManager::instance()
-            .get_gateway(ExchangeId::BINANCE)
-            ->place(order);
+        // [Tam temporarily comment out - OrderEntry refactor]
+        // GatewayManager::instance()
+        //     .get_gateway(ExchangeId::BINANCE)
+        //     ->place(order);
 
         co_return HttpResponse(OK_200, Json());
     };

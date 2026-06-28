@@ -12,6 +12,7 @@
 #include <instrument/instrument.h>
 #include <order/order_manager.h>
 #include <app_constants.h>
+#include <gateways/order_entry.h>
 
 class Gateway
 {
@@ -21,18 +22,11 @@ protected:
 
     Gateway();
     virtual std::vector<Instrument> fetch_instruments();
-    virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) = 0;
-    virtual Task<void> cancel_all_on_exchange(std::string symbol) = 0;
-    virtual Task<Json> cancel_on_exchange(Order order) = 0;
-    virtual Task<Json> place_on_exchange(Order order) = 0;
+    virtual std::shared_ptr<OrderEntry> get_order_entry() = 0;
 
 public:
     virtual ExchangeId get_exchange() = 0;
     std::string get_name();
-    void check_remove_canceled_orders(std::string symbol);
-    void cancel_all(std::string symbol);
-    void place(Order order);
-    void cancel(Order order);
 
     void init();
 
@@ -42,6 +36,4 @@ public:
 
     // Util methods
     virtual Json get_status() = 0;
-    virtual Task<Json> get_balances() = 0;
-    virtual Task<Json> get_positions() = 0;
 };

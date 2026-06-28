@@ -23,10 +23,7 @@ class CoinbaseGateway : public Gateway
 
 protected:
     virtual ExchangeId get_exchange() override;
-    virtual Task<std::unordered_set<OrderId>> get_open_orders_on_exchange(std::string symbol) override;
-    virtual Task<void> cancel_all_on_exchange(std::string symbol) override;
-    virtual Task<Json> cancel_on_exchange(Order order) override;
-    virtual Task<Json> place_on_exchange(Order order) override;
+    virtual std::shared_ptr<OrderEntry> get_order_entry() override;
 
 public:
     CoinbaseGateway(const std::string& key);
@@ -37,8 +34,6 @@ public:
 
     // Util methods
     virtual Json get_status() override;
-    virtual Task<Json> get_balances() override;
-    virtual Task<Json> get_positions() override;
 
 private:
     void on_depth_update(const std::string& symbol, Json& payload);

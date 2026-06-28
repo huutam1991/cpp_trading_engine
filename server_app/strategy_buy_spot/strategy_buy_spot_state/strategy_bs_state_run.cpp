@@ -19,7 +19,8 @@ void StrategyBuySpotStateRun::end()
 
     // Send cancel all of placed order
     spdlog::debug("StrategyBuySpotStateRun - cancel all symbol: {}", m_instrument->exchange_symbol);
-    m_gateway->cancel_all(m_instrument->exchange_symbol);
+    // [Tam temporarily comment out - OrderEntry refactor]
+    // m_gateway->cancel_all(m_instrument->exchange_symbol);
 
     // Update all not HOLD buy points to AVAILABLE
     spdlog::debug("StrategyBuySpotStateRun - update all not HOLD buy points to AVAILABLE or HOLD");
@@ -171,7 +172,8 @@ void StrategyBuySpotStateRun::update_buy_orders()
         if (buy_point_data.status == BuyPoint::Status::AVAILABLE)
         {
             Order order = get_limit_buy_spot_order_by_price(price);
-            m_gateway->place(order);
+            // [Tam temporarily comment out - OrderEntry refactor]
+            // m_gateway->place(order);
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::PLACING;
@@ -188,7 +190,8 @@ void StrategyBuySpotStateRun::update_buy_orders()
         if (price < min_price_to_place && buy_point_data.status == BuyPoint::Status::PLACED && buy_point_data.quantity == 0.0)
         {
             Order order = get_cancel_order(buy_point_data.current_order_id);
-            m_gateway->cancel(order);
+            // [Tam temporarily comment out - OrderEntry refactor]
+            // m_gateway->cancel(order);
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::CANCELING;
@@ -237,7 +240,8 @@ void StrategyBuySpotStateRun::update_sell_orders()
         {
             Order order = get_limit_sell_spot_order(buy_point_data.price + m_config.take_profit, buy_point_data.quantity);
             order.side = Order::Side::SELL;
-            m_gateway->place(order);
+            // [Tam temporarily comment out - OrderEntry refactor]
+            // m_gateway->place(order);
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::PLACING;
@@ -247,7 +251,9 @@ void StrategyBuySpotStateRun::update_sell_orders()
         else if (buy_point_data.status == BuyPoint::Status::PLACED && buy_point_data.quantity > 0.0 && price < min_hold_price || price > max_hold_price)
         {
             Order order = get_cancel_order(buy_point_data.current_order_id);
-            m_gateway->cancel(order);
+
+            // [Tam temporarily comment out - OrderEntry refactor]
+            // m_gateway->cancel(order);
 
             // Update [buy_point]
             buy_point_data.status = BuyPoint::Status::CANCELING;
