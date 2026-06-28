@@ -5,7 +5,7 @@
 
 #include <json/json.h>
 #include <instrument/instrument.h>
-#include <gateways/gateway_manager.h>
+#include <gateways/order_entry.h>
 
 struct AccountManager
 {
@@ -74,7 +74,7 @@ public:
         static inline AccountRegister register_instance;
     };
 
-    Account(ExchangeId exchange_id) : m_exchange_id(exchange_id), m_gateway{GatewayManager::instance().get_gateway(exchange_id)}
+    Account(ExchangeId exchange_id) : m_exchange_id(exchange_id)
     {
         (void)AccountKey::register_instance; // Ensure the static instance is created
     }
@@ -83,7 +83,7 @@ protected:
     std::string m_key_name;
     ExchangeId m_exchange_id;
 
-    std::shared_ptr<Gateway> m_gateway = nullptr;
+    std::shared_ptr<OrderEntry> m_order_entry = nullptr;
 
 public:
     ExchangeId get_exchange_id() const { return m_exchange_id; }
