@@ -1,6 +1,6 @@
 #pragma once
 
-#include <account/gateway_account.h>
+#include <account/account.h>
 
 class CoinbaseAccount : public Account<CoinbaseAccount>
 {
