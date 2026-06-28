@@ -3,7 +3,7 @@
 #include <json/json.h>
 #include <string>
 
-class Account
+class AccountDB
 {
 public:
     static void save_account_to_db(const Json& account);

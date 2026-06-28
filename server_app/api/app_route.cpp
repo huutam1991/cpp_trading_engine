@@ -7,7 +7,7 @@
 #include <api_handler/api_handler_user/api_handler_user_register.h>
 #include <api_handler/api_handler_user/api_handler_user_login.h>
 
-// Account
+// AccountDB
 #include <api_handler/api_handler_account/api_handler_account_field_name_list.h>
 #include <api_handler/api_handler_account/api_handler_account_list.h>
 #include <api_handler/api_handler_account/api_handler_add_account.h>
@@ -355,31 +355,31 @@ void add_app_route()
         co_return co_await APIHandlerUserLogin(request).handle();
     };
 
-    // Account - Get account list
+    // AccountDB - Get account list
     ADD_ROUTE(RequestMethod::GET, "/account_list")
     {
         co_return co_await APIHandlerAccountList(request).handle();
     };
 
-    // Account - Get account field name list
+    // AccountDB - Get account field name list
     ADD_ROUTE(RequestMethod::GET, "/account_field_name_list")
     {
         co_return co_await APIHandlerAccountFieldNameList(request).handle();
     };
 
-    // Account - Add account
+    // AccountDB - Add account
     ADD_ROUTE(RequestMethod::POST, "/add_account")
     {
         co_return co_await APIHandlerAddAccount(request).handle();
     };
 
-    // Account - Add activate account
+    // AccountDB - Add activate account
     ADD_ROUTE(RequestMethod::POST, "/add_activate_account")
     {
         co_return co_await APIHandlerAddActivateAccount(request).handle();
     };
 
-    // Account - Add activate account
+    // AccountDB - Add activate account
     ADD_ROUTE(RequestMethod::POST, "/activate_account_balances")
     {
         co_return co_await APIHandlerActivateAccountBalances(request).handle();

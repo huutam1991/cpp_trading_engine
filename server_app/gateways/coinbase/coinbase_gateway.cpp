@@ -1,6 +1,6 @@
 #include <gateways/coinbase/coinbase_gateway.h>
 #include <app_utils/app_utils.h>
-#include <account/account.h>
+#include <account/account_db.h>
 
 CoinbaseGateway::CoinbaseGateway(const std::string& key) :
     m_quoter_spot(key),
@@ -8,7 +8,7 @@ CoinbaseGateway::CoinbaseGateway(const std::string& key) :
     m_market_data_spot(COINBASE_ADVANCE_REALNET_WS_URL, COINBASE_ADVANCE_REALNET_WS_PORT)
     // m_market_data_perpetual(COINBASE_FUTURES_WS_URL, COINBASE_FUTURES_WS_PORT)
 {
-    Json account = Account::load_account_by_key(key);
+    Json account = AccountDB::load_account_by_key(key);
     m_account.from_json(account);
 
     bool is_testnet = account["is_testnet"];

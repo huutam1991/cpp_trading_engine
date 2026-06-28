@@ -1,5 +1,5 @@
 #include <api_handler/api_handler_account/api_handler_add_account.h>
-#include <account/account.h>
+#include <account/account_db.h>
 
 APIHandlerAddAccount::APIHandlerAddAccount(HttpRequest* request) : APIHandler(request)
 {
@@ -13,7 +13,7 @@ Task<HttpResponse> APIHandlerAddAccount::child_handle()
     Json account = m_request->get_body_json();
 
     std::string key = account["key"];
-    Json find_account = Account::load_account_by_key(key);
+    Json find_account = AccountDB::load_account_by_key(key);
 
     if (find_account != nullptr)
     {
@@ -24,7 +24,7 @@ Task<HttpResponse> APIHandlerAddAccount::child_handle()
     }
     else
     {
-        Account::save_account_to_db(account);
+        AccountDB::save_account_to_db(account);
 
         // Response
         response["data"] = {};

@@ -4,11 +4,11 @@
 #include <mongo_db/mongo_db.h>
 
 #include <gateways/binance/binance_quoter/binance_quoter.h>
-#include <account/account.h>
+#include <account/account_db.h>
 
 BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 {
-    Json account = Account::load_account_by_key(key);
+    Json account = AccountDB::load_account_by_key(key);
     m_api_key = std::string(account["api_key"]);
     m_api_secret = std::string(account["api_secret"]);
     m_is_testnet = (bool)account["is_testnet"];

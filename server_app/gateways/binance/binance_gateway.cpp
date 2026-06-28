@@ -2,7 +2,7 @@
 
 #include <gateways/binance/binance_gateway.h>
 #include <app_utils/app_utils.h>
-#include <account/account.h>
+#include <account/account_db.h>
 
 BinanceGateway::BinanceGateway(const std::string& key) :
     m_quoter_spot(key),
@@ -10,7 +10,7 @@ BinanceGateway::BinanceGateway(const std::string& key) :
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
-    Json account = Account::load_account_by_key(key);
+    Json account = AccountDB::load_account_by_key(key);
     m_account.from_json(account);
     bool is_testnet = account["is_testnet"];
 

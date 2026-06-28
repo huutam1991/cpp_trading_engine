@@ -1,5 +1,5 @@
 #include <api_handler/api_handler_account/api_handler_add_activate_account.h>
-#include <account/account.h>
+#include <account/account_db.h>
 
 APIHandlerAddActivateAccount::APIHandlerAddActivateAccount(HttpRequest* request) : APIHandler(request)
 {
