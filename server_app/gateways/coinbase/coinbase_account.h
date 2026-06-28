@@ -2,14 +2,14 @@
 
 #include <account/gateway_account.h>
 
-class CoinbaseAccount : public GatewayAccount<CoinbaseAccount>
+class CoinbaseAccount : public Account<CoinbaseAccount>
 {
     std::string m_api_key;
     std::string m_api_secret;
     std::string m_api_passphrase;
 
 public:
-    CoinbaseAccount() : GatewayAccount<CoinbaseAccount>(ExchangeId::COINBASE) {}
+    CoinbaseAccount() : Account<CoinbaseAccount>(ExchangeId::COINBASE) {}
 
     virtual Task<std::expected<bool, std::string>> validate_account() override
     {

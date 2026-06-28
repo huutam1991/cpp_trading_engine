@@ -58,7 +58,7 @@ struct GatewayAccountManager
 };
 
 template <class T>
-class GatewayAccount
+class Account
 {
 public:
     struct GatewayAccountRegister
@@ -74,7 +74,7 @@ public:
         static inline GatewayAccountRegister register_instance;
     };
 
-    GatewayAccount(ExchangeId exchange_id) : m_exchange_id(exchange_id), m_gateway{GatewayManager::instance().get_gateway(exchange_id)}
+    Account(ExchangeId exchange_id) : m_exchange_id(exchange_id), m_gateway{GatewayManager::instance().get_gateway(exchange_id)}
     {
         (void)GatewayAccountKey::register_instance; // Ensure the static instance is created
     }

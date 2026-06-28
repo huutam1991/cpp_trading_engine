@@ -2,13 +2,13 @@
 
 #include <account/gateway_account.h>
 
-class BinanceAccount : public GatewayAccount<BinanceAccount>
+class BinanceAccount : public Account<BinanceAccount>
 {
     std::string m_api_key;
     std::string m_api_secret;
 
 public:
-    BinanceAccount() : GatewayAccount<BinanceAccount>(ExchangeId::BINANCE) {}
+    BinanceAccount() : Account<BinanceAccount>(ExchangeId::BINANCE) {}
 
     virtual Task<std::expected<bool, std::string>> validate_account() override
     {
