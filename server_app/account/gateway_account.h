@@ -5,6 +5,7 @@
 
 #include <json/json.h>
 #include <instrument/instrument.h>
+#include <gateways/gateway_manager.h>
 
 struct GatewayAccountManager
 {
@@ -73,16 +74,19 @@ public:
         static inline GatewayAccountRegister register_instance;
     };
 
-    GatewayAccount()
+    GatewayAccount(ExchangeId exchange_id) : m_exchange_id(exchange_id), m_gateway{GatewayManager::instance().get_gateway(exchange_id)}
     {
         (void)GatewayAccountKey::register_instance; // Ensure the static instance is created
     }
 
 protected:
     std::string m_key_name;
+    ExchangeId m_exchange_id;
+
+    std::shared_ptr<Gateway> m_gateway = nullptr;
 
 public:
-    virtual ExchangeId get_exchange_id() const = 0;
+    ExchangeId get_exchange_id() const { return m_exchange_id; }
     virtual Task<std::expected<bool, std::string>> validate_account() = 0;
     virtual Json to_json() const = 0;
     virtual void from_json(Json& data) = 0;

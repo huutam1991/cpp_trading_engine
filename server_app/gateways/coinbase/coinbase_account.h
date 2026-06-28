@@ -9,10 +9,7 @@ class CoinbaseAccount : public GatewayAccount<CoinbaseAccount>
     std::string m_api_passphrase;
 
 public:
-    virtual ExchangeId get_exchange_id() const override
-    {
-        return ExchangeId::COINBASE;
-    }
+    CoinbaseAccount() : GatewayAccount<CoinbaseAccount>(ExchangeId::COINBASE) {}
 
     virtual Task<std::expected<bool, std::string>> validate_account() override
     {

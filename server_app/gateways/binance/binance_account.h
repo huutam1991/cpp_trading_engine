@@ -8,10 +8,7 @@ class BinanceAccount : public GatewayAccount<BinanceAccount>
     std::string m_api_secret;
 
 public:
-    virtual ExchangeId get_exchange_id() const override
-    {
-        return ExchangeId::BINANCE;
-    }
+    BinanceAccount() : GatewayAccount<BinanceAccount>(ExchangeId::BINANCE) {}
 
     virtual Task<std::expected<bool, std::string>> validate_account() override
     {
