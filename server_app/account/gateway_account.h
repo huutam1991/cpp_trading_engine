@@ -7,7 +7,7 @@
 #include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
 
-struct GatewayAccountManager
+struct AccountManager
 {
     static std::unordered_map<ExchangeId, std::vector<std::string>>& get_field_names_map()
     {
@@ -61,22 +61,22 @@ template <class T>
 class Account
 {
 public:
-    struct GatewayAccountRegister
+    struct AccountRegister
     {
-        GatewayAccountRegister()
+        AccountRegister()
         {
-            GatewayAccountManager::register_account<T>();
+            AccountManager::register_account<T>();
         }
     };
 
-    struct GatewayAccountKey
+    struct AccountKey
     {
-        static inline GatewayAccountRegister register_instance;
+        static inline AccountRegister register_instance;
     };
 
     Account(ExchangeId exchange_id) : m_exchange_id(exchange_id), m_gateway{GatewayManager::instance().get_gateway(exchange_id)}
     {
-        (void)GatewayAccountKey::register_instance; // Ensure the static instance is created
+        (void)AccountKey::register_instance; // Ensure the static instance is created
     }
 
 protected:
