@@ -406,7 +406,8 @@ async function addAccount() {
     }
 
     if (!response.ok || result.error) {
-      setNotice(result.msg || 'Add account failed.', 'error')
+      console.error('Add account failed:', result.msg)
+      setNotice(result.msg || 'Add account failed: ' + result.msg, 'error')
       return
     }
 
