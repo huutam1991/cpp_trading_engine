@@ -13,6 +13,7 @@ BinanceQuoter::BinanceQuoter(std::shared_ptr<AccountBase> account) : m_key{accou
     m_api_key = binance_account->get_api_key();
     m_api_secret = binance_account->get_api_secret();
 
+    spdlog::debug("BinanceQuoter initialized with key: {}", m_key);
     spdlog::debug("Binance account - m_api_key: {}", m_api_key);
     spdlog::debug("Binance account - m_api_secret: {}", m_api_secret);
     spdlog::debug("Binance account - m_is_testnet: {}", m_is_testnet);
@@ -21,6 +22,7 @@ BinanceQuoter::BinanceQuoter(std::shared_ptr<AccountBase> account) : m_key{accou
 Task<Json> BinanceQuoter::get_balances()
 {
     HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
+    client.add_header("X-MBX-APIKEY", m_api_key);
     co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "", &client);
 }
 
