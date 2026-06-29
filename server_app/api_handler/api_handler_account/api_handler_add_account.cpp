@@ -1,5 +1,4 @@
 #include <api_handler/api_handler_account/api_handler_add_account.h>
-#include <account/account_db.h>
 #include <account/account_manager.h>
 
 APIHandlerAddAccount::APIHandlerAddAccount(HttpRequest* request) : APIHandler(request)
@@ -13,23 +12,20 @@ Task<HttpResponse> APIHandlerAddAccount::child_handle()
     Json response;
     Json account = m_request->get_body_json();
 
-    std::string key = account["key"];
-    Json find_account = AccountDB::load_account_by_key(key);
+    auto result = AccountManager::add_account(account);
 
-    if (find_account != nullptr)
+    if (result.has_value() == false)
     {
         response["data"] = "";
-        response["msg"] = "account [" + key + "] already exist";
+        response["msg"] = result.error();
         response["status_code"] = BAD_REQUEST_400;
         response["error"] = true;
     }
     else
     {
-        AccountManager::add_account(account);
-
         // Response
         response["data"] = {};
-        response["msg"] = "register account [" + key + "] successfully";
+        response["msg"] = "Register account [" + (std::string)account["key"] + "] successfully";
         response["status_code"] = OK_200;
         response["error"] = false;
     }
