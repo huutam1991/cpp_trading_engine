@@ -22,8 +22,7 @@ protected:
     EventBase* m_event_base = nullptr;
     std::unordered_map<std::string, std::shared_ptr<AccountBase>> m_accounts;
 
-    // Gateway(ExchangeId exchange_id);
-    Gateway();
+    Gateway(ExchangeId exchange_id);
     virtual std::vector<Instrument> fetch_instruments();
     virtual std::shared_ptr<OrderEntry> get_order_entry(std::shared_ptr<AccountBase> account) = 0;
 

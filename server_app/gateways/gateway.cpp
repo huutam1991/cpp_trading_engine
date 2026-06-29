@@ -4,9 +4,11 @@
 #include <gateways/gateway.h>
 #include <order/simulator_order.h>
 
-Gateway::Gateway() : m_event_base {
-    EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY) // Default is GATEWAY
-}
+Gateway::Gateway(ExchangeId exchange_id) :
+    m_exchange_id(exchange_id),
+    m_event_base {
+        EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY) // Default is GATEWAY
+    }
 {}
 
 ExchangeId Gateway::get_exchange()
@@ -21,8 +23,6 @@ std::string Gateway::get_name()
 
 void Gateway::init()
 {
-    m_exchange_id = get_exchange();
-
     // Load cache instruments
     Instrument::CacheInstruments& cache_instruments = Instrument::load_cache_instruments(m_exchange_id);
 

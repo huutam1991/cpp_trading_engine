@@ -3,6 +3,7 @@
 #include <account/account_db.h>
 
 CoinbaseGateway::CoinbaseGateway() :
+    Gateway(ExchangeId::COINBASE),
     m_quoter_spot(""),
     m_quoter_perpetual(""),
     m_market_data_spot(COINBASE_ADVANCE_REALNET_WS_URL, COINBASE_ADVANCE_REALNET_WS_PORT)
