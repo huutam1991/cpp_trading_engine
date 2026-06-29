@@ -265,6 +265,14 @@ function initialFieldValue(fieldName: string) {
   return isBooleanField(fieldName) ? false : ''
 }
 
+function accountIsActive(account: Account) {
+  return account.is_active === true
+}
+
+function statusLabel(account: Account) {
+  return accountIsActive(account) ? 'Active' : 'Inactive'
+}
+
 function setNotice(message: string, tone: NoticeTone) {
   noticeMessage.value = message
   noticeTone.value = tone
@@ -494,7 +502,7 @@ onMounted(() => {
                 <th class="sortable-header" @click="sortAccounts('key')">Account Key</th>
                 <th>API Key</th>
                 <th v-if="!isDetailOpen">API Secret</th>
-                <th v-if="!isDetailOpen">Extra Fields</th>
+                <th v-if="!isDetailOpen">Is Active</th>
               </tr>
             </thead>
 
@@ -523,7 +531,13 @@ onMounted(() => {
                 <td class="mono-text">{{ maskSecret(account.api_key ?? '') }}</td>
                 <td v-if="!isDetailOpen" class="mono-text">{{ maskSecret(account.api_secret ?? '') }}</td>
                 <td v-if="!isDetailOpen">
-                  {{ Math.max(accountFields(account).length - 3, 0) }} fields
+                  <span
+                    class="status-badge"
+                    :class="accountIsActive(account) ? 'active' : 'inactive'"
+                  >
+                    <span class="status-dot"></span>
+                    {{ statusLabel(account) }}
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -585,8 +599,17 @@ onMounted(() => {
               class="detail-row"
             >
               <span>{{ formatLabel(fieldName) }}</span>
-              <strong class="mono-text">
-                {{ isSecretField(fieldName) ? maskSecret(String(selectedAccount[fieldName] ?? '')) : (selectedAccount[fieldName] ?? '–') }}
+              <strong v-if="isBooleanField(fieldName)">
+                <span
+                  class="status-badge"
+                  :class="selectedAccount[fieldName] === true ? 'active' : 'inactive'"
+                >
+                  <span class="status-dot"></span>
+                  {{ selectedAccount[fieldName] === true ? 'Active' : 'Inactive' }}
+                </span>
+              </strong>
+              <strong v-else class="mono-text">
+                {{ isSecretField(fieldName) ? maskSecret(selectedAccount[fieldName] ?? '') : (selectedAccount[fieldName] ?? '–') }}
               </strong>
             </div>
           </section>
@@ -1257,6 +1280,39 @@ td {
 
 .exchange-text {
   color: #facc15;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 82px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.status-badge.active {
+  color: #4ade80;
+  background: #123c29;
+  border: 1px solid #237a45;
+}
+
+.status-badge.inactive {
+  color: #f87171;
+  background: #3a1f24;
+  border: 1px solid #7f1d1d;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
 }
 
 .mono-text {
