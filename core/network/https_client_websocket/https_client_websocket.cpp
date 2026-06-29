@@ -29,6 +29,7 @@ HttpsClientWebsocket::~HttpsClientWebsocket()
 {
     spdlog::debug("HttpsClientWebsocket::~HttpsClientWebsocket - Destroying Websocket [{}]", m_name);
 
+    m_connect_task.destroy();
     m_send_ping_task.destroy();
     m_tcp_connection = nullptr;
     m_rest_request = nullptr;
