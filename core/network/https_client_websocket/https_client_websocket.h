@@ -43,6 +43,8 @@ public:
 private:
     bool is_websocket_connected() const;
 
+    // Connect task
+    Task<void> m_connect_task = nullptr;
     Task<void> connect();
     Task<void> send_switch_protocol_request();
 

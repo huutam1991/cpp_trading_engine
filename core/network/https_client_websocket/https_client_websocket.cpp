@@ -39,7 +39,8 @@ void HttpsClientWebsocket::on_tcp_connect()
 {
     spdlog::info("HttpsClientWebsocket::on_tcp_connect - Connected to {}:{}", m_name, m_tcp_connection->get_port());
 
-    connect().start_running_on(m_epoll_base);
+    m_connect_task = connect();
+    m_connect_task.start_running_on(m_epoll_base);
 }
 
 void HttpsClientWebsocket::on_tcp_disconnect()
@@ -49,8 +50,9 @@ void HttpsClientWebsocket::on_tcp_disconnect()
     m_rest_request = nullptr;
     m_websocket_session = nullptr;
 
-    // Need to intendly destroy [m_send_ping_task]
+    // Need to intendly destroy [m_connect_task] and [m_send_ping_task]
     // [Tam need re-test]
+    m_connect_task.destroy();
     m_send_ping_task.destroy();
 
     if (m_on_disconnect != nullptr)
