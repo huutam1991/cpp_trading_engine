@@ -13,12 +13,14 @@
 #include <order/order_manager.h>
 #include <app_constants.h>
 #include <gateways/order_entry.h>
+#include <account/account.h>
 
 class Gateway
 {
 protected:
     ExchangeId m_exchange_id;
     EventBase* m_event_base = nullptr;
+    std::unordered_map<std::string, std::shared_ptr<AccountBase>> m_accounts;
 
     Gateway();
     virtual std::vector<Instrument> fetch_instruments();
@@ -29,6 +31,8 @@ public:
     std::string get_name();
 
     void init();
+    void add_account(std::shared_ptr<AccountBase> account);
+    void remove_account(std::shared_ptr<AccountBase> account);
 
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) = 0;
     virtual void subscribe_instrument(const Instrument* instrument) = 0;

@@ -11,16 +11,18 @@
 
 class AccountBase
 {
-protected:
     std::string m_key_name;
     ExchangeId m_exchange_id;
 
+public:
     std::shared_ptr<OrderEntry> m_order_entry = nullptr;
 
-public:
+    // Constructor
     AccountBase(ExchangeId exchange_id) : m_exchange_id(exchange_id) {}
 
     ExchangeId get_exchange_id() const { return m_exchange_id; }
+    std::string get_key_name() const { return m_key_name; }
+
     virtual Task<std::expected<bool, std::string>> validate_account() = 0;
     virtual Json to_json() const = 0;
     virtual void from_json(Json& data) = 0;

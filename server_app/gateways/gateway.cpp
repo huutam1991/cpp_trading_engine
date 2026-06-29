@@ -39,6 +39,24 @@ void Gateway::init()
     }
 }
 
+void Gateway::add_account(std::shared_ptr<AccountBase> account)
+{
+    account->m_order_entry = get_order_entry();
+    m_accounts[account->get_key_name()] = account;
+}
+
+void Gateway::remove_account(std::shared_ptr<AccountBase> account)
+{
+    if (m_accounts.find(account->get_key_name()) == m_accounts.end())
+    {
+        spdlog::warn("Gateway::remove_account - Account with key name: [{}] not found in gateway: [{}]", account->get_key_name(), get_name());
+        return;
+    }
+
+    account->m_order_entry = nullptr;
+    m_accounts.erase(account->get_key_name());
+}
+
 std::vector<Instrument> Gateway::fetch_instruments()
 {
     return {};
