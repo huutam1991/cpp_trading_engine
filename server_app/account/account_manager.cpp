@@ -46,5 +46,7 @@ std::expected<bool, std::string> AccountManager::set_active_account(const std::s
     }
 
     it->second->set_active(is_active);
+    AccountDB::update_account_in_db(account_key, it->second->to_json());
+
     return true;
 }

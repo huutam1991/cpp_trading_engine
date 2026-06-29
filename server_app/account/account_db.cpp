@@ -9,6 +9,13 @@ void AccountDB::save_account_to_db(const Json& account)
         .insert_one(account);
 }
 
+void AccountDB::update_account_in_db(const std::string& key, const Json& account)
+{
+    MongoDB::instance()
+        .set_db_and_collection(APP_INFO_DB_NAME, "account")
+        .replace_one("key", key, account);
+}
+
 Json AccountDB::load_account_by_key(const std::string& key)
 {
     return MongoDB::instance()
