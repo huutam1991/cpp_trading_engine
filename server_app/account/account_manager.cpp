@@ -23,11 +23,14 @@ void AccountManager::init()
         std::shared_ptr<AccountBase> account_instance = account_factory_array[exchange_id]();
         account_instance->from_json(account_json);
 
-        // Add to gateway
-        std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(exchange_id);
-        gateway->add_account(account_instance);
-
         // Add to all_accounts
         get_all_accounts().emplace(account_instance->get_key_name(), account_instance);
+
+        // Add to gateway
+        if (account_instance->is_active() == true)
+        {
+            std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(exchange_id);
+            gateway->add_account(account_instance);
+        }
     });
 }
