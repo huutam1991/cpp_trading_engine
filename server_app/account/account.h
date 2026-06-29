@@ -14,6 +14,7 @@ class AccountBase
 protected:
     std::string m_key_name;
     ExchangeId m_exchange_id;
+    bool m_is_active = true;
 
 public:
     std::shared_ptr<OrderEntry> m_order_entry = nullptr;

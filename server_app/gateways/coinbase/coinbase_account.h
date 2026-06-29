@@ -24,6 +24,7 @@ public:
         data["api_secret"] = m_api_secret;
         data["api_passphrase"] = m_api_passphrase;
         data["key"] = m_key_name;
+        data["is_active"] = m_is_active;
 
         return data;
     }
@@ -34,5 +35,6 @@ public:
         m_api_secret = (std::string)data["api_secret"];
         m_api_passphrase = (std::string)data["api_passphrase"];
         m_key_name = (std::string)data["key"];
+        m_is_active = (bool)data["is_active"];
     }
 };
