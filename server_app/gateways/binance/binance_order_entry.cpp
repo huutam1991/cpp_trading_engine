@@ -103,6 +103,11 @@ Task<Json> BinanceOrderEntry::get_balances()
 {
     Json balances = co_await m_quoter_spot.get_balances();
 
+    if (balances.has_field("code") && (int)balances["code"] < 0)
+    {
+        co_return balances;
+    }
+
     balances["balances"].for_each([](Json& balance)
     {
         balance["available"] = std::stod((std::string)balance["free"]) + std::stod((std::string)balance["locked"]);

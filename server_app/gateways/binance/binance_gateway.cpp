@@ -31,7 +31,6 @@ std::expected<bool, std::string> BinanceGateway::validate_account(std::shared_pt
     task_validate.start_running_on(m_event_base);
 
     Json balances = future_validate.get();
-    spdlog::warn("BinanceGateway::validate_account - response: {}", balances);
     if (balances.has_field("error") == true)
     {
         return std::unexpected(balances.get_string_value());

@@ -21,10 +21,7 @@ BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
 Task<Json> BinanceQuoter::get_balances()
 {
     HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
-    Json ba = co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "", &client);
-    spdlog::debug("BinanceQuoter::get_balances - response: {}", ba);
-
-    co_return ba;
+    co_return co_await send_binance_request(RequestMethod::GET, "/api/v3/account", "", &client);
 }
 
 Task<Json> BinanceQuoter::get_positions()
