@@ -17,6 +17,7 @@ Task<HttpResponse> APIHandlerSetActiveAccount::child_handle()
     if (result.has_value() == false)
     {
         Json response;
+        response["data"] = "";
         response["msg"] = result.error();
         response["status_code"] = BAD_REQUEST_400;
         response["error"] = true;
@@ -25,6 +26,7 @@ Task<HttpResponse> APIHandlerSetActiveAccount::child_handle()
     }
 
     Json response;
+    response["data"] = "";
     response["msg"] = "Account updated successfully";
     response["status_code"] = OK_200;
     response["error"] = false;
