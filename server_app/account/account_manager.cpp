@@ -1,3 +1,4 @@
+#include <gateways/gateway_manager.h>
 
 #include "account_manager.h"
 #include "account_db.h"
@@ -21,5 +22,12 @@ void AccountManager::init()
         auto& account_factory_array = get_account_factory_array();
         std::shared_ptr<AccountBase> account_instance = account_factory_array[exchange_id]();
         account_instance->from_json(account_json);
+
+        // Add to gateway
+        std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(exchange_id);
+        gateway->add_account(account_instance);
+
+        // Add to all_accounts
+        get_all_accounts().emplace(account_instance->get_key_name(), account_instance);
     });
 }
