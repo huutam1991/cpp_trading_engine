@@ -11,10 +11,10 @@ class AccountBase;
 
 struct AccountManager
 {
-    static std::unordered_map<ExchangeId, std::vector<std::string>>& get_field_names_map()
+    static std::array<std::vector<std::string>, ExchangeId::TOTAL_EXCHANGES>& get_field_names_array()
     {
-        static std::unordered_map<ExchangeId, std::vector<std::string>> field_names_map;
-        return field_names_map;
+        static std::array<std::vector<std::string>, ExchangeId::TOTAL_EXCHANGES> field_names_array;
+        return field_names_array;
     }
 
     template <class T>
@@ -31,16 +31,18 @@ struct AccountManager
         });
 
         ExchangeId exchange_id = dummy_object.get_exchange_id();
-        auto& field_names_map = get_field_names_map();
-        field_names_map.insert(std::make_pair(exchange_id, field_names));
+        auto& field_names_array = get_field_names_array();
+        field_names_array[exchange_id] = field_names;
     }
 
     static Json get_all_accounts_field_names()
     {
         Json result;
 
-        for (const auto& [exchange_id, field_names] : get_field_names_map())
+        auto& field_names_array = get_field_names_array();
+        for (size_t exchange_id = 0; exchange_id < ExchangeId::TOTAL_EXCHANGES; exchange_id++)
         {
+            const auto& field_names = field_names_array[exchange_id];
             Json exchange_json;
             Json field_names_json;
 
