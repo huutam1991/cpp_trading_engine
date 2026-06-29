@@ -34,3 +34,17 @@ void AccountManager::init()
         }
     });
 }
+
+std::expected<bool, std::string> AccountManager::set_active_account(const std::string& account_key, bool is_active)
+{
+    auto& all_accounts = get_all_accounts();
+
+    auto it = all_accounts.find(account_key);
+    if (it == all_accounts.end())
+    {
+        return std::unexpected("Account with key [" + account_key + "] not found");
+    }
+
+    it->second->set_active(is_active);
+    return true;
+}

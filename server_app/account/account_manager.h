@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <expected>
 
 #include <instrument/instrument.h>
 
@@ -73,4 +74,6 @@ struct AccountManager
 
     static std::unordered_map<std::string, std::shared_ptr<AccountBase>>& get_all_accounts();
     static void init();
+
+    static std::expected<bool, std::string> set_active_account(const std::string& account_key, bool is_active);
 };
