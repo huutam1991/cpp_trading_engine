@@ -10,10 +10,12 @@ type AccountFieldConfig = {
   field_names: string[]
 }
 
+type AccountValue = string | boolean
+
 type Account = {
   exchange_id: string
   key: string
-  [fieldName: string]: string
+  [fieldName: string]: AccountValue
 }
 
 type AccountFieldNameListResponse = {
@@ -52,7 +54,7 @@ const selectedExchangeId = ref('')
 const selectedFilterExchangeId = ref('ALL')
 const selectedAccount = ref<Account | null>(null)
 const viewMode = ref<'list' | 'create'>('list')
-const formValues = ref<Record<string, string>>({})
+const formValues = ref<Record<string, string | boolean>>({})
 const sortKey = ref<SortKey | null>(null)
 const sortDirection = ref<SortDirection>('asc')
 
@@ -162,9 +164,13 @@ const canSubmit = computed(() => {
     return false
   }
 
-  return visibleInputFieldNames.value.every(
-    (fieldName) => formValues.value[fieldName]?.trim(),
-  )
+  return visibleInputFieldNames.value.every((fieldName) => {
+    if (isBooleanField(fieldName)) {
+      return typeof formValues.value[fieldName] === 'boolean'
+    }
+
+    return String(formValues.value[fieldName] ?? '').trim().length > 0
+  })
 })
 
 function sortAccounts(key: SortKey) {
@@ -185,7 +191,7 @@ function selectExchange(exchangeId: string) {
   }
 
   visibleInputFieldNames.value.forEach((fieldName) => {
-    formValues.value[fieldName] = ''
+    formValues.value[fieldName] = initialFieldValue(fieldName)
   })
 }
 
@@ -224,16 +230,18 @@ function closeDetail() {
   selectedAccount.value = null
 }
 
-function maskSecret(value: string | null | undefined) {
-  if (!value) {
+function maskSecret(value: AccountValue | null | undefined) {
+  const text = String(value ?? '')
+
+  if (!text) {
     return '–'
   }
 
-  if (value.length <= 10) {
-    return '•'.repeat(value.length)
+  if (text.length <= 10) {
+    return '•'.repeat(text.length)
   }
 
-  return `${value.slice(0, 6)}••••••${value.slice(-4)}`
+  return `${text.slice(0, 6)}••••••${text.slice(-4)}`
 }
 
 function formatLabel(fieldName: string) {
@@ -247,6 +255,14 @@ function isSecretField(fieldName: string) {
   return fieldName.toLowerCase().includes('secret') ||
     fieldName.toLowerCase().includes('passphrase') ||
     fieldName.toLowerCase().includes('api_key')
+}
+
+function isBooleanField(fieldName: string) {
+  return fieldName.toLowerCase() === 'is_active'
+}
+
+function initialFieldValue(fieldName: string) {
+  return isBooleanField(fieldName) ? false : ''
 }
 
 function setNotice(message: string, tone: NoticeTone) {
@@ -339,7 +355,7 @@ async function addAccount() {
   setNotice('', 'info')
 
   try {
-    const payload: Record<string, string> = {
+    const payload: Record<string, string | boolean> = {
       ...formValues.value,
       exchange_id: selectedExchangeId.value,
     }
@@ -383,7 +399,7 @@ function clearForm(clearNotice = true) {
   }
 
   visibleInputFieldNames.value.forEach((fieldName) => {
-    formValues.value[fieldName] = ''
+    formValues.value[fieldName] = initialFieldValue(fieldName)
   })
 
   if (clearNotice) {
@@ -570,7 +586,7 @@ onMounted(() => {
             >
               <span>{{ formatLabel(fieldName) }}</span>
               <strong class="mono-text">
-                {{ isSecretField(fieldName) ? maskSecret(selectedAccount[fieldName] ?? '') : (selectedAccount[fieldName] ?? '–') }}
+                {{ isSecretField(fieldName) ? maskSecret(String(selectedAccount[fieldName] ?? '')) : (selectedAccount[fieldName] ?? '–') }}
               </strong>
             </div>
           </section>
@@ -630,7 +646,27 @@ onMounted(() => {
               class="form-group"
             >
               <label class="field-label">{{ formatLabel(fieldName) }}</label>
+              <label
+                v-if="isBooleanField(fieldName)"
+                class="boolean-field"
+              >
+                <input
+                  v-model="formValues[fieldName]"
+                  class="boolean-native-input"
+                  type="checkbox"
+                >
+                <span
+                  class="boolean-switch"
+                  :class="{ checked: formValues[fieldName] === true }"
+                  aria-hidden="true"
+                >
+                  <span class="boolean-switch-thumb"></span>
+                </span>
+                <span class="boolean-status">{{ formValues[fieldName] === true ? 'Active' : 'Inactive' }}</span>
+              </label>
+
               <input
+                v-else
                 v-model="formValues[fieldName]"
                 class="form-control mono-text"
                 :type="isSecretField(fieldName) ? 'password' : 'text'"
@@ -913,6 +949,61 @@ onMounted(() => {
 .form-control:focus {
   border-color: #3b82f6;
   background: #111827;
+}
+
+.boolean-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  min-height: 30px;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+}
+
+.boolean-native-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boolean-switch {
+  width: 44px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  background: #111827;
+  border: 1px solid #4b5563;
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+.boolean-switch.checked {
+  background: #1e3a5f;
+  border-color: #3b82f6;
+}
+
+.boolean-switch-thumb {
+  width: 18px;
+  height: 18px;
+  display: block;
+  background: #9ca3af;
+  border-radius: 999px;
+}
+
+.boolean-switch.checked .boolean-switch-thumb {
+  transform: translateX(20px);
+  background: #60a5fa;
+}
+
+.boolean-status {
+  color: #cbd5e1;
 }
 
 .notice-card {
@@ -1332,11 +1423,15 @@ td {
   box-sizing: border-box;
 }
 
-.create-panel input,
+.create-panel input:not(.boolean-native-input),
 .create-panel select {
   width: 100%;
   max-width: none;
   box-sizing: border-box;
+}
+
+.create-panel .boolean-native-input {
+  width: 1px;
 }
 
 .create-panel .create-form-grid,
