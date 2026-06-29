@@ -39,12 +39,22 @@ type AddAccountResponse = {
   data: null | string
 }
 
+type SetActiveAccountResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: string
+}
+
 type SortKey = 'exchange_id' | 'key'
 type SortDirection = 'asc' | 'desc'
 type NoticeTone = 'success' | 'error' | 'info'
 
 const loading = ref(false)
 const submitting = ref(false)
+const updatingActiveKey = ref<string | null>(null)
+const detailNoticeMessage = ref('')
+const detailNoticeTone = ref<NoticeTone>('info')
 const errorMessage = ref('')
 const noticeMessage = ref('')
 const noticeTone = ref<NoticeTone>('info')
@@ -224,10 +234,12 @@ function backToAccountList() {
 
 function selectAccount(account: Account) {
   selectedAccount.value = account
+  detailNoticeMessage.value = ''
 }
 
 function closeDetail() {
   selectedAccount.value = null
+  detailNoticeMessage.value = ''
 }
 
 function maskSecret(value: AccountValue | null | undefined) {
@@ -271,6 +283,15 @@ function accountIsActive(account: Account) {
 
 function statusLabel(account: Account) {
   return accountIsActive(account) ? 'Active' : 'Inactive'
+}
+
+function selectedAccountStatusText(account: Account) {
+  return accountIsActive(account) ? 'This account is currently active.' : 'This account is currently inactive.'
+}
+
+function setDetailNotice(message: string, tone: NoticeTone) {
+  detailNoticeMessage.value = message
+  detailNoticeTone.value = tone
 }
 
 function setNotice(message: string, tone: NoticeTone) {
@@ -398,6 +419,81 @@ async function addAccount() {
   } finally {
     submitting.value = false
   }
+}
+
+
+async function setActiveAccount(account: Account, isActive: boolean) {
+  if (updatingActiveKey.value) {
+    return
+  }
+
+  const previousValue = account.is_active === true
+  updatingActiveKey.value = account.key
+  setDetailNotice('', 'info')
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/set_active_account`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        key: account.key,
+        is_active: isActive,
+      }),
+    })
+
+    const result: SetActiveAccountResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      auth.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      setDetailNotice(result.msg || 'Update account status failed.', 'error')
+      account.is_active = previousValue
+      return
+    }
+
+    accounts.value = accounts.value.map((currentAccount) => {
+      if (
+        currentAccount.key === account.key &&
+        currentAccount.exchange_id === account.exchange_id
+      ) {
+        return {
+          ...currentAccount,
+          is_active: isActive,
+        }
+      }
+
+      return currentAccount
+    })
+
+    if (
+      selectedAccount.value?.key === account.key &&
+      selectedAccount.value.exchange_id === account.exchange_id
+    ) {
+      selectedAccount.value = {
+        ...selectedAccount.value,
+        is_active: isActive,
+      }
+    }
+
+    setDetailNotice(result.msg || 'Account status updated successfully.', 'success')
+  } catch (error) {
+    console.error('Set active account error:', error)
+    account.is_active = previousValue
+    setDetailNotice('Set active account error.', 'error')
+  } finally {
+    updatingActiveKey.value = null
+  }
+}
+
+function handleActiveToggle(account: Account, event: Event) {
+  const input = event.target as HTMLInputElement
+  setActiveAccount(account, input.checked)
 }
 
 function clearForm(clearNotice = true) {
@@ -611,6 +707,48 @@ onMounted(() => {
               <strong v-else class="mono-text">
                 {{ isSecretField(fieldName) ? maskSecret(selectedAccount[fieldName] ?? '') : (selectedAccount[fieldName] ?? '–') }}
               </strong>
+            </div>
+          </section>
+
+          <section class="detail-card status-management-card">
+            <h3>Account Status</h3>
+
+            <div class="status-management-content">
+              <div>
+                <span class="status-caption">Current Status</span>
+                <strong>{{ selectedAccountStatusText(selectedAccount) }}</strong>
+              </div>
+
+              <label
+                class="boolean-field status-toggle-field"
+                :class="{ disabled: updatingActiveKey === selectedAccount.key }"
+              >
+                <input
+                  class="boolean-native-input"
+                  type="checkbox"
+                  :checked="accountIsActive(selectedAccount)"
+                  :disabled="updatingActiveKey === selectedAccount.key"
+                  @change="handleActiveToggle(selectedAccount, $event)"
+                >
+                <span
+                  class="boolean-switch"
+                  :class="{ checked: accountIsActive(selectedAccount) }"
+                  aria-hidden="true"
+                >
+                  <span class="boolean-switch-thumb"></span>
+                </span>
+                <span class="boolean-status">
+                  {{ updatingActiveKey === selectedAccount.key ? 'Updating...' : statusLabel(selectedAccount) }}
+                </span>
+              </label>
+            </div>
+
+            <div
+              v-if="detailNoticeMessage"
+              class="notice-card detail-notice"
+              :class="`tone-${detailNoticeTone}`"
+            >
+              {{ detailNoticeMessage }}
             </div>
           </section>
         </div>
@@ -1027,6 +1165,49 @@ onMounted(() => {
 
 .boolean-status {
   color: #cbd5e1;
+}
+
+
+.status-management-card {
+  margin-top: 2px;
+}
+
+.status-management-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.status-management-content > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.status-caption {
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-management-content strong {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.status-toggle-field {
+  flex-shrink: 0;
+}
+
+.status-toggle-field.disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.detail-notice {
+  margin-top: 12px;
 }
 
 .notice-card {
