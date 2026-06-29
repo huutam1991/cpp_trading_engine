@@ -11,6 +11,7 @@
 
 class AccountBase
 {
+protected:
     std::string m_key_name;
     ExchangeId m_exchange_id;
 
