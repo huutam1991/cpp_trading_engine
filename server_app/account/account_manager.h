@@ -73,6 +73,7 @@ struct AccountManager
     }
 
     static std::unordered_map<std::string, std::shared_ptr<AccountBase>>& get_all_accounts();
+    static std::shared_ptr<AccountBase> create_account_from_data(Json& data);
     static void init();
 
     static std::expected<bool, std::string> add_account(Json& account_json);
