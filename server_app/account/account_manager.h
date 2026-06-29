@@ -72,9 +72,11 @@ struct AccountManager
         return result;
     }
 
+    static void init();
+
     static std::unordered_map<std::string, std::shared_ptr<AccountBase>>& get_all_accounts();
     static std::shared_ptr<AccountBase> create_account_from_data(Json& data);
-    static void init();
+    static std::vector<std::shared_ptr<AccountBase>> get_active_accounts();
 
     static std::expected<bool, std::string> add_account(Json& account_json);
     static std::expected<bool, std::string> set_active_account(const std::string& account_key, bool is_active);

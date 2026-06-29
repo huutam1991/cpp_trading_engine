@@ -21,6 +21,20 @@ std::shared_ptr<AccountBase> AccountManager::create_account_from_data(Json& data
     return account_instance;
 }
 
+std::vector<std::shared_ptr<AccountBase>> AccountManager::get_active_accounts()
+{
+    std::vector<std::shared_ptr<AccountBase>> active_accounts;
+    auto& all_accounts = get_all_accounts();
+    for (const auto& [key, account] : all_accounts)
+    {
+        if (account->is_active())
+        {
+            active_accounts.push_back(account);
+        }
+    }
+    return active_accounts;
+}
+
 void AccountManager::init()
 {
     // Load all accounts from DB
