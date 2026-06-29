@@ -5,8 +5,7 @@
 #include <app_utils/app_utils.h>
 #include <account/account_db.h>
 
-BinanceGateway::BinanceGateway(const std::string& key) :
-    m_key(key),
+BinanceGateway::BinanceGateway() :
     m_epoll_base((EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)),
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)

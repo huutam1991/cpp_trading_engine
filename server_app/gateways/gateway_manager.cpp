@@ -8,49 +8,14 @@
 
 void GatewayManager::init()
 {
-    Json activate_accounts = MongoDB::instance()
-        .set_db_and_collection(APP_INFO_DB_NAME, "activate_accounts")
-        .find_many();
+    m_gateways.insert(std::make_pair(ExchangeId::BINANCE, std::make_shared<BinanceGateway>()));
+    m_gateways.insert(std::make_pair(ExchangeId::COINBASE, std::make_shared<CoinbaseGateway>()));
 
-    activate_accounts.for_each([this](Json& activate_account)
+    // Check to init gateway
+    for (auto& [_, gateway] : m_gateways)
     {
-        std::string exchange = activate_account["exchange"];
-        std::string key = activate_account["key"];
-
-        // Skip in-active key
-        if (activate_account.has_field("is_active") == false || (bool)activate_account["is_active"] == false)
-        {
-            return;
-        }
-
-        spdlog::debug("Load activated account: {}", activate_account);
-
-        ExchangeId gateway_enum = enum_reflect::enum_value<ExchangeId>(exchange);
-
-        if (gateway_enum == ExchangeId::BINANCE)
-        {
-            m_gateways.insert(std::make_pair(ExchangeId::BINANCE, std::make_shared<BinanceGateway>(key)));
-        }
-        else if (gateway_enum == ExchangeId::COINBASE)
-        {
-            m_gateways.insert(std::make_pair(ExchangeId::COINBASE, std::make_shared<CoinbaseGateway>(key)));
-        }
-        else
-        {
-            spdlog::error("Unsupported exchange: {}, skip loading this account", exchange);
-        }
-
-        // Check to init gateway
-        if (m_gateways.find(gateway_enum) != m_gateways.end())
-        {
-            m_gateways[gateway_enum]->init();
-        }
-    });
-
-    // Temporarily add Coinbase gateway for testing
-    auto coinbase_gateway = std::make_shared<CoinbaseGateway>("test_key");
-    coinbase_gateway->init();
-    m_gateways.insert(std::make_pair(ExchangeId::COINBASE, coinbase_gateway));
+        gateway->init();
+    }
 
     // Subscribe instruments for gateways
     std::vector<const Instrument*> subscribed_instruments = Instrument::get_subscribed_instruments();

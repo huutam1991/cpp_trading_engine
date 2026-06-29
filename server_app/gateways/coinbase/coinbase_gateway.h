@@ -26,7 +26,7 @@ protected:
     virtual std::shared_ptr<OrderEntry> get_order_entry() override;
 
 public:
-    CoinbaseGateway(const std::string& key);
+    CoinbaseGateway();
 
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
     virtual void subscribe_instrument(const Instrument* instrument) override {}

@@ -2,21 +2,13 @@
 #include <app_utils/app_utils.h>
 #include <account/account_db.h>
 
-CoinbaseGateway::CoinbaseGateway(const std::string& key) :
-    m_quoter_spot(key),
-    m_quoter_perpetual(key),
+CoinbaseGateway::CoinbaseGateway() :
+    m_quoter_spot(""),
+    m_quoter_perpetual(""),
     m_market_data_spot(COINBASE_ADVANCE_REALNET_WS_URL, COINBASE_ADVANCE_REALNET_WS_PORT)
     // m_market_data_perpetual(COINBASE_FUTURES_WS_URL, COINBASE_FUTURES_WS_PORT)
 {
-    Json account = AccountDB::load_account_by_key(key);
-    m_account.from_json(account);
-
-    bool is_testnet = account["is_testnet"];
-
-    // Update url + port for market data SPOT
-    std::string md_spot_url  = is_testnet == true ? COINBASE_ADVANCE_REALNET_WS_URL : COINBASE_ADVANCE_REALNET_WS_URL;
-    std::string md_spot_port = is_testnet == true ? COINBASE_ADVANCE_REALNET_WS_PORT : COINBASE_ADVANCE_REALNET_WS_PORT;
-    m_market_data_spot.update_url_and_port(md_spot_url, md_spot_port);
+    m_market_data_spot.update_url_and_port(COINBASE_ADVANCE_REALNET_WS_URL, COINBASE_ADVANCE_REALNET_WS_PORT);
 
     // // Update url + port for market data PERPETUAL
     // std::string md_perpetual_url  = is_testnet == true ? COINBASE_TESTNET_FUTURES_WS_URL  : COINBASE_FUTURES_WS_URL;

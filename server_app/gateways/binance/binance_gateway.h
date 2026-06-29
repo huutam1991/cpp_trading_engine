@@ -11,7 +11,6 @@
 
 class BinanceGateway : public Gateway
 {
-    std::string m_key;
     EpollBase* m_epoll_base = nullptr;
 
     // Market data
@@ -26,7 +25,7 @@ protected:
     virtual std::vector<Instrument> fetch_instruments() override;
 
 public:
-    BinanceGateway(const std::string& key);
+    BinanceGateway();
 
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
     virtual void subscribe_instrument(const Instrument* instrument) override;
