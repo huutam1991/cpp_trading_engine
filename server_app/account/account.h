@@ -24,6 +24,7 @@ public:
 
     ExchangeId get_exchange_id() const { return m_exchange_id; }
     std::string get_key_name() const { return m_key_name; }
+    bool is_active() const { return m_is_active; }
 
     virtual Task<std::expected<bool, std::string>> validate_account() = 0;
     virtual Json to_json() const = 0;
