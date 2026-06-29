@@ -19,11 +19,14 @@ BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key
     m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY);
 
     init_websocket();
-    keep_listen_key().start_running_on(m_epoll_base);
+
+    m_keep_listen_key_task = keep_listen_key();
+    m_keep_listen_key_task.start_running_on(m_epoll_base);
 }
 
 BinanceQuoterSpot::~BinanceQuoterSpot()
 {
+    m_keep_listen_key_task.destroy();
 }
 
 std::string& BinanceQuoterSpot::get_url()

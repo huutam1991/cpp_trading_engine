@@ -22,11 +22,13 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
     m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
     init_websocket();
 
-    keep_listen_key().start_running_on(m_epoll_base);
+    m_keep_listen_key_task = keep_listen_key();
+    m_keep_listen_key_task.start_running_on(m_epoll_base);
 }
 
 BinanceQuoterPerpetual::~BinanceQuoterPerpetual()
 {
+    m_keep_listen_key_task.destroy();
 }
 
 std::string& BinanceQuoterPerpetual::get_url()

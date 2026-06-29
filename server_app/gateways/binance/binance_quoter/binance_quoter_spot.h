@@ -19,6 +19,9 @@ private:
     std::string m_listen_key;
     void init_websocket();
     Task<std::string> get_listen_key();
+
+    // Task to keep listen key alive
+    Task<void> m_keep_listen_key_task = nullptr;
     Task<void> keep_listen_key();
 
 protected:
