@@ -5,13 +5,13 @@
 
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 #include <account/account_db.h>
+#include <gateways/binance/binance_account.h>
 
-BinanceQuoter::BinanceQuoter(const std::string& key) : m_key{key}
+BinanceQuoter::BinanceQuoter(std::shared_ptr<AccountBase> account) : m_key{account->get_key_name()}
 {
-    Json account = AccountDB::load_account_by_key(key);
-    m_api_key = std::string(account["api_key"]);
-    m_api_secret = std::string(account["api_secret"]);
-    m_is_testnet = (bool)account["is_testnet"];
+    BinanceAccount* binance_account = (BinanceAccount*)account.get();;
+    m_api_key = binance_account->get_api_key();
+    m_api_secret = binance_account->get_api_secret();
 
     spdlog::debug("Binance account - m_api_key: {}", m_api_key);
     spdlog::debug("Binance account - m_api_secret: {}", m_api_secret);

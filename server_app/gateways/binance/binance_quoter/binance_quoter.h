@@ -23,7 +23,7 @@ protected:
     Task<Json> send_binance_request(RequestMethod method, std::string api_path, std::string query_str, HttpsClientRequest* client);
 
 public:
-    BinanceQuoter(const std::string& key);
+    BinanceQuoter(std::shared_ptr<AccountBase> account);
 
     Task<Json> get_balances();
     Task<Json> get_positions();

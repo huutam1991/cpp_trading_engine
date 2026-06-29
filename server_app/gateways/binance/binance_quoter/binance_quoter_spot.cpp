@@ -6,14 +6,14 @@
 #include <network/https_client_request/https_client_request.h>
 #include <app_utils/app_utils.h>
 
-BinanceQuoterSpot::BinanceQuoterSpot(const std::string& key) : BinanceQuoter(key)
+BinanceQuoterSpot::BinanceQuoterSpot(std::shared_ptr<AccountBase> account) : BinanceQuoter(account)
 {
-    m_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_URL : BINANCE_SPOT_URL;
-    m_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_PORT : BINANCE_SPOT_PORT;
+    m_url = BINANCE_SPOT_URL;
+    m_port = BINANCE_SPOT_PORT;
 
     // websocket
-    m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_URL : BINANCE_SPOT_WS_URL;
-    m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_SPOT_WS_PORT : BINANCE_SPOT_WS_PORT;
+    m_ws_url = BINANCE_SPOT_WS_URL;
+    m_ws_port = BINANCE_SPOT_WS_PORT;
 
     // Event base: GATEWAY
     m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY);

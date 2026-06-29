@@ -8,18 +8,18 @@
 
 #include <time/measure_time.h>
 
-BinanceQuoterPerpetual::BinanceQuoterPerpetual(const std::string& key)
-    : BinanceQuoter(key), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)}
+BinanceQuoterPerpetual::BinanceQuoterPerpetual(std::shared_ptr<AccountBase> account)
+    : BinanceQuoter(account), m_epoll_base{(EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)}
 {
     m_client = std::make_shared<HttpsClientRequest>(m_epoll_base, m_url, std::stoi(m_port));
     m_client->add_header("X-MBX-APIKEY", m_api_key);
 
-    m_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_URL : BINANCE_FUTURES_REST_URL;
-    m_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_PORT : BINANCE_FUTURES_REST_PORT;
+    m_url = BINANCE_FUTURES_REST_URL;
+    m_port = BINANCE_FUTURES_REST_PORT;
 
     // websocket
-    m_ws_url = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_URL : BINANCE_FUTURES_WS_URL;
-    m_ws_port = m_is_testnet == true ? BINANCE_TESTNET_FUTURES_WS_PORT : BINANCE_FUTURES_WS_PORT;
+    m_ws_url = BINANCE_FUTURES_WS_URL;
+    m_ws_port = BINANCE_FUTURES_WS_PORT;
     init_websocket();
 
     m_keep_listen_key_task = keep_listen_key();

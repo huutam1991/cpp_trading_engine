@@ -34,7 +34,7 @@ protected:
     virtual std::string& get_port() override;
 
 public:
-    BinanceQuoterPerpetual(const std::string& key);
+    BinanceQuoterPerpetual(std::shared_ptr<AccountBase> account);
     ~BinanceQuoterPerpetual();
 
     virtual Task<Json> get_open_orders(std::string symbol) override;

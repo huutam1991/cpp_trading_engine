@@ -29,7 +29,7 @@ protected:
     virtual std::string& get_port() override;
 
 public:
-    BinanceQuoterSpot(const std::string& key);
+    BinanceQuoterSpot(std::shared_ptr<AccountBase> account);
     ~BinanceQuoterSpot();
 
     virtual Task<Json> get_open_orders(std::string symbol) override;

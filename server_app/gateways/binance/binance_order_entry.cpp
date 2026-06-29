@@ -4,14 +4,11 @@
 #include <app_utils/app_utils.h>
 #include <account/account_db.h>
 
-BinanceOrderEntry::BinanceOrderEntry(const std::string& key, EventBase* event_base) :
+BinanceOrderEntry::BinanceOrderEntry(std::shared_ptr<AccountBase> account, EventBase* event_base) :
     OrderEntry(ExchangeId::BINANCE, event_base),
-    m_quoter_spot(key),
-    m_quoter_perpetual(key)
+    m_quoter_spot(account),
+    m_quoter_perpetual(account)
 {
-    Json account = AccountDB::load_account_by_key(key);
-    m_account.from_json(account);
-    bool is_testnet = account["is_testnet"];
 }
 
 size_t BinanceOrderEntry::get_rounded_number(const std::string& lot_size)

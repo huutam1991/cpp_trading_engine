@@ -9,7 +9,7 @@
 
 class BinanceOrderEntry : public OrderEntry
 {
-    BinanceAccount m_account;
+    // BinanceAccount m_account;
 
     // Quoter
     BinanceQuoterSpot m_quoter_spot;
@@ -22,7 +22,7 @@ protected:
     virtual Task<Json> place_on_exchange(Order order) override;
 
 public:
-    BinanceOrderEntry(const std::string& key, EventBase* event_base);
+    BinanceOrderEntry(std::shared_ptr<AccountBase> account, EventBase* event_base);
 
     // Util methods
     virtual Task<Json> get_balances() override;

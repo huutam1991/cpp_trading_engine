@@ -21,7 +21,7 @@ ExchangeId BinanceGateway::get_exchange()
 
 std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry(std::shared_ptr<AccountBase> account)
 {
-    return std::make_shared<BinanceOrderEntry>("", m_epoll_base);
+    return std::make_shared<BinanceOrderEntry>(account, m_epoll_base);
 }
 
 std::expected<bool, std::string> BinanceGateway::validate_account(std::shared_ptr<AccountBase> account)

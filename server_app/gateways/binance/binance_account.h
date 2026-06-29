@@ -10,6 +10,9 @@ class BinanceAccount : public Account<BinanceAccount>
 public:
     BinanceAccount() : Account<BinanceAccount>(ExchangeId::BINANCE) {}
 
+    std::string get_api_key() const { return m_api_key; }
+    std::string get_api_secret() const { return m_api_secret; }
+
     virtual Task<std::expected<bool, std::string>> validate_account() override
     {
         co_return std::expected<bool, std::string>(true);
