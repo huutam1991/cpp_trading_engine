@@ -40,8 +40,9 @@ struct AccountManager
         Json result;
 
         auto& field_names_array = get_field_names_array();
-        for (size_t exchange_id = 0; exchange_id < ExchangeId::TOTAL_EXCHANGES; exchange_id++)
+        for (size_t exchange_id = ExchangeId::NONE_EXCHANGE + 1; exchange_id < ExchangeId::TOTAL_EXCHANGES; exchange_id++)
         {
+            ExchangeId exchange_id_enum = static_cast<ExchangeId>(exchange_id);
             const auto& field_names = field_names_array[exchange_id];
             Json exchange_json;
             Json field_names_json;
@@ -52,7 +53,7 @@ struct AccountManager
             }
 
             exchange_json["field_names"] = field_names_json;
-            exchange_json["exchange_id"] = enum_reflect::enum_name(exchange_id);
+            exchange_json["exchange_id"] = enum_reflect::enum_name(exchange_id_enum);
 
             result.push_back(exchange_json);
         }
