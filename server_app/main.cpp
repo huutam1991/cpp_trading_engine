@@ -20,6 +20,7 @@
 #include <app_utils/log_init.h>
 #include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
+#include <account/account_manager.h>
 #include <order/order_manager.h>
 #include <order/simulator_order.h>
 #include <strategy/strategy_manager.h>
@@ -158,6 +159,7 @@ int main(int argc, char **argv) {
     spdlog::info("Server up time: {}", Utils::get_up_time());
 
     GatewayManager::instance().init();
+    AccountManager::init();
     OrderManager::instance().init();
     SimulatorOrder::init();
 
