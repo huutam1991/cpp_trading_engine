@@ -21,7 +21,7 @@ ExchangeId BinanceGateway::get_exchange()
 
 std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry()
 {
-    return std::make_shared<BinanceOrderEntry>(m_key, m_epoll_base);
+    return std::make_shared<BinanceOrderEntry>("", m_epoll_base);
 }
 
 std::vector<Instrument> BinanceGateway::fetch_instruments()
