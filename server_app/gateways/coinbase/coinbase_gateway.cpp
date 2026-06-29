@@ -69,11 +69,6 @@ void CoinbaseGateway::on_depth_update(const std::string& symbol, Json& payload)
     double best_ask = payload["asks"][0][0];
 }
 
-ExchangeId CoinbaseGateway::get_exchange()
-{
-    return ExchangeId::COINBASE;
-}
-
 std::shared_ptr<OrderEntry> CoinbaseGateway::get_order_entry(std::shared_ptr<AccountBase> account)
 {
     return nullptr;

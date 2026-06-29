@@ -14,11 +14,6 @@ BinanceGateway::BinanceGateway() :
     m_market_data_perpetual.update_url_and_port(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT);
 }
 
-ExchangeId BinanceGateway::get_exchange()
-{
-    return ExchangeId::BINANCE;
-}
-
 std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry(std::shared_ptr<AccountBase> account)
 {
     return std::make_shared<BinanceOrderEntry>(account, m_epoll_base);

@@ -20,7 +20,6 @@ class BinanceGateway : public Gateway
     std::vector<Instrument> m_instruments;
 
 protected:
-    virtual ExchangeId get_exchange() override;
     virtual std::shared_ptr<OrderEntry> get_order_entry(std::shared_ptr<AccountBase> account) override;
     virtual std::vector<Instrument> fetch_instruments() override;
 

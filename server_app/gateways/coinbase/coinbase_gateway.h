@@ -22,7 +22,6 @@ class CoinbaseGateway : public Gateway
     Json m_symbols_info;
 
 protected:
-    virtual ExchangeId get_exchange() override;
     virtual std::shared_ptr<OrderEntry> get_order_entry(std::shared_ptr<AccountBase> account) override;
 
 public:

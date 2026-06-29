@@ -9,6 +9,11 @@ Gateway::Gateway() : m_event_base {
 }
 {}
 
+ExchangeId Gateway::get_exchange()
+{
+    return m_exchange_id;
+}
+
 std::string Gateway::get_name()
 {
     return std::string(enum_reflect::enum_name(m_exchange_id));
