@@ -24,7 +24,6 @@ class CoinbaseGateway : public Gateway
 protected:
     virtual ExchangeId get_exchange() override;
     virtual std::shared_ptr<OrderEntry> get_order_entry() override;
-    virtual std::expected<bool, std::string> validate_account(std::shared_ptr<AccountBase> account) override;
 
 public:
     CoinbaseGateway();
@@ -34,6 +33,7 @@ public:
     virtual void unsubscribe_instrument(const Instrument* instrument) override {}
 
     // Util methods
+    virtual std::expected<bool, std::string> validate_account(std::shared_ptr<AccountBase> account) override;
     virtual Json get_status() override;
 
 private:
