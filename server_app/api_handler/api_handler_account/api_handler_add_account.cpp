@@ -1,5 +1,6 @@
 #include <api_handler/api_handler_account/api_handler_add_account.h>
 #include <account/account_db.h>
+#include <account/account_manager.h>
 
 APIHandlerAddAccount::APIHandlerAddAccount(HttpRequest* request) : APIHandler(request)
 {
@@ -24,7 +25,7 @@ Task<HttpResponse> APIHandlerAddAccount::child_handle()
     }
     else
     {
-        AccountDB::save_account_to_db(account);
+        AccountManager::add_account(account);
 
         // Response
         response["data"] = {};
