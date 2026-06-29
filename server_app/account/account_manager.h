@@ -17,11 +17,17 @@ struct AccountManager
         return field_names_array;
     }
 
+    static std::array<std::function<std::shared_ptr<AccountBase>()>, ExchangeId::TOTAL_EXCHANGES>& get_account_factory_array()
+    {
+        static std::array<std::function<std::shared_ptr<AccountBase>()>, ExchangeId::TOTAL_EXCHANGES> account_factory_array;
+        return account_factory_array;
+    }
+
     template <class T>
     static void register_account()
     {
+        // Register field names for the account type T
         T dummy_object;
-
         Json dummy_json = dummy_object.to_json();
         std::vector<std::string> field_names;
 
@@ -33,6 +39,10 @@ struct AccountManager
         ExchangeId exchange_id = dummy_object.get_exchange_id();
         auto& field_names_array = get_field_names_array();
         field_names_array[exchange_id] = field_names;
+
+        // Register factory function for creating instances of T
+        auto& account_factory_array = get_account_factory_array();
+        account_factory_array[exchange_id] = []() -> std::shared_ptr<AccountBase> { return std::make_shared<T>(); };
     }
 
     static Json get_all_accounts_field_names()
