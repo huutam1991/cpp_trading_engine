@@ -41,7 +41,7 @@ void Gateway::init()
 
 void Gateway::add_account(std::shared_ptr<AccountBase> account)
 {
-    account->m_order_entry = get_order_entry();
+    account->m_order_entry = get_order_entry(account);
     m_accounts[account->get_key_name()] = account;
 }
 

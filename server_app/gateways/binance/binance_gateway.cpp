@@ -19,7 +19,7 @@ ExchangeId BinanceGateway::get_exchange()
     return ExchangeId::BINANCE;
 }
 
-std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry()
+std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry(std::shared_ptr<AccountBase> account)
 {
     return std::make_shared<BinanceOrderEntry>("", m_epoll_base);
 }
