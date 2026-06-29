@@ -79,6 +79,12 @@ std::shared_ptr<OrderEntry> CoinbaseGateway::get_order_entry()
     return nullptr;
 }
 
+std::expected<bool, std::string> CoinbaseGateway::validate_account(std::shared_ptr<AccountBase> account)
+{
+    // Implementation of account validation
+    return true;
+}
+
 Json CoinbaseGateway::get_status()
 {
     Json status;

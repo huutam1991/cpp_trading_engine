@@ -24,6 +24,21 @@ std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry()
     return std::make_shared<BinanceOrderEntry>("", m_epoll_base);
 }
 
+std::expected<bool, std::string> BinanceGateway::validate_account(std::shared_ptr<AccountBase> account)
+{
+    auto task_validate = account->m_order_entry->get_balances();
+    auto future_validate = task_validate.get_future();
+    task_validate.start_running_on(m_event_base);
+
+    Json balances = future_validate.get();
+    if (balances.has_field("error") == true)
+    {
+        return std::unexpected(balances.get_string_value());
+    }
+
+    return true;
+}
+
 std::vector<Instrument> BinanceGateway::fetch_instruments()
 {
     get_spot_symbols_info();

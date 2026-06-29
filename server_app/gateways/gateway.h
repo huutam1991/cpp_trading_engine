@@ -25,6 +25,7 @@ protected:
     Gateway();
     virtual std::vector<Instrument> fetch_instruments();
     virtual std::shared_ptr<OrderEntry> get_order_entry() = 0;
+    virtual std::expected<bool, std::string> validate_account(std::shared_ptr<AccountBase> account) = 0;
 
 public:
     virtual ExchangeId get_exchange() = 0;
