@@ -33,7 +33,10 @@ std::expected<bool, std::string> BinanceGateway::validate_account(std::shared_pt
     Json balances = future_validate.get();
     if (balances.has_field("code") && (int)balances["code"] < 0)
     {
-        return std::unexpected(balances.get_string_value());
+        std::string error_msg = balances["msg"];
+        error_msg += ", code: " + std::to_string((int)balances["code"]);
+
+        return std::unexpected(error_msg);
     }
 
     return true;
