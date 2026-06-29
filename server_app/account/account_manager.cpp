@@ -37,14 +37,23 @@ void AccountManager::init()
 
 std::expected<bool, std::string> AccountManager::add_account(Json& account_json)
 {
+    std::string key = account_json["key"];
+    Json find_account = AccountDB::load_account_by_key(key);
+    if (find_account != nullptr)
+    {
+        return std::unexpected("Account [" + key + "] already exists");
+    }
+    else
+    {
+        // Save to DB
+        AccountDB::save_account_to_db(account_json);
+    }
+
     ExchangeId exchange_id = enum_reflect::enum_value<ExchangeId>((std::string)account_json["exchange_id"]);
 
     auto& account_factory_array = get_account_factory_array();
     std::shared_ptr<AccountBase> account_instance = account_factory_array[exchange_id]();
     account_instance->from_json(account_json);
-
-    // Save to DB
-    AccountDB::save_account_to_db(account_json);
 
     // Add to all_accounts
     get_all_accounts().emplace(account_instance->get_key_name(), account_instance);
