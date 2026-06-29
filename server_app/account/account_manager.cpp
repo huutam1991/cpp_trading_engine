@@ -48,5 +48,19 @@ std::expected<bool, std::string> AccountManager::set_active_account(const std::s
     it->second->set_active(is_active);
     AccountDB::update_account_in_db(account_key, it->second->to_json());
 
+    // Update gateway
+    std::shared_ptr<Gateway> gateway = GatewayManager::instance().get_gateway(it->second->get_exchange_id());
+    if (gateway != nullptr)
+    {
+        if (is_active == true)
+        {
+            gateway->add_account(it->second);
+        }
+        else
+        {
+            gateway->remove_account(it->second);
+        }
+    }
+
     return true;
 }

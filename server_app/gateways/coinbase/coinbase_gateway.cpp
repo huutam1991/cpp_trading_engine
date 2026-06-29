@@ -99,7 +99,7 @@ Json CoinbaseGateway::get_status()
     status["instruments"] = Instrument::get_instrument_list(ExchangeId::COINBASE, InstrumentType::SPOT).size();
     status["latency"] = "0ms";
     status["up_time"] = "0";
-    status["accounts"] = 0;
+    status["accounts"] = m_accounts.size();
     status["messages_per_minute"] = 0;
 
 

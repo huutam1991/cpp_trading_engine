@@ -200,7 +200,7 @@ Json BinanceGateway::get_status()
     status["instruments"] = Instrument::get_instrument_list(ExchangeId::BINANCE, InstrumentType::PERPETUAL).size();
     status["latency"] = "18.4ms";
     status["up_time"] = "2d 14h 36m";
-    status["accounts"] = 1;
+    status["accounts"] = m_accounts.size();
     status["messages_per_minute"] = 12532;
 
     return status;
