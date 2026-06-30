@@ -137,10 +137,10 @@ Task<Json> BinanceOrderEntry::get_positions()
 
     Json data;
 
-    positions.for_each([&data](Json& position)
+    positions.for_each([&data, exchange_id = this->m_exchange_id](Json& position)
     {
         const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(
-            ExchangeId::BINANCE,
+            exchange_id,
             InstrumentType::PERPETUAL,
             (std::string)position["symbol"]
         );
