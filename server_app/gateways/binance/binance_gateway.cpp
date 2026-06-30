@@ -13,6 +13,19 @@ BinanceGateway::BinanceGateway() :
 {
 }
 
+BinanceGateway::BinanceGateway(ExchangeId exchange_id) :
+    Gateway(exchange_id),
+    m_epoll_base((EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)),
+    m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
+    m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
+{
+    if (exchange_id == ExchangeId::BINANCE_TESTNET)
+    {
+        m_market_data_spot.update_url_and_port(BINANCE_TESTNET_SPOT_WS_URL, BINANCE_TESTNET_SPOT_WS_PORT);
+        m_market_data_perpetual.update_url_and_port(BINANCE_TESTNET_FUTURES_WS_URL, BINANCE_TESTNET_FUTURES_WS_PORT);
+    }
+}
+
 std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry(std::shared_ptr<AccountBase> account)
 {
     return std::make_shared<BinanceOrderEntry>(account, m_epoll_base);

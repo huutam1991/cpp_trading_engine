@@ -26,6 +26,9 @@ protected:
 public:
     BinanceGateway();
 
+    // This constructor is used for child classes that inherit from BinanceGateway
+    BinanceGateway(ExchangeId exchange_id);
+
     virtual void subscribe_instruments(std::vector<const Instrument*> instruments) override;
     virtual void subscribe_instrument(const Instrument* instrument) override;
     virtual void unsubscribe_instrument(const Instrument* instrument) override;
