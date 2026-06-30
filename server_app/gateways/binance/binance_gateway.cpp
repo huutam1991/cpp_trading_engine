@@ -11,8 +11,6 @@ BinanceGateway::BinanceGateway() :
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
 {
-    m_market_data_spot.update_url_and_port(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT);
-    m_market_data_perpetual.update_url_and_port(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT);
 }
 
 std::shared_ptr<OrderEntry> BinanceGateway::get_order_entry(std::shared_ptr<AccountBase> account)
