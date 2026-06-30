@@ -1,9 +1,8 @@
 #include <gateways/binance/binance_market_data/order_book/binance_order_book.h>
 #include <iomanip>
 
-BinanceOrderBook::BinanceOrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base)
-    :   m_symbol{symbol},
-        m_instrument{Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol)},
+BinanceOrderBook::BinanceOrderBook(const Instrument* instrument, size_t depth_level, EpollBase* event_base)
+    :   m_instrument{instrument},
         m_depth_level{depth_level},
         m_event_base{event_base}
 {
@@ -16,7 +15,16 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
     // wss://fstream.binance.com/public/stream?streams=btcusdt@depth
     std::string path = "/public/stream?streams=" + m_instrument->get_lower_case_exchange_symbol() + "@depth";
 
-    m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), path,
+    std::string url = BINANCE_FUTURES_WS_URL;
+    int port = std::stoi(BINANCE_FUTURES_WS_PORT);
+
+    if (m_instrument->exchange_id == ExchangeId::BINANCE_TESTNET)
+    {
+        url = BINANCE_TESTNET_FUTURES_WS_URL;
+        port = std::stoi(BINANCE_TESTNET_FUTURES_WS_PORT);
+    }
+
+    m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, url, port, path,
         // on_connect
         [this]() -> Task<void>
         {
@@ -87,7 +95,15 @@ Task<void> BinanceOrderBook::send_request_get_snapshot()
 {
     // https://fapi.binance.com/fapi/v1/depth?symbol=BTCUSDT&limit=1000
 
-    auto https_client_request = std::make_shared<HttpsClientRequest>(m_event_base, BINANCE_FUTURES_REST_URL, std::stoi(BINANCE_FUTURES_REST_PORT));
+    std::string url = BINANCE_FUTURES_REST_URL;
+    int port = std::stoi(BINANCE_FUTURES_REST_PORT);
+    if (m_instrument->exchange_id == ExchangeId::BINANCE_TESTNET)
+    {
+        url = BINANCE_TESTNET_FUTURES_REST_URL;
+        port = std::stoi(BINANCE_TESTNET_FUTURES_REST_PORT);
+    }
+
+    auto https_client_request = std::make_shared<HttpsClientRequest>(m_event_base, url, port);
     HttpsClientResponse response = co_await https_client_request->get("/fapi/v1/depth?symbol=" + m_instrument->exchange_symbol.to_string() + "&limit=" + std::to_string(m_depth_level));
 
     Json data = Json::parse(response.body);

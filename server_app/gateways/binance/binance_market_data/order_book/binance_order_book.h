@@ -15,10 +15,9 @@
 class BinanceOrderBook
 {
 public:
-    BinanceOrderBook(const std::string& symbol, size_t depth_level, EpollBase* event_base);
+    BinanceOrderBook(const Instrument* instrument, size_t depth_level, EpollBase* event_base);
 
 private:
-    std::string m_symbol;
     const Instrument* m_instrument = nullptr;
     size_t m_depth_level;
     EpollBase* m_event_base;
