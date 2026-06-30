@@ -4,11 +4,13 @@
 #include <instrument/instrument.h>
 #include <gateways/gateway_manager.h>
 #include <gateways/binance/binance_gateway.h>
+#include <gateways/binance_testnet/binance_testnet_gateway.h>
 #include <gateways/coinbase/coinbase_gateway.h>
 
 void GatewayManager::init()
 {
     m_gateways.insert(std::make_pair(ExchangeId::BINANCE, std::make_shared<BinanceGateway>()));
+    m_gateways.insert(std::make_pair(ExchangeId::BINANCE_TESTNET, std::make_shared<BinanceTestnetGateway>()));
     m_gateways.insert(std::make_pair(ExchangeId::COINBASE, std::make_shared<CoinbaseGateway>()));
 
     // Check to init gateway
