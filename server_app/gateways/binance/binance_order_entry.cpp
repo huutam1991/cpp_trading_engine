@@ -11,6 +11,13 @@ BinanceOrderEntry::BinanceOrderEntry(std::shared_ptr<AccountBase> account, Event
 {
 }
 
+BinanceOrderEntry::BinanceOrderEntry(ExchangeId exchange_id, std::shared_ptr<AccountBase> account, EventBase* event_base) :
+    OrderEntry(exchange_id, event_base),
+    m_quoter_spot(account),
+    m_quoter_perpetual(account)
+{
+}
+
 size_t BinanceOrderEntry::get_rounded_number(const std::string& lot_size)
 {
     int pos_1 = lot_size.find_first_of("1"); // find the position of charater '1'

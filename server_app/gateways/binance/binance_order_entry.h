@@ -24,6 +24,9 @@ protected:
 public:
     BinanceOrderEntry(std::shared_ptr<AccountBase> account, EventBase* event_base);
 
+    // This constructor is used for child classes that inherit from BinanceOrderEntry
+    BinanceOrderEntry(ExchangeId exchange_id, std::shared_ptr<AccountBase> account, EventBase* event_base);
+
     // Util methods
     virtual Task<Json> get_balances() override;
     virtual Task<Json> get_positions() override;
