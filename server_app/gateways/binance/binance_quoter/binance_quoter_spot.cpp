@@ -8,12 +8,20 @@
 
 BinanceQuoterSpot::BinanceQuoterSpot(std::shared_ptr<AccountBase> account) : BinanceQuoter(account)
 {
-    m_url = BINANCE_SPOT_URL;
-    m_port = BINANCE_SPOT_PORT;
-
-    // websocket
-    m_ws_url = BINANCE_SPOT_WS_URL;
-    m_ws_port = BINANCE_SPOT_WS_PORT;
+    if (account->get_exchange_id() == ExchangeId::BINANCE_TESTNET)
+    {
+        m_url = BINANCE_TESTNET_SPOT_URL;
+        m_port = BINANCE_TESTNET_SPOT_PORT;
+        m_ws_url = BINANCE_TESTNET_SPOT_WS_URL;
+        m_ws_port = BINANCE_TESTNET_SPOT_WS_PORT;
+    }
+    else
+    {
+        m_url = BINANCE_SPOT_URL;
+        m_port = BINANCE_SPOT_PORT;
+        m_ws_url = BINANCE_SPOT_WS_URL;
+        m_ws_port = BINANCE_SPOT_WS_PORT;
+    }
 
     // Event base: GATEWAY
     m_epoll_base = (EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY);
