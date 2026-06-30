@@ -79,11 +79,11 @@ enum class SourceType
 // Binance common
 #define BINANCE_COMMON "binance_common"
 
-// Binance Spot Testnet
-#define BINANCE_TESTNET_SPOT_DB_SOURCE_NAME "binance_test"
-#define BINANCE_TESTNET_SPOT_REST_URL "testnet.binance.vision"
+// Binance Testnet / Demo Spot
+#define BINANCE_TESTNET_SPOT_DB_SOURCE_NAME "binance_demo_spot"
+#define BINANCE_TESTNET_SPOT_REST_URL "demo-api.binance.com"
 #define BINANCE_TESTNET_SPOT_REST_PORT "443"
-#define BINANCE_TESTNET_SPOT_WS_URL "stream.testnet.binance.vision"
+#define BINANCE_TESTNET_SPOT_WS_URL "demo-stream.binance.com"
 #define BINANCE_TESTNET_SPOT_WS_PORT "443"
 
 // Binance Spot Production
