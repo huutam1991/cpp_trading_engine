@@ -59,7 +59,7 @@ std::vector<Instrument> BinanceGateway::fetch_instruments()
 
 Task<Json> BinanceGateway::get_exchange_info()
 {
-    HttpsClientRequest client(m_epoll_base, BINANCE_SPOT_URL, std::stoi(BINANCE_SPOT_PORT));
+    HttpsClientRequest client(m_epoll_base, BINANCE_SPOT_REST_URL, std::stoi(BINANCE_SPOT_REST_PORT));
     HttpsClientResponse response = co_await client.get("/api/v3/exchangeInfo");
 
     co_return Json::parse(response.body);
@@ -217,7 +217,7 @@ Json BinanceGateway::get_status()
     status["status"] = "Connected";
     status["environment"] = "Production";
     status["endpoints"] = {
-        {"spot", "https://" + std::string(BINANCE_SPOT_URL)},
+        {"spot", "https://" + std::string(BINANCE_SPOT_REST_URL)},
         {"perpetual", "https://" + std::string(BINANCE_FUTURES_REST_URL)}
     };
     status["exchange_id"] = enum_reflect::enum_name(ExchangeId::BINANCE);

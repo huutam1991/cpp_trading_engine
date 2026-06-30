@@ -7,8 +7,8 @@
 class BinanceQuoterSpot : public BinanceQuoter
 {
 private:
-    std::string m_url = BINANCE_SPOT_URL;
-    std::string m_port = BINANCE_SPOT_PORT;
+    std::string m_url = BINANCE_SPOT_REST_URL;
+    std::string m_port = BINANCE_SPOT_REST_PORT;
     std::string m_ws_url = BINANCE_SPOT_WS_URL;
     std::string m_ws_port = BINANCE_SPOT_WS_PORT;
 

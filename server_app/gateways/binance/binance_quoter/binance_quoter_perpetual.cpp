@@ -13,8 +13,8 @@ BinanceQuoterPerpetual::BinanceQuoterPerpetual(std::shared_ptr<AccountBase> acco
 {
     if (account->get_exchange_id() == ExchangeId::BINANCE_TESTNET)
     {
-        m_url = BINANCE_TESTNET_FUTURES_URL;
-        m_port = BINANCE_TESTNET_FUTURES_PORT;
+        m_url = BINANCE_TESTNET_FUTURES_REST_URL;
+        m_port = BINANCE_TESTNET_FUTURES_REST_PORT;
 
         // websocket
         m_ws_url = BINANCE_TESTNET_FUTURES_WS_URL;
