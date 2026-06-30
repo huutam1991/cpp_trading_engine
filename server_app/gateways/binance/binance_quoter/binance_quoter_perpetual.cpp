@@ -96,7 +96,7 @@ void BinanceQuoterPerpetual::init_websocket()
                 Json o = json["o"];
 
                 std::string exchange_symbol = o["s"];
-                const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, exchange_symbol);
+                const Instrument* instrument = Instrument::get_instrument_by_exchange_symbol(m_exchange_id, InstrumentType::PERPETUAL, exchange_symbol);
 
                 Order order
                 {

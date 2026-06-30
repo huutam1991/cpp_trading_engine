@@ -15,6 +15,7 @@ protected:
     std::string m_key;
     std::string m_api_key;
     std::string m_api_secret;
+    ExchangeId  m_exchange_id = ExchangeId::NONE_EXCHANGE;
 
     bool m_is_testnet = false;
     virtual std::string& get_url() = 0;

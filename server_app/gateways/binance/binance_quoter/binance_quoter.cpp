@@ -12,6 +12,7 @@ BinanceQuoter::BinanceQuoter(std::shared_ptr<AccountBase> account) : m_key{accou
     BinanceAccount* binance_account = (BinanceAccount*)account.get();;
     m_api_key = binance_account->get_api_key();
     m_api_secret = binance_account->get_api_secret();
+    m_exchange_id = binance_account->get_exchange_id();
 
     spdlog::debug("BinanceQuoter initialized with key: {}", m_key);
     spdlog::debug("Binance account - m_api_key: {}", m_api_key);
