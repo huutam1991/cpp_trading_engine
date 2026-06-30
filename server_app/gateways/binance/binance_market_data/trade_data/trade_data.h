@@ -6,14 +6,14 @@
 
 class BinanceTradeData
 {
-    std::string m_symbol;
     EpollBase* m_event_base;
     const Instrument* m_instrument = nullptr;
+    std::string m_symbol;
     std::shared_ptr<HttpsClientWebsocket> m_websocket = nullptr;
 
     void start();
 
 public:
-    BinanceTradeData(const std::string& symbol, EpollBase* event_base);
+    BinanceTradeData(const Instrument* instrument, EpollBase* event_base);
     ~BinanceTradeData() {}
 };

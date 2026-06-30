@@ -6,11 +6,11 @@
 
 #include <strategy/strategy_manager.h>
 
-BinanceTradeData::BinanceTradeData(const std::string& symbol, EpollBase* event_base)
-    : m_symbol{symbol}, m_event_base{event_base}
+BinanceTradeData::BinanceTradeData(const Instrument* instrument, EpollBase* event_base)
+    : m_instrument{instrument}, m_event_base{event_base}
 {
+    m_symbol = instrument->exchange_symbol.to_string();
     STRING_LOWER_CASE(m_symbol);
-    m_instrument = Instrument::get_instrument_by_exchange_symbol(ExchangeId::BINANCE, InstrumentType::PERPETUAL, symbol);
     start();
 }
 
@@ -25,8 +25,16 @@ void BinanceTradeData::start()
     std::string ws_path = "/ws/" + m_symbol + "@aggTrade";
 
     std::string name = m_symbol + "_trade_data_ws";
+    std::string url = BINANCE_FUTURES_WS_URL;
+    int port = std::stoi(BINANCE_FUTURES_WS_PORT);
 
-    m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, BINANCE_FUTURES_WS_URL, std::stoi(BINANCE_FUTURES_WS_PORT), ws_path,
+    if (m_instrument->exchange_id == ExchangeId::BINANCE_TESTNET)
+    {
+        url = BINANCE_TESTNET_FUTURES_WS_URL;
+        port = std::stoi(BINANCE_TESTNET_FUTURES_WS_PORT);
+    }
+
+    m_websocket = std::make_shared<HttpsClientWebsocket>(m_event_base, url, port, ws_path,
         // on_connect
         [this, ws_path]() -> Task<void>
         {
