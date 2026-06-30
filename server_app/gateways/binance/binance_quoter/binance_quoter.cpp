@@ -6,13 +6,25 @@
 #include <gateways/binance/binance_quoter/binance_quoter.h>
 #include <account/account_db.h>
 #include <gateways/binance/binance_account.h>
+#include <gateways/binance_testnet/binance_testnet_account.h>
 
 BinanceQuoter::BinanceQuoter(std::shared_ptr<AccountBase> account) : m_key{account->get_key_name()}
 {
-    BinanceAccount* binance_account = (BinanceAccount*)account.get();;
-    m_api_key = binance_account->get_api_key();
-    m_api_secret = binance_account->get_api_secret();
-    m_exchange_id = binance_account->get_exchange_id();
+    if (account->get_exchange_id() == ExchangeId::BINANCE)
+    {
+        BinanceAccount* binance_account = (BinanceAccount*)account.get();;
+        m_api_key = binance_account->get_api_key();
+        m_api_secret = binance_account->get_api_secret();
+        m_exchange_id = binance_account->get_exchange_id();
+    }
+    else if (account->get_exchange_id() == ExchangeId::BINANCE_TESTNET)
+    {
+        BinanceTestnetAccount* binance_testnet_account = (BinanceTestnetAccount*)account.get();;
+        m_api_key = binance_testnet_account->get_api_key();
+        m_api_secret = binance_testnet_account->get_api_secret();
+        m_exchange_id = binance_testnet_account->get_exchange_id();
+        m_is_testnet = true;
+    }
 
     spdlog::debug("BinanceQuoter initialized with key: {}", m_key);
     spdlog::debug("Binance account - m_api_key: {}", m_api_key);
