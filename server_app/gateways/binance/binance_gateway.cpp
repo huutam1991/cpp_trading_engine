@@ -6,7 +6,7 @@
 #include <account/account_db.h>
 
 BinanceGateway::BinanceGateway() :
-    Gateway(m_exchange_id),
+    Gateway(ExchangeId::BINANCE),
     m_epoll_base((EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)),
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
