@@ -14,6 +14,7 @@ enum ExchangeId
 {
     NONE_EXCHANGE = 0,
     BINANCE,
+    BINANCE_TESTNET,
     COINBASE,
     TOTAL_EXCHANGES
 };
