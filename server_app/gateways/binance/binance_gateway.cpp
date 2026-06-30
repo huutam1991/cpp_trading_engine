@@ -6,7 +6,7 @@
 #include <account/account_db.h>
 
 BinanceGateway::BinanceGateway() :
-    Gateway(ExchangeId::BINANCE),
+    Gateway(m_exchange_id),
     m_epoll_base((EpollBase*)EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)),
     m_market_data_spot(BINANCE_SPOT_WS_URL, BINANCE_SPOT_WS_PORT),
     m_market_data_perpetual(BINANCE_FUTURES_WS_URL, BINANCE_FUTURES_WS_PORT)
@@ -94,7 +94,7 @@ void BinanceGateway::get_spot_symbols_info()
         std::string symbol_name = base_asset + "-" + quote_asset;
 
         m_instruments.push_back(Instrument {
-            ExchangeId::BINANCE,
+            m_exchange_id,
             InstrumentType::SPOT,
             symbol_name,
             exchange_symbol,
@@ -131,7 +131,7 @@ void BinanceGateway::get_perpetual_symbols_info()
         std::string symbol_name = base_asset + "-" + quote_asset + "-PERPETUAL";
 
         m_instruments.push_back(Instrument {
-            ExchangeId::BINANCE,
+            m_exchange_id,
             InstrumentType::PERPETUAL,
             symbol_name,
             exchange_symbol,
@@ -220,8 +220,8 @@ Json BinanceGateway::get_status()
         {"spot", "https://" + std::string(BINANCE_SPOT_REST_URL)},
         {"perpetual", "https://" + std::string(BINANCE_FUTURES_REST_URL)}
     };
-    status["exchange_id"] = enum_reflect::enum_name(ExchangeId::BINANCE);
-    status["instruments"] = Instrument::get_instrument_list(ExchangeId::BINANCE, InstrumentType::PERPETUAL).size();
+    status["exchange_id"] = enum_reflect::enum_name(m_exchange_id);
+    status["instruments"] = Instrument::get_instrument_list(m_exchange_id, InstrumentType::PERPETUAL).size();
     status["latency"] = "18.4ms";
     status["up_time"] = "2d 14h 36m";
     status["accounts"] = m_accounts.size();
