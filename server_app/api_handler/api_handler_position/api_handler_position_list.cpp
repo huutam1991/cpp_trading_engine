@@ -18,6 +18,7 @@ Task<HttpResponse> APIHandlerPositionList::child_handle()
 
         account_positions.for_each([&](Json& position)
         {
+            position["account"] = account->to_json();
             positions.push_back(position);
         });
     }
