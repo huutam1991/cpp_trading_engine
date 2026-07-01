@@ -9,6 +9,8 @@
 
 class BinanceOrderEntry : public OrderEntry
 {
+    // BinanceAccount m_account;
+
     // Quoter
     BinanceQuoterSpot m_quoter_spot;
     BinanceQuoterPerpetual m_quoter_perpetual;

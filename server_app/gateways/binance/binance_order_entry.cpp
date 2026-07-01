@@ -5,14 +5,14 @@
 #include <account/account_db.h>
 
 BinanceOrderEntry::BinanceOrderEntry(std::shared_ptr<AccountBase> account, EventBase* event_base) :
-    OrderEntry(ExchangeId::BINANCE, account, event_base),
+    OrderEntry(ExchangeId::BINANCE, event_base),
     m_quoter_spot(account),
     m_quoter_perpetual(account)
 {
 }
 
 BinanceOrderEntry::BinanceOrderEntry(ExchangeId exchange_id, std::shared_ptr<AccountBase> account, EventBase* event_base) :
-    OrderEntry(exchange_id, account, event_base),
+    OrderEntry(exchange_id, event_base),
     m_quoter_spot(account),
     m_quoter_perpetual(account)
 {
