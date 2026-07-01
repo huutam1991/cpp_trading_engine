@@ -312,8 +312,6 @@ onBeforeUnmount(() => {
                   <span class="exchange-text">{{ position.instrument.exchange_id }}</span>
                   <i>·</i>
                   <span class="account-badge">{{ position.account }}</span>
-                  <i>·</i>
-                  <span>{{ position.instrument.instrument_type }}</span>
                 </small>
               </div>
 
@@ -352,21 +350,6 @@ onBeforeUnmount(() => {
               </div>
             </section>
 
-            <footer class="instrument-strip">
-              <span class="exchange-text">{{ position.instrument.exchange_id }}</span>
-              <i>·</i>
-              <span class="account-badge compact">{{ position.account }}</span>
-              <i>·</i>
-              <span class="mono-text">{{ position.instrument.exchange_symbol }}</span>
-              <i>·</i>
-              <span>{{ position.instrument.instrument_type }}</span>
-              <i>·</i>
-              <span>Lot {{ position.instrument.lot_size }}</span>
-              <i>·</i>
-              <span>Tick {{ position.instrument.tick_size }}</span>
-              <i>·</i>
-              <span>Precision {{ position.instrument.price_precision }}</span>
-            </footer>
           </article>
         </div>
 
