@@ -19,6 +19,7 @@ type Instrument = {
 }
 
 type Position = {
+  account: string
   side: string
   position_amt: number
   mark_price: string | number
@@ -97,7 +98,7 @@ const totalPnl = computed(() => {
 })
 
 function getPositionKey(position: Position) {
-  return `${position.instrument.exchange_id}:${position.instrument.symbol}:${position.side}`
+  return `${position.account}:${position.instrument.exchange_id}:${position.instrument.symbol}:${position.side}`
 }
 
 async function fetchPositions(showLoading = false) {
@@ -307,10 +308,12 @@ onBeforeUnmount(() => {
             <header class="position-card-header">
               <div class="instrument-title">
                 <strong>{{ position.instrument.symbol }}</strong>
-                <small>
-                  <span>{{ position.instrument.exchange_id }}</span>
+                <small class="position-meta">
+                  <span class="exchange-text">{{ position.instrument.exchange_id }}</span>
                   <i>·</i>
-                  {{ position.instrument.instrument_type }}
+                  <span class="account-badge">{{ position.account }}</span>
+                  <i>·</i>
+                  <span>{{ position.instrument.instrument_type }}</span>
                 </small>
               </div>
 
@@ -351,6 +354,8 @@ onBeforeUnmount(() => {
 
             <footer class="instrument-strip">
               <span class="exchange-text">{{ position.instrument.exchange_id }}</span>
+              <i>·</i>
+              <span class="account-badge compact">{{ position.account }}</span>
               <i>·</i>
               <span class="mono-text">{{ position.instrument.exchange_symbol }}</span>
               <i>·</i>
@@ -589,9 +594,33 @@ onBeforeUnmount(() => {
   font-weight: 700;
 }
 
-.instrument-title small span,
+.position-meta {
+  flex-wrap: wrap;
+}
+
 .exchange-text {
   color: #facc15;
+}
+
+.account-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 3px 9px;
+  color: #93c5fd;
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+}
+
+.account-badge.compact {
+  padding: 2px 8px;
+  font-size: 10px;
 }
 
 .side-badge {
