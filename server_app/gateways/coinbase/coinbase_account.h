@@ -11,11 +11,6 @@ class CoinbaseAccount : public Account<CoinbaseAccount>
 public:
     CoinbaseAccount() : Account<CoinbaseAccount>(ExchangeId::COINBASE) {}
 
-    virtual Task<std::expected<bool, std::string>> validate_account() override
-    {
-        co_return std::expected<bool, std::string>(true);
-    }
-
     virtual Json to_json() const override
     {
         Json data;

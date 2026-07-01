@@ -27,7 +27,6 @@ public:
     bool is_active() const { return m_is_active; }
     void set_active(bool is_active) { m_is_active = is_active; }
 
-    virtual Task<std::expected<bool, std::string>> validate_account() = 0;
     virtual Json to_json() const = 0;
     virtual void from_json(Json& data) = 0;
 };
