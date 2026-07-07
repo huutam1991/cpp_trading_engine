@@ -3,7 +3,7 @@ project(http_server_cpp)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -fcoroutines")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -pthread -fcoroutines -fomit-frame-pointer")
 
 # Full TSAN
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fcoroutines -fsanitize=thread -fno-omit-frame-pointer -g -O1")
