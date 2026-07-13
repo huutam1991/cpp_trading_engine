@@ -6,7 +6,7 @@ HttpsClientWebsocketSession::HttpsClientWebsocketSession(
     EpollBase* epoll_base,
     const std::string& name,
     std::unique_ptr<TCPConnection> tcp_connection,
-    std::function<Task<void>(std::string)> on_message)
+    std::move_only_function<Task<void>(std::string)> on_message)
     : m_name(name),
       m_tcp_connection(std::move(tcp_connection)),
       m_on_message(std::move(on_message))

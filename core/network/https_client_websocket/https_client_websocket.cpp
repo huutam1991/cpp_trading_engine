@@ -8,10 +8,10 @@ HttpsClientWebsocket::HttpsClientWebsocket(
     const std::string& hostname,
     int port,
     const std::string& path,
-    std::function<Task<void>()> on_connect,
-    std::function<Task<void>(std::string)> on_message,
-    std::function<Task<void>()> on_disconnect,
-    std::function<Task<void>()> on_close)
+    std::move_only_function<Task<void>()> on_connect,
+    std::move_only_function<Task<void>(std::string)> on_message,
+    std::move_only_function<Task<void>()> on_disconnect,
+    std::move_only_function<Task<void>()> on_close)
     : m_epoll_base{epoll_base},
       m_hostname{hostname},
       m_port{port},

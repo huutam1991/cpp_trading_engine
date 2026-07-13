@@ -14,10 +14,10 @@ class HttpsClientWebsocket
     std::string m_name;
 
     // User's callbacks
-    std::function<Task<void>()> m_on_connect = nullptr;
-    std::function<Task<void>(std::string)> m_on_message = nullptr;
-    std::function<Task<void>()> m_on_disconnect = nullptr;
-    std::function<Task<void>()> m_on_close = nullptr;
+    std::move_only_function<Task<void>()> m_on_connect = nullptr;
+    std::move_only_function<Task<void>(std::string)> m_on_message = nullptr;
+    std::move_only_function<Task<void>()> m_on_disconnect = nullptr;
+    std::move_only_function<Task<void>()> m_on_close = nullptr;
 
     std::unique_ptr<TCPConnection> m_tcp_connection = nullptr;
     std::unique_ptr<HttpsClientRequest> m_rest_request = nullptr;
@@ -29,10 +29,10 @@ public:
         const std::string& hostname,
         int port,
         const std::string& path,
-        std::function<Task<void>()> on_connect,
-        std::function<Task<void>(std::string)> on_message,
-        std::function<Task<void>()> on_disconnect,
-        std::function<Task<void>()> on_close);
+        std::move_only_function<Task<void>()> on_connect,
+        std::move_only_function<Task<void>(std::string)> on_message,
+        std::move_only_function<Task<void>()> on_disconnect,
+        std::move_only_function<Task<void>()> on_close);
 
     ~HttpsClientWebsocket();
 

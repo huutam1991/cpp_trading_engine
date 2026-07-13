@@ -15,7 +15,7 @@ class HttpsClientWebsocketSession
     std::string m_name;
 
 public:
-    HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& name, std::unique_ptr<TCPConnection> tcp_connection, std::function<Task<void>(std::string)> on_message);
+    HttpsClientWebsocketSession(EpollBase* epoll_base, const std::string& name, std::unique_ptr<TCPConnection> tcp_connection, std::move_only_function<Task<void>(std::string)> on_message);
     ~HttpsClientWebsocketSession();
 
     void write(std::string message);
@@ -27,7 +27,7 @@ private:
 
 private:
     WebSocketFrameParser m_response_parser;
-    std::function<Task<void>(std::string)> m_on_message;
+    std::move_only_function<Task<void>(std::string)> m_on_message;
 
     Task<void> m_wait_for_tcp_data_task = nullptr;
     Task<void> wait_for_tcp_data();
