@@ -3,6 +3,7 @@
 #include <chrono>
 #include <x86intrin.h>
 #include <spdlog/spdlog.h>
+#include <cstdint>
 
 #include <enum_reflect/enum_reflect.h>
 #include <utils/util_macros.h>
@@ -47,16 +48,43 @@ public:
     }
 };
 
-class MeasurePipeLineTime
+struct PipelineTiming
 {
-    static inline uint64_t rdtscp()
+    uint64_t ticks{};
+    double ns{};
+    double us{};
+};
+
+class MeasurePipelineTime
+{
+public:
+    explicit MeasurePipelineTime(double tsc_ghz, PipelineTiming& result)
+        : tsc_ghz_(tsc_ghz), result_(result)
     {
-        unsigned aux;
-        return __rdtscp(&aux);
+        _mm_lfence();
+        start_ = __rdtsc();
     }
 
-    static inline double cycles_to_us(uint64_t cycles, double cpu_ghz)
+    ~MeasurePipelineTime()
     {
-        return cycles / (cpu_ghz * 1.0);
+        unsigned aux;
+
+        const uint64_t end = __rdtscp(&aux);
+        _mm_lfence();
+
+        result_.ticks = end - start_;
+        result_.ns = static_cast<double>(result_.ticks) / tsc_ghz_;
+        result_.us = result_.ns / 1000.0;
     }
+
+    MeasurePipelineTime(const MeasurePipelineTime&) = delete;
+
+    MeasurePipelineTime&
+    operator=(const MeasurePipelineTime&) = delete;
+
+private:
+    uint64_t start_{};
+
+    double tsc_ghz_;
+    PipelineTiming& result_;
 };
