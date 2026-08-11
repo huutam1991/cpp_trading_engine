@@ -78,9 +78,7 @@ public:
     }
 
     MeasurePipelineTime(const MeasurePipelineTime&) = delete;
-
-    MeasurePipelineTime&
-    operator=(const MeasurePipelineTime&) = delete;
+    MeasurePipelineTime& operator=(const MeasurePipelineTime&) = delete;
 
 private:
     uint64_t start_{};
