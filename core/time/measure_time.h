@@ -83,7 +83,7 @@ public:
         _mm_lfence();
 
         m_result.ticks = end - m_start;
-        m_result.ns = static_cast<double>(m_result.ticks) / get_tsc_ghz() * 1e9;
+        m_result.ns = static_cast<double>(m_result.ticks) / get_tsc_ghz();
         m_result.us = m_result.ns / 1000.0;
 
         spdlog::debug("Execute time - {}: {} ticks, {} ns, {} us", m_logs, m_result.ticks, m_result.ns, m_result.us);
