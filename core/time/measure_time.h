@@ -58,6 +58,17 @@ struct PipelineTiming
 class MeasurePipelineTime
 {
 public:
+    static void init()
+    {
+        get_tsc_ghz();
+    }
+
+    static double get_tsc_ghz()
+    {
+        static double tsc_ghz = calibrate_tsc_ghz(500);
+        return tsc_ghz;
+    }
+
     explicit MeasurePipelineTime(double tsc_ghz, PipelineTiming& result)
         : tsc_ghz_(tsc_ghz), result_(result)
     {
@@ -75,6 +86,8 @@ public:
         result_.ticks = end - start_;
         result_.ns = static_cast<double>(result_.ticks) / tsc_ghz_;
         result_.us = result_.ns / 1000.0;
+
+        spdlog::debug("Pipeline timing: {} ticks, {} ns, {} us", result_.ticks, result_.ns, result_.us);
     }
 
     MeasurePipelineTime(const MeasurePipelineTime&) = delete;
@@ -85,4 +98,37 @@ private:
 
     double tsc_ghz_;
     PipelineTiming& result_;
+
+    // Read TSC with an optional fence to prevent instruction reordering
+    static inline uint64_t read_tsc()
+    {
+        // __cpuid or _mm_lfence can serialize the pipeline
+        _mm_lfence();
+        uint64_t tsc = __rdtsc();
+        return tsc;
+    }
+
+    static double calibrate_tsc_ghz(int ms_wait = 100)
+    {
+        // Optional: pin thread to a single core for consistent measurements
+        // (Platform-specific code like pthread_setaffinity_np can go here)
+
+        uint64_t tsc_start = read_tsc();
+        auto wall_start = std::chrono::high_resolution_clock::now();
+
+        // Sleep for the calibration window
+        std::this_thread::sleep_for(std::chrono::milliseconds(ms_wait));
+
+        uint64_t tsc_end = read_tsc();
+        auto wall_end = std::chrono::high_resolution_clock::now();
+
+        // Calculate elapsed time and cycles
+        std::chrono::duration<double, std::milli> elapsed_ms = wall_end - wall_start;
+        uint64_t elapsed_ticks = tsc_end - tsc_start;
+
+        // GHz = ticks per nanosecond / cycles per second vs nanoseconds
+        double ghz = (double)elapsed_ticks / (elapsed_ms.count() * 1e6);
+
+        return ghz;
+    }
 };
