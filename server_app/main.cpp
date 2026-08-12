@@ -139,6 +139,9 @@ int main(int argc, char **argv) {
     // Init SpdLog format
     LogInit::init();
 
+    // Measure TSC frequency for accurate timing
+    MeasurePipelineTime::init();
+
     // Remove old core dump files
     process_old_core_dumps_on_startup("./http_server_cpp", env_name);
 
