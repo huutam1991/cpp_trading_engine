@@ -69,11 +69,10 @@ public:
         return tsc_ghz;
     }
 
-    explicit MeasurePipelineTime(double tsc_ghz, PipelineTiming& result)
-        : tsc_ghz_(tsc_ghz), result_(result)
+    explicit MeasurePipelineTime(const std::string& logs) : m_logs(logs)
     {
         _mm_lfence();
-        start_ = __rdtsc();
+        m_start = __rdtsc();
     }
 
     ~MeasurePipelineTime()
@@ -83,21 +82,21 @@ public:
         const uint64_t end = __rdtscp(&aux);
         _mm_lfence();
 
-        result_.ticks = end - start_;
-        result_.ns = static_cast<double>(result_.ticks) / tsc_ghz_;
-        result_.us = result_.ns / 1000.0;
+        m_result.ticks = end - m_start;
+        m_result.ns = static_cast<double>(m_result.ticks) / get_tsc_ghz() * 1e9;
+        m_result.us = m_result.ns / 1000.0;
 
-        spdlog::debug("Pipeline timing: {} ticks, {} ns, {} us", result_.ticks, result_.ns, result_.us);
+        spdlog::debug("Execute time - {}: {} ticks, {} ns, {} us", m_logs, m_result.ticks, m_result.ns, m_result.us);
     }
 
     MeasurePipelineTime(const MeasurePipelineTime&) = delete;
     MeasurePipelineTime& operator=(const MeasurePipelineTime&) = delete;
 
 private:
-    uint64_t start_{};
+    std::string m_logs;
+    uint64_t m_start{};
 
-    double tsc_ghz_;
-    PipelineTiming& result_;
+    PipelineTiming m_result;
 
     // Read TSC with an optional fence to prevent instruction reordering
     static inline uint64_t read_tsc()
