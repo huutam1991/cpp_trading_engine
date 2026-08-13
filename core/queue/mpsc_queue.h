@@ -105,7 +105,7 @@ public:
             }
         }
 
-        // MeasureTime measure_time("MPSCQueue::push, name: " + name, MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::push, name: " + name);
 
         size_t pos = m_pool_buffer.head.load(std::memory_order_relaxed);
 
@@ -148,7 +148,7 @@ public:
 
     FORCE_INLINE T pop()
     {
-        // MeasureTime measure_time("MPSCQueue::pop, name: " + name, MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("MPSCQueue::pop, name: " + name);
 
         size_t pos = m_pool_buffer.tail;
         Slot& slot = m_pool_buffer.available_items[pos % Size];

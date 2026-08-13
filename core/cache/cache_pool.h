@@ -124,8 +124,8 @@ public:
 
         T* item;
         {
-            // MeasureTime measure_time("CachePool::acquire, name: " + name, MeasureUnit::NANOSECOND);
-            // MeasureTime measure_time("CachePool::acquire", MeasureUnit::NANOSECOND);
+            // MeasureTime measure_time("CachePool::acquire, name: " + name);
+            // MeasureTime measure_time("CachePool::acquire");
 
             PoolBuffer& pool_buffer = get_pool_buffer();
             if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
@@ -158,8 +158,8 @@ public:
         if (item != nullptr)
         {
             {
-                // MeasureTime measure_time("CachePool::release, name: " + name, MeasureUnit::NANOSECOND);
-                // MeasureTime measure_time("CachePool::release", MeasureUnit::NANOSECOND);
+                // MeasureTime measure_time("CachePool::release, name: " + name);
+                // MeasureTime measure_time("CachePool::release");
 
                 // Add item back to the pool
                 PoolBuffer& pool_buffer = get_pool_buffer();

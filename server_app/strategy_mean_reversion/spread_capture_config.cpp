@@ -99,7 +99,7 @@ void SpreadCaptureConfigManager::handle_order_update(Order& order)
 
 void SpreadCaptureConfigManager::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot");
     double mid_price = snapshot->get_mid_price();
     volatility_estimator.update(mid_price);
 

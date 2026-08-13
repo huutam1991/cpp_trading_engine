@@ -275,7 +275,7 @@ TEST(JsonTestCreation, SoftSkillJsonPoolTracking)
     // Action: Build a deeply nested soft skill profile
     // -------------------------------
     {
-        MeasureTime measure_time("SoftSkillJsonPoolTracking", MeasureUnit::MICROSECOND);
+        MeasureTime measure_time("SoftSkillJsonPoolTracking");
 
         for (size_t i = 0; i < 1; ++i)
         {

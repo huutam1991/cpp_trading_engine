@@ -36,7 +36,7 @@ void StrategyMeanReversionStateStop::handle_trade_update(TradeUpdate& trade)
 
 void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot");
     m_current_price = snapshot->get_mid_price();
     m_spread_captures.handle_order_book_snapshot(snapshot);
 }

@@ -165,7 +165,7 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
 void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot");
     m_current_price = snapshot->get_mid_price();
     m_pnl.update_current_price(m_current_price);
 

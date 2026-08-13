@@ -76,7 +76,7 @@ void OrderManager::update_order(Order order)
 
 Order& OrderManager::get_order_by_id(OrderId order_id)
 {
-    // MeasureTime g("OrderManager - get_order_by_id", MeasureUnit::MICROSECOND);
+    // MeasureTime g("OrderManager - get_order_by_id");
     if (is_valid_order(order_id) == false)
     {
         Order new_order;
@@ -119,7 +119,7 @@ Task<void> OrderManager::update_order_in_db(Order order)
 
 Task<void> OrderManager::handle_update_order(Order order)
 {
-    MeasureTime a("OrderManager - Handle order update", MeasureUnit::MICROSECOND);
+    MeasureTime a("OrderManager - Handle order update");
     Order& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)

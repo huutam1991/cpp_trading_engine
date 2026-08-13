@@ -11,7 +11,7 @@ public:
     {
         static std::unordered_set<size_t> seen_hashes;
 
-        // MeasureTime t("Check is_duplicate", MeasureUnit::MICROSECOND);
+        // MeasureTime t("Check is_duplicate");
 
         size_t hash = std::hash<std::string>{}(msg);
         auto [it, inserted] = seen_hashes.insert(hash);

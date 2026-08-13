@@ -64,7 +64,7 @@ void BinanceMarketDataSpot::start_websocket(const Instrument* instrument)
         // on_message
         [this, instrument](std::string buffer) -> Task<void>
         {
-            // MeasureTime t("Handle price update", MeasureUnit::MICROSECOND);
+            // MeasureTime t("Handle price update");
 
             Json depth = Json();
             if (this->standardize_data(buffer, depth))
@@ -124,7 +124,7 @@ void BinanceMarketDataSpot::subscribe_instruments(std::vector<const Instrument*>
 
 bool BinanceMarketDataSpot::standardize_data(const std::string& data, Json& depth)
 {
-    MeasureTime t("Standardize data SPOT", MeasureUnit::MICROSECOND);
+    MeasureTime t("Standardize data SPOT");
     Json order_book = Json::parse(data);
 
     // spdlog::debug(order_book);

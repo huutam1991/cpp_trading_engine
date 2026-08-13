@@ -410,7 +410,7 @@ void StrategyMarketMakerStateRun::handle_trade_update(TradeUpdate& trade_update)
 
 void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot", MeasureUnit::MICROSECOND);
+    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot");
     double best_bid = snapshot->get_best_bid();
     double best_ask = snapshot->get_best_ask();
     double mid = (best_bid + best_ask) / 2.0;
@@ -429,7 +429,7 @@ void StrategyMarketMakerStateRun::handle_order_book_snapshot(OrderBookSnapShot* 
 
 void StrategyMarketMakerStateRun::handle_order_update(Order& order)
 {
-    MeasureTime t("StrategyMarketMakerStateRun - handle_order_update", MeasureUnit::MICROSECOND);
+    MeasureTime t("StrategyMarketMakerStateRun - handle_order_update");
 
     // NEW - add to [m_open_orders]
     if (order.status == Order::Status::NEW)

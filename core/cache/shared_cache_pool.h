@@ -227,7 +227,7 @@ public:
     {
         static std::string name = type_name::TypeName<T>::name();
 
-        // MeasureTime measure_time("SharedCachePool::acquire, name: " + name, MeasureUnit::NANOSECOND);
+        // MeasureTime measure_time("SharedCachePool::acquire, name: " + name);
 
         PoolBuffer& pool_buffer = get_pool_buffer();
         if (pool_buffer.size.load(std::memory_order_relaxed) == 0)
@@ -259,7 +259,7 @@ public:
         if (item != nullptr)
         {
             {
-                // MeasureTime measure_time("SharedCachePool::release, name: " + name, MeasureUnit::NANOSECOND);
+                // MeasureTime measure_time("SharedCachePool::release, name: " + name);
 
                 // Check if the item has refresh method and call it
                 if constexpr (has_refresh<T>)

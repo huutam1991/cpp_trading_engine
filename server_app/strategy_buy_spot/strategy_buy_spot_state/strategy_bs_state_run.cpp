@@ -288,7 +288,7 @@ void StrategyBuySpotStateRun::handle_order_book_snapshot(OrderBookSnapShot* snap
 
 void StrategyBuySpotStateRun::handle_order_update(Order& order)
 {
-    MeasureTime a("StrategyBuySpotStateRun - handle_order_update", MeasureUnit::MICROSECOND);
+    MeasureTime a("StrategyBuySpotStateRun - handle_order_update");
 
     double buy_point_price = order.side == Order::Side::BUY ? order.price : order.price - m_config.take_profit;
     SavableObject<BuyPoint>* buy_point = get_buy_point_by_price(buy_point_price);
