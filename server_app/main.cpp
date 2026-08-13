@@ -43,7 +43,7 @@ Task<void> test_https_client_request(EpollBase* epoll_base)
     while (true)
     {
         {
-            MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo", MeasureUnit::MILLISECOND);
+            MeasureTime mt("GET fapi.binance.com/fapi/v1/exchangeInfo");
             HttpsClientResponse response_get = co_await https_client_request.get("/fapi/v1/exchangeInfo");
             // spdlog::info("GET fapi.binance.com/fapi/v1/exchangeInfo response: {} - {}", response_get.status_code, response_get.body);
         }
@@ -59,7 +59,7 @@ Task<void> test_https_client_request_httpbin(EpollBase* epoll_base)
     while (true)
     {
         {
-            MeasureTime mt("GET httpbin.org/stream/5", MeasureUnit::MILLISECOND);
+            MeasureTime mt("GET httpbin.org/stream/5");
             HttpsClientResponse response_get = co_await https_client_request.get("/stream/5");
             spdlog::info("GET httpbin.org/stream/5 response: {} - {}", response_get.status_code, response_get.body);
         }
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
     LogInit::init();
 
     // Measure TSC frequency for accurate timing
-    MeasurePipelineTime::init();
+    MeasureTime::init();
 
     // Remove old core dump files
     process_old_core_dumps_on_startup("./http_server_cpp", env_name);
