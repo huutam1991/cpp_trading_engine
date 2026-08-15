@@ -99,7 +99,7 @@ class PipelineTraceBuffer
 public:
     static constexpr TraceId Capacity = 20000;
 
-    TraceId allocate() noexcept
+    inline TraceId allocate() noexcept
     {
         const TraceId id = m_next++;
 
@@ -108,12 +108,10 @@ public:
             m_next = 0;
         }
 
-        m_timings[id] = {};
-
         return id;
     }
 
-    PipelineTiming& get(TraceId id) noexcept
+    inline PipelineTiming& get(TraceId id) noexcept
     {
         return m_timings[id];
     }
