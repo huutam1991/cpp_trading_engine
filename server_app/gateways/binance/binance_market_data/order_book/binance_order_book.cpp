@@ -1,5 +1,6 @@
 #include <gateways/binance/binance_market_data/order_book/binance_order_book.h>
 #include <iomanip>
+#include <time/measure_time.h>
 
 BinanceOrderBook::BinanceOrderBook(const Instrument* instrument, size_t depth_level, EpollBase* event_base)
     :   m_instrument{instrument},
@@ -35,6 +36,9 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
+            TraceId trace_id = g_pipeline_trace_buffer.allocate();
+            g_pipeline_trace_buffer.get(trace_id).ticks = MeasureTime::read_tsc();
+
             if (m_has_received_first_update == false)
             {
                 spdlog::info("Received first order book update for symbol [{}]", m_instrument->symbol);
