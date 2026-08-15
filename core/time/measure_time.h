@@ -35,6 +35,15 @@ public:
         m_start = __rdtsc();
     }
 
+    // Read TSC with an optional fence to prevent instruction reordering
+    static inline uint64_t read_tsc()
+    {
+        // __cpuid or _mm_lfence can serialize the pipeline
+        _mm_lfence();
+        uint64_t tsc = __rdtsc();
+        return tsc;
+    }
+
     ~MeasureTime()
     {
         unsigned aux;
@@ -57,15 +66,6 @@ private:
     uint64_t m_start{};
 
     PipelineTiming m_result;
-
-    // Read TSC with an optional fence to prevent instruction reordering
-    static inline uint64_t read_tsc()
-    {
-        // __cpuid or _mm_lfence can serialize the pipeline
-        _mm_lfence();
-        uint64_t tsc = __rdtsc();
-        return tsc;
-    }
 
     static double calibrate_tsc_ghz(int ms_wait = 100)
     {
