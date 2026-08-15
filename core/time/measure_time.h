@@ -8,7 +8,7 @@
 #include <enum_reflect/enum_reflect.h>
 #include <utils/util_macros.h>
 
-struct PipelineTiming
+struct ScopeTiming
 {
     uint64_t ticks{};
     double ns{};
@@ -65,7 +65,7 @@ private:
     std::string m_logs;
     uint64_t m_start{};
 
-    PipelineTiming m_result;
+    ScopeTiming m_result;
 
     static double calibrate_tsc_ghz(int ms_wait = 100)
     {
@@ -111,13 +111,13 @@ public:
         return id;
     }
 
-    inline PipelineTiming& get(TraceId id) noexcept
+    inline ScopeTiming& get(TraceId id) noexcept
     {
         return m_timings[id];
     }
 
 private:
-    std::array<PipelineTiming, Capacity> m_timings{};
+    std::array<ScopeTiming, Capacity> m_timings{};
     TraceId m_next{};
 };
 
