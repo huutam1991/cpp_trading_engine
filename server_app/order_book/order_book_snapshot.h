@@ -18,6 +18,7 @@ class OrderBookSnapShot
 {
 public:
     const Instrument* instrument = nullptr;
+    TraceId trace_id = 0;
 
     // Bid, Ask
     std::vector<OrderBookLevel> bids;

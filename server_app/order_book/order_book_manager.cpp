@@ -165,8 +165,9 @@ Task<void> OrderBookManager::run_update_order_book_data(std::vector<OrderBookUpd
         co_return;
     }
 
-    OrderBook& order_book = get_or_create_order_book(updates[0]);
+    TraceId trace_id = updates[0].trace_id;
 
+    OrderBook& order_book = get_or_create_order_book(updates[0]);
     for (const auto& update : updates)
     {
         if (update.instrument == nullptr)
@@ -178,6 +179,7 @@ Task<void> OrderBookManager::run_update_order_book_data(std::vector<OrderBookUpd
     }
 
     OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
+    output_snapshot->trace_id = trace_id;
 
     for (auto& callback : m_update_callbacks)
     {

@@ -2,6 +2,8 @@
 
 #include <cstddef>
 
+#include <time/measure_time.h>
+
 #include "order_book_side.h"
 #include "order_book_snapshot.h"
 
@@ -15,6 +17,7 @@ enum class OrderBookUpdateType
 struct OrderBookUpdate
 {
     const Instrument* instrument = nullptr;
+    TraceId trace_id = 0;
     OrderBookSideType side;
     OrderBookUpdateType type;
     double price;
@@ -108,6 +111,7 @@ public:
     {
         apply_update({
             m_instrument,
+            0,
             OrderBookSideType::Bid,
             OrderBookUpdateType::Update,
             price,
@@ -119,6 +123,7 @@ public:
     {
         apply_update({
             m_instrument,
+            0,
             OrderBookSideType::Ask,
             OrderBookUpdateType::Update,
             price,
@@ -130,6 +135,7 @@ public:
     {
         apply_update({
             m_instrument,
+            0,
             OrderBookSideType::Bid,
             OrderBookUpdateType::Remove,
             price,
@@ -141,6 +147,7 @@ public:
     {
         apply_update({
             m_instrument,
+            0,
             OrderBookSideType::Ask,
             OrderBookUpdateType::Remove,
             price,
