@@ -1,6 +1,5 @@
 #include <gateways/binance/binance_market_data/order_book/binance_order_book.h>
 #include <iomanip>
-#include <time/measure_time.h>
 
 BinanceOrderBook::BinanceOrderBook(const Instrument* instrument, size_t depth_level, EpollBase* event_base)
     :   m_instrument{instrument},
@@ -36,8 +35,8 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            TraceId trace_id = g_pipeline_trace_buffer.allocate();
-            g_pipeline_trace_buffer.get(trace_id).ticks = MeasureTime::read_tsc();
+            m_trace_id = g_pipeline_trace_buffer.allocate();
+            g_pipeline_trace_buffer.get(m_trace_id).ticks = MeasureTime::read_tsc();
 
             if (m_has_received_first_update == false)
             {
@@ -303,6 +302,7 @@ void BinanceOrderBook::apply_update(Json& update)
 
         updates.emplace_back(
             m_instrument,
+            m_trace_id,
             OrderBookSideType::Ask,
             quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
             price,
@@ -318,6 +318,7 @@ void BinanceOrderBook::apply_update(Json& update)
 
         updates.emplace_back(
             m_instrument,
+            m_trace_id,
             OrderBookSideType::Bid,
             quantity == 0.0 ? OrderBookUpdateType::Remove : OrderBookUpdateType::Update,
             price,

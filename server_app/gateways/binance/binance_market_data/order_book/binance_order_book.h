@@ -6,6 +6,7 @@
 #include <coroutine/task.h>
 #include <coroutine/task.h>
 #include <json/json.h>
+#include <time/measure_time.h>
 #include <network/https_client_websocket/https_client_websocket.h>
 #include <network/https_client_request/https_client_request.h>
 
@@ -21,6 +22,7 @@ private:
     const Instrument* m_instrument = nullptr;
     size_t m_depth_level;
     EpollBase* m_event_base;
+    TraceId m_trace_id = 0;
 
     enum class SyncState
     {
