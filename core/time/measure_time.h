@@ -91,3 +91,36 @@ private:
         return ghz;
     }
 };
+
+using TraceId = uint32_t;
+
+class PipelineTraceBuffer
+{
+public:
+    static constexpr TraceId Capacity = 20000;
+
+    TraceId allocate() noexcept
+    {
+        const TraceId id = m_next++;
+
+        if (m_next == Capacity)
+        {
+            m_next = 0;
+        }
+
+        m_timings[id] = {};
+
+        return id;
+    }
+
+    PipelineTiming& get(TraceId id) noexcept
+    {
+        return m_timings[id];
+    }
+
+private:
+    std::array<PipelineTiming, Capacity> m_timings{};
+    TraceId m_next{};
+};
+
+extern thread_local PipelineTraceBuffer g_pipeline_trace_buffer;
