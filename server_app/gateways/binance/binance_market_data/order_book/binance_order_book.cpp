@@ -290,7 +290,7 @@ void BinanceOrderBook::check_apply_update(Json& update)
 
 void BinanceOrderBook::apply_update(Json& update)
 {
-    MeasureTime measure_time("BinanceOrderBook::apply_update");
+    PipelineTraceBuffer::RecordStageTiming<"order_book_update"> record_stage(m_trace_id);
 
     std::vector<OrderBookUpdate> updates;
 

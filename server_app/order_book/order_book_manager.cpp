@@ -145,10 +145,14 @@ Task<void> OrderBookManager::run_update_order_book_data(OrderBookUpdateObject up
         co_return;
     }
 
+    TraceId trace_id = update->trace_id;
+    PipelineTraceBuffer::RecordStageTiming<"order_book_update"> record_stage(trace_id);
+
     OrderBook& order_book = get_or_create_order_book(update);
     order_book.apply_update(*update);
 
     OrderBookSnapShotObject output_snapshot = order_book.get_order_book_snapshot(m_publish_levels);
+    output_snapshot->trace_id = trace_id;
 
     for (auto& callback : m_update_callbacks)
     {
