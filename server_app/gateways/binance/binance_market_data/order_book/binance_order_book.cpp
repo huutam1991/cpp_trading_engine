@@ -36,7 +36,7 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this](std::string buffer) -> Task<void>
         {
             m_trace_id = g_pipeline_trace_buffer.allocate();
-            g_pipeline_trace_buffer.record_start_time<"market_data_received">(m_trace_id);
+            PipelineTraceBuffer::RecordStageTiming<"market_data_received"> record_stage(m_trace_id);
 
             if (m_has_received_first_update == false)
             {
@@ -52,8 +52,6 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
 
             Json data = Json::parse(std::move(buffer));
             handle_order_book_update(std::move(data["data"]));
-
-            g_pipeline_trace_buffer.record_end_time<"market_data_received">(m_trace_id);
 
             co_return;
         },

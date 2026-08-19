@@ -118,20 +118,24 @@ public:
     }
 
     template <FixedString Name>
-    inline void record_start_time(TraceId id) noexcept
+    class RecordStageTiming
     {
-        ScopeTiming& timing = field<Name>[id];
-        timing.start = MeasureTime::read_tsc();
-    }
+    public:
+        inline RecordStageTiming(TraceId id) : m_timing{field<Name>[id]}
+        {
+            m_timing.start = MeasureTime::read_tsc();
+        }
 
-    template <FixedString Name>
-    inline void record_end_time(TraceId id) noexcept
-    {
-        ScopeTiming& timing = field<Name>[id];
-        timing.ticks = MeasureTime::read_tsc() - timing.start;
-        timing.ns = static_cast<double>(timing.ticks) / MeasureTime::get_tsc_ghz();
-        timing.us = timing.ns / 1000.0;
-    }
+        inline ~RecordStageTiming()
+        {
+            m_timing.ticks = MeasureTime::read_tsc() - m_timing.start;
+            m_timing.ns = static_cast<double>(m_timing.ticks) / MeasureTime::get_tsc_ghz();
+            m_timing.us = m_timing.ns / 1000.0;
+        }
+
+    private:
+        ScopeTiming& m_timing;
+    };
 
 private:
     TraceId m_next{};
