@@ -1,4 +1,5 @@
 #include <strategy_mean_reversion/strategy_mean_reversion_state/strategy_mr_state_stop.h>
+#include <time/measure_time.h>
 
 StrategyMeanReversionStateStop::StrategyMeanReversionStateStop(
     std::shared_ptr<Gateway> gateway,
@@ -36,9 +37,13 @@ void StrategyMeanReversionStateStop::handle_trade_update(TradeUpdate& trade)
 
 void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
+    PipelineTraceBuffer::RecordStageTiming<"strategy_mean_reversion"> record_stage(snapshot->trace_id);
+
     // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot");
     m_current_price = snapshot->get_mid_price();
     m_spread_captures.handle_order_book_snapshot(snapshot);
+
+
 }
 
 void StrategyMeanReversionStateStop::handle_order_update(Order& order)
