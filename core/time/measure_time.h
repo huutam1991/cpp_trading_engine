@@ -7,6 +7,7 @@
 
 #include <enum_reflect/enum_reflect.h>
 #include <utils/util_macros.h>
+#include <utils/fixed_string.h>
 
 struct ScopeTiming
 {
@@ -111,14 +112,17 @@ public:
         return id;
     }
 
+    template <FixedString Name>
     inline ScopeTiming& get(TraceId id) noexcept
     {
-        return m_timings[id];
+        return field<Name>[id];
     }
 
+    template <FixedString Name>
+    static inline std::array<ScopeTiming, Capacity> field;
+
 private:
-    std::array<ScopeTiming, Capacity> m_timings{};
     TraceId m_next{};
 };
 
-extern thread_local PipelineTraceBuffer g_pipeline_trace_buffer;
+extern PipelineTraceBuffer g_pipeline_trace_buffer;
