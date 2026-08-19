@@ -36,7 +36,7 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this](std::string buffer) -> Task<void>
         {
             m_trace_id = g_pipeline_trace_buffer.allocate();
-            g_pipeline_trace_buffer.get(m_trace_id).ticks = MeasureTime::read_tsc();
+            g_pipeline_trace_buffer.get<"market_data_received">(m_trace_id).ticks = MeasureTime::read_tsc();
 
             if (m_has_received_first_update == false)
             {
