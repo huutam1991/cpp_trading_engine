@@ -119,11 +119,11 @@ public:
     }
 
     template <FixedString StartStage, FixedString EndStage>
-    inline ScopeTiming get_pipeline_timing(TraceId id)
+    inline ScopeTiming get_pipeline_timing(TraceId id, bool force_end = true)
     {
         ScopeTiming timing;
         timing.start = field<StartStage>[id].start;
-        timing.end = field<EndStage>[id].end;
+        timing.end = force_end ? MeasureTime::read_tsc() : field<EndStage>[id].end;
         timing.ticks = timing.end - timing.start;
         timing.ns = static_cast<double>(timing.ticks) / MeasureTime::get_tsc_ghz();
         timing.us = timing.ns / 1000.0;
