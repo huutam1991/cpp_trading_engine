@@ -11,6 +11,7 @@
 
 struct ScopeTiming
 {
+    uint64_t start{};
     uint64_t ticks{};
     double ns{};
     double us{};
@@ -33,7 +34,7 @@ public:
     explicit MeasureTime(const std::string& logs) : m_logs(logs)
     {
         _mm_lfence();
-        m_start = __rdtsc();
+        m_result.start = __rdtsc();
     }
 
     // Read TSC with an optional fence to prevent instruction reordering
@@ -52,7 +53,7 @@ public:
         const uint64_t end = __rdtscp(&aux);
         _mm_lfence();
 
-        m_result.ticks = end - m_start;
+        m_result.ticks = end - m_result.start;
         m_result.ns = static_cast<double>(m_result.ticks) / get_tsc_ghz();
         m_result.us = m_result.ns / 1000.0;
 
@@ -64,8 +65,6 @@ public:
 
 private:
     std::string m_logs;
-    uint64_t m_start{};
-
     ScopeTiming m_result;
 
     static double calibrate_tsc_ghz(int ms_wait = 100)
@@ -119,10 +118,26 @@ public:
     }
 
     template <FixedString Name>
-    static inline std::array<ScopeTiming, Capacity> field;
+    inline void record_start_time(TraceId id) noexcept
+    {
+        ScopeTiming& timing = field<Name>[id];
+        timing.start = MeasureTime::read_tsc();
+    }
+
+    template <FixedString Name>
+    inline void record_end_time(TraceId id) noexcept
+    {
+        ScopeTiming& timing = field<Name>[id];
+        timing.ticks = MeasureTime::read_tsc() - timing.start;
+        timing.ns = static_cast<double>(timing.ticks) / MeasureTime::get_tsc_ghz();
+        timing.us = timing.ns / 1000.0;
+    }
 
 private:
     TraceId m_next{};
+
+    template <FixedString Name>
+    static inline std::array<ScopeTiming, Capacity> field;
 };
 
 extern PipelineTraceBuffer g_pipeline_trace_buffer;
