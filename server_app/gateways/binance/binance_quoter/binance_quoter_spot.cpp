@@ -263,7 +263,7 @@ Task<Json> BinanceQuoterSpot::place(Order order)
         >
         (order.trace_id);
 
-    spdlog::debug("symbol: {}, pipeline timing: {} ticks, {} ns, {} us",
+    spdlog::debug("Pipeline timing - BinanceQuoterSpot::place, symbol: {}, pipeline timing: {} ticks, {} ns, {} us",
         order.instrument->symbol, pipeline_timing.ticks, pipeline_timing.ns, pipeline_timing.us);
 
     co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str), &client);
