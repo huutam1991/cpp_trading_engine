@@ -69,6 +69,8 @@ void BinanceQuoterSpot::init_websocket()
             // MeasureTime a("Handle order data");
             Json json = Json::parse(buffer);
 
+            spdlog::warn("BinanceQuoterSpot websocket message: {}", json);
+
             if (json["e"] == "executionReport")
             {
                 std::string exchange_symbol = json["s"];
