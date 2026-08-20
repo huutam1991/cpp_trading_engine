@@ -100,7 +100,7 @@ class PipelineTraceBuffer
 public:
     static constexpr TraceId Capacity = 20000;
 
-    inline TraceId allocate() noexcept
+    static inline TraceId allocate() noexcept
     {
         const TraceId id = m_next++;
 
@@ -113,13 +113,13 @@ public:
     }
 
     template <FixedString Name>
-    inline ScopeTiming& get(TraceId id) noexcept
+    static inline ScopeTiming& get(TraceId id) noexcept
     {
         return field<Name>[id];
     }
 
     template <FixedString StartStage, FixedString EndStage>
-    inline ScopeTiming get_pipeline_timing(TraceId id, bool force_end = true)
+    static inline ScopeTiming get_pipeline_timing(TraceId id, bool force_end = true)
     {
         ScopeTiming timing;
         timing.start = field<StartStage>[id].start;
@@ -152,10 +152,8 @@ public:
     };
 
 private:
-    TraceId m_next{};
+    static inline TraceId m_next;
 
     template <FixedString Name>
     static inline std::array<ScopeTiming, Capacity> field;
 };
-
-extern PipelineTraceBuffer g_pipeline_trace_buffer;
