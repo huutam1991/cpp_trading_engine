@@ -78,6 +78,7 @@ struct AccountManager
     static std::shared_ptr<AccountBase> create_account_from_data(Json& data);
     static std::vector<std::shared_ptr<AccountBase>> get_active_accounts();
 
+    static std::shared_ptr<AccountBase> get_account_by_key(const std::string& key);
     static std::expected<bool, std::string> add_account(Json& account_json);
     static std::expected<bool, std::string> set_active_account(const std::string& account_key, bool is_active);
 };

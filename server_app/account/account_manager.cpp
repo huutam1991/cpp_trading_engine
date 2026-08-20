@@ -56,6 +56,17 @@ void AccountManager::init()
     });
 }
 
+std::shared_ptr<AccountBase> AccountManager::get_account_by_key(const std::string& key)
+{
+    auto& all_accounts = get_all_accounts();
+    auto it = all_accounts.find(key);
+    if (it != all_accounts.end())
+    {
+        return it->second;
+    }
+    return nullptr;
+}
+
 std::expected<bool, std::string> AccountManager::add_account(Json& account_json)
 {
     std::string key = account_json["key"];
