@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
+
+#include <account/account.h>
 #include "spread_capture_config.h"
 
 struct StrategyMeanReversionConfig
 {
-
+    std::shared_ptr<AccountBase> account = nullptr;
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     bool is_running = false;
     double volume = 0.01; // in BTC
@@ -21,6 +23,7 @@ struct StrategyMeanReversionConfig
         };
 
         return {
+            {"account", account != nullptr ? account->get_key_name() : ""},
             {"symbol", symbol},
             {"is_running", is_running},
             {"volume", volume},
@@ -35,6 +38,7 @@ struct StrategyMeanReversionConfig
         // Only load from [data], if it is valid
         if (data.has_field("symbol"))
         {
+            res.account = AccountManager::get_account_by_key((std::string)data["account"]);
             res.symbol = (std::string)data["symbol"];
             res.is_running = (bool)data["is_running"];
             res.volume = (double)data["volume"];
