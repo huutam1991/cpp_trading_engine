@@ -24,7 +24,7 @@ void StrategyMeanReversionStateRun::end()
     m_pnl.reset();
     // Send cancel all of placed order
     // [Tam temporarily comment out - OrderEntry refactor]
-    // m_gateway->cancel_all(m_instrument->exchange_symbol);
+    m_config.account->m_order_entry->cancel_all(m_instrument->exchange_symbol);
 }
 
 Json StrategyMeanReversionStateRun::get_info()
@@ -114,7 +114,7 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
         Order new_order = get_limit_order(order.side, order.price, m_config.volume);
         // [Tam temporarily comment out - OrderEntry refactor]
-        // m_gateway->place(new_order);
+        m_config.account->m_order_entry->place(new_order);
     }
     else if (order.status == Order::Status::FILLED)
     {
@@ -143,7 +143,7 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
             // Re-place
 
             // [Tam temporarily comment out - OrderEntry refactor]
-            // m_gateway->place(m_initial_order);
+            m_config.account->m_order_entry->place(m_initial_order);
         }
         else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::STOP_LOSS)
         {
@@ -158,7 +158,7 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
             m_hedge_order = get_limit_order(order.side, order.price, m_config.volume);
             // [Tam temporarily comment out - OrderEntry refactor]
-            // m_gateway->place(m_hedge_order);
+            m_config.account->m_order_entry->place(m_hedge_order);
         }
     }
 }
@@ -177,13 +177,13 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         {
             m_initial_order = get_limit_order(Order::Side::BUY, m_spread_captures.spread_capture.initial_order.price, m_config.volume);
             // [Tam temporarily comment out - OrderEntry refactor]
-            // m_gateway->place(m_initial_order);
+            m_config.account->m_order_entry->place(m_initial_order);
         }
         else if (m_initial_order.status == Order::Status::NEW &&
                 is_same_order_info(m_initial_order, m_spread_captures.spread_capture.initial_order) == false)
         {
             // [Tam temporarily comment out - OrderEntry refactor]
-            // m_gateway->cancel(m_initial_order);
+            m_config.account->m_order_entry->cancel(m_initial_order);
             m_initial_order.status = Order::Status::NOT_AVAILABLE;
         }
     }
@@ -192,7 +192,7 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         Order& hedge_order = m_spread_captures.spread_capture.hedge_order;
         m_hedge_order = get_limit_order(hedge_order.side, hedge_order.price, m_config.volume);
         // [Tam temporarily comment out - OrderEntry refactor]
-        // m_gateway->place(m_hedge_order);
+        m_config.account->m_order_entry->place(m_hedge_order);
     }
     else if (m_spread_captures.spread_capture.status == SpreadCaptureConfig::Status::WAITING_FOR_HEDGE_ORDER_FILLED)
     {
@@ -207,7 +207,7 @@ void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot
         if (m_hedge_order.status == Order::Status::NEW)
         {
             // [Tam temporarily comment out - OrderEntry refactor]
-            // m_gateway->cancel(m_hedge_order);
+            m_config.account->m_order_entry->cancel(m_hedge_order);
             m_hedge_order.status = Order::Status::NOT_AVAILABLE;
         }
     }
