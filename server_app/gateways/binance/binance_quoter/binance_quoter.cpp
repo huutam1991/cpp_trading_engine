@@ -119,7 +119,7 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     }
 
     Json response_json = Json::parse(response.body);
-    if (response.status_code == -1)
+    if (response.status_code < 0)
     {
         response_json = {
             {"code", -1},

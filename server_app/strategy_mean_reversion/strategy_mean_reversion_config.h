@@ -5,6 +5,7 @@
 
 struct StrategyMeanReversionConfig
 {
+
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     bool is_running = false;
     double volume = 0.01; // in BTC
