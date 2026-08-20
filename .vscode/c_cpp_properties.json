@@ -6,13 +6,15 @@
                 "${workspaceFolder}/core",
                 "${workspaceFolder}/server_app",
                 "${workspaceFolder}/build/**",
+                "/usr/local/include/mongocxx/v_noabi",
+                "/usr/local/include/bsoncxx/v_noabi",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
             "defines": [
                 "TEST_MODE_ONLY=1"
             ],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "gnu17",
             "cppStandard": "gnu++23",
             "intelliSenseMode": "linux-gcc-x64",
