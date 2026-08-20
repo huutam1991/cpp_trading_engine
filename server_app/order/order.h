@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+
 #include <json/json.h>
 #include <enum_reflect/enum_reflect.h>
+#include <time/measure_time.h>
 #include <instrument/instrument.h>
 
 using OrderId = size_t;
@@ -71,6 +73,7 @@ public:
 
     // Input data
     OrderId order_id = 0;
+    TraceId trace_id = 0;
     Status status = Status::NOT_AVAILABLE;
     const Instrument *instrument;
     Side side;
