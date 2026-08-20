@@ -19,6 +19,8 @@ private:
     // EpollBase
     EpollBase* m_epoll_base = nullptr;
 
+    TraceId m_trace_id;
+
     // Websocket to get order data
     std::shared_ptr<HttpsClientWebsocket> m_websocket;
     std::string m_listen_key;

@@ -43,7 +43,7 @@ void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapSho
     m_current_price = snapshot->get_mid_price();
     m_spread_captures.handle_order_book_snapshot(snapshot);
 
-    ScopeTiming pipeline_timing = PipelineTraceBuffer::get_pipeline_timing<"market_data_received", "strategy_mean_reversion">(snapshot->trace_id);
+    ScopeTiming pipeline_timing = PipelineTraceBuffer::get_pipeline_timing<"data_received", "strategy_mean_reversion">(snapshot->trace_id);
     spdlog::debug("symbol: {}, pipeline timing: {} ticks, {} ns, {} us",
         snapshot->instrument->symbol, pipeline_timing.ticks, pipeline_timing.ns, pipeline_timing.us);
 }

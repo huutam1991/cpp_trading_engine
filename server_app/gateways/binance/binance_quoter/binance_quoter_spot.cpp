@@ -258,7 +258,7 @@ Task<Json> BinanceQuoterSpot::place(Order order)
 
     ScopeTiming pipeline_timing =  PipelineTraceBuffer::get_pipeline_timing
         <
-            "market_data_received",
+            "data_received",
             "BinanceQuoterSpot::place"
         >
         (order.trace_id);

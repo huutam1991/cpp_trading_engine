@@ -89,6 +89,9 @@ void BinanceQuoterPerpetual::init_websocket()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
+            m_trace_id = PipelineTraceBuffer::allocate();
+            PipelineTraceBuffer::RecordStageTiming<"data_received"> record_stage(m_trace_id);
+
             Json json = Json::parse(buffer);
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
@@ -160,6 +163,7 @@ void BinanceQuoterPerpetual::init_websocket()
                 // Only update order if [order.order_id] != 0
                 if (order.order_id != 0)
                 {
+                    order.trace_id = m_trace_id;
                     OrderManager::instance().update_order(order);
                 }
             }
@@ -258,7 +262,7 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
 
     ScopeTiming pipeline_timing =  PipelineTraceBuffer::get_pipeline_timing
         <
-            "market_data_received",
+            "data_received",
             "BinanceQuoterPerpetual::place"
         >
         (order.trace_id);
