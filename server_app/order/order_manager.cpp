@@ -120,6 +120,8 @@ Task<void> OrderManager::update_order_in_db(Order order)
 
 Task<void> OrderManager::handle_update_order(Order order)
 {
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::ORDER_UPDATE> record_stage(order.trace_id);
+
     Order& current_order_data = get_order_by_id(order.order_id);
 
     if (order.status == Order::Status::FILLED || order.status == Order::Status::PARTIALLY_FILLED)
