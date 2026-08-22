@@ -234,27 +234,29 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
 
 Task<Json> BinanceQuoterSpot::place(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id, true);
-
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
 
-    query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
-    query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
-    query_str += "&type=" + (std::string)enum_reflect::enum_name(order.type);
-    query_str += "&quantity=" + std::to_string(order.quantity);
-    query_str += "&newClientOrderId=" + std::to_string(order.order_id);
-
-    if (order.type == Order::OrderType::LIMIT)
-    {
-        query_str += "&timeInForce=GTC";
-        query_str += "&price=" + std::to_string(order.price);
-    }
-
-    spdlog::debug("query: {}", query_str);
-
     HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
-    client.add_header("X-MBX-APIKEY", m_api_key);
+    {
+        PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id, true);
+
+        query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
+        query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
+        query_str += "&type=" + (std::string)enum_reflect::enum_name(order.type);
+        query_str += "&quantity=" + std::to_string(order.quantity);
+        query_str += "&newClientOrderId=" + std::to_string(order.order_id);
+
+        if (order.type == Order::OrderType::LIMIT)
+        {
+            query_str += "&timeInForce=GTC";
+            query_str += "&price=" + std::to_string(order.price);
+        }
+
+        spdlog::debug("query: {}", query_str);
+
+        client.add_header("X-MBX-APIKEY", m_api_key);
+    }
 
     co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str), &client);
 }
