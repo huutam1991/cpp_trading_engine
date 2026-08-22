@@ -146,7 +146,7 @@ Task<void> OrderBookManager::run_update_order_book_data(OrderBookUpdateObject up
     }
 
     TraceId trace_id = update->trace_id;
-    // PipelineTraceBuffer::RecordStageTiming<PipelineStage::ORDER_BOOK_UPDATE> record_stage(trace_id);
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::ORDER_BOOK_UPDATE> record_stage(trace_id);
 
     OrderBook& order_book = get_or_create_order_book(update);
     order_book.apply_update(*update);
@@ -170,7 +170,7 @@ Task<void> OrderBookManager::run_update_order_book_data(std::vector<OrderBookUpd
     }
 
     TraceId trace_id = updates[0].trace_id;
-    // PipelineTraceBuffer::RecordStageTiming<PipelineStage::ORDER_BOOK_UPDATE> record_stage(trace_id);
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::ORDER_BOOK_UPDATE> record_stage(trace_id);
 
     OrderBook& order_book = get_or_create_order_book(updates[0]);
     for (const auto& update : updates)
