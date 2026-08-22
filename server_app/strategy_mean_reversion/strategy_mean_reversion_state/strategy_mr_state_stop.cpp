@@ -37,8 +37,6 @@ void StrategyMeanReversionStateStop::handle_trade_update(TradeUpdate& trade)
 
 void StrategyMeanReversionStateStop::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    PipelineTraceBuffer::RecordStageTiming<PipelineStage::STRATEGY_UPDATE> record_stage(snapshot->trace_id, true);
-
     // MeasureTime t("StrategyMeanReversionStateStop - handle_order_book_snapshot");
     m_current_price = snapshot->get_mid_price();
     m_spread_captures.handle_order_book_snapshot(snapshot);
