@@ -2,6 +2,8 @@
 
 #include <coroutine/task.h>
 #include <enum_reflect/enum_reflect.h>
+#include <time/measure_time.h>
+
 #include <strategy/strategy_abstract.h>
 
 enum StrategyState
@@ -49,10 +51,14 @@ public:
         else if (std::holds_alternative<OrderBookSnapShotObject>(data))
         {
             OrderBookSnapShotObject snapshot = std::get<OrderBookSnapShotObject>(data);
+            PipelineTraceBuffer::RecordStageTiming<PipelineStage::STRATEGY_UPDATE> record_stage(snapshot->trace_id, true);
+
             handle_order_book_snapshot(snapshot.get());
         }
         else
         {
+            Order order = std::get<Order>(data);
+            PipelineTraceBuffer::RecordStageTiming<PipelineStage::STRATEGY_UPDATE> record_stage(order.trace_id, true);
             handle_order_update(std::get<Order>(data));
         }
 
