@@ -234,7 +234,7 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
 
 Task<Json> BinanceQuoterSpot::place(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id);
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id, true);
 
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
@@ -255,16 +255,6 @@ Task<Json> BinanceQuoterSpot::place(Order order)
 
     HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
     client.add_header("X-MBX-APIKEY", m_api_key);
-
-    ScopeTiming pipeline_timing =  PipelineTraceBuffer::get_pipeline_timing
-        <
-            PipelineStage::RECEIVE_DATA,
-            PipelineStage::SEND_ORDER
-        >
-        (order.trace_id);
-
-    spdlog::debug("Pipeline timing - BinanceQuoterSpot::place, symbol: {}, pipeline timing: {} ticks, {} ns, {} us",
-        order.instrument->symbol, pipeline_timing.ticks, pipeline_timing.ns, pipeline_timing.us);
 
     co_return co_await send_binance_request(RequestMethod::POST, "/api/v3/order", std::move(query_str), &client);
 }

@@ -243,7 +243,7 @@ Task<Json> BinanceQuoterPerpetual::cancel(Order order)
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id);
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id, true);
 
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
@@ -259,16 +259,6 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
         query_str += "&timeInForce=GTX";
         query_str += "&price=" + std::to_string(order.price);
     }
-
-    ScopeTiming pipeline_timing =  PipelineTraceBuffer::get_pipeline_timing
-        <
-            PipelineStage::RECEIVE_DATA,
-            PipelineStage::SEND_ORDER
-        >
-        (order.trace_id);
-
-    spdlog::debug("Pipeline timing - BinanceQuoterPerpetual::place, symbol: {}, pipeline timing: {} ticks, {} ns, {} us",
-        order.instrument->symbol, pipeline_timing.ticks, pipeline_timing.ns, pipeline_timing.us);
 
     co_return co_await send_binance_request(RequestMethod::POST, "/fapi/v1/order", std::move(query_str), m_client.get());
 }
