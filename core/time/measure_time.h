@@ -17,15 +17,17 @@ enum class PipelineStage
     RISK_UPDATE,
     STRATEGY_UPDATE,
     SEND_ORDER,
+    TOTAL_STAGES
 };
 
 struct ScopeTiming
 {
-    uint64_t start{};
-    uint64_t end{};
-    uint64_t ticks{};
-    double ns{};
-    double us{};
+    uint64_t start = 0;
+    uint64_t end = 0;
+    uint64_t ticks = 0;
+    double ns = 0.0;
+    double us = 0.0;
+    PipelineStage stage = PipelineStage::TOTAL_STAGES;
 };
 
 class MeasureTime
@@ -144,7 +146,7 @@ public:
     class RecordStageTiming
     {
     public:
-        inline RecordStageTiming(TraceId id) : m_timing{field<Name>[id]}
+        inline RecordStageTiming(TraceId id, bool end = false) : m_timing{field<Name>[id]}, m_id{id}, m_end{end}
         {
             m_timing.start = MeasureTime::read_tsc();
         }
@@ -155,10 +157,83 @@ public:
             m_timing.ticks = m_timing.end - m_timing.start;
             m_timing.ns = static_cast<double>(m_timing.ticks) / MeasureTime::get_tsc_ghz();
             m_timing.us = m_timing.ns / 1000.0;
+
+            if (m_end) [[unlikely]]
+            {
+                update_pipeline_timing(m_id);
+            }
         }
 
     private:
         ScopeTiming& m_timing;
+        TraceId m_id;
+        bool m_end;
+
+        template <typename F, std::size_t... I>
+        static constexpr void for_each_stage_impl(
+            F&& f,
+            std::index_sequence<I...>)
+        {
+            (
+                f.template operator()<
+                    static_cast<PipelineStage>(I)
+                >(),
+                ...
+            );
+        }
+
+        template <typename F>
+        static constexpr void for_each_stage(F&& f)
+        {
+            for_each_stage_impl(
+                std::forward<F>(f),
+                std::make_index_sequence<
+                    static_cast<std::size_t>(
+                        PipelineStage::TOTAL_STAGES)
+                >{}
+            );
+        }
+
+        void update_pipeline_timing(TraceId id)
+        {
+            std::array<ScopeTiming, static_cast<size_t>(PipelineStage::TOTAL_STAGES)> pipeline_timings;
+            size_t count = 0;
+
+            for_each_stage([&]<PipelineStage Stage>()
+            {
+                ScopeTiming& scope = field<Stage>[id];
+                if (scope.start == 0 || scope.end == 0)
+                {
+                    return;
+                }
+
+                scope.stage = Stage;
+                pipeline_timings[count++] = scope;
+            });
+
+
+            std::sort(pipeline_timings.begin(), pipeline_timings.begin() + count, [](const ScopeTiming& a, const ScopeTiming& b)
+            {
+                return a.start < b.start && a.end < b.end;
+            });
+
+            // Update the pipeline timing for the current stage
+            m_timing.start = pipeline_timings[0].start;
+            m_timing.end = pipeline_timings[count - 1].end;
+            m_timing.ticks = m_timing.end - m_timing.start;
+            m_timing.ns = static_cast<double>(m_timing.ticks) / MeasureTime::get_tsc_ghz();
+            m_timing.us = m_timing.ns / 1000.0;
+
+            spdlog::debug("Pipeline timing for TraceId {}", id);
+            for (size_t i = 0; i < count; ++i)
+            {
+                auto& timing = pipeline_timings[i];
+                spdlog::debug("---- Stage: {}, Start: {}, End: {}, Ticks: {}, ns: {}, us: {}",
+                    enum_reflect::enum_name(timing.stage), timing.start, timing.end, timing.ticks, timing.ns, timing.us);
+            }
+            spdlog::debug("---- Total Pipeline Timing: Start: {}, End: {}, Ticks: {}, ns: {}, us: {}",
+                m_timing.start, m_timing.end, m_timing.ticks, m_timing.ns, m_timing.us);
+        }
     };
 
 private:
