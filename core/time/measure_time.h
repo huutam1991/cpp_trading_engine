@@ -231,6 +231,7 @@ public:
                 spdlog::debug("---- Stage: {}, Start: {}, End: {}, Ticks: {}, ns: {}, us: {}",
                     enum_reflect::enum_name(timing.stage), timing.start, timing.end, timing.ticks, timing.ns, timing.us);
             }
+
             spdlog::debug("---- Total Pipeline Timing: Start: {}, End: {}, Ticks: {}, ns: {}, us: {}",
                 m_timing.start, m_timing.end, m_timing.ticks, m_timing.ns, m_timing.us);
         }
