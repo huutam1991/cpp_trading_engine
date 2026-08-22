@@ -35,20 +35,24 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            m_trace_id = PipelineTraceBuffer::allocate();
-            PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(m_trace_id);
-
-            if (m_has_received_first_update == false)
             {
-                spdlog::info("Received first order book update for symbol [{}]", m_instrument->symbol);
-                m_has_received_first_update = true;
+                m_trace_id = PipelineTraceBuffer::allocate();
+                PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(m_trace_id);
+
+                if (m_has_received_first_update == false)
+                {
+                    spdlog::info("Received first order book update for symbol [{}]", m_instrument->symbol);
+                    m_has_received_first_update = true;
 
 
-                m_sync_state = SyncState::Buffering;
+                    m_sync_state = SyncState::Buffering;
 
-                // After websocket is connected, we send request to get snapshot, so we can apply the updates from websocket
-                send_request_get_snapshot().start_running_on(m_event_base);
+                    // After websocket is connected, we send request to get snapshot, so we can apply the updates from websocket
+                    send_request_get_snapshot().start_running_on(m_event_base);
+                }
             }
+
+            PipelineTraceBuffer::RecordStageTiming<PipelineStage::PARSE_JSON> record_stage(m_trace_id);
 
             Json data = Json::parse(std::move(buffer));
             handle_order_book_update(std::move(data["data"]));

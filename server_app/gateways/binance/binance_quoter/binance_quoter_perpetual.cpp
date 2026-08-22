@@ -89,9 +89,12 @@ void BinanceQuoterPerpetual::init_websocket()
         // on_message
         [this](std::string buffer) -> Task<void>
         {
-            m_trace_id = PipelineTraceBuffer::allocate();
-            PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(m_trace_id);
+            {
+                m_trace_id = PipelineTraceBuffer::allocate();
+                PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(m_trace_id);
+            }
 
+            PipelineTraceBuffer::RecordStageTiming<PipelineStage::PARSE_JSON> record_stage(m_trace_id);
             Json json = Json::parse(buffer);
 
             if (json["e"] == "ORDER_TRADE_UPDATE")
