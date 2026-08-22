@@ -234,7 +234,7 @@ Task<Json> BinanceQuoterSpot::cancel(Order order)
 
 Task<Json> BinanceQuoterSpot::place(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<"BinanceQuoterSpot::place"> record_stage_timing(order.trace_id);
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id);
 
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
@@ -258,8 +258,8 @@ Task<Json> BinanceQuoterSpot::place(Order order)
 
     ScopeTiming pipeline_timing =  PipelineTraceBuffer::get_pipeline_timing
         <
-            "data_received",
-            "BinanceQuoterSpot::place"
+            PipelineStage::RECEIVE_DATA,
+            PipelineStage::SEND_ORDER
         >
         (order.trace_id);
 

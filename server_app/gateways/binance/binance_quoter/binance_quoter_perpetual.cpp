@@ -90,7 +90,7 @@ void BinanceQuoterPerpetual::init_websocket()
         [this](std::string buffer) -> Task<void>
         {
             m_trace_id = PipelineTraceBuffer::allocate();
-            PipelineTraceBuffer::RecordStageTiming<"data_received"> record_stage(m_trace_id);
+            PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(m_trace_id);
 
             Json json = Json::parse(buffer);
 
@@ -243,7 +243,7 @@ Task<Json> BinanceQuoterPerpetual::cancel(Order order)
 
 Task<Json> BinanceQuoterPerpetual::place(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<"BinanceQuoterPerpetual::place"> record_stage_timing(order.trace_id);
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id);
 
     // /api/v3/order?symbol=BTCUSDT&type=LIMIT&timeInForce=GTC&quantity=0.001&recvWindow=15000&price=19840&side=BUY
     std::string query_str;
@@ -262,8 +262,8 @@ Task<Json> BinanceQuoterPerpetual::place(Order order)
 
     ScopeTiming pipeline_timing =  PipelineTraceBuffer::get_pipeline_timing
         <
-            "data_received",
-            "BinanceQuoterPerpetual::place"
+            PipelineStage::RECEIVE_DATA,
+            PipelineStage::SEND_ORDER
         >
         (order.trace_id);
 

@@ -7,7 +7,17 @@
 
 #include <enum_reflect/enum_reflect.h>
 #include <utils/util_macros.h>
-#include <utils/fixed_string.h>
+
+enum class PipelineStage
+{
+    RECEIVE_DATA,
+    PARSE_DATA,
+    ORDER_BOOK_UPDATE,
+    PRICING_UPDATE,
+    RISK_UPDATE,
+    STRATEGY_UPDATE,
+    SEND_ORDER,
+};
 
 struct ScopeTiming
 {
@@ -112,13 +122,13 @@ public:
         return id;
     }
 
-    template <FixedString Name>
+    template <PipelineStage Name>
     static inline ScopeTiming& get(TraceId id) noexcept
     {
         return field<Name>[id];
     }
 
-    template <FixedString StartStage, FixedString EndStage>
+    template <PipelineStage StartStage, PipelineStage EndStage>
     static inline ScopeTiming get_pipeline_timing(TraceId id, bool force_end = true)
     {
         ScopeTiming timing;
@@ -130,7 +140,7 @@ public:
         return timing;
     }
 
-    template <FixedString Name>
+    template <PipelineStage Name>
     class RecordStageTiming
     {
     public:
@@ -154,6 +164,6 @@ public:
 private:
     static inline TraceId m_next;
 
-    template <FixedString Name>
+    template <PipelineStage Stage>
     static inline std::array<ScopeTiming, Capacity> field;
 };
