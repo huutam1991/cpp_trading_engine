@@ -166,6 +166,11 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
 void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
+    if (snapshot->instrument != m_instrument)
+    {
+        return;
+    }
+
     PipelineTraceBuffer::RecordStageTiming<PipelineStage::STRATEGY_UPDATE> record_stage(snapshot->trace_id);
 
     m_current_price = snapshot->get_mid_price();
