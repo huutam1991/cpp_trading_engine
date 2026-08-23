@@ -81,6 +81,8 @@ void StrategyMeanReversionStateRun::handle_trade_update(TradeUpdate& trade_updat
 
 void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 {
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::STRATEGY_UPDATE> record_stage(order.trace_id);
+
     m_spread_captures.handle_order_update(order);
 
     if (order.status == Order::Status::NEW)
@@ -165,7 +167,8 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
 
 void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
 {
-    // MeasureTime t("StrategyMarketMakerStateRun - handle_order_book_snapshot");
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::STRATEGY_UPDATE> record_stage(snapshot->trace_id);
+
     m_current_price = snapshot->get_mid_price();
     m_pnl.update_current_price(m_current_price);
 
