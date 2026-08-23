@@ -227,6 +227,7 @@ Task<Json> BinanceQuoterPerpetual::get_open_orders(std::string symbol)
 
 Task<void> BinanceQuoterPerpetual::cancel_all(std::string symbol)
 {
+    spdlog::warn("BinanceQuoterPerpetual - cancel_all for symbol [{}]", symbol);
     co_await send_binance_request(RequestMethod::DELETE, "/fapi/v1/allOpenOrders", "symbol=" + symbol, m_client.get());
     co_return;
 }

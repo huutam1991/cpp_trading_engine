@@ -23,7 +23,6 @@ void StrategyMeanReversionStateRun::end()
 
     m_pnl.reset();
     // Send cancel all of placed order
-    // [Tam temporarily comment out - OrderEntry refactor]
     m_config.account->m_order_entry->cancel_all(m_instrument->exchange_symbol);
 }
 
