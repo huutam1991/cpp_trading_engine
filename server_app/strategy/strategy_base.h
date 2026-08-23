@@ -30,7 +30,6 @@ public:
     Task<void> init() override
     {
         m_states = init_states();
-        m_previous_state = StrategyState::UNKNOWN;
 
         // Start strategy
         start();
