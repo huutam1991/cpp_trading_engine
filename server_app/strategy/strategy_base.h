@@ -23,7 +23,9 @@ public:
         m_strategy_name(enum_reflect::enum_name<EventBaseID>((EventBaseID)eventBaseID)),
         m_config{SavableObject<StrategyConfig>::load_single_object(m_strategy_name, "config")},
         m_current_state{SavableObject<StrategyStateData>::load_single_object(m_strategy_name, "state")}
-    {}
+    {
+        m_previous_state = StrategyState::UNKNOWN;
+    }
 
     Task<void> init() override
     {
