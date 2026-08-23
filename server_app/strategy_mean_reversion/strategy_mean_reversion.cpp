@@ -20,8 +20,11 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::ini
 
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
-    // For now, only use Binance
-    m_gateway = GatewayManager::instance().get_gateway(ExchangeId::BINANCE);
+    // Get ExchangeId from account
+    ExchangeId exchange_id = m_config->account->get_exchange_id();
+    m_gateway = GatewayManager::instance().get_gateway(exchange_id);
+
+    // Subscribe instrument to gateway
     const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
     m_gateway->subscribe_instruments({instrument});
 
