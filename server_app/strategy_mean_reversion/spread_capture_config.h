@@ -75,8 +75,8 @@ class VolatilityEstimator
 {
     std::deque<double> prices;
     // [Tam] - temporarily set window to 5 for testing, will change back to 150 later
-    // int window = 150;
-    int window = 5;
+    int window = 150;
+    // int window = 5;
 
     double current_price = 0.0;
     double prev_price = 0.0;
