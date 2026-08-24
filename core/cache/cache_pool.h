@@ -7,6 +7,7 @@
 #include <atomic>
 
 #include <time/measure_time.h>
+#include <utils/utils.h>
 
 #define FORCE_INLINE inline __attribute__((always_inline))
 
@@ -108,6 +109,28 @@ class CachePool
 
             return current;
         }
+
+        FORCE_INLINE static bool is_valid_pool_pointer(const T* item, const PoolBuffer& pool) noexcept
+        {
+            if (!item) [[unlikely]]
+            {
+                return false;
+            }
+
+            constexpr std::uintptr_t stride = sizeof(ObjectWrapper);
+            const auto ptr = reinterpret_cast<std::uintptr_t>(item);
+
+            const auto begin = reinterpret_cast<std::uintptr_t>(&pool.data[0].object);
+
+            if (ptr < begin) [[unlikely]]
+            {
+                return false;
+            }
+
+            const auto offset = ptr - begin;
+
+            return offset < stride * Size && offset % stride == 0;
+        }
     };
 
     FORCE_INLINE static PoolBuffer& get_pool_buffer()
@@ -163,6 +186,18 @@ public:
 
                 // Add item back to the pool
                 PoolBuffer& pool_buffer = get_pool_buffer();
+
+                if (PoolBuffer::is_valid_pool_pointer(item, pool_buffer) == false) [[unlikely]]
+                {
+                    spdlog::critical(
+                        "INVALID RELEASE POINTER: type={}, item={}",
+                        TypeName<T>::name(),
+                        static_cast<void*>(item));
+
+                    Utils::print_stack_trace();
+                    std::abort();
+                }
+
                 size_t tail_index = pool_buffer.get_current_tail();
                 pool_buffer.available_items[tail_index].ptr = item;
 
