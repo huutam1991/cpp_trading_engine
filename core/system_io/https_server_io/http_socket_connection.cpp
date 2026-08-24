@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <mongo_db/mongo_db.h>
 
 #include "http_socket_connection.h"
 
