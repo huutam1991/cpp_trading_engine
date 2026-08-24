@@ -1,11 +1,16 @@
 #pragma once
 
 #include <time.h>       /* time_t, struct tm, time, gmtime */
+#include <execinfo.h>
+#include <unistd.h>
+#include <variant>
+#include <sstream>
+#include <iomanip>
+#include <vector>
+#include <chrono>
+#include <cmath>
 
 #include <utils/constants.h>
-#include <mongo_db/mongo_db.h>
-#include <json/json.h>
-#include <cmath>
 
 #define UTC_PLUS_7_IN_MS 25200000
 #define UTC_PLUS_7_IN_S 25200
@@ -104,5 +109,12 @@ public:
             << std::setw(2) << seconds;
 
         return oss.str();
+    }
+
+    static inline void print_stack_trace()
+    {
+        void* frames[64];
+        const int count = ::backtrace(frames, 64);
+        ::backtrace_symbols_fd(frames, count, STDERR_FILENO);
     }
 };
