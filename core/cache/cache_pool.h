@@ -181,8 +181,7 @@ public:
         if (item != nullptr)
         {
             {
-                // MeasureTime measure_time("CachePool::release, name: " + name);
-                // MeasureTime measure_time("CachePool::release");
+                MeasureTime measure_time("CachePool::release, name: " + name);
 
                 // Add item back to the pool
                 PoolBuffer& pool_buffer = get_pool_buffer();
