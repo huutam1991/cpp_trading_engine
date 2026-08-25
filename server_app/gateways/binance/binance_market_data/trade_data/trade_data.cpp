@@ -55,7 +55,7 @@ void BinanceTradeData::start()
         [this](std::string buffer) -> Task<void>
         {
             Json data = Json::parse(buffer);
-            // spdlog::debug("[WS] symbol: [{}], data: {}", m_symbol, data);
+            spdlog::info("[WS] symbol: [{}], data: {}", m_symbol, data);
 
             if (data.has_field("e") && data["e"] == "aggTrade")
             {
