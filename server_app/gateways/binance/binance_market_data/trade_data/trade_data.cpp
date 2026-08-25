@@ -23,7 +23,7 @@ void BinanceTradeData::start()
         m_websocket = nullptr;
     }
 
-    std::string ws_path = "/ws/" + m_symbol + "@aggTrade";
+    std::string ws_path = "/market/ws/" + m_symbol + "@aggTrade";
 
     std::string name = m_symbol + "_trade_data_ws";
     std::string url = BINANCE_FUTURES_WS_URL;
@@ -56,7 +56,6 @@ void BinanceTradeData::start()
         [this](std::string buffer) -> Task<void>
         {
             Json data = Json::parse(buffer);
-            spdlog::info("[WS] symbol: [{}], data: {}", m_symbol, data);
 
             if (data.has_field("e") && data["e"] == "aggTrade")
             {
