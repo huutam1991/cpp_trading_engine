@@ -5,7 +5,8 @@
 
 struct StrategyMarketMakerConfig
 {
-    std::shared_ptr<AccountBase> account = nullptr;
+    // Default account is BINANCE_REAL_1
+    std::shared_ptr<AccountBase> account = AccountManager::get_account_by_key("BINANCE_REAL_1");
     std::string symbol = "BTC-USDC-PERPETUAL";
     double volumn = 0.1;
     double price_gap = 35.0;
