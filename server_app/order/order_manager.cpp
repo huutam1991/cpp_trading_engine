@@ -162,6 +162,7 @@ Task<void> OrderManager::handle_update_order(Order order)
     if (order.status == Order::Status::NEW ||
         order.status == Order::Status::CANCELED ||
         order.status == Order::Status::REJECTED ||
+        order.status == Order::Status::PARTIALLY_FILLED ||
         order.status == Order::Status::FILLED)
     {
         // Invoke callback
