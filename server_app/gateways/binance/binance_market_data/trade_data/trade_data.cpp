@@ -3,6 +3,7 @@
 #include <json/json.h>
 #include <utils/utils.h>
 #include <mongo_db/mongo_db.h>
+#include <enum_reflect/enum_reflect.h>
 
 #include <strategy/strategy_manager.h>
 
@@ -38,7 +39,7 @@ void BinanceTradeData::start()
         // on_connect
         [this, ws_path]() -> Task<void>
         {
-            spdlog::info("BinanceTradeData [{}] is connected", ws_path);
+            spdlog::info("BinanceTradeData [{}] is connected, exchange: {}", ws_path, enum_reflect::enum_name(m_instrument->exchange_id));
 
             MongoDB::instance()
                 .set_db_and_collection("websocket_monitoring", "TradeDataWebsocket")
