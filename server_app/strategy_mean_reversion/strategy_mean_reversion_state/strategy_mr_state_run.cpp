@@ -162,6 +162,11 @@ void StrategyMeanReversionStateRun::handle_order_update(Order& order)
             m_config.account->m_order_entry->place(m_hedge_order);
         }
     }
+    else if (order.status == Order::Status::PARTIALLY_FILLED)
+    {
+        // TBD
+        // Ideally, should wait until the order is fully filled
+    }
 }
 
 void StrategyMeanReversionStateRun::handle_order_book_snapshot(OrderBookSnapShot* snapshot)
