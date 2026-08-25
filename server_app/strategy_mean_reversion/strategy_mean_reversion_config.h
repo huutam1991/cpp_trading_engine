@@ -7,7 +7,8 @@
 
 struct StrategyMeanReversionConfig
 {
-    std::shared_ptr<AccountBase> account = nullptr;
+    // Default account is BINANCE_REAL_1
+    std::shared_ptr<AccountBase> account = AccountManager::get_account_by_key("BINANCE_REAL_1");
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     bool is_running = false;
     double volume = 0.01; // in BTC
