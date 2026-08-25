@@ -110,7 +110,7 @@ Order StrategyMarketMakerStateRun::get_limit_order(Order::Side side, double pric
         side,
         Order::OrderType::LIMIT,
         m_instrument->get_round_up_price(price),
-        quantity
+        m_instrument->get_round_up_quantity(quantity)
     );
 }
 
