@@ -71,14 +71,7 @@ public:
         set_ready_task(task_event);
     }
 
-    virtual inline void add_remove_awaiter_event(BasePromiseType* promise) override
-    {
-        TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-        task_event->type = TaskInfoEvent::TaskType::REMOVE_AWAITER;
-        task_event->promise = promise;
-
-        set_ready_task(task_event);
-    }
+    virtual void add_remove_awaiter_event(BasePromiseType* promise) override;
 
     virtual inline void add_force_destroy_event(BasePromiseType* promise) override
     {

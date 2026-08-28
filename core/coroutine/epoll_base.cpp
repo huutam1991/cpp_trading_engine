@@ -275,3 +275,12 @@ void EpollBase::loop()
         }
     }
 }
+
+void EpollBase::add_remove_awaiter_event(BasePromiseType* promise)
+{
+    TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
+    task_event->type = TaskInfoEvent::TaskType::REMOVE_AWAITER;
+    task_event->promise = promise;
+
+    set_ready_task(task_event);
+}
