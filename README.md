@@ -1,5 +1,8 @@
 ## C++ Real-Time Trading Engine (Personal Project)
 
+<img width="1265" height="665" alt="traffic_flow2" src="https://github.com/user-attachments/assets/e8b08694-bdd1-44b6-a39e-741b2add0435" />
+
+
 This project is a fully self-designed, low-latency trading engine written in modern **C++20** — built entirely from scratch, without relying on third-party frameworks for core infrastructure (except boost for client websocket + https request). I built all core features from scratch, including:
 
 ---
