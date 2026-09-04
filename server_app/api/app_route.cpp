@@ -40,6 +40,7 @@
 #include <api_handler/api_handler_system_monitoring/api_handler_up_time.h>
 
 // Strategy
+#include <api_handler/api_handler_strategy/api_handler_strategy_list.h>
 #include <api_handler/api_handler_strategy/api_handler_strategy_config.h>
 #include <api_handler/api_handler_strategy/api_handler_strategy_current_info.h>
 #include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_config.h>
@@ -479,37 +480,43 @@ void add_app_route()
         co_return co_await APIHandlerUpTime(request).handle();
     };
 
-    // Update strategy's config
+    // Strategy - Get strategy list
+    ADD_ROUTE(RequestMethod::GET, "/strategy_list")
+    {
+        co_return co_await APIHandlerStrategyList(request).handle();
+    };
+
+    // Strategy - Update strategy's config
     ADD_ROUTE(RequestMethod::POST, "/strategy_config")
     {
         co_return co_await APIHandlerStrategyConfig(request).handle();
     };
 
-    // Get strategy's config
+    // Strategy - Get strategy's config
     ADD_ROUTE(RequestMethod::GET, "/strategy_config")
     {
         co_return co_await APIHandlerStrategyConfig(request).handle();
     };
 
-    // Update strategy's config
+    // Strategy - Update strategy's current info
     ADD_ROUTE(RequestMethod::POST, "/strategy_current_info")
     {
         co_return co_await APIHandlerStrategyCurrentInfo(request).handle();
     };
 
-    // Update strategy's config
+    // Strategy - Update strategy's price arbitrage config
     ADD_ROUTE(RequestMethod::POST, "/strategy_price_arbitrage_config")
     {
         co_return co_await APIHandlerStrategyPAConfig(request).handle();
     };
 
-    // Get strategy's config
+    // Strategy - Get strategy's price arbitrage config
     ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_config")
     {
         co_return co_await APIHandlerStrategyPAConfig(request).handle();
     };
 
-    // Update strategy's config
+    // Strategy - Get strategy's price arbitrage current info
     ADD_ROUTE(RequestMethod::GET, "/strategy_price_arbitrage_current_info")
     {
         co_return co_await APIHandlerStrategyPACurrentInfo(request).handle();
