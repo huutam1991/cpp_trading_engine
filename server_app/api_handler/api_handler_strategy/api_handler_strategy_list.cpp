@@ -4,7 +4,6 @@
 APIHandlerStrategyList::APIHandlerStrategyList(HttpRequest* request) : APIHandler(request)
 {
     m_need_check_authentication = true;
-    add_mandatory_params({"strategy_name"});
 }
 
 Task<HttpResponse> APIHandlerStrategyList::child_handle()
