@@ -43,6 +43,11 @@ const router = createRouter({
           component: () => import('@/views/OrderBookView.vue'),
         },
         {
+          path: 'strategy',
+          name: 'strategy',
+          component: () => import('@/views/StrategyView.vue'),
+        },
+        {
           path: 'order',
           name: 'order',
           component: () => import('@/views/OrderView.vue'),
