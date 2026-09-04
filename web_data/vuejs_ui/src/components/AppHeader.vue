@@ -24,6 +24,10 @@
         OrderBook
       </RouterLink>
 
+      <RouterLink to="/strategy">
+        Strategy
+      </RouterLink>
+
       <RouterLink to="/order">
         Order
       </RouterLink>

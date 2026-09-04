@@ -6,8 +6,14 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 
 type JsonPrimitive = string | number | boolean | null
-type JsonValue = JsonPrimitive | JsonObject | JsonValue[]
-type JsonObject = Record<string, JsonValue>
+
+interface JsonObject {
+  [key: string]: JsonValue
+}
+
+interface JsonArray extends Array<JsonValue> {}
+
+type JsonValue = JsonPrimitive | JsonObject | JsonArray
 
 type StrategyListResponse = {
   error: boolean
