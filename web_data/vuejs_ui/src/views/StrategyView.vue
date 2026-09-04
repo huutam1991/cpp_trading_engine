@@ -101,6 +101,9 @@ const accountsErrorMessage = ref('')
 const controlErrorMessage = ref('')
 const currentInfoErrorMessage = ref('')
 
+// Read-only current-info tree expansion state. Paths in this set are collapsed.
+const collapsedCurrentInfoGroups = ref<Set<string>>(new Set())
+
 let currentInfoPollTimer: ReturnType<typeof setInterval> | null = null
 let currentInfoRequestInFlight = false
 
@@ -141,6 +144,20 @@ const currentInfoRows = computed<ConfigRow[]>(() => {
   return flattenJson(currentStrategyInfo.value)
 })
 
+const visibleCurrentInfoRows = computed<ConfigRow[]>(() =>
+  currentInfoRows.value.filter((row) => {
+    // A row is hidden when any of its ancestor groups is collapsed.
+    for (let depth = 1; depth < row.path.length; depth += 1) {
+      const ancestorPath = row.path.slice(0, depth)
+      if (collapsedCurrentInfoGroups.value.has(jsonPathKey(ancestorPath))) {
+        return false
+      }
+    }
+
+    return true
+  }),
+)
+
 const isDirty = computed(() => {
   if (!strategyConfig.value || !originalStrategyConfig.value) {
     return false
@@ -158,6 +175,43 @@ const visibleValueCount = computed(() => {
 const currentInfoValueCount = computed(() =>
   currentInfoRows.value.filter((row) => row.kind === 'value').length,
 )
+
+function jsonPathKey(path: (string | number)[]): string {
+  return JSON.stringify(path)
+}
+
+function isCurrentInfoGroupExpanded(row: ConfigRow): boolean {
+  return !collapsedCurrentInfoGroups.value.has(jsonPathKey(row.path))
+}
+
+function toggleCurrentInfoGroup(row: ConfigRow) {
+  if (row.kind !== 'group') {
+    return
+  }
+
+  const key = jsonPathKey(row.path)
+  const next = new Set(collapsedCurrentInfoGroups.value)
+
+  if (next.has(key)) {
+    next.delete(key)
+  } else {
+    next.add(key)
+  }
+
+  collapsedCurrentInfoGroups.value = next
+}
+
+function collapseAllCurrentInfoGroups() {
+  collapsedCurrentInfoGroups.value = new Set(
+    currentInfoRows.value
+      .filter((row) => row.kind === 'group')
+      .map((row) => jsonPathKey(row.path)),
+  )
+}
+
+function expandAllCurrentInfoGroups() {
+  collapsedCurrentInfoGroups.value = new Set()
+}
 
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
@@ -414,6 +468,7 @@ function startCurrentInfoPolling(strategyName: string) {
   stopCurrentInfoPolling()
   currentStrategyInfo.value = null
   currentInfoErrorMessage.value = ''
+  collapsedCurrentInfoGroups.value = new Set()
 
   // Load immediately, then refresh once every second while the strategy is running.
   void fetchStrategyCurrentInfo(strategyName, true)
@@ -438,6 +493,7 @@ async function fetchStrategyConfig(strategyName: string) {
   originalStrategyConfig.value = null
   currentStrategyInfo.value = null
   currentInfoErrorMessage.value = ''
+  collapsedCurrentInfoGroups.value = new Set()
 
   try {
     const query = new URLSearchParams({
@@ -857,6 +913,25 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="current-info-header-meta">
+              <button
+                type="button"
+                class="tree-action-button"
+                title="Collapse all JSON groups"
+                @click="collapseAllCurrentInfoGroups"
+              >
+                Collapse all
+              </button>
+
+              <button
+                v-if="collapsedCurrentInfoGroups.size > 0"
+                type="button"
+                class="tree-action-button secondary"
+                title="Expand all JSON groups"
+                @click="expandAllCurrentInfoGroups"
+              >
+                Expand all
+              </button>
+
               <span class="live-badge">
                 <span class="live-badge-dot" />
                 Live
@@ -902,8 +977,8 @@ onBeforeUnmount(() => {
               class="config-tree current-info-tree"
             >
               <div
-                v-for="row in currentInfoRows"
-                :key="`current.${row.path.join('.')}`"
+                v-for="row in visibleCurrentInfoRows"
+                :key="`current.${jsonPathKey(row.path)}`"
                 class="config-row"
                 :class="[
                   row.kind === 'group' ? 'group-row' : 'value-row',
@@ -912,13 +987,21 @@ onBeforeUnmount(() => {
                 :style="{ '--depth': row.depth }"
               >
                 <template v-if="row.kind === 'group'">
-                  <div class="group-key">
-                    <span class="tree-branch">⌄</span>
+                  <button
+                    type="button"
+                    class="group-key group-toggle-button"
+                    :aria-expanded="isCurrentInfoGroupExpanded(row)"
+                    @click="toggleCurrentInfoGroup(row)"
+                  >
+                    <span
+                      class="tree-branch collapsible-branch"
+                      :class="{ collapsed: !isCurrentInfoGroupExpanded(row) }"
+                    >⌄</span>
                     <strong>{{ row.key }}</strong>
                     <span class="group-type">
                       {{ row.groupType === 'array' ? 'array' : 'object' }} · {{ row.childCount }}
                     </span>
-                  </div>
+                  </button>
                 </template>
 
                 <template v-else>
@@ -1531,7 +1614,38 @@ onBeforeUnmount(() => {
 .current-info-header-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
+}
+
+.tree-action-button {
+  min-height: 28px;
+  padding: 0 10px;
+  color: #bfdbfe;
+  background: #172033;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.tree-action-button:hover {
+  color: #ffffff;
+  background: #1e3a5f;
+  border-color: #60a5fa;
+}
+
+.tree-action-button.secondary {
+  color: #cbd5e1;
+  border-color: #4b5563;
+}
+
+.tree-action-button.secondary:hover {
+  background: #273449;
+  border-color: #6b7280;
 }
 
 .live-badge {
@@ -1728,6 +1842,32 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.group-toggle-button {
+  width: fit-content;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.group-toggle-button:hover strong {
+  color: #bfdbfe;
+}
+
+.collapsible-branch {
+  display: inline-block;
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform 120ms ease;
+}
+
+.collapsible-branch.collapsed {
+  transform: rotate(-90deg);
 }
 
 .group-key strong {
