@@ -29,6 +29,38 @@ type StrategyConfigResponse = {
   data: JsonObject
 }
 
+type InstrumentItem = {
+  price_precision: number
+  tick_size: number
+  lot_size: number
+  exchange_symbol: string
+  symbol: string
+  instrument_type: string
+  exchange_id: string
+}
+
+type InstrumentSubscribeResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: InstrumentItem[]
+}
+
+type AccountItem = {
+  exchange_id: string
+  is_active: boolean
+  key: string
+}
+
+type AccountListResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: AccountItem[]
+}
+
+const SPECIAL_ROOT_KEYS = new Set(['is_running', 'symbol', 'account'])
+
 type ConfigRow = {
   key: string
   path: (string | number)[]
@@ -44,12 +76,41 @@ const selectedStrategy = ref<string | null>(null)
 const strategyConfig = ref<JsonObject | null>(null)
 const originalStrategyConfig = ref<JsonObject | null>(null)
 
+const subscribedInstruments = ref<InstrumentItem[]>([])
+const accounts = ref<AccountItem[]>([])
+
 const listLoading = ref(false)
 const configLoading = ref(false)
+const instrumentsLoading = ref(false)
+const accountsLoading = ref(false)
+const controlLoading = ref(false)
+
 const listErrorMessage = ref('')
 const configErrorMessage = ref('')
+const instrumentsErrorMessage = ref('')
+const accountsErrorMessage = ref('')
+const controlErrorMessage = ref('')
 
 const hasStrategies = computed(() => strategies.value.length > 0)
+
+const strategyIsRunning = computed(() => strategyConfig.value?.is_running === true)
+
+const strategySymbol = computed(() => {
+  const value = strategyConfig.value?.symbol
+  return typeof value === 'string' ? value : ''
+})
+
+const strategyAccount = computed(() => {
+  const value = strategyConfig.value?.account
+  return typeof value === 'string' ? value : ''
+})
+
+const activeAccounts = computed(() => accounts.value.filter((account) => account.is_active))
+const inactiveAccounts = computed(() => accounts.value.filter((account) => !account.is_active))
+
+const selectedAccountInfo = computed(() =>
+  accounts.value.find((account) => account.key === strategyAccount.value) ?? null,
+)
 
 const configRows = computed<ConfigRow[]>(() => {
   if (!strategyConfig.value) {
@@ -65,6 +126,12 @@ const isDirty = computed(() => {
   }
 
   return JSON.stringify(strategyConfig.value) !== JSON.stringify(originalStrategyConfig.value)
+})
+
+const visibleValueCount = computed(() => {
+  const normalValueCount = configRows.value.filter((row) => row.kind === 'value').length
+  const specialEditableCount = strategyConfig.value ? 2 : 0
+  return normalValueCount + specialEditableCount
 })
 
 function cloneJson<T>(value: T): T {
@@ -128,6 +195,10 @@ function flattenConfig(root: JsonObject): ConfigRow[] {
   }
 
   for (const [key, value] of Object.entries(root)) {
+    if (SPECIAL_ROOT_KEYS.has(key)) {
+      continue
+    }
+
     visit(value, key, [key], 0)
   }
 
@@ -177,10 +248,77 @@ async function fetchStrategyList() {
   }
 }
 
+async function fetchSubscribedInstruments() {
+  instrumentsLoading.value = true
+  instrumentsErrorMessage.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/instrument_subscribe`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: InstrumentSubscribeResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      auth.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      instrumentsErrorMessage.value = result.msg || 'Failed to fetch subscribed instruments.'
+      subscribedInstruments.value = []
+      return
+    }
+
+    subscribedInstruments.value = Array.isArray(result.data) ? result.data : []
+  } catch (error) {
+    console.error('Fetch subscribed instruments error:', error)
+    instrumentsErrorMessage.value = 'Fetch subscribed instruments error.'
+    subscribedInstruments.value = []
+  } finally {
+    instrumentsLoading.value = false
+  }
+}
+
+async function fetchAccountList() {
+  accountsLoading.value = true
+  accountsErrorMessage.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/account_list`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    const result: AccountListResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      auth.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      accountsErrorMessage.value = result.msg || 'Failed to fetch account list.'
+      accounts.value = []
+      return
+    }
+
+    accounts.value = Array.isArray(result.data) ? result.data : []
+  } catch (error) {
+    console.error('Fetch account list error:', error)
+    accountsErrorMessage.value = 'Fetch account list error.'
+    accounts.value = []
+  } finally {
+    accountsLoading.value = false
+  }
+}
+
 async function fetchStrategyConfig(strategyName: string) {
   selectedStrategy.value = strategyName
   configLoading.value = true
   configErrorMessage.value = ''
+  controlErrorMessage.value = ''
   strategyConfig.value = null
   originalStrategyConfig.value = null
 
@@ -333,6 +471,28 @@ function updateBooleanValue(row: ConfigRow, event: Event) {
   setValueAtPath(row.path, target.value === 'true')
 }
 
+function updateSpecialStringValue(key: 'symbol' | 'account', event: Event) {
+  const target = event.target as HTMLSelectElement
+
+  if (!strategyConfig.value) {
+    return
+  }
+
+  strategyConfig.value[key] = target.value
+}
+
+async function toggleStrategyRunning() {
+  if (!selectedStrategy.value || !strategyConfig.value || controlLoading.value) {
+    return
+  }
+
+  // The UI and state are intentionally prepared here, but the start/stop API
+  // endpoint/method/body have not been provided yet. Do not guess a trading
+  // control endpoint. Once supplied, put that request here and refresh config
+  // after a successful response.
+  controlErrorMessage.value = 'Start/stop API endpoint is not configured yet.'
+}
+
 function rowValueType(value: JsonPrimitive | undefined) {
   if (value === null) return 'null'
   return typeof value
@@ -343,7 +503,11 @@ function formatStrategyName(name: string) {
 }
 
 onMounted(() => {
-  fetchStrategyList()
+  void Promise.all([
+    fetchStrategyList(),
+    fetchSubscribedInstruments(),
+    fetchAccountList(),
+  ])
 })
 </script>
 
@@ -401,13 +565,45 @@ onMounted(() => {
 
       <section class="strategy-panel">
         <div class="strategy-header">
-          <div>
+          <div class="strategy-title-block">
             <h1>Strategy</h1>
-            <p v-if="selectedStrategy">
+
+            <div
+              v-if="selectedStrategy && strategyConfig"
+              class="strategy-title-line"
+            >
+              <p>{{ selectedStrategy }}</p>
+
+              <span
+                class="running-state"
+                :class="strategyIsRunning ? 'running' : 'stopping'"
+              >
+                <span class="running-state-dot" />
+                {{ strategyIsRunning ? 'is Running' : 'is Stopping' }}
+              </span>
+
+              <button
+                class="strategy-control-button"
+                :class="strategyIsRunning ? 'stop-button' : 'start-button'"
+                :disabled="controlLoading"
+                @click="toggleStrategyRunning"
+              >
+                {{ controlLoading ? 'Processing...' : strategyIsRunning ? 'Stop' : 'Start' }}
+              </button>
+            </div>
+
+            <p v-else-if="selectedStrategy">
               {{ selectedStrategy }}
             </p>
             <p v-else>
               Select a running strategy to inspect its configuration.
+            </p>
+
+            <p
+              v-if="controlErrorMessage"
+              class="control-error"
+            >
+              {{ controlErrorMessage }}
             </p>
           </div>
 
@@ -474,15 +670,136 @@ onMounted(() => {
             </div>
 
             <span class="config-row-count">
-              {{ configRows.filter((row) => row.kind === 'value').length }} values
+              {{ visibleValueCount }} values
             </span>
+          </div>
+
+          <div class="special-config-section">
+            <div class="special-config-row">
+              <div class="special-config-label">
+                <span class="special-key">symbol</span>
+                <span class="special-description">Subscribed instrument</span>
+              </div>
+
+              <div class="special-config-control">
+                <select
+                  class="config-input config-select special-select"
+                  :value="strategySymbol"
+                  :disabled="instrumentsLoading"
+                  @change="updateSpecialStringValue('symbol', $event)"
+                >
+                  <option
+                    v-if="strategySymbol && !subscribedInstruments.some((item) => item.symbol === strategySymbol)"
+                    :value="strategySymbol"
+                  >
+                    {{ strategySymbol }}
+                  </option>
+                  <option
+                    v-if="instrumentsLoading"
+                    disabled
+                  >
+                    Loading instruments...
+                  </option>
+                  <option
+                    v-for="instrument in subscribedInstruments"
+                    :key="`${instrument.exchange_id}:${instrument.symbol}`"
+                    :value="instrument.symbol"
+                  >
+                    {{ instrument.symbol }}
+                  </option>
+                </select>
+
+                <span class="value-type">select</span>
+                <span
+                  v-if="instrumentsErrorMessage"
+                  class="inline-error"
+                >
+                  {{ instrumentsErrorMessage }}
+                </span>
+              </div>
+            </div>
+
+            <div class="special-config-row">
+              <div class="special-config-label">
+                <span class="special-key">account</span>
+                <span class="special-description">Trading account</span>
+              </div>
+
+              <div class="special-config-control">
+                <select
+                  class="config-input config-select special-select"
+                  :class="{ 'inactive-selection': selectedAccountInfo && !selectedAccountInfo.is_active }"
+                  :value="strategyAccount"
+                  :disabled="accountsLoading"
+                  @change="updateSpecialStringValue('account', $event)"
+                >
+                  <option
+                    v-if="strategyAccount && !accounts.some((item) => item.key === strategyAccount)"
+                    :value="strategyAccount"
+                  >
+                    {{ strategyAccount }}
+                  </option>
+
+                  <option
+                    v-if="accountsLoading"
+                    disabled
+                  >
+                    Loading accounts...
+                  </option>
+
+                  <optgroup
+                    v-if="activeAccounts.length"
+                    label="Active accounts"
+                  >
+                    <option
+                      v-for="account in activeAccounts"
+                      :key="account.key"
+                      :value="account.key"
+                    >
+                      {{ account.key }} · Active
+                    </option>
+                  </optgroup>
+
+                  <optgroup
+                    v-if="inactiveAccounts.length"
+                    label="Inactive accounts — unavailable"
+                  >
+                    <option
+                      v-for="account in inactiveAccounts"
+                      :key="account.key"
+                      :value="account.key"
+                      disabled
+                    >
+                      {{ account.key }} · Inactive
+                    </option>
+                  </optgroup>
+                </select>
+
+                <span
+                  v-if="selectedAccountInfo"
+                  class="account-state-badge"
+                  :class="selectedAccountInfo.is_active ? 'active' : 'inactive'"
+                >
+                  {{ selectedAccountInfo.is_active ? 'Active' : 'Inactive' }}
+                </span>
+
+                <span class="value-type">select</span>
+
+                <span
+                  v-if="accountsErrorMessage"
+                  class="inline-error"
+                >
+                  {{ accountsErrorMessage }}
+                </span>
+              </div>
+            </div>
           </div>
 
           <div
             v-if="configRows.length === 0"
-            class="config-empty"
+            class="config-empty config-empty-after-special"
           >
-            Configuration is empty.
+            No additional configuration fields.
           </div>
 
           <div
@@ -710,6 +1027,86 @@ onMounted(() => {
   margin-bottom: 18px;
 }
 
+.strategy-title-block {
+  min-width: 0;
+}
+
+.strategy-title-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.strategy-title-line p {
+  margin: 0;
+}
+
+.running-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid #4b5563;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.running-state.running {
+  color: #86efac;
+  background: #15342b;
+  border-color: #2f765a;
+}
+
+.running-state.stopping {
+  color: #fbbf24;
+  background: #3a3320;
+  border-color: #8a6d1f;
+}
+
+.running-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.strategy-control-button {
+  min-width: 72px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.start-button {
+  color: #d1fae5;
+  background: #166534;
+  border: 1px solid #22c55e;
+}
+
+.stop-button {
+  color: #fee2e2;
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+}
+
+.strategy-control-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.control-error {
+  margin-top: 7px !important;
+  color: #fca5a5 !important;
+  font-size: 11px !important;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -842,6 +1239,98 @@ onMounted(() => {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
+}
+
+.special-config-section {
+  border-bottom: 1px solid #374151;
+}
+
+.special-config-row {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(320px, 1.2fr);
+  align-items: center;
+  min-height: 62px;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+}
+
+.special-config-row:last-child {
+  border-bottom: 0;
+}
+
+.special-config-row:hover {
+  background: #273449;
+}
+
+.special-config-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 16px 10px 32px;
+}
+
+.special-key {
+  color: #cbd5e1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.special-description {
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.special-config-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px;
+  border-left: 1px solid #374151;
+}
+
+.special-select {
+  min-width: 280px;
+}
+
+.account-state-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.account-state-badge.active {
+  color: #86efac;
+  background: #15342b;
+  border: 1px solid #2f765a;
+}
+
+.account-state-badge.inactive {
+  color: #fca5a5;
+  background: #3a2020;
+  border: 1px solid #7f1d1d;
+}
+
+.inactive-selection {
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+
+.inline-error {
+  width: 100%;
+  color: #fca5a5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.config-empty-after-special {
+  margin: 14px;
 }
 
 .config-tree {
@@ -1023,8 +1512,20 @@ onMounted(() => {
     align-items: flex-start;
   }
 
-  .value-row {
+  .value-row,
+  .special-config-row {
     grid-template-columns: 1fr;
+  }
+
+  .special-config-control {
+    padding-left: 32px;
+    border-top: 1px solid #374151;
+    border-left: 0;
+  }
+
+  .special-select {
+    width: 100%;
+    min-width: 0;
   }
 
   .config-value-cell {
