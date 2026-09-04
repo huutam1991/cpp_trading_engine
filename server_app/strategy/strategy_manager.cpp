@@ -71,6 +71,17 @@ void StrategyManager::public_data(StrategyUpdateData& data)
     }
 }
 
+Json StrategyManager::get_strategy_list()
+{
+    Json strategy_list;
+    for (const auto& strategy : m_strategy_list)
+    {
+        strategy_list.push_back(strategy->get_name());
+    }
+
+    return strategy_list;
+}
+
 Json StrategyManager::get_config_by_strategy(const std::string& strategy_name)
 {
     for (auto& strategy : m_strategy_list)

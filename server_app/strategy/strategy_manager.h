@@ -23,6 +23,7 @@ public:
     void public_data(StrategyUpdateData& data);
 
     // For API requests
+    Json get_strategy_list();
     Json get_config_by_strategy(const std::string& strategy_name);
     Json update_config_by_strategy(const std::string& strategy_name, Json& data);
     Json get_info(const std::string& strategy_name, Json& params);
