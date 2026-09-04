@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { API_BASE_URL } from '@/config/env'
 import { useAuthStore } from '@/stores/auth'
 
@@ -23,6 +23,13 @@ type StrategyListResponse = {
 }
 
 type StrategyConfigResponse = {
+  error: boolean
+  status_code: number
+  msg: string
+  data: JsonObject
+}
+
+type StrategyCurrentInfoResponse = {
   error: boolean
   status_code: number
   msg: string
@@ -75,6 +82,7 @@ const strategies = ref<string[]>([])
 const selectedStrategy = ref<string | null>(null)
 const strategyConfig = ref<JsonObject | null>(null)
 const originalStrategyConfig = ref<JsonObject | null>(null)
+const currentStrategyInfo = ref<JsonObject | null>(null)
 
 const subscribedInstruments = ref<InstrumentItem[]>([])
 const accounts = ref<AccountItem[]>([])
@@ -84,12 +92,17 @@ const configLoading = ref(false)
 const instrumentsLoading = ref(false)
 const accountsLoading = ref(false)
 const controlLoading = ref(false)
+const currentInfoLoading = ref(false)
 
 const listErrorMessage = ref('')
 const configErrorMessage = ref('')
 const instrumentsErrorMessage = ref('')
 const accountsErrorMessage = ref('')
 const controlErrorMessage = ref('')
+const currentInfoErrorMessage = ref('')
+
+let currentInfoPollTimer: ReturnType<typeof setInterval> | null = null
+let currentInfoRequestInFlight = false
 
 const hasStrategies = computed(() => strategies.value.length > 0)
 
@@ -120,6 +133,14 @@ const configRows = computed<ConfigRow[]>(() => {
   return flattenConfig(strategyConfig.value)
 })
 
+const currentInfoRows = computed<ConfigRow[]>(() => {
+  if (!currentStrategyInfo.value) {
+    return []
+  }
+
+  return flattenJson(currentStrategyInfo.value)
+})
+
 const isDirty = computed(() => {
   if (!strategyConfig.value || !originalStrategyConfig.value) {
     return false
@@ -134,6 +155,10 @@ const visibleValueCount = computed(() => {
   return normalValueCount + specialEditableCount
 })
 
+const currentInfoValueCount = computed(() =>
+  currentInfoRows.value.filter((row) => row.kind === 'value').length,
+)
+
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
@@ -142,7 +167,7 @@ function isPlainObject(value: JsonValue): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function flattenConfig(root: JsonObject): ConfigRow[] {
+function flattenJson(root: JsonObject, excludedRootKeys?: Set<string>): ConfigRow[] {
   const rows: ConfigRow[] = []
 
   const visit = (
@@ -195,7 +220,7 @@ function flattenConfig(root: JsonObject): ConfigRow[] {
   }
 
   for (const [key, value] of Object.entries(root)) {
-    if (SPECIAL_ROOT_KEYS.has(key)) {
+    if (excludedRootKeys?.has(key)) {
       continue
     }
 
@@ -203,6 +228,10 @@ function flattenConfig(root: JsonObject): ConfigRow[] {
   }
 
   return rows
+}
+
+function flattenConfig(root: JsonObject): ConfigRow[] {
+  return flattenJson(root, SPECIAL_ROOT_KEYS)
 }
 
 async function fetchStrategyList() {
@@ -237,6 +266,7 @@ async function fetchStrategyList() {
       selectedStrategy.value = null
       strategyConfig.value = null
       originalStrategyConfig.value = null
+      currentStrategyInfo.value = null
       configErrorMessage.value = ''
     }
   } catch (error) {
@@ -314,13 +344,100 @@ async function fetchAccountList() {
   }
 }
 
+async function fetchStrategyCurrentInfo(strategyName: string, showLoading = false) {
+  if (currentInfoRequestInFlight) {
+    return
+  }
+
+  currentInfoRequestInFlight = true
+
+  if (showLoading) {
+    currentInfoLoading.value = true
+  }
+
+  currentInfoErrorMessage.value = ''
+
+  try {
+    const query = new URLSearchParams({
+      strategy_name: strategyName,
+    })
+
+    const response = await fetch(
+      `${API_BASE_URL}/strategy_current_info?${query.toString()}`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      },
+    )
+
+    const result: StrategyCurrentInfoResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      stopCurrentInfoPolling()
+      auth.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      currentInfoErrorMessage.value = result.msg || 'Failed to fetch current strategy info.'
+      return
+    }
+
+    // Ignore a response that belongs to a strategy that is no longer selected
+    // or has already been stopped while this request was in flight.
+    if (selectedStrategy.value !== strategyName || !strategyIsRunning.value) {
+      return
+    }
+
+    currentStrategyInfo.value = cloneJson(result.data ?? {})
+  } catch (error) {
+    console.error('Fetch current strategy info error:', error)
+    currentInfoErrorMessage.value = 'Fetch current strategy info error.'
+  } finally {
+    currentInfoRequestInFlight = false
+    currentInfoLoading.value = false
+  }
+}
+
+function stopCurrentInfoPolling() {
+  if (currentInfoPollTimer !== null) {
+    clearInterval(currentInfoPollTimer)
+    currentInfoPollTimer = null
+  }
+}
+
+function startCurrentInfoPolling(strategyName: string) {
+  stopCurrentInfoPolling()
+  currentStrategyInfo.value = null
+  currentInfoErrorMessage.value = ''
+
+  // Load immediately, then refresh once every second while the strategy is running.
+  void fetchStrategyCurrentInfo(strategyName, true)
+
+  currentInfoPollTimer = setInterval(() => {
+    if (selectedStrategy.value !== strategyName || !strategyIsRunning.value) {
+      stopCurrentInfoPolling()
+      return
+    }
+
+    void fetchStrategyCurrentInfo(strategyName)
+  }, 1000)
+}
+
 async function fetchStrategyConfig(strategyName: string) {
+  stopCurrentInfoPolling()
   selectedStrategy.value = strategyName
   configLoading.value = true
   configErrorMessage.value = ''
   controlErrorMessage.value = ''
   strategyConfig.value = null
   originalStrategyConfig.value = null
+  currentStrategyInfo.value = null
+  currentInfoErrorMessage.value = ''
 
   try {
     const query = new URLSearchParams({
@@ -349,6 +466,10 @@ async function fetchStrategyConfig(strategyName: string) {
 
     strategyConfig.value = cloneJson(result.data ?? {})
     originalStrategyConfig.value = cloneJson(result.data ?? {})
+
+    if (strategyConfig.value.is_running === true) {
+      startCurrentInfoPolling(strategyName)
+    }
   } catch (error) {
     console.error('Fetch strategy config error:', error)
     configErrorMessage.value = 'Fetch strategy config error.'
@@ -370,7 +491,12 @@ function refreshCurrentStrategy() {
     return
   }
 
-  fetchStrategyConfig(selectedStrategy.value)
+  if (strategyIsRunning.value) {
+    void fetchStrategyCurrentInfo(selectedStrategy.value, true)
+    return
+  }
+
+  void fetchStrategyConfig(selectedStrategy.value)
 }
 
 function resetChanges() {
@@ -527,12 +653,27 @@ async function toggleStrategyRunning() {
     // from it so all normalized/updated values returned by the backend appear.
     strategyConfig.value = cloneJson(result.data ?? {})
     originalStrategyConfig.value = cloneJson(result.data ?? {})
+
+    if (strategyConfig.value.is_running === true) {
+      startCurrentInfoPolling(selectedStrategy.value)
+    } else {
+      stopCurrentInfoPolling()
+      currentStrategyInfo.value = null
+      currentInfoErrorMessage.value = ''
+    }
   } catch (error) {
     console.error('Update strategy config error:', error)
     controlErrorMessage.value = 'Update strategy config error.'
   } finally {
     controlLoading.value = false
   }
+}
+
+function formatReadOnlyValue(value: JsonPrimitive | undefined) {
+  if (value === null) return 'null'
+  if (value === undefined) return ''
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  return String(value)
 }
 
 function rowValueType(value: JsonPrimitive | undefined) {
@@ -550,6 +691,10 @@ onMounted(() => {
     fetchSubscribedInstruments(),
     fetchAccountList(),
   ])
+})
+
+onBeforeUnmount(() => {
+  stopCurrentInfoPolling()
 })
 </script>
 
@@ -651,14 +796,14 @@ onMounted(() => {
 
           <div class="header-actions">
             <span
-              v-if="isDirty"
+              v-if="isDirty && !strategyIsRunning"
               class="dirty-badge"
             >
               Modified
             </span>
 
             <button
-              v-if="isDirty"
+              v-if="isDirty && !strategyIsRunning"
               class="reset-button"
               @click="resetChanges"
             >
@@ -699,6 +844,105 @@ onMounted(() => {
           class="panel-message error-message"
         >
           {{ configErrorMessage }}
+        </div>
+
+        <div
+          v-else-if="strategyConfig && strategyIsRunning"
+          class="config-card"
+        >
+          <div class="config-card-header">
+            <div>
+              <h2>Data</h2>
+              <p>Current strategy information · updates every second</p>
+            </div>
+
+            <div class="current-info-header-meta">
+              <span class="live-badge">
+                <span class="live-badge-dot" />
+                Live
+              </span>
+
+              <span class="config-row-count">
+                {{ currentInfoValueCount }} values
+              </span>
+            </div>
+          </div>
+
+          <div
+            v-if="currentInfoLoading && !currentStrategyInfo"
+            class="current-info-message"
+          >
+            Loading current strategy info...
+          </div>
+
+          <div
+            v-else-if="currentInfoErrorMessage && !currentStrategyInfo"
+            class="current-info-message error-message"
+          >
+            {{ currentInfoErrorMessage }}
+          </div>
+
+          <template v-else-if="currentStrategyInfo">
+            <div
+              v-if="currentInfoErrorMessage"
+              class="current-info-inline-error"
+            >
+              {{ currentInfoErrorMessage }} · Retrying automatically...
+            </div>
+
+            <div
+              v-if="currentInfoRows.length === 0"
+              class="config-empty config-empty-after-special"
+            >
+              No current strategy information.
+            </div>
+
+            <div
+              v-else
+              class="config-tree current-info-tree"
+            >
+              <div
+                v-for="row in currentInfoRows"
+                :key="`current.${row.path.join('.')}`"
+                class="config-row"
+                :class="[
+                  row.kind === 'group' ? 'group-row' : 'value-row',
+                  { 'root-row': row.depth === 0 },
+                ]"
+                :style="{ '--depth': row.depth }"
+              >
+                <template v-if="row.kind === 'group'">
+                  <div class="group-key">
+                    <span class="tree-branch">⌄</span>
+                    <strong>{{ row.key }}</strong>
+                    <span class="group-type">
+                      {{ row.groupType === 'array' ? 'array' : 'object' }} · {{ row.childCount }}
+                    </span>
+                  </div>
+                </template>
+
+                <template v-else>
+                  <div class="config-key-cell">
+                    <span class="tree-guide" />
+                    <span class="config-key">{{ row.key }}</span>
+                  </div>
+
+                  <div class="config-value-cell readonly-value-cell">
+                    <span
+                      class="readonly-value"
+                      :class="`readonly-${rowValueType(row.value)}`"
+                    >
+                      {{ formatReadOnlyValue(row.value) }}
+                    </span>
+
+                    <span class="value-type">
+                      {{ rowValueType(row.value) }}
+                    </span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
         </div>
 
         <div
@@ -1281,6 +1525,85 @@ onMounted(() => {
   border-radius: 999px;
   font-size: 11px;
   font-weight: 800;
+}
+
+
+.current-info-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-badge {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  color: #86efac;
+  background: #15342b;
+  border: 1px solid #2f765a;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.live-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #34d399;
+}
+
+.current-info-message {
+  padding: 22px 18px;
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.current-info-inline-error {
+  padding: 9px 18px;
+  color: #fca5a5;
+  background: #2b2024;
+  border-bottom: 1px solid #7f1d1d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.readonly-value-cell {
+  min-height: 52px;
+}
+
+.readonly-value {
+  width: min(100%, 520px);
+  min-height: 34px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  color: #f8fafc;
+  background: #172033;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.readonly-number {
+  color: #93c5fd;
+}
+
+.readonly-boolean {
+  color: #c4b5fd;
+}
+
+.readonly-null {
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .special-config-section {
