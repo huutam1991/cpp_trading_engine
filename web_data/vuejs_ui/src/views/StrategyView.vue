@@ -323,6 +323,18 @@ async function fetchStrategyList() {
       currentStrategyInfo.value = null
       configErrorMessage.value = ''
     }
+
+    // Auto-activate the first strategy when entering the view.
+    // This mirrors a user click: load its config immediately and, if it is
+    // already running, fetchStrategyConfig() will start current-info polling.
+    if (!selectedStrategy.value && strategies.value.length > 0) {
+      const firstStrategy = strategies.value[0]
+
+      if (firstStrategy) {
+        await fetchStrategyConfig(firstStrategy)
+      }
+    }
+
   } catch (error) {
     console.error('Fetch strategy list error:', error)
     listErrorMessage.value = 'Fetch strategy list error.'
