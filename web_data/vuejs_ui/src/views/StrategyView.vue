@@ -486,11 +486,53 @@ async function toggleStrategyRunning() {
     return
   }
 
-  // The UI and state are intentionally prepared here, but the start/stop API
-  // endpoint/method/body have not been provided yet. Do not guess a trading
-  // control endpoint. Once supplied, put that request here and refresh config
-  // after a successful response.
-  controlErrorMessage.value = 'Start/stop API endpoint is not configured yet.'
+  controlLoading.value = true
+  controlErrorMessage.value = ''
+
+  try {
+    const query = new URLSearchParams({
+      strategy_name: selectedStrategy.value,
+    })
+
+    // Always send the complete CURRENT config. Only is_running is changed
+    // according to the requested Start/Stop action.
+    const payload = cloneJson(strategyConfig.value)
+    payload.is_running = !strategyIsRunning.value
+
+    const response = await fetch(
+      `${API_BASE_URL}/strategy_config?${query.toString()}`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      },
+    )
+
+    const result: StrategyConfigResponse = await response.json()
+
+    if (response.status === 401 || response.status === 403) {
+      auth.logout()
+      return
+    }
+
+    if (!response.ok || result.error) {
+      controlErrorMessage.value = result.msg || 'Failed to update strategy config.'
+      return
+    }
+
+    // The server response is the new source of truth. Refresh the whole UI
+    // from it so all normalized/updated values returned by the backend appear.
+    strategyConfig.value = cloneJson(result.data ?? {})
+    originalStrategyConfig.value = cloneJson(result.data ?? {})
+  } catch (error) {
+    console.error('Update strategy config error:', error)
+    controlErrorMessage.value = 'Update strategy config error.'
+  } finally {
+    controlLoading.value = false
+  }
 }
 
 function rowValueType(value: JsonPrimitive | undefined) {
