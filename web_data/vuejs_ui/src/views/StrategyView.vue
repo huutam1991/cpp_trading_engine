@@ -668,21 +668,23 @@ onMounted(() => {
 }
 
 .strategy-card-content strong {
-  overflow: hidden;
   color: #60a5fa;
   font-size: 13px;
   font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .strategy-card-content small {
-  overflow: hidden;
   color: #9ca3af;
   font-size: 10px;
   font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .sidebar-message,
@@ -820,8 +822,12 @@ onMounted(() => {
   border-bottom: 1px solid #374151;
 }
 
+.config-card-header p {
+  font-size: 14px;
+}
+
 .config-card-header h2 {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 900;
 }
 
@@ -872,7 +878,7 @@ onMounted(() => {
 
 .group-key strong {
   color: #ffffff;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
 }
 
@@ -893,7 +899,7 @@ onMounted(() => {
   border: 1px solid #374151;
   border-radius: 5px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -930,7 +936,7 @@ onMounted(() => {
   overflow: hidden;
   color: #cbd5e1;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -955,7 +961,7 @@ onMounted(() => {
   border-radius: 6px;
   outline: none;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
