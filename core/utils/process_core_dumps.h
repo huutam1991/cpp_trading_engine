@@ -163,15 +163,15 @@ Json parse_crash_backtrace_to_json(const std::string& backtrace)
 
     for (const auto& frame : frames)
     {
-        if (!is_project_frame(frame))
-        {
-            continue;
-        }
+        // if (!is_project_frame(frame))
+        // {
+        //     continue;
+        // }
 
-        if (is_noise_function(frame.function))
-        {
-            continue;
-        }
+        // if (is_noise_function(frame.function))
+        // {
+        //     continue;
+        // }
 
         Json item;
 
