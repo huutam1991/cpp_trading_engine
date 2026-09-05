@@ -23,11 +23,11 @@ Json SpreadCaptureConfigManager::get_info()
         {"success", spread_capture.success},
         {"fail", spread_capture.fail},
         {"win_rate", spread_capture.win_rate()},
-        {"pnl", {
-            {"profit", spread_capture.profit},
-            {"loss", spread_capture.loss},
-            {"pnl", spread_capture.profit + spread_capture.loss}
-        }},
+        // {"pnl", {
+        //     {"profit", spread_capture.profit},
+        //     {"loss", spread_capture.loss},
+        //     {"pnl", spread_capture.profit + spread_capture.loss}
+        // }},
         {
             "current_status", {
                 {"mean_price", spread_capture.mean_price},
