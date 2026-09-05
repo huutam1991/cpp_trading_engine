@@ -7,6 +7,11 @@ void EventBase::stop()
     m_stopping.store(true, std::memory_order_release);
 }
 
+void EventBase::add_remove_awaiter_event(BasePromiseType* promise)
+{
+    m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
+}
+
 void EventBase::loop()
 {
     while (m_stopping.load(std::memory_order_acquire) == false)
