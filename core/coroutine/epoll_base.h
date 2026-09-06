@@ -1,6 +1,8 @@
 #pragma once
 
 #include <variant>
+#include <atomic>
+#include <cerrno>
 #include <system_io/system_io_object.h>
 
 #include "event_base.h"
@@ -42,6 +44,84 @@ public:
         }
 #endif
     };
+
+#ifdef TEST_MODE_ONLY
+    // Test-only failure injection for Epoll task scheduling.
+    // This block is completely removed from production builds.
+    struct TestInjection
+    {
+        inline static std::atomic<int> fail_task_eventfd_count{0};
+        inline static std::atomic<int> fail_epoll_add_count{0};
+        inline static std::atomic<int> fail_epoll_del_count{0};
+        inline static std::atomic<int> fail_eventfd_write_count{0};
+
+        inline static std::atomic<int> task_eventfd_errno{EMFILE};
+        inline static std::atomic<int> epoll_add_errno{ENOMEM};
+        inline static std::atomic<int> epoll_del_errno{ENOENT};
+        inline static std::atomic<int> eventfd_write_errno{EIO};
+
+        static bool consume_failure(std::atomic<int>& counter) noexcept
+        {
+            int current = counter.load(std::memory_order_relaxed);
+
+            while (current > 0)
+            {
+                if (counter.compare_exchange_weak(
+                        current,
+                        current - 1,
+                        std::memory_order_relaxed,
+                        std::memory_order_relaxed))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        static void reset() noexcept
+        {
+            fail_task_eventfd_count.store(0, std::memory_order_relaxed);
+            fail_epoll_add_count.store(0, std::memory_order_relaxed);
+            fail_epoll_del_count.store(0, std::memory_order_relaxed);
+            fail_eventfd_write_count.store(0, std::memory_order_relaxed);
+
+            task_eventfd_errno.store(EMFILE, std::memory_order_relaxed);
+            epoll_add_errno.store(ENOMEM, std::memory_order_relaxed);
+            epoll_del_errno.store(ENOENT, std::memory_order_relaxed);
+            eventfd_write_errno.store(EIO, std::memory_order_relaxed);
+        }
+    };
+
+    static void reset_test_injection() noexcept
+    {
+        TestInjection::reset();
+    }
+
+    static void fail_next_task_eventfd(int error = EMFILE, int count = 1) noexcept
+    {
+        TestInjection::task_eventfd_errno.store(error, std::memory_order_relaxed);
+        TestInjection::fail_task_eventfd_count.store(count, std::memory_order_relaxed);
+    }
+
+    static void fail_next_epoll_add(int error = ENOMEM, int count = 1) noexcept
+    {
+        TestInjection::epoll_add_errno.store(error, std::memory_order_relaxed);
+        TestInjection::fail_epoll_add_count.store(count, std::memory_order_relaxed);
+    }
+
+    static void fail_next_epoll_del(int error = ENOENT, int count = 1) noexcept
+    {
+        TestInjection::epoll_del_errno.store(error, std::memory_order_relaxed);
+        TestInjection::fail_epoll_del_count.store(count, std::memory_order_relaxed);
+    }
+
+    static void fail_next_eventfd_write(int error = EIO, int count = 1) noexcept
+    {
+        TestInjection::eventfd_write_errno.store(error, std::memory_order_relaxed);
+        TestInjection::fail_eventfd_write_count.store(count, std::memory_order_relaxed);
+    }
+#endif
 
     using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
 

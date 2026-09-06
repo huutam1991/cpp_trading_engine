@@ -11,6 +11,14 @@ int EpollBase::TaskInfoEventEpoll::generate_fd()
 {
 #ifdef TEST_MODE_ONLY
     task_event_generate_fd_count.fetch_add(1, std::memory_order_relaxed);
+
+    if (EpollBase::TestInjection::consume_failure(EpollBase::TestInjection::fail_task_eventfd_count))
+    {
+        errno = EpollBase::TestInjection::task_eventfd_errno.load(std::memory_order_relaxed);
+        fd = -1;
+
+        return -1;
+    }
 #endif
 
     fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
@@ -122,7 +130,20 @@ void EpollBase::add_fd(int fd, SystemIOObject* ptr)
     ev.events = ptr->get_io_events();
     ev.data.ptr = ptr;
 
-    int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
+    int res;
+
+#ifdef TEST_MODE_ONLY
+    if (TestInjection::consume_failure(TestInjection::fail_epoll_add_count))
+    {
+        errno = TestInjection::epoll_add_errno.load(std::memory_order_relaxed);
+        res = -1;
+    }
+    else
+#endif
+    {
+        res = epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, fd, &ev);
+    }
+
     if (res == -1)
     {
         spdlog::error("EpollBase - [add_fd] epoll_ctl ADD error for fd: {}, error: {}", fd, std::strerror(errno));
@@ -146,7 +167,20 @@ void EpollBase::del_fd(int fd, SystemIOObject* ptr)
 {
     if (ptr != nullptr && fd != -1)
     {
-        int res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
+        int res;
+
+#ifdef TEST_MODE_ONLY
+        if (TestInjection::consume_failure(TestInjection::fail_epoll_del_count))
+        {
+            errno = TestInjection::epoll_del_errno.load(std::memory_order_relaxed);
+            res = -1;
+        }
+        else
+#endif
+        {
+            res = epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
+        }
+
         if (res == -1)
         {
             spdlog::error("EpollBase - [del_fd], object name: {}, EPOLL_CTL_DEL error for fd: {}, error: {}", ptr->name(), fd, std::strerror(errno));
@@ -192,8 +226,25 @@ void EpollBase::set_ready_task(SystemIOObject* task_info_event)
     // Add to epoll
     add_fd(fd, task_info_event);
 
-    // Mark this task is ready
-    eventfd_write(fd, 1);
+    // Mark this task as ready.
+    int write_res;
+
+#ifdef TEST_MODE_ONLY
+    if (TestInjection::consume_failure(TestInjection::fail_eventfd_write_count))
+    {
+        errno = TestInjection::eventfd_write_errno.load(std::memory_order_relaxed);
+        write_res = -1;
+    }
+    else
+#endif
+    {
+        write_res = eventfd_write(fd, 1);
+    }
+
+    // The current production implementation intentionally keeps its existing
+    // behavior here: the return value is not handled yet. Failure-path tests
+    // can now inject write_res == -1 and expose the missing rollback logic.
+    (void)write_res;
 }
 
 void EpollBase::stop()
