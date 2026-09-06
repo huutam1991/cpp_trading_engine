@@ -95,7 +95,7 @@ Task<void> OrderManager::update_order_in_db(Order order)
     // Create SavableObject for order if not exist
     if (m_order_db_cache.find(order.order_id) == m_order_db_cache.end())
     {
-        m_order_db_cache.insert(std::make_pair(order.order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list")));
+        m_order_db_cache.insert(std::make_pair(order.order_id, SavableObject<Order>(ORDER_DB_NAME, "order_list", order)));
     }
 
     SavableObject<Order>& order_db = m_order_db_cache.at(order.order_id);
