@@ -5,8 +5,6 @@
 #include <barrier>
 #include <cerrno>
 #include <chrono>
-#include <cstdint>
-#include <cstdlib>
 #include <future>
 #include <stdexcept>
 #include <thread>
@@ -15,11 +13,6 @@
 
 #include <dirent.h>
 #include <fcntl.h>
-#include <signal.h>
-#include <sys/epoll.h>
-#include <sys/eventfd.h>
-#include <sys/syscall.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 #include <coroutine/task.h>
@@ -437,107 +430,13 @@ TEST(CoroutineUsageEpollIoTest, BurstScheduleAllBeforeWaitingDoesNotLeakPool)
 }
 
 // ============================================================================
-// Additional coverage for resource exhaustion, syscall rollback,
+// Additional coverage for resource exhaustion, Epoll scheduling rollback,
 // high-watermark/in-flight pressure, and CachePool MPMC invariants.
 //
-// The syscall wrappers below are intentionally defined in the test binary.
-// When no failure is armed they forward directly to the Linux syscalls, so
-// existing tests keep the normal behavior. The wrappers make failure-path
-// tests deterministic without changing production EpollBase code.
+// Epoll failure injection is provided directly by EpollBase under
+// TEST_MODE_ONLY. These tests therefore exercise the real EpollBase code path
+// without replacing libc/Linux syscall symbols in the test binary.
 // ============================================================================
-
-namespace epoll_test_injection
-{
-    inline std::atomic<int> fail_eventfd_count{0};
-    inline std::atomic<int> fail_epoll_add_count{0};
-    inline std::atomic<int> fail_epoll_del_count{0};
-    inline std::atomic<int> fail_eventfd_write_count{0};
-
-    inline bool consume_failure(std::atomic<int>& counter) noexcept
-    {
-        int current = counter.load(std::memory_order_relaxed);
-
-        while (current > 0)
-        {
-            if (counter.compare_exchange_weak(
-                    current,
-                    current - 1,
-                    std::memory_order_relaxed,
-                    std::memory_order_relaxed))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    inline void reset() noexcept
-    {
-        fail_eventfd_count.store(0, std::memory_order_relaxed);
-        fail_epoll_add_count.store(0, std::memory_order_relaxed);
-        fail_epoll_del_count.store(0, std::memory_order_relaxed);
-        fail_eventfd_write_count.store(0, std::memory_order_relaxed);
-    }
-}
-
-extern "C" int eventfd(unsigned int initval, int flags) noexcept
-{
-    if (epoll_test_injection::consume_failure(
-            epoll_test_injection::fail_eventfd_count))
-    {
-        errno = EMFILE;
-        return -1;
-    }
-
-    return static_cast<int>(
-        ::syscall(SYS_eventfd2, initval, flags));
-}
-
-extern "C" int epoll_ctl(
-    int epfd,
-    int op,
-    int fd,
-    struct epoll_event* event) noexcept
-{
-    if (op == EPOLL_CTL_ADD &&
-        epoll_test_injection::consume_failure(
-            epoll_test_injection::fail_epoll_add_count))
-    {
-        errno = ENOMEM;
-        return -1;
-    }
-
-    if (op == EPOLL_CTL_DEL &&
-        epoll_test_injection::consume_failure(
-            epoll_test_injection::fail_epoll_del_count))
-    {
-        errno = ENOENT;
-        return -1;
-    }
-
-    return static_cast<int>(
-        ::syscall(SYS_epoll_ctl, epfd, op, fd, event));
-}
-
-extern "C" int eventfd_write(int fd, eventfd_t value)
-{
-    if (epoll_test_injection::consume_failure(
-            epoll_test_injection::fail_eventfd_write_count))
-    {
-        errno = EIO;
-        return -1;
-    }
-
-    const uint64_t raw_value = static_cast<uint64_t>(value);
-    const ssize_t written = static_cast<ssize_t>(
-        ::syscall(SYS_write, fd, &raw_value, sizeof(raw_value)));
-
-    if (written == static_cast<ssize_t>(sizeof(raw_value)))
-        return 0;
-
-    return -1;
-}
 
 namespace
 {
@@ -670,26 +569,20 @@ namespace
         SyscallFailurePoint point,
         int count = 1)
     {
-        epoll_test_injection::reset();
+        EpollBase::reset_test_injection();
 
         switch (point)
         {
             case SyscallFailurePoint::EventFd:
-                epoll_test_injection::fail_eventfd_count.store(
-                    count,
-                    std::memory_order_relaxed);
+                EpollBase::fail_next_task_eventfd(EMFILE, count);
                 break;
 
             case SyscallFailurePoint::EpollAdd:
-                epoll_test_injection::fail_epoll_add_count.store(
-                    count,
-                    std::memory_order_relaxed);
+                EpollBase::fail_next_epoll_add(ENOMEM, count);
                 break;
 
             case SyscallFailurePoint::EventFdWrite:
-                epoll_test_injection::fail_eventfd_write_count.store(
-                    count,
-                    std::memory_order_relaxed);
+                EpollBase::fail_next_eventfd_write(EIO, count);
                 break;
         }
     }
@@ -697,7 +590,10 @@ namespace
     [[noreturn]] void run_single_syscall_failure_conservation_child(
         SyscallFailurePoint point)
     {
-        epoll_test_injection::reset();
+        // The child process isolates intentionally broken rollback behavior so
+        // a failing test cannot contaminate the process-wide static pool used
+        // by later tests.
+        EpollBase::reset_test_injection();
 
         EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
@@ -714,10 +610,11 @@ namespace
         }
         catch (...)
         {
+            EpollBase::reset_test_injection();
             ::_exit(20);
         }
 
-        epoll_test_injection::reset();
+        EpollBase::reset_test_injection();
 
         const size_t pool_after =
             EpollBase::TaskInfoEventPool::size();
@@ -867,7 +764,7 @@ TEST(CachePoolResourceExhaustionTest, ForeignPointerAborts)
 }
 
 // ============================================================================
-// 2. Syscall failure and rollback tests
+// 2. Epoll scheduling failure and rollback tests
 // ============================================================================
 
 TEST(EpollSyscallRollbackTest, EventFdFailureReturnsItemToPool)
@@ -885,7 +782,7 @@ TEST(EpollSyscallRollbackTest, EventFdFailureAfterManySuccessfulSchedulesDoesNot
 {
     EXPECT_EXIT(
         {
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
@@ -899,13 +796,11 @@ TEST(EpollSyscallRollbackTest, EventFdFailureAfterManySuccessfulSchedulesDoesNot
 
             const int fds_before_failure = count_open_fds();
 
-            epoll_test_injection::fail_eventfd_count.store(
-                1,
-                std::memory_order_relaxed);
+            EpollBase::fail_next_task_eventfd(EMFILE, 1);
 
             epoll.add_run_task_event(nullptr);
 
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             const bool ok =
                 EpollBase::TaskInfoEventPool::size() == pool_before_failure &&
@@ -921,7 +816,7 @@ TEST(EpollSyscallRollbackTest, RepeatedEventFdFailuresNeverDrainPool)
 {
     EXPECT_EXIT(
         {
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
@@ -932,14 +827,12 @@ TEST(EpollSyscallRollbackTest, RepeatedEventFdFailuresNeverDrainPool)
 
             const int fds_before = count_open_fds();
 
-            epoll_test_injection::fail_eventfd_count.store(
-                FAILURES,
-                std::memory_order_relaxed);
+            EpollBase::fail_next_task_eventfd(EMFILE, FAILURES);
 
             for (int i = 0; i < FAILURES; ++i)
                 epoll.add_run_task_event(nullptr);
 
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             const bool ok =
                 EpollBase::TaskInfoEventPool::size() == pool_before &&
@@ -966,7 +859,7 @@ TEST(EpollSyscallRollbackTest, RepeatedEpollCtlAddFailuresNeverDrainPoolOrLeakFd
 {
     EXPECT_EXIT(
         {
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
@@ -977,14 +870,12 @@ TEST(EpollSyscallRollbackTest, RepeatedEpollCtlAddFailuresNeverDrainPoolOrLeakFd
 
             const int fds_before = count_open_fds();
 
-            epoll_test_injection::fail_epoll_add_count.store(
-                FAILURES,
-                std::memory_order_relaxed);
+            EpollBase::fail_next_epoll_add(ENOMEM, FAILURES);
 
             for (int i = 0; i < FAILURES; ++i)
                 epoll.add_run_task_event(nullptr);
 
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             const bool ok =
                 EpollBase::TaskInfoEventPool::size() == pool_before &&
@@ -1009,7 +900,7 @@ TEST(EpollSyscallRollbackTest, EventFdWriteFailureFullyRollsBack)
 
 TEST(EpollSyscallRollbackTest, EpollCtlDelFailureStillClosesAndReleases)
 {
-    epoll_test_injection::reset();
+    EpollBase::reset_test_injection();
 
     EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
@@ -1030,9 +921,12 @@ TEST(EpollSyscallRollbackTest, EpollCtlDelFailureStillClosesAndReleases)
 
     ASSERT_EQ(EpollBase::TaskInfoEventPool::size(), pool_before - 1);
 
-    // The fd was never registered in this epoll instance, so EPOLL_CTL_DEL
-    // must fail with ENOENT. del_fd() must still close and release it.
+    // Inject EPOLL_CTL_DEL failure through the real EpollBase test hook.
+    // del_fd() must still close the file descriptor and return the object to
+    // TaskInfoEventPool even when the kernel operation is reported as failed.
+    EpollBase::fail_next_epoll_del(ENOENT, 1);
     epoll.del_fd(fd, task_event);
+    EpollBase::reset_test_injection();
 
     EXPECT_EQ(EpollBase::TaskInfoEventPool::size(), pool_before);
 
@@ -1074,7 +968,7 @@ TEST(EpollHighWatermarkTest, SchedulerBacklogConsumesOnePoolItemPerOutstandingEv
 {
     EXPECT_EXIT(
         {
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
@@ -1169,7 +1063,7 @@ TEST(EpollHighWatermarkTest, ManyProducerThreadsCanBuildBacklogWithoutWaiting)
 {
     EXPECT_EXIT(
         {
-            epoll_test_injection::reset();
+            EpollBase::reset_test_injection();
 
             EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
 
