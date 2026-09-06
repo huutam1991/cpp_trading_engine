@@ -349,3 +349,73 @@ TEST(CoroutineUsageEpollIoTest, DISABLED_Stress150kComplexNestedTaskChains)
 
     EventBaseManager::shutdown_all();
 }
+
+TEST(CoroutineUsageEpollIoTest, BurstScheduleAllBeforeWaitingDoesNotLeakPool)
+{
+    constexpr int N = 50000;
+
+    auto* eb = test_epoll_base();
+
+    const size_t initial_pool_size =
+        EpollBase::TaskInfoEventPool::size();
+
+    EpollBase::TaskInfoEventEpoll::reset_task_event_counters();
+
+    auto fn = [](int value) -> Task<int>
+    {
+        co_return value;
+    };
+
+    std::vector<Task<int>> tasks;
+    std::vector<std::future<int>> results;
+
+    tasks.reserve(N);
+    results.reserve(N);
+
+    //
+    // IMPORTANT:
+    // Schedule ALL tasks first.
+    // No wait_result() here.
+    //
+    for (int i = 0; i < N; ++i)
+    {
+        tasks.emplace_back(fn(i));
+        results.emplace_back(tasks.back().get_future());
+
+        tasks.back().start_running_on(eb);
+    }
+
+    long long sum = 0;
+
+    for (auto& result : results)
+    {
+        sum += result.get();
+    }
+
+    EXPECT_EQ(sum, (N - 1LL) * N / 2);
+
+    tasks.clear();
+
+    //
+    // Wait until REMOVE_AWAITER events are also drained.
+    //
+    for (int i = 0; i < 1000; ++i)
+    {
+        if (EpollBase::TaskInfoEventPool::size() == initial_pool_size)
+            break;
+
+        std::this_thread::sleep_for(1ms);
+    }
+
+    EXPECT_EQ(
+        EpollBase::TaskInfoEventPool::size(),
+        initial_pool_size);
+
+    EXPECT_EQ(
+        EpollBase::TaskInfoEventEpoll::task_event_generate_fd_count.load(
+            std::memory_order_relaxed),
+        EpollBase::TaskInfoEventEpoll::task_event_release_count.load(
+            std::memory_order_relaxed));
+
+    EventBaseManager::shutdown_all();
+}
