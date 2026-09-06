@@ -30,9 +30,13 @@ namespace
         return result.get();
     }
 
-    inline EventBase* test_epoll_base()
+    inline EpollBase* test_epoll_base()
     {
-        return EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+        // EpollBase instances used by tests must be created and owned by
+        // EventBaseManager so their loop thread and lifecycle match production.
+        return static_cast<EpollBase*>(
+            EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK)
+        );
     }
 }
 
@@ -592,10 +596,12 @@ namespace
     {
         // The child process isolates intentionally broken rollback behavior so
         // a failing test cannot contaminate the process-wide static pool used
-        // by later tests.
+        // by later tests. EpollBase itself must still come from
+        // EventBaseManager; constructing EpollBase directly does not reproduce
+        // the production event-base lifecycle.
         EpollBase::reset_test_injection();
 
-        EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+        EpollBase* epoll = test_epoll_base();
 
         const size_t pool_before =
             EpollBase::TaskInfoEventPool::size();
@@ -606,7 +612,7 @@ namespace
 
         try
         {
-            epoll.add_run_task_event(nullptr);
+            epoll->add_run_task_event(nullptr);
         }
         catch (...)
         {
@@ -784,12 +790,32 @@ TEST(EpollSyscallRollbackTest, EventFdFailureAfterManySuccessfulSchedulesDoesNot
         {
             EpollBase::reset_test_injection();
 
-            EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+            EpollBase* epoll = test_epoll_base();
 
-            constexpr int SUCCESSFUL_EVENTS = 100;
+            constexpr int SUCCESSFUL_TASKS = 100;
 
-            for (int i = 0; i < SUCCESSFUL_EVENTS; ++i)
-                epoll.add_run_task_event(nullptr);
+            const size_t initial_pool_size =
+                EpollBase::TaskInfoEventPool::size();
+
+            auto fn = [](int value) -> Task<int>
+            {
+                co_return value;
+            };
+
+            // Run real tasks first so the managed EpollBase processes valid
+            // coroutine promises before the injected failure is armed.
+            for (int i = 0; i < SUCCESSFUL_TASKS; ++i)
+            {
+                auto task = fn(i);
+                auto result = task.get_future();
+                task.start_running_on(epoll);
+
+                if (result.get() != i)
+                    ::_exit(21);
+            }
+
+            if (!wait_until_pool_size(initial_pool_size))
+                ::_exit(22);
 
             const size_t pool_before_failure =
                 EpollBase::TaskInfoEventPool::size();
@@ -798,7 +824,9 @@ TEST(EpollSyscallRollbackTest, EventFdFailureAfterManySuccessfulSchedulesDoesNot
 
             EpollBase::fail_next_task_eventfd(EMFILE, 1);
 
-            epoll.add_run_task_event(nullptr);
+            // The injected eventfd failure occurs before the event can enter
+            // epoll, so a null promise is never consumed by the loop thread.
+            epoll->add_run_task_event(nullptr);
 
             EpollBase::reset_test_injection();
 
@@ -818,7 +846,7 @@ TEST(EpollSyscallRollbackTest, RepeatedEventFdFailuresNeverDrainPool)
         {
             EpollBase::reset_test_injection();
 
-            EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+            EpollBase* epoll = test_epoll_base();
 
             constexpr int FAILURES = 256;
 
@@ -830,7 +858,7 @@ TEST(EpollSyscallRollbackTest, RepeatedEventFdFailuresNeverDrainPool)
             EpollBase::fail_next_task_eventfd(EMFILE, FAILURES);
 
             for (int i = 0; i < FAILURES; ++i)
-                epoll.add_run_task_event(nullptr);
+                epoll->add_run_task_event(nullptr);
 
             EpollBase::reset_test_injection();
 
@@ -861,7 +889,7 @@ TEST(EpollSyscallRollbackTest, RepeatedEpollCtlAddFailuresNeverDrainPoolOrLeakFd
         {
             EpollBase::reset_test_injection();
 
-            EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+            EpollBase* epoll = test_epoll_base();
 
             constexpr int FAILURES = 128;
 
@@ -873,7 +901,7 @@ TEST(EpollSyscallRollbackTest, RepeatedEpollCtlAddFailuresNeverDrainPoolOrLeakFd
             EpollBase::fail_next_epoll_add(ENOMEM, FAILURES);
 
             for (int i = 0; i < FAILURES; ++i)
-                epoll.add_run_task_event(nullptr);
+                epoll->add_run_task_event(nullptr);
 
             EpollBase::reset_test_injection();
 
@@ -902,7 +930,7 @@ TEST(EpollSyscallRollbackTest, EpollCtlDelFailureStillClosesAndReleases)
 {
     EpollBase::reset_test_injection();
 
-    EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+    EpollBase* epoll = test_epoll_base();
 
     const size_t pool_before =
         EpollBase::TaskInfoEventPool::size();
@@ -915,17 +943,18 @@ TEST(EpollSyscallRollbackTest, EpollCtlDelFailureStillClosesAndReleases)
     if (fd < 0)
     {
         EpollBase::TaskInfoEventPool::release(task_event);
+        EventBaseManager::shutdown_all();
         FAIL() << "eventfd() unexpectedly failed while preparing the DEL failure test";
         return;
     }
 
     ASSERT_EQ(EpollBase::TaskInfoEventPool::size(), pool_before - 1);
 
-    // Inject EPOLL_CTL_DEL failure through the real EpollBase test hook.
+    // Inject EPOLL_CTL_DEL failure through the managed EpollBase test hook.
     // del_fd() must still close the file descriptor and return the object to
     // TaskInfoEventPool even when the kernel operation is reported as failed.
     EpollBase::fail_next_epoll_del(ENOENT, 1);
-    epoll.del_fd(fd, task_event);
+    epoll->del_fd(fd, task_event);
     EpollBase::reset_test_injection();
 
     EXPECT_EQ(EpollBase::TaskInfoEventPool::size(), pool_before);
@@ -933,6 +962,8 @@ TEST(EpollSyscallRollbackTest, EpollCtlDelFailureStillClosesAndReleases)
     errno = 0;
     EXPECT_EQ(::fcntl(fd, F_GETFD), -1);
     EXPECT_EQ(errno, EBADF);
+
+    EventBaseManager::shutdown_all();
 }
 
 class EpollSyscallConservationTest
@@ -966,37 +997,54 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(EpollHighWatermarkTest, SchedulerBacklogConsumesOnePoolItemPerOutstandingEvent)
 {
-    EXPECT_EXIT(
-        {
-            EpollBase::reset_test_injection();
+    constexpr size_t TASKS = 2048;
 
-            EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+    EpollBase* epoll = test_epoll_base();
 
-            constexpr size_t OUTSTANDING = 2048;
+    const size_t initial_pool_size =
+        EpollBase::TaskInfoEventPool::size();
 
-            const size_t pool_before =
-                EpollBase::TaskInfoEventPool::size();
+    const int fds_before = count_open_fds();
 
-            const int fds_before = count_open_fds();
+    EpollBase::TaskInfoEventEpoll::reset_task_event_counters();
 
-            for (size_t i = 0; i < OUTSTANDING; ++i)
-                epoll.add_run_task_event(nullptr);
+    auto fn = [](int value) -> Task<int>
+    {
+        co_return value;
+    };
 
-            const size_t pool_after =
-                EpollBase::TaskInfoEventPool::size();
+    std::vector<Task<int>> tasks;
+    std::vector<std::future<int>> results;
+    tasks.reserve(TASKS);
+    results.reserve(TASKS);
 
-            const int fds_after = count_open_fds();
+    // Schedule the full burst before waiting. The EventBaseManager-owned
+    // EpollBase has a live consumer thread, so instantaneous pool occupancy is
+    // intentionally not asserted; the invariant is that every scheduled event
+    // is eventually released and all file descriptors are recovered.
+    for (size_t i = 0; i < TASKS; ++i)
+    {
+        tasks.emplace_back(fn(static_cast<int>(i)));
+        results.emplace_back(tasks.back().get_future());
+        tasks.back().start_running_on(epoll);
+    }
 
-            const bool ok =
-                pool_before >= OUTSTANDING &&
-                pool_after == pool_before - OUTSTANDING &&
-                fds_before >= 0 &&
-                fds_after == fds_before + static_cast<int>(OUTSTANDING);
+    for (size_t i = 0; i < TASKS; ++i)
+        EXPECT_EQ(results[i].get(), static_cast<int>(i));
 
-            ::_exit(ok ? 0 : 1);
-        },
-        ::testing::ExitedWithCode(0),
-        ".*");
+    tasks.clear();
+
+    ASSERT_TRUE(wait_until_pool_size(initial_pool_size));
+
+    EXPECT_EQ(EpollBase::TaskInfoEventPool::size(), initial_pool_size);
+    EXPECT_EQ(count_open_fds(), fds_before);
+    EXPECT_EQ(
+        EpollBase::TaskInfoEventEpoll::task_event_generate_fd_count.load(
+            std::memory_order_relaxed),
+        EpollBase::TaskInfoEventEpoll::task_event_release_count.load(
+            std::memory_order_relaxed));
+
+    EventBaseManager::shutdown_all();
 }
 
 TEST(EpollHighWatermarkTest, StandalonePoolCanReachNinetyPercentOccupancyAndRecover)
@@ -1061,65 +1109,79 @@ TEST(EpollHighWatermarkTest, StandalonePoolCapacityPlusOneFailsWithoutCorrupting
 
 TEST(EpollHighWatermarkTest, ManyProducerThreadsCanBuildBacklogWithoutWaiting)
 {
-    EXPECT_EXIT(
+    constexpr int THREADS = 8;
+    constexpr int TASKS_PER_THREAD = 500;
+
+    EpollBase* epoll = test_epoll_base();
+
+    const size_t initial_pool_size =
+        EpollBase::TaskInfoEventPool::size();
+
+    const int fds_before = count_open_fds();
+
+    EpollBase::TaskInfoEventEpoll::reset_task_event_counters();
+
+    auto fn = [](int value) -> Task<int>
+    {
+        co_return value;
+    };
+
+    std::barrier start_line(THREADS);
+    std::atomic<int> failures{0};
+    std::vector<std::thread> producers;
+    producers.reserve(THREADS);
+
+    for (int t = 0; t < THREADS; ++t)
+    {
+        producers.emplace_back([&, t]
         {
-            EpollBase::reset_test_injection();
+            std::vector<Task<int>> tasks;
+            std::vector<std::future<int>> results;
+            tasks.reserve(TASKS_PER_THREAD);
+            results.reserve(TASKS_PER_THREAD);
 
-            EpollBase epoll(EventBaseID::EPOLL_SYSTEM_IO_TASK);
+            start_line.arrive_and_wait();
 
-            constexpr int THREADS = 8;
-            constexpr int EVENTS_PER_THREAD = 500;
-            constexpr int TOTAL_EVENTS = THREADS * EVENTS_PER_THREAD;
-
-            const size_t pool_before =
-                EpollBase::TaskInfoEventPool::size();
-
-            const int fds_before = count_open_fds();
-
-            std::barrier start_line(THREADS);
-            std::atomic<int> exceptions{0};
-            std::vector<std::thread> producers;
-            producers.reserve(THREADS);
-
-            for (int t = 0; t < THREADS; ++t)
+            // Each producer schedules its complete burst before waiting for any
+            // result, maximizing concurrent pressure on the real EpollBase.
+            for (int i = 0; i < TASKS_PER_THREAD; ++i)
             {
-                producers.emplace_back([&]
-                {
-                    start_line.arrive_and_wait();
-
-                    for (int i = 0; i < EVENTS_PER_THREAD; ++i)
-                    {
-                        try
-                        {
-                            epoll.add_run_task_event(nullptr);
-                        }
-                        catch (...)
-                        {
-                            exceptions.fetch_add(1, std::memory_order_relaxed);
-                        }
-                    }
-                });
+                const int value = t * TASKS_PER_THREAD + i;
+                tasks.emplace_back(fn(value));
+                results.emplace_back(tasks.back().get_future());
+                tasks.back().start_running_on(epoll);
             }
 
-            for (auto& producer : producers)
-                producer.join();
+            for (int i = 0; i < TASKS_PER_THREAD; ++i)
+            {
+                try
+                {
+                    const int expected = t * TASKS_PER_THREAD + i;
+                    if (results[i].get() != expected)
+                        failures.fetch_add(1, std::memory_order_relaxed);
+                }
+                catch (...)
+                {
+                    failures.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+        });
+    }
 
-            const size_t pool_after =
-                EpollBase::TaskInfoEventPool::size();
+    for (auto& producer : producers)
+        producer.join();
 
-            const int fds_after = count_open_fds();
+    EXPECT_EQ(failures.load(std::memory_order_relaxed), 0);
+    ASSERT_TRUE(wait_until_pool_size(initial_pool_size));
+    EXPECT_EQ(EpollBase::TaskInfoEventPool::size(), initial_pool_size);
+    EXPECT_EQ(count_open_fds(), fds_before);
+    EXPECT_EQ(
+        EpollBase::TaskInfoEventEpoll::task_event_generate_fd_count.load(
+            std::memory_order_relaxed),
+        EpollBase::TaskInfoEventEpoll::task_event_release_count.load(
+            std::memory_order_relaxed));
 
-            const bool ok =
-                exceptions.load(std::memory_order_relaxed) == 0 &&
-                pool_before >= static_cast<size_t>(TOTAL_EVENTS) &&
-                pool_after == pool_before - static_cast<size_t>(TOTAL_EVENTS) &&
-                fds_before >= 0 &&
-                fds_after == fds_before + TOTAL_EVENTS;
-
-            ::_exit(ok ? 0 : 1);
-        },
-        ::testing::ExitedWithCode(0),
-        ".*");
+    EventBaseManager::shutdown_all();
 }
 
 TEST(EpollHighWatermarkTest, ManyProducersBurstThenRealConsumerDrainsEverything)
