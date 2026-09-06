@@ -35,8 +35,8 @@ namespace
         // EpollBase instances used by tests must be created and owned by
         // EventBaseManager so their loop thread and lifecycle match production.
         return static_cast<EpollBase*>(
-            EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK)
-        );
+            EventBaseManager::get_event_base_by_id(
+                EventBaseID::EPOLL_SYSTEM_IO_TASK));
     }
 }
 
@@ -634,6 +634,59 @@ namespace
 
         ::_exit(resources_conserved ? 0 : 1);
     }
+
+    [[noreturn]] void run_eventfd_failure_after_successful_schedules_child()
+    {
+        EpollBase::reset_test_injection();
+
+        EpollBase* epoll = test_epoll_base();
+
+        constexpr int SUCCESSFUL_TASKS = 100;
+
+        const size_t initial_pool_size =
+            EpollBase::TaskInfoEventPool::size();
+
+        auto fn = [](int value) -> Task<int>
+        {
+            co_return value;
+        };
+
+        // Keep start_running_on() outside EXPECT_EXIT/EXPECT_DEATH macro bodies.
+        // start_running_on is itself a macro that expands to a template call with
+        // commas, which can otherwise be parsed as extra arguments by GTest's
+        // death-test macros.
+        for (int i = 0; i < SUCCESSFUL_TASKS; ++i)
+        {
+            auto task = fn(i);
+            auto result = task.get_future();
+            task.start_running_on(epoll);
+
+            if (result.get() != i)
+                ::_exit(21);
+        }
+
+        if (!wait_until_pool_size(initial_pool_size))
+            ::_exit(22);
+
+        const size_t pool_before_failure =
+            EpollBase::TaskInfoEventPool::size();
+
+        const int fds_before_failure = count_open_fds();
+
+        EpollBase::fail_next_task_eventfd(EMFILE, 1);
+
+        // The injected eventfd failure occurs before the event can enter epoll,
+        // so the null promise is never consumed by the loop thread.
+        epoll->add_run_task_event(nullptr);
+
+        EpollBase::reset_test_injection();
+
+        const bool ok =
+            EpollBase::TaskInfoEventPool::size() == pool_before_failure &&
+            count_open_fds() == fds_before_failure;
+
+        ::_exit(ok ? 0 : 1);
+    }
 }
 
 // ============================================================================
@@ -788,53 +841,7 @@ TEST(EpollSyscallRollbackTest, EventFdFailureAfterManySuccessfulSchedulesDoesNot
 {
     EXPECT_EXIT(
         {
-            EpollBase::reset_test_injection();
-
-            EpollBase* epoll = test_epoll_base();
-
-            constexpr int SUCCESSFUL_TASKS = 100;
-
-            const size_t initial_pool_size =
-                EpollBase::TaskInfoEventPool::size();
-
-            auto fn = [](int value) -> Task<int>
-            {
-                co_return value;
-            };
-
-            // Run real tasks first so the managed EpollBase processes valid
-            // coroutine promises before the injected failure is armed.
-            for (int i = 0; i < SUCCESSFUL_TASKS; ++i)
-            {
-                auto task = fn(i);
-                auto result = task.get_future();
-                task.start_running_on(epoll);
-
-                if (result.get() != i)
-                    ::_exit(21);
-            }
-
-            if (!wait_until_pool_size(initial_pool_size))
-                ::_exit(22);
-
-            const size_t pool_before_failure =
-                EpollBase::TaskInfoEventPool::size();
-
-            const int fds_before_failure = count_open_fds();
-
-            EpollBase::fail_next_task_eventfd(EMFILE, 1);
-
-            // The injected eventfd failure occurs before the event can enter
-            // epoll, so a null promise is never consumed by the loop thread.
-            epoll->add_run_task_event(nullptr);
-
-            EpollBase::reset_test_injection();
-
-            const bool ok =
-                EpollBase::TaskInfoEventPool::size() == pool_before_failure &&
-                count_open_fds() == fds_before_failure;
-
-            ::_exit(ok ? 0 : 1);
+            run_eventfd_failure_after_successful_schedules_child();
         },
         ::testing::ExitedWithCode(0),
         ".*");
