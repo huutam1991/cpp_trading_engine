@@ -15,35 +15,7 @@ struct BaseTask
         }
         std::suspend_always initial_suspend() { return {}; }
         std::suspend_always final_suspend() noexcept { return {};}
-        void unhandled_exception() noexcept
-        {
-            try
-            {
-                throw;
-            }
-            catch (const std::exception& e)
-            {
-                MongoDB::instance()
-                    .set_db_and_collection("coroutine_monitoring", "unhandled_exception")
-                    .insert_one(Json{
-                        {"exception", e.what()},
-                        {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
-                    }
-                );
-            }
-            catch (...)
-            {
-                MongoDB::instance()
-                    .set_db_and_collection("coroutine_monitoring", "unhandled_exception")
-                    .insert_one(Json{
-                        {"exception", "Unhandled unknown coroutine exception"},
-                        {"timestamp", Utils::get_time_now_in_string_HMS_DMY()}
-                    }
-                );
-            }
-
-            std::terminate();
-        }
+        void unhandled_exception() noexcept { std::terminate(); }
     };
 
     // std::coroutine_handle<promise_type> handle = nullptr;
