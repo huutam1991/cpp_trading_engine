@@ -220,6 +220,9 @@ void EpollBase::set_ready_task(SystemIOObject* task_info_event)
     if (fd < 0)
     {
         spdlog::error("EpollBase - [set_ready_task], TaskInfo generate_fd error for fd: {}", fd);
+
+        // Release the [task_info_event] back to the pool since we failed to generate a valid fd.
+        task_info_event->release();
         return;
     }
 
