@@ -569,9 +569,7 @@ namespace
         EventFdWrite
     };
 
-    inline void arm_syscall_failure(
-        SyscallFailurePoint point,
-        int count = 1)
+    inline void arm_syscall_failure(SyscallFailurePoint point, int count = 1)
     {
         EpollBase::reset_test_injection();
 
@@ -591,8 +589,7 @@ namespace
         }
     }
 
-    [[noreturn]] void run_single_syscall_failure_conservation_child(
-        SyscallFailurePoint point)
+    [[noreturn]] void run_single_syscall_failure_conservation_child(SyscallFailurePoint point)
     {
         // The child process isolates intentionally broken rollback behavior so
         // a failing test cannot contaminate the process-wide static pool used
@@ -600,12 +597,9 @@ namespace
         // EventBaseManager; constructing EpollBase directly does not reproduce
         // the production event-base lifecycle.
         EpollBase::reset_test_injection();
-
         EpollBase* epoll = test_epoll_base();
 
-        const size_t pool_before =
-            EpollBase::TaskInfoEventPool::size();
-
+        const size_t pool_before = EpollBase::TaskInfoEventPool::size();
         const int fds_before = count_open_fds();
 
         arm_syscall_failure(point, 1);
@@ -622,9 +616,7 @@ namespace
 
         EpollBase::reset_test_injection();
 
-        const size_t pool_after =
-            EpollBase::TaskInfoEventPool::size();
-
+        const size_t pool_after = EpollBase::TaskInfoEventPool::size();
         const int fds_after = count_open_fds();
 
         const bool resources_conserved =
