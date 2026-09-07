@@ -41,6 +41,15 @@ int EpollBase::TaskInfoEventEpoll::handle_read()
     task_event_handle_read_count.fetch_add(1, std::memory_order_relaxed);
 #endif
 
+    eventfd_t value;
+    if (eventfd_read(fd, &value) == -1)
+    {
+        if (errno != EAGAIN)
+        {
+            spdlog::error("TaskInfoEventEpoll - eventfd_read failed, fd: {}, error: {}", fd, std::strerror(errno));
+        }
+    }
+
     while (true)
     {
         // Check if there's any task ready to process
