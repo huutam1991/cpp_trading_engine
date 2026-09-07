@@ -58,7 +58,7 @@ int EpollBase::TaskInfoEventEpoll::handle_read()
     }
 
     // Always return -1 to indicate this task is done
-    return -1;
+    return 0;
 }
 
 int EpollBase::TaskInfoEventEpoll::handle_write()
@@ -94,7 +94,7 @@ EpollBase::EpollBase(EventBaseID id) : EventBase(id)
         exit(EXIT_FAILURE);
     }
 
-    if ((m_task_event_fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) == -1)
+    if ((m_task_event_fd = create_task_event_fd()) == -1)
     {
         spdlog::error("EpollBase - [eventfd] error: {}", std::strerror(errno));
         exit(EXIT_FAILURE);
