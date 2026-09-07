@@ -27,7 +27,7 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
         {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()},
         {"Order Book Update Pool Size", OrderBookUpdatePool::size()},
         {"Share String Pool Size", StringPool::size()},
-        {"Task Info Event Pool Size", EpollBase::TaskInfoEventPool::size()},
+        // {"Task Info Event Pool Size", EpollBase::TaskInfoEventPool::size()},
         {"Timer IO Pool Size", TimerIOPool::size()},
         {"Https Client Socket Connection Pool Size", HttpsSocketConnectionPool::size()},
         {"Https Websocket Connection IO Pool Size", HttpsWebsocketConnectionIOPool::size()}
