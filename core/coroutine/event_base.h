@@ -26,7 +26,7 @@ public:
     EventBase(EventBaseID id) : m_event_base_id {(id)} {}
     virtual ~EventBase() {}
 
-private:
+protected:
     using TaskEventQueue = MPSCQueue<TaskInfoEvent, MAX_TASK_INFO>;
     TaskEventQueue m_task_event_queue;
 
@@ -44,7 +44,10 @@ public:
         m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise});
     }
 
-    virtual void add_remove_awaiter_event(BasePromiseType* promise);
+    virtual inline void add_remove_awaiter_event(BasePromiseType* promise)
+    {
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
+    }
 
     virtual inline void add_force_destroy_event(BasePromiseType* promise)
     {
