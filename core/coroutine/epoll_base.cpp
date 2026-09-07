@@ -127,6 +127,10 @@ EpollBase::~EpollBase()
     if (m_task_event_fd != -1)
     {
         close(m_task_event_fd);
+
+        delete m_task_info_event;
+        m_task_info_event = nullptr;
+        m_task_event_fd = -1;
     }
 }
 
