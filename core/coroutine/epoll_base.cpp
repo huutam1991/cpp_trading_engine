@@ -41,7 +41,21 @@ int EpollBase::TaskInfoEventEpoll::handle_read()
     task_event_handle_read_count.fetch_add(1, std::memory_order_relaxed);
 #endif
 
-    check_handle();
+    while (true)
+    {
+        // Check if there's any task ready to process
+        TaskInfoEvent task_event = m_task_event_queue->pop();
+
+        // Continue process this task
+        if (task_event != nullptr)
+        {
+            task_event.check_handle();
+        }
+        else
+        {
+            break;
+        }
+    }
 
     // Always return -1 to indicate this task is done
     return -1;
@@ -63,7 +77,7 @@ void EpollBase::TaskInfoEventEpoll::release()
     task_event_release_count.fetch_add(1, std::memory_order_relaxed);
 #endif
 
-    TaskInfoEventPool::release(this);
+    // TaskInfoEventPool::release(this);
 }
 
 EpollBase::EpollBase(EventBaseID id) : EventBase(id)
@@ -80,6 +94,12 @@ EpollBase::EpollBase(EventBaseID id) : EventBase(id)
         exit(EXIT_FAILURE);
     }
 
+    if ((m_task_event_fd = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) == -1)
+    {
+        spdlog::error("EpollBase - [eventfd] error: {}", std::strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     spdlog::info("EpollBase - Created EpollBase with id: {}", m_event_base_id);
 }
 
@@ -93,6 +113,11 @@ EpollBase::~EpollBase()
     if (m_shutdown_fd != -1)
     {
         close(m_shutdown_fd);
+    }
+
+    if (m_task_event_fd != -1)
+    {
+        close(m_task_event_fd);
     }
 }
 
@@ -120,6 +145,23 @@ int EpollBase::create_shutdown_event()
         close(fd);
         return -1;
     }
+
+    return fd;
+}
+
+int EpollBase::create_task_event_fd()
+{
+    // Create 1 TaskInfoEventEpoll object for all tasks to use
+    m_task_info_event = new TaskInfoEventEpoll(&m_task_event_queue);
+
+    int fd = m_task_info_event->generate_fd();
+    if (m_task_event_fd == -1)
+    {
+        spdlog::error("EpollBase - [create_task_event_fd] TaskInfoEventEpoll generate_fd error: {}", std::strerror(errno));
+        return -1;
+    }
+
+    add_fd(fd, m_task_info_event);
 
     return fd;
 }
@@ -214,21 +256,8 @@ void EpollBase::start_living_system_io_object(SystemIOObject* object)
     }
 }
 
-void EpollBase::set_ready_task(SystemIOObject* task_info_event)
+void EpollBase::set_ready_task()
 {
-    int fd = task_info_event->generate_fd();
-    if (fd < 0)
-    {
-        spdlog::error("EpollBase - [set_ready_task], TaskInfo generate_fd error for fd: {}", fd);
-
-        // Release the [task_info_event] back to the pool since we failed to generate a valid fd.
-        task_info_event->release();
-        return;
-    }
-
-    // Add to epoll
-    add_fd(fd, task_info_event);
-
     // Mark this task as ready.
     int write_res;
 
@@ -241,7 +270,7 @@ void EpollBase::set_ready_task(SystemIOObject* task_info_event)
     else
 #endif
     {
-        write_res = eventfd_write(fd, 1);
+        write_res = eventfd_write(m_task_event_fd, 1);
     }
 
     // The current production implementation intentionally keeps its existing

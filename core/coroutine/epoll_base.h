@@ -11,14 +11,20 @@ class EpollBase : public EventBase
 {
     int m_epoll_fd;
     int m_shutdown_fd;
+    int m_task_event_fd;
 
     void add_fd(int fd, SystemIOObject* ptr);
     int create_shutdown_event();
-    void set_ready_task(SystemIOObject* object);
+    int create_task_event_fd();
+    void set_ready_task();
 
 public:
-    struct TaskInfoEventEpoll : public TaskInfoEvent, NamedIOObject<TaskInfoEvent>
+    struct TaskInfoEventEpoll : public NamedIOObject<TaskInfoEvent>
     {
+        TaskEventQueue* m_task_event_queue = nullptr;
+
+        TaskInfoEventEpoll(TaskEventQueue* task_event_queue) : m_task_event_queue{task_event_queue} {};
+
         // SystemIOObject's methods
         virtual int generate_fd() override;
         virtual int get_io_events() { return EPOLLIN; }
@@ -123,7 +129,9 @@ public:
     }
 #endif
 
-    using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
+    // using TaskInfoEventPool = CachePool<TaskInfoEventEpoll, MAX_TASK_INFO>;
+
+    TaskInfoEventEpoll* m_task_info_event = nullptr;
 
 public:
     EpollBase(EventBaseID id);
@@ -133,40 +141,28 @@ public:
     void del_fd(int fd, SystemIOObject* ptr);
     void start_living_system_io_object(SystemIOObject* object);
 
-    virtual inline void add_run_task_event(BasePromiseType* promise) override
+    virtual inline void add_run_task_event(BasePromiseType* promise)
     {
-        TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-        task_event->type = TaskInfoEvent::TaskType::RUN;
-        task_event->promise = promise;
-
-        set_ready_task(task_event);
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::RUN, promise});
+        set_ready_task();
     }
 
-    virtual inline void add_set_suspend_value_event(BasePromiseType* promise) override
+    virtual inline void add_set_suspend_value_event(BasePromiseType* promise)
     {
-        TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-        task_event->type = TaskInfoEvent::TaskType::SET_SUSPEND_VALUE;
-        task_event->promise = promise;
-
-        set_ready_task(task_event);
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::SET_SUSPEND_VALUE, promise});
+        set_ready_task();
     }
 
-    virtual void add_remove_awaiter_event(BasePromiseType* promise)
+    virtual inline void add_remove_awaiter_event(BasePromiseType* promise)
     {
-        TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-        task_event->type = TaskInfoEvent::TaskType::REMOVE_AWAITER;
-        task_event->promise = promise;
-
-        set_ready_task(task_event);
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::REMOVE_AWAITER, promise});
+        set_ready_task();
     }
 
-    virtual inline void add_force_destroy_event(BasePromiseType* promise) override
+    virtual inline void add_force_destroy_event(BasePromiseType* promise)
     {
-        TaskInfoEventEpoll* task_event = TaskInfoEventPool::acquire();
-        task_event->type = TaskInfoEvent::TaskType::FORCE_DESTROY;
-        task_event->promise = promise;
-
-        set_ready_task(task_event);
+        m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::FORCE_DESTROY, promise});
+        set_ready_task();
     }
 
     virtual void stop() override;
