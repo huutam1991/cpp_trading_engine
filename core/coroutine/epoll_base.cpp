@@ -164,7 +164,7 @@ int EpollBase::create_task_event_fd()
     m_task_info_event = new TaskInfoEventEpoll(&m_task_event_queue);
 
     int fd = m_task_info_event->generate_fd();
-    if (m_task_event_fd == -1)
+    if (fd == -1)
     {
         spdlog::error("EpollBase - [create_task_event_fd] TaskInfoEventEpoll generate_fd error: {}", std::strerror(errno));
         return -1;
