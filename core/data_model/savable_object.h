@@ -27,10 +27,13 @@ class SavableObject
     SavableObject() : m_data_model{std::make_shared<DataModel>()} {}
 
 public:
-    SavableObject(const std::string& db, const std::string& collection)
+    SavableObject(const std::string& db, const std::string& collection, bool init_data_model_flag = true)
         : m_data_model{std::make_shared<DataModel>()}, m_db{db}, m_collection{collection}
     {
-        init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_epoll_base());
+        if (init_data_model_flag)
+        {
+            init_data_model(m_data_model, db, collection).start_running_on(DBHelper::get_epoll_base());
+        }
     }
 
     SavableObject(const std::string& db, const std::string& collection, T data)
