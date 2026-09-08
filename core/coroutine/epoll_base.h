@@ -141,9 +141,14 @@ public:
     void del_fd(int fd, SystemIOObject* ptr);
     void start_living_system_io_object(SystemIOObject* object);
 
-    inline size_t size()
+    inline size_t head()
     {
         return m_task_event_queue.head();
+    }
+
+    inline size_t tail()
+    {
+        return m_task_event_queue.tail();
     }
 
     virtual inline void add_run_task_event(BasePromiseType* promise)

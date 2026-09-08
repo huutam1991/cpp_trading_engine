@@ -36,8 +36,10 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
         {"Timer IO Pool Size", TimerIOPool::size()},
         {"Https Client Socket Connection Pool Size", HttpsSocketConnectionPool::size()},
         {"Https Websocket Connection IO Pool Size", HttpsWebsocketConnectionIOPool::size()},
-        {"Epoll System IO Task Pool Size", epoll_system_io_task->size()},
-        {"Epoll Gateway Pool Size", epoll_gateway->size()}
+        {"Epoll System IO Task Pool Head", epoll_system_io_task->head()},
+        {"Epoll Gateway Pool Head", epoll_gateway->head()},
+        {"Epoll System IO Task Pool Tail", epoll_system_io_task->tail()},
+        {"Epoll Gateway Pool Tail", epoll_gateway->tail()},
     };
     response["msg"] = "";
     response["status_code"] = OK_200;
