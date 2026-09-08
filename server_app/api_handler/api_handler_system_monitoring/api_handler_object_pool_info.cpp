@@ -19,18 +19,25 @@ APIHandlerObjectPoolInfo::APIHandlerObjectPoolInfo(HttpRequest* request) : APIHa
 
 Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
 {
-    Json response;
+    static EpollBase* epoll_system_io_task = static_cast<EpollBase*>(
+        EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK)
+    );
+    static EpollBase* epoll_gateway = static_cast<EpollBase*>(
+        EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_GATEWAY)
+    );
 
+    Json response;
     response["data"] = {
         {"Json Object Pool Size", JsonObjectPool::size()},
         {"Json Value Pool Size", JsonValuePool::size()},
         {"Order Book Snapshot Pool Size", OrderBookSnapShotPool::size()},
         {"Order Book Update Pool Size", OrderBookUpdatePool::size()},
         {"Share String Pool Size", StringPool::size()},
-        // {"Task Info Event Pool Size", EpollBase::TaskInfoEventPool::size()},
         {"Timer IO Pool Size", TimerIOPool::size()},
         {"Https Client Socket Connection Pool Size", HttpsSocketConnectionPool::size()},
-        {"Https Websocket Connection IO Pool Size", HttpsWebsocketConnectionIOPool::size()}
+        {"Https Websocket Connection IO Pool Size", HttpsWebsocketConnectionIOPool::size()},
+        {"Epoll System IO Task Pool Size", epoll_system_io_task->size()},
+        {"Epoll Gateway Pool Size", epoll_gateway->size()}
     };
     response["msg"] = "";
     response["status_code"] = OK_200;
