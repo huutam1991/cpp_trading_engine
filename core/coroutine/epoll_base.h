@@ -143,7 +143,7 @@ public:
 
     inline size_t size()
     {
-        return m_task_event_queue.size();
+        return m_task_event_queue.head();
     }
 
     virtual inline void add_run_task_event(BasePromiseType* promise)
