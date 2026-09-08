@@ -8,6 +8,7 @@
 void OrderManager::init()
 {
     m_order_event_base = EventBaseManager::get_event_base_by_id(EventBaseID::ORDER);
+    m_io_task_epoll_base = static_cast<EpollBase*>(EventBaseManager::get_event_base_by_id(EventBaseID::EPOLL_SYSTEM_IO_TASK));
 
     // Load all orders in DB to [m_order_list]
     auto orders_in_db = SavableObject<Order>::load_objects_map<OrderId>(ORDER_DB_NAME, "order_list", "order_id");
@@ -105,10 +106,10 @@ Task<void> OrderManager::update_order_in_db(Order order)
     // If order is canceled or rejected, remove it from [m_order_db_cache]
     if (order_db->status == Order::Status::CANCELED)
     {
+        order_db.remove();
+
         m_order_db_cache.erase(order_db->order_id);
         m_order_list.erase(order_db->order_id);
-
-        order_db.remove();
     }
     // For FILLED order, we can also remove it from [m_order_db_cache] to save space, but dont remove from DB
     else if (order_db->status == Order::Status::FILLED)
@@ -173,7 +174,7 @@ Task<void> OrderManager::handle_update_order(Order order)
     }
 
     // Finally, update order in DB
-    update_order_in_db(order).start_running_on(m_order_event_base);
+    update_order_in_db(order).start_running_on(m_io_task_epoll_base);
 
     co_return;
 }

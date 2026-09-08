@@ -30,6 +30,7 @@ private:
     std::unordered_map<OrderId, Order> m_order_list;
     std::vector<std::function<void(Order)>> m_order_update_callbacks;
     EventBase* m_order_event_base = nullptr;
+    EpollBase* m_io_task_epoll_base = nullptr;
 
     // For handling order create / update
     Order& get_order_by_id(OrderId order_id);
