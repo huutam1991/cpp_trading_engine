@@ -146,7 +146,7 @@ struct Task<void> : public BaseTask
     struct promise_type : public BaseTask::promise_type
     {
 
-#ifdef TEST_MODE_ONLY
+// #ifdef TEST_MODE_ONLY
         inline static std::atomic<int64_t> alloc_count{0};
         inline static std::atomic<int64_t> free_count{0};
 
@@ -177,7 +177,7 @@ struct Task<void> : public BaseTask
         {
             return free_count.load(std::memory_order_relaxed);
         }
-#endif
+// #endif
 
         Task get_return_object()
         {
