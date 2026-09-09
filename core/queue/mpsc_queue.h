@@ -78,6 +78,7 @@ class MPSCQueue
         alignas(64) std::atomic<size_t> size{0};
         alignas(64) std::atomic<size_t> max_size{0};
         alignas(64) size_t tail{0};
+        alignas(64) std::atomic<size_t> published_tail{0};
 
         PoolBuffer()
         {
@@ -91,6 +92,20 @@ class MPSCQueue
 
     PoolBuffer m_pool_buffer;
     std::string name = GetTypeName<T>::get_name();
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full()
+    {
+        throw std::runtime_error("MPSC REAL FULL");
+    }
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_false_full()
+    {
+        throw std::runtime_error("MPSC FALSE FULL");
+    }
 
 public:
     FORCE_INLINE void push(T item)
@@ -132,7 +147,7 @@ public:
 
                     // m_pool_buffer.size.fetch_add(1, std::memory_order_release);
 
-                    auto current = m_pool_buffer.size.fetch_add(1) + 1;
+                    auto current = m_pool_buffer.size.fetch_add(1, std::memory_order_relaxed) + 1;
                     auto old_max = m_pool_buffer.max_size.load(std::memory_order_relaxed);
                     while (current > old_max &&
                         !m_pool_buffer.max_size.compare_exchange_weak(
@@ -147,7 +162,20 @@ public:
             }
             else if (diff < 0)
             {
-                throw std::runtime_error("Queue is full: [" + name + "]");
+                const size_t head =
+                    m_pool_buffer.head.load(std::memory_order_relaxed);
+
+                const size_t tail =
+                    m_pool_buffer.published_tail.load(std::memory_order_relaxed);
+
+                const size_t outstanding = head - tail;
+
+                if (outstanding >= Size)
+                {
+                    crash_mpsc_real_full();
+                }
+
+                crash_mpsc_false_full();
             }
             else
             {
@@ -177,7 +205,8 @@ public:
             slot.sequence.store(pos + Size, std::memory_order_release);
 
             m_pool_buffer.tail = pos + 1;
-            m_pool_buffer.size.fetch_sub(1, std::memory_order_release);
+            m_pool_buffer.published_tail.store(pos + 1, std::memory_order_relaxed);
+            m_pool_buffer.size.fetch_sub(1, std::memory_order_relaxed);
 
             return item;
         }
