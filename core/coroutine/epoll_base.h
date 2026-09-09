@@ -151,6 +151,11 @@ public:
         return m_task_event_queue.tail();
     }
 
+    inline size_t size()
+    {
+        return m_task_event_queue.size();
+    }
+
     inline size_t max_size()
     {
         return m_task_event_queue.max_size();
