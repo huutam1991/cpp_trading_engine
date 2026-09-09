@@ -76,6 +76,7 @@ class MPSCQueue
         alignas(64) std::array<Slot, Size> available_items;
         alignas(64) std::atomic<size_t> head{0};
         alignas(64) std::atomic<size_t> size{0};
+        alignas(64) std::atomic<size_t> max_size{0};
         alignas(64) size_t tail{0};
 
         PoolBuffer()
@@ -129,7 +130,18 @@ public:
                     // publish item
                     slot.sequence.store(pos + 1, std::memory_order_release);
 
-                    m_pool_buffer.size.fetch_add(1, std::memory_order_release);
+                    // m_pool_buffer.size.fetch_add(1, std::memory_order_release);
+
+                    auto current = m_pool_buffer.size.fetch_add(1) + 1;
+                    auto old_max = m_pool_buffer.max_size.load(std::memory_order_relaxed);
+                    while (current > old_max &&
+                        !m_pool_buffer.max_size.compare_exchange_weak(
+                            old_max,
+                            current,
+                            std::memory_order_relaxed))
+                    {
+                    }
+
                     return;
                 }
             }
@@ -186,5 +198,10 @@ public:
     FORCE_INLINE size_t size()
     {
         return m_pool_buffer.size.load(std::memory_order_relaxed);
+    }
+
+    FORCE_INLINE size_t max_size()
+    {
+        return m_pool_buffer.max_size.load(std::memory_order_relaxed);
     }
 };
