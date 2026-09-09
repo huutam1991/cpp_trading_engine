@@ -40,6 +40,8 @@ Task<HttpResponse> APIHandlerObjectPoolInfo::child_handle()
         {"Epoll Gateway Pool Head", epoll_gateway->head()},
         {"Epoll System IO Task Pool Tail", epoll_system_io_task->tail()},
         {"Epoll Gateway Pool Tail", epoll_gateway->tail()},
+        {"Epoll System IO [MAX_SIZE]", epoll_system_io_task->max_size()},
+        {"Epoll Gateway [MAX_SIZE]", epoll_gateway->max_size()},
         {"Task<void> acclocation count", Task<void>::promise_type::frame_alloc_count()},
         {"Task<void> free count", Task<void>::promise_type::frame_free_count()},
         {"Task<void> is running count", Task<void>::promise_type::frame_alloc_count() - Task<void>::promise_type::frame_free_count()}
