@@ -14,7 +14,7 @@
 #include "event_base_id.h"
 #include "task_info_event.h"
 
-#define MAX_TASK_INFO 400
+#define MAX_TASK_INFO 40
 
 class EventBase;
 struct BasePromiseType;
