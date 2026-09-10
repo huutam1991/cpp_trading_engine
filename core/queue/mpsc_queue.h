@@ -10,6 +10,9 @@
 #include <cxxabi.h>
 #include <emmintrin.h>
 #include <x86intrin.h>
+#include <signal.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <type_traits>
 #include <utility>
 
@@ -83,6 +86,7 @@ class MPSCQueue
         alignas(64) size_t tail{0};
         alignas(64) std::atomic<size_t> published_tail{0};
         alignas(64) std::atomic<uint64_t> last_pop_tsc{0};
+        alignas(64) std::atomic<pid_t> consumer_tid{0};
 
         PoolBuffer()
         {
@@ -96,6 +100,96 @@ class MPSCQueue
 
     PoolBuffer m_pool_buffer;
     std::string name = GetTypeName<T>::get_name();
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_multiple_consumers_detected()
+    {
+        throw std::runtime_error("MPSC MULTIPLE CONSUMERS DETECTED");
+    }
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full_consumer_not_registered()
+    {
+        throw std::runtime_error("MPSC REAL FULL CONSUMER NOT REGISTERED");
+    }
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full_tgkill_failed()
+    {
+        throw std::runtime_error("MPSC REAL FULL TGKILL FAILED");
+    }
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full_tgkill_returned()
+    {
+        throw std::runtime_error("MPSC REAL FULL TGKILL RETURNED");
+    }
+
+    FORCE_INLINE static pid_t current_linux_tid()
+    {
+        return static_cast<pid_t>(::syscall(SYS_gettid));
+    }
+
+    FORCE_INLINE void register_consumer_thread()
+    {
+        const pid_t tid = current_linux_tid();
+        pid_t expected = 0;
+
+        if (m_pool_buffer.consumer_tid.compare_exchange_strong(
+                expected,
+                tid,
+                std::memory_order_relaxed,
+                std::memory_order_relaxed))
+        {
+            return;
+        }
+
+        if (expected != tid)
+        {
+            crash_mpsc_multiple_consumers_detected();
+        }
+    }
+
+    // On REAL FULL, crash the consumer thread itself so the crash reporter
+    // captures the exact coroutine/business function currently running there.
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    void crash_consumer_thread_for_real_full()
+    {
+        const pid_t consumer =
+            m_pool_buffer.consumer_tid.load(std::memory_order_relaxed);
+
+        const pid_t current = current_linux_tid();
+
+        if (consumer == 0)
+        {
+            crash_mpsc_real_full_consumer_not_registered();
+        }
+
+        if (consumer == current)
+        {
+            // Current thread already is the consumer. Preserve this exact stack.
+            ::abort();
+        }
+
+        const long rc = ::syscall(
+            SYS_tgkill,
+            static_cast<pid_t>(::getpid()),
+            consumer,
+            SIGABRT);
+
+        if (rc != 0)
+        {
+            crash_mpsc_real_full_tgkill_failed();
+        }
+
+        // Normally unreachable unless a custom SIGABRT handler returns.
+        crash_mpsc_real_full_tgkill_returned();
+    }
 
     // ------------------------------------------------------------------------
     // Stack-trace-only diagnostics for REAL FULL.
@@ -259,7 +353,7 @@ public:
 
                 if (outstanding >= Size)
                 {
-                    crash_mpsc_real_full_by_last_pop_time();
+                    crash_consumer_thread_for_real_full();
                 }
 
                 crash_mpsc_false_full();
@@ -275,6 +369,7 @@ public:
 
     FORCE_INLINE T pop()
     {
+        register_consumer_thread();
         // MeasureTime measure_time("MPSCQueue::pop, name: " + name);
 
         size_t pos = m_pool_buffer.tail;
