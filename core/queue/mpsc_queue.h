@@ -3,6 +3,8 @@
 #include <array>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 #include <stdexcept>
 #include <string>
 #include <cxxabi.h>
@@ -80,9 +82,6 @@ class MPSCQueue
         alignas(64) std::atomic<size_t> max_size{0};
         alignas(64) size_t tail{0};
         alignas(64) std::atomic<size_t> published_tail{0};
-
-        // Diagnostic-only progress marker for the single consumer.
-        // Stores the TSC value of the most recent successful pop().
         alignas(64) std::atomic<uint64_t> last_pop_tsc{0};
 
         PoolBuffer()
@@ -98,30 +97,94 @@ class MPSCQueue
     PoolBuffer m_pool_buffer;
     std::string name = GetTypeName<T>::get_name();
 
-    // Diagnostic threshold only. On a ~3 GHz invariant TSC this is about 10 ms.
-    // It is intentionally coarse: the goal is to classify a crash from the
-    // stack trace, not to provide precise timing.
-    static constexpr uint64_t CONSUMER_STALL_THRESHOLD_TSC_TICKS = 30'000'000ULL;
+    // ------------------------------------------------------------------------
+    // Stack-trace-only diagnostics for REAL FULL.
+    //
+    // We instantiate 1000 distinct noinline functions, one per elapsed-us
+    // bucket since the consumer's last successful pop().
+    //
+    // Bucket N means approximately:
+    //   N == 0   : last pop was < 1 us ago
+    //   N == 1   : last pop was 1..2 us ago
+    //   ...
+    //   N == 998 : last pop was 998..999 us ago
+    //   N == 999 : last pop was >= 999 us ago
+    //
+    // The function template argument appears directly in a demangled stack
+    // trace, e.g.:
+    //   crash_mpsc_real_full_last_pop_us_bucket<37ul>()
+    //
+    // 1000 buckets were chosen instead of 10000 to keep binary size and
+    // compile/link cost reasonable while retaining 1-us resolution over the
+    // interval that matters most for this queue.
+    //
+    // This constant matches the previously measured ~3.072 GHz invariant TSC.
+    // If this binary runs on a machine with a materially different TSC rate,
+    // adjust this value; queue correctness does not depend on it.
+    // ------------------------------------------------------------------------
+    static constexpr uint64_t TSC_TICKS_PER_US = 3'072ULL;
+    static constexpr size_t REAL_FULL_TIME_BUCKET_COUNT = 1000;
 
-    [[noreturn]]
-    __attribute__((noinline, cold))
-    static void crash_mpsc_real_full_consumer_stalled()
-    {
-        throw std::runtime_error("MPSC REAL FULL - CONSUMER STALLED");
-    }
-
-    [[noreturn]]
-    __attribute__((noinline, cold))
-    static void crash_mpsc_real_full_consumer_progressing()
-    {
-        throw std::runtime_error("MPSC REAL FULL - CONSUMER STILL PROGRESSING");
-    }
+    using RealFullCrashFn = void (*)();
 
     [[noreturn]]
     __attribute__((noinline, cold))
     static void crash_mpsc_real_full_before_first_pop()
     {
-        throw std::runtime_error("MPSC REAL FULL - NO SUCCESSFUL POP YET");
+        throw std::runtime_error("MPSC REAL FULL BEFORE FIRST POP");
+    }
+
+    template <size_t ElapsedUsBucket>
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full_last_pop_us_bucket()
+    {
+        // Keep ElapsedUsBucket observably used so LTO/ICF cannot trivially
+        // merge all template instantiations into one identical function.
+        throw std::runtime_error(
+            "MPSC REAL FULL LAST POP US BUCKET " +
+            std::to_string(ElapsedUsBucket)
+        );
+    }
+
+    template <size_t... I>
+    static constexpr std::array<RealFullCrashFn, sizeof...(I)>
+    make_real_full_crash_table(std::index_sequence<I...>)
+    {
+        return {
+            &crash_mpsc_real_full_last_pop_us_bucket<I>...
+        };
+    }
+
+    inline static constexpr auto real_full_crash_table =
+        make_real_full_crash_table(
+            std::make_index_sequence<REAL_FULL_TIME_BUCKET_COUNT>{}
+        );
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    void crash_mpsc_real_full_by_last_pop_time()
+    {
+        const uint64_t last_pop =
+            m_pool_buffer.last_pop_tsc.load(std::memory_order_relaxed);
+
+        if (last_pop == 0)
+        {
+            crash_mpsc_real_full_before_first_pop();
+        }
+
+        const uint64_t now = __rdtsc();
+        const uint64_t elapsed_ticks = now - last_pop;
+        const uint64_t elapsed_us = elapsed_ticks / TSC_TICKS_PER_US;
+
+        const size_t bucket =
+            elapsed_us >= REAL_FULL_TIME_BUCKET_COUNT - 1
+                ? REAL_FULL_TIME_BUCKET_COUNT - 1
+                : static_cast<size_t>(elapsed_us);
+
+        real_full_crash_table[bucket]();
+
+        __builtin_unreachable();
     }
 
     [[noreturn]]
@@ -196,29 +259,7 @@ public:
 
                 if (outstanding >= Size)
                 {
-                    const uint64_t last_pop_tsc =
-                        m_pool_buffer.last_pop_tsc.load(std::memory_order_relaxed);
-
-                    if (last_pop_tsc == 0)
-                    {
-                        crash_mpsc_real_full_before_first_pop();
-                    }
-
-                    const uint64_t now_tsc = __rdtsc();
-                    const uint64_t elapsed_since_last_pop = now_tsc - last_pop_tsc;
-
-                    if (elapsed_since_last_pop >= CONSUMER_STALL_THRESHOLD_TSC_TICKS)
-                    {
-                        // Cause #1 is strongly indicated: producers filled the
-                        // queue while the consumer made no dequeue progress for
-                        // a relatively long time.
-                        crash_mpsc_real_full_consumer_stalled();
-                    }
-
-                    // Cause #2 is strongly indicated: the consumer has popped
-                    // recently, yet producers still filled the entire queue.
-                    // This points to a burst/runaway/event-amplification path.
-                    crash_mpsc_real_full_consumer_progressing();
+                    crash_mpsc_real_full_by_last_pop_time();
                 }
 
                 crash_mpsc_false_full();
