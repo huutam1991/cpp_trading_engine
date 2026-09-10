@@ -7,6 +7,7 @@
 #include <string>
 #include <cxxabi.h>
 #include <emmintrin.h>
+#include <x86intrin.h>
 #include <type_traits>
 #include <utility>
 
@@ -80,6 +81,10 @@ class MPSCQueue
         alignas(64) size_t tail{0};
         alignas(64) std::atomic<size_t> published_tail{0};
 
+        // Diagnostic-only progress marker for the single consumer.
+        // Stores the TSC value of the most recent successful pop().
+        alignas(64) std::atomic<uint64_t> last_pop_tsc{0};
+
         PoolBuffer()
         {
             for (size_t i = 0; i < Size; ++i)
@@ -93,11 +98,30 @@ class MPSCQueue
     PoolBuffer m_pool_buffer;
     std::string name = GetTypeName<T>::get_name();
 
+    // Diagnostic threshold only. On a ~3 GHz invariant TSC this is about 10 ms.
+    // It is intentionally coarse: the goal is to classify a crash from the
+    // stack trace, not to provide precise timing.
+    static constexpr uint64_t CONSUMER_STALL_THRESHOLD_TSC_TICKS = 30'000'000ULL;
+
     [[noreturn]]
     __attribute__((noinline, cold))
-    static void crash_mpsc_real_full()
+    static void crash_mpsc_real_full_consumer_stalled()
     {
-        throw std::runtime_error("MPSC REAL FULL");
+        throw std::runtime_error("MPSC REAL FULL - CONSUMER STALLED");
+    }
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full_consumer_progressing()
+    {
+        throw std::runtime_error("MPSC REAL FULL - CONSUMER STILL PROGRESSING");
+    }
+
+    [[noreturn]]
+    __attribute__((noinline, cold))
+    static void crash_mpsc_real_full_before_first_pop()
+    {
+        throw std::runtime_error("MPSC REAL FULL - NO SUCCESSFUL POP YET");
     }
 
     [[noreturn]]
@@ -172,7 +196,29 @@ public:
 
                 if (outstanding >= Size)
                 {
-                    crash_mpsc_real_full();
+                    const uint64_t last_pop_tsc =
+                        m_pool_buffer.last_pop_tsc.load(std::memory_order_relaxed);
+
+                    if (last_pop_tsc == 0)
+                    {
+                        crash_mpsc_real_full_before_first_pop();
+                    }
+
+                    const uint64_t now_tsc = __rdtsc();
+                    const uint64_t elapsed_since_last_pop = now_tsc - last_pop_tsc;
+
+                    if (elapsed_since_last_pop >= CONSUMER_STALL_THRESHOLD_TSC_TICKS)
+                    {
+                        // Cause #1 is strongly indicated: producers filled the
+                        // queue while the consumer made no dequeue progress for
+                        // a relatively long time.
+                        crash_mpsc_real_full_consumer_stalled();
+                    }
+
+                    // Cause #2 is strongly indicated: the consumer has popped
+                    // recently, yet producers still filled the entire queue.
+                    // This points to a burst/runaway/event-amplification path.
+                    crash_mpsc_real_full_consumer_progressing();
                 }
 
                 crash_mpsc_false_full();
@@ -206,6 +252,7 @@ public:
 
             m_pool_buffer.tail = pos + 1;
             m_pool_buffer.published_tail.store(pos + 1, std::memory_order_relaxed);
+            m_pool_buffer.last_pop_tsc.store(__rdtsc(), std::memory_order_relaxed);
             m_pool_buffer.size.fetch_sub(1, std::memory_order_relaxed);
 
             return item;
