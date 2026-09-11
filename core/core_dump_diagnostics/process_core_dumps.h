@@ -487,8 +487,11 @@ static std::string generate_backtrace_from_core(
         "-ex 'set print elements 0' "
         "-ex 'bt full' ";
 
-    // The selected thread immediately after opening the core is the crashing
-    // thread. Read its TLS registry BEFORE thread apply all changes thread context.
+    // KEEP_FOR_GDB publishes the current TLS registry through a normal global
+    // pointer. This avoids GDB having to resolve thread-local storage in a core.
+    cmd +=
+        "-ex 'printf \"__GDB_KEEP_PTR__|%p\\n\", g_gdb_keep_registry_for_core' ";
+
     for (size_t i = 0; i < GDB_KEEP_MAX_VARIABLES; ++i)
     {
         const std::string index = std::to_string(i);
@@ -496,11 +499,11 @@ static std::string generate_backtrace_from_core(
         cmd +=
             "-ex 'printf \"__GDB_KEEP__|" + index +
             "|%d|%s|%s|%u|%s\\n\", "
-            "g_gdb_keep_registry.entries[" + index + "].active, "
-            "g_gdb_keep_registry.entries[" + index + "].name, "
-            "g_gdb_keep_registry.entries[" + index + "].file, "
-            "g_gdb_keep_registry.entries[" + index + "].line, "
-            "g_gdb_keep_registry.entries[" + index + "].value' ";
+            "g_gdb_keep_registry_for_core->entries[" + index + "].active, "
+            "g_gdb_keep_registry_for_core->entries[" + index + "].name, "
+            "g_gdb_keep_registry_for_core->entries[" + index + "].file, "
+            "g_gdb_keep_registry_for_core->entries[" + index + "].line, "
+            "g_gdb_keep_registry_for_core->entries[" + index + "].value' ";
     }
 
     cmd += "-ex 'thread apply all bt full' 2>&1";
