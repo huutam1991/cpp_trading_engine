@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <sstream>
@@ -45,7 +44,7 @@ struct GdbKeepRegistry
     // Number of KEEP_FOR_GDB guards alive in the current generation.
     std::uint32_t active_guards = 0;
 
-    std::array<GdbKeepEntry, GDB_KEEP_MAX_VARIABLES> entries{};
+    GdbKeepEntry entries[GDB_KEEP_MAX_VARIABLES]{};
 
     void clear_entries() noexcept
     {
