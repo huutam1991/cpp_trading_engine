@@ -4,6 +4,9 @@
 #include <utility>
 #include <unordered_map>
 #include <tuple>
+#include <atomic>
+#include <cstdint>
+#include <x86intrin.h>
 
 #include <utils/util_macros.h>
 #include <utils/constants.h>
@@ -14,6 +17,9 @@
 
 using mongo_find = bsoncxx::stdx::optional<bsoncxx::document::value>;
 using mongo_view = bsoncxx::document::view;
+
+// Diagnostic sequence: 1, 2, 3, ... for replace_one calls.
+inline std::atomic<uint64_t> g_mongo_replace_seq{0};
 
 class MongoQuery
 {
@@ -109,9 +115,23 @@ bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, c
     const char* raw_json_ptr = raw_json.c_str();
     const size_t raw_json_size = raw_json.size();
 
+    const uint64_t mongo_seq =
+        g_mongo_replace_seq.fetch_add(1, std::memory_order_relaxed) + 1;
+
+    _mm_lfence();
+    const uint64_t mongo_start_tsc = __rdtsc();
+
+    // The Mongo/System-IO thread owns this shared diagnostic slot. It starts at
+    // zero. If an MPSC producer later observes REAL FULL, that producer updates
+    // the same shared variable name immediately before tgkill(SIGABRT).
+    uint64_t mpsc_real_full_tsc = 0;
+
     KEEP_FOR_GDB(raw_json);
     KEEP_FOR_GDB(raw_json_ptr);
     KEEP_FOR_GDB(raw_json_size);
+    KEEP_FOR_GDB(mongo_seq);
+    KEEP_FOR_GDB(mongo_start_tsc);
+    KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mpsc_real_full_tsc);
 
     bsoncxx::document::value doc_value =
         bsoncxx::from_json(raw_json);
@@ -124,6 +144,8 @@ bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, c
     KEEP_FOR_GDB(raw_json);
     KEEP_FOR_GDB(raw_json_ptr);
     KEEP_FOR_GDB(raw_json_size);
+    KEEP_FOR_GDB(mongo_seq);
+    KEEP_FOR_GDB(mongo_start_tsc);
 
     return result ? true : false;
 }
