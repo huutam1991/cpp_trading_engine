@@ -125,7 +125,7 @@ bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, c
     KEEP_FOR_GDB(raw_json_ptr);
     KEEP_FOR_GDB(raw_json_size);
 
-    return result.has_value();
+    return result ? true : false;
 }
 
 template<class T, class U>
