@@ -87,16 +87,24 @@ static std::vector<GdbKeepVariableInfo> parse_gdb_keep_variables(const std::stri
     std::istringstream iss(gdb_output);
     std::string line;
 
-    // Format emitted by generate_backtrace_from_core():
+    // Normal thread-local snapshot:
     // __GDB_KEEP__|slot|active|name|file|source_line|value
     const std::regex keep_regex(
         R"(^__GDB_KEEP__\|[0-9]+\|1\|([^|]*)\|([^|]*)\|([0-9]+)\|(.*)$)"
     );
 
+    // Process-wide cross-thread snapshot:
+    // __GDB_KEEP_SHARED__|slot|active|name|file|source_line|value
+    const std::regex shared_keep_regex(
+        R"(^__GDB_KEEP_SHARED__\|[0-9]+\|1\|([^|]*)\|([^|]*)\|([0-9]+)\|(.*)$)"
+    );
+
     while (std::getline(iss, line))
     {
         std::smatch match;
-        if (!std::regex_match(line, match, keep_regex))
+
+        if (!std::regex_match(line, match, keep_regex) &&
+            !std::regex_match(line, match, shared_keep_regex))
         {
             continue;
         }
@@ -509,6 +517,24 @@ static std::string generate_backtrace_from_core(
             "&g_gdb_keep_registry_for_core->entries[" + index + "].file[0], "
             "g_gdb_keep_registry_for_core->entries[" + index + "].line, "
             "&g_gdb_keep_registry_for_core->entries[" + index + "].value[0]' ";
+    }
+
+
+
+    // Cross-thread snapshots live in a process-wide registry. The owner thread
+    // publishes file/line first; another thread may later update only the value.
+    for (size_t i = 0; i < GDB_KEEP_SHARED_MAX_VARIABLES; ++i)
+    {
+        const std::string index = std::to_string(i);
+
+        cmd +=
+            "-ex 'printf \"__GDB_KEEP_SHARED__|" + index +
+            "|%d|%s|%s|%u|%s\\n\", "
+            "g_gdb_keep_shared_registry.entries[" + index + "].active, "
+            "&g_gdb_keep_shared_registry.entries[" + index + "].name[0], "
+            "&g_gdb_keep_shared_registry.entries[" + index + "].file[0], "
+            "g_gdb_keep_shared_registry.entries[" + index + "].line, "
+            "&g_gdb_keep_shared_registry.entries[" + index + "].value[0]' ";
     }
 
     cmd += "-ex 'thread apply all bt full' 2>&1";
