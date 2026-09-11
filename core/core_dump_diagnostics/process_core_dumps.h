@@ -490,7 +490,12 @@ static std::string generate_backtrace_from_core(
     // KEEP_FOR_GDB publishes the current TLS registry through a normal global
     // pointer. This avoids GDB having to resolve thread-local storage in a core.
     cmd +=
-        "-ex 'printf \"__GDB_KEEP_PTR__|%p\\n\", g_gdb_keep_registry_for_core' ";
+        "-ex 'printf \"__GDB_KEEP_PTR__|%p\\n\", g_gdb_keep_registry_for_core' "
+        "-ex 'printf \"__GDB_KEEP_META__|generation=%llu|owner_frame=%p|active=%u|guards=%u\\n\", "
+        "(unsigned long long)g_gdb_keep_registry_for_core->generation, "
+        "(void*)g_gdb_keep_registry_for_core->owner_frame, "
+        "(unsigned int)g_gdb_keep_registry_for_core->invocation_active, "
+        "(unsigned int)g_gdb_keep_registry_for_core->active_guards' ";
 
     for (size_t i = 0; i < GDB_KEEP_MAX_VARIABLES; ++i)
     {
@@ -500,10 +505,10 @@ static std::string generate_backtrace_from_core(
             "-ex 'printf \"__GDB_KEEP__|" + index +
             "|%d|%s|%s|%u|%s\\n\", "
             "g_gdb_keep_registry_for_core->entries[" + index + "].active, "
-            "g_gdb_keep_registry_for_core->entries[" + index + "].name, "
-            "g_gdb_keep_registry_for_core->entries[" + index + "].file, "
+            "&g_gdb_keep_registry_for_core->entries[" + index + "].name[0], "
+            "&g_gdb_keep_registry_for_core->entries[" + index + "].file[0], "
             "g_gdb_keep_registry_for_core->entries[" + index + "].line, "
-            "g_gdb_keep_registry_for_core->entries[" + index + "].value' ";
+            "&g_gdb_keep_registry_for_core->entries[" + index + "].value[0]' ";
     }
 
     cmd += "-ex 'thread apply all bt full' 2>&1";
