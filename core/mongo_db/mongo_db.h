@@ -7,6 +7,7 @@
 
 #include <utils/util_macros.h>
 #include <utils/constants.h>
+#include <core_dump_diagnostics/gdb_support.h>
 #include <json/json.h>
 #include <utils/spin_lock.h>
 #include "mongo_db_header.h"
@@ -86,15 +87,45 @@ size_t MongoQuery::count_documents(const std::string& find_key, const T& find_va
     return (size_t)collection.count_documents(filter);
 }
 
+// template<class T>
+// bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const Json& data)
+// {
+//     GET_COLLECTION(m_db, m_collection, collection);
+//     bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
+//     bsoncxx::stdx::optional<mongocxx::result::replace_one> result =
+//         collection.replace_one(document{} << find_key << find_value << finalize, doc_value.view());
+
+//     return result ? true : false;
+// }
+
 template<class T>
+GDB_DIAGNOSTIC_FUNCTION
 bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const Json& data)
 {
     GET_COLLECTION(m_db, m_collection, collection);
-    bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
-    bsoncxx::stdx::optional<mongocxx::result::replace_one> result =
-        collection.replace_one(document{} << find_key << find_value << finalize, doc_value.view());
 
-    return result ? true : false;
+    std::string raw_json = data.get_string_value();
+
+    const char* raw_json_ptr = raw_json.c_str();
+    const size_t raw_json_size = raw_json.size();
+
+    KEEP_FOR_GDB(raw_json);
+    KEEP_FOR_GDB(raw_json_ptr);
+    KEEP_FOR_GDB(raw_json_size);
+
+    bsoncxx::document::value doc_value =
+        bsoncxx::from_json(raw_json);
+
+    auto result = collection.replace_one(
+        document{} << find_key << find_value << finalize,
+        doc_value.view());
+
+    // Ensure the variables are considered alive across the blocking call.
+    KEEP_FOR_GDB(raw_json);
+    KEEP_FOR_GDB(raw_json_ptr);
+    KEEP_FOR_GDB(raw_json_size);
+
+    return result.has_value();
 }
 
 template<class T, class U>
