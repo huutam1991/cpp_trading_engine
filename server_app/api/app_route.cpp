@@ -53,11 +53,6 @@ std::string CLIENT_DEPLOY_FOLDER = "vuejs_ui/dist";
 
 using namespace std;
 
-void fake_crash()
-{
-    std::abort(); // This will cause the program to crash and generate a core dump
-}
-
 void add_app_route()
 {
     RouteController::instance().add_dashboard_folder(CLIENT_DEPLOY_FOLDER);
@@ -181,23 +176,6 @@ void add_app_route()
         Json response;
         response["message"] = "OK";
         response["data"] = data;
-
-        std::string data_str = data.get_string_value();
-        std::string response_str = response.get_string_value();
-
-        std::string log_message = "Received JSON data: " + data_str + "\nResponse JSON data: " + response_str;
-        bool temp = true;
-        int temp_int = 123;
-        double temp_double = 123.456;
-
-        KEEP_FOR_GDB(data_str);
-        KEEP_FOR_GDB(response_str);
-        KEEP_FOR_GDB(log_message);
-        KEEP_FOR_GDB(temp);
-        KEEP_FOR_GDB(temp_int);
-        KEEP_FOR_GDB(temp_double);
-
-        fake_crash(); // This will cause the program to crash and generate a core dump
 
         co_return HttpResponse(OK_200, response);
     };
