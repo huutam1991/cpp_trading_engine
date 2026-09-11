@@ -2,6 +2,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <atomic>
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -16,6 +19,7 @@ inline constexpr std::size_t GDB_KEEP_MAX_VARIABLES = 32;
 inline constexpr std::size_t GDB_KEEP_NAME_CAPACITY = 128;
 inline constexpr std::size_t GDB_KEEP_FILE_CAPACITY = 512;
 inline constexpr std::size_t GDB_KEEP_VALUE_CAPACITY = 64 * 1024;
+inline constexpr std::size_t GDB_KEEP_SHARED_MAX_VARIABLES = 16;
 
 struct GdbKeepEntry
 {
@@ -71,6 +75,46 @@ struct GdbKeepRegistry
         clear_entries();
     }
 };
+
+
+// -----------------------------------------------------------------------------
+// Cross-thread diagnostic registry.
+//
+// KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(var) is intended for the pattern where:
+//   1. an owner thread (for example the Mongo/System-IO consumer) publishes a
+//      variable before entering a potentially blocking call, and
+//   2. another thread (for example an MPSC producer) later updates the same
+//      variable immediately before forcing the owner thread to crash.
+//
+// The first publisher owns the source file/line shown in the crash UI. Calls
+// from a different OS thread only update the value; they intentionally keep
+// the original owner file/line so the value is attached to the owner's stack
+// frame rather than to the producer's stack frame.
+// -----------------------------------------------------------------------------
+struct GdbKeepSharedEntry
+{
+    std::uint8_t active = 0;
+    std::uint32_t line = 0;
+
+    std::uint64_t owner_tid = 0;
+    std::uint64_t last_writer_tid = 0;
+    std::uint64_t generation = 0;
+    std::uint64_t update_count = 0;
+
+    char name[GDB_KEEP_NAME_CAPACITY]{};
+    char file[GDB_KEEP_FILE_CAPACITY]{};
+    char value[GDB_KEEP_VALUE_CAPACITY]{};
+};
+
+struct GdbKeepSharedRegistry
+{
+    GdbKeepSharedEntry entries[GDB_KEEP_SHARED_MAX_VARIABLES]{};
+};
+
+// Process-wide on purpose: producer threads must be able to update values that
+// were originally published by another OS thread.
+inline GdbKeepSharedRegistry g_gdb_keep_shared_registry __attribute__((used));
+inline std::atomic_flag g_gdb_keep_shared_registry_lock = ATOMIC_FLAG_INIT;
 
 // One registry per OS thread. Values are copied into fixed POD buffers so GDB
 // can read them directly from a core dump without depending on coroutine-local
@@ -217,6 +261,109 @@ inline std::string gdb_keep_to_string(const T& value)
     {
         return "<unsupported type>";
     }
+}
+
+
+inline std::uint64_t gdb_current_linux_tid() noexcept
+{
+    return static_cast<std::uint64_t>(::syscall(SYS_gettid));
+}
+
+inline GdbKeepSharedEntry* gdb_find_shared_entry_by_name(const char* name) noexcept
+{
+    for (auto& entry : g_gdb_keep_shared_registry.entries)
+    {
+        if (entry.active && std::string_view(entry.name) == name)
+        {
+            return &entry;
+        }
+    }
+
+    return nullptr;
+}
+
+inline GdbKeepSharedEntry* gdb_find_free_shared_entry() noexcept
+{
+    for (auto& entry : g_gdb_keep_shared_registry.entries)
+    {
+        if (!entry.active)
+        {
+            return &entry;
+        }
+    }
+
+    return nullptr;
+}
+
+template <class T>
+GDB_DIAGNOSTIC_FUNCTION
+void gdb_keep_shared_between_threads_for_core(
+    const char* name,
+    const T& value,
+    const char* file,
+    std::uint32_t line)
+{
+    // Convert before taking the tiny diagnostic lock. This path is only for
+    // post-mortem diagnostics and is not part of normal low-latency execution.
+    const std::string value_string = gdb_keep_to_string(value);
+    const std::uint64_t current_tid = gdb_current_linux_tid();
+
+    while (g_gdb_keep_shared_registry_lock.test_and_set(std::memory_order_acquire))
+    {
+        // The critical section only copies small metadata / one value snapshot.
+    }
+
+    GdbKeepSharedEntry* entry = gdb_find_shared_entry_by_name(name);
+
+    if (!entry)
+    {
+        entry = gdb_find_free_shared_entry();
+        if (!entry)
+        {
+            g_gdb_keep_shared_registry_lock.clear(std::memory_order_release);
+            return;
+        }
+
+        entry->active = 1;
+        entry->line = line;
+        entry->owner_tid = current_tid;
+        entry->last_writer_tid = current_tid;
+        entry->generation = 1;
+        entry->update_count = 0;
+
+        gdb_copy_text(entry->name, sizeof(entry->name), name);
+        gdb_copy_text(entry->file, sizeof(entry->file), file);
+    }
+    else
+    {
+        const bool same_owner_thread = entry->owner_tid == current_tid;
+
+        if (same_owner_thread)
+        {
+            // The owner is publishing the next invocation. Refresh owner
+            // metadata and reset the value for the new blocking operation.
+            entry->line = line;
+            gdb_copy_text(entry->file, sizeof(entry->file), file);
+            ++entry->generation;
+        }
+
+        // If another OS thread calls the macro, it is the cross-thread updater.
+        // Preserve file/line/owner so the crash UI keeps the value attached to
+        // the owner's frame (for example MongoQuery::replace_one()).
+        entry->last_writer_tid = current_tid;
+    }
+
+    gdb_copy_escaped_value(
+        entry->value,
+        sizeof(entry->value),
+        value_string);
+
+    ++entry->update_count;
+
+    std::atomic_thread_fence(std::memory_order_release);
+    asm volatile("" : : "m"(*entry), "m"(g_gdb_keep_shared_registry) : "memory");
+
+    g_gdb_keep_shared_registry_lock.clear(std::memory_order_release);
 }
 
 inline GdbKeepEntry* gdb_find_or_allocate_entry(
@@ -370,3 +517,19 @@ private:
 // start another generation.
 #define KEEP_FOR_GDB(var) \
     GDB_KEEP_IMPL(var, __COUNTER__)
+
+
+#define GDB_KEEP_SHARED_IMPL(var, id)                                         \
+    gdb_keep_shared_between_threads_for_core(                                \
+        #var,                                                                 \
+        (var),                                                                \
+        __FILE__,                                                             \
+        static_cast<std::uint32_t>(__LINE__));                               \
+    asm volatile("" : : "g"(&(var)), "m"(g_gdb_keep_shared_registry) : "memory")
+
+// Publish on the owner thread first, then call the same macro with the same
+// variable name from another thread to update the snapshot. Cross-thread
+// updates keep the original owner file/line so the value is rendered under the
+// owner's stack frame in the crash UI.
+#define KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(var) \
+    GDB_KEEP_SHARED_IMPL(var, __COUNTER__)
