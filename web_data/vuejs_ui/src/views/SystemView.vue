@@ -5,11 +5,14 @@ import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 
+type KeepForGdbSnapshot = Record<string, unknown>
+
 type CrashCallPathFrame = {
   frame_index: number | string
   function: string
   file: string
   line: string
+  KEEP_FOR_GDB?: KeepForGdbSnapshot[]
 }
 
 type CrashLog = {
@@ -140,6 +143,7 @@ const objectPoolInfo = ref<Record<string, number>>({})
 const flowMetric = ref<Record<string, Record<string, FlowMetricEntry[]>>>({})
 const upTime = ref('--:--:--')
 const expandedCrashId = ref<string | null>(null)
+const expandedKeepForGdbIds = ref<Set<string>>(new Set())
 const expandedFlowId = ref<string | null>(null)
 const flowSvgRef = ref<SVGSVGElement | null>(null)
 const flowNodePositions = ref<Record<string, { x: number; y: number }>>({})
@@ -514,6 +518,78 @@ function getCrashId(log: CrashLog, index?: number) {
 function toggleCrashDetail(log: CrashLog, index: number) {
   const id = getCrashId(log, index)
   expandedCrashId.value = expandedCrashId.value === id ? null : id
+
+  // Always start local-variable snapshots collapsed when opening a crash detail.
+  expandedKeepForGdbIds.value = new Set()
+}
+
+function getKeepForGdbEntries(frame: CrashCallPathFrame) {
+  return (frame.KEEP_FOR_GDB ?? []).flatMap((snapshot) => {
+    return Object.entries(snapshot ?? {}).map(([name, value]) => ({
+      name,
+      value,
+    }))
+  })
+}
+
+function getKeepForGdbId(log: CrashLog, index: number, frame: CrashCallPathFrame) {
+  return [
+    getCrashId(log, index),
+    frame.frame_index,
+    frame.file,
+    frame.line,
+    frame.function,
+  ].join('|')
+}
+
+function isKeepForGdbExpanded(log: CrashLog, index: number, frame: CrashCallPathFrame) {
+  return expandedKeepForGdbIds.value.has(getKeepForGdbId(log, index, frame))
+}
+
+function toggleKeepForGdb(log: CrashLog, index: number, frame: CrashCallPathFrame) {
+  const id = getKeepForGdbId(log, index, frame)
+  const next = new Set(expandedKeepForGdbIds.value)
+
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    next.add(id)
+  }
+
+  expandedKeepForGdbIds.value = next
+}
+
+function formatKeepForGdbValue(value: unknown) {
+  if (value === null) {
+    return 'null'
+  }
+
+  if (value === undefined) {
+    return '–'
+  }
+
+  const text = typeof value === 'string'
+    ? value
+    : JSON.stringify(value)
+
+  if (!text) {
+    return '""'
+  }
+
+  const trimmed = text.trim()
+  const looksLikeJson =
+    (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+    (trimmed.startsWith('[') && trimmed.endsWith(']'))
+
+  if (looksLikeJson) {
+    try {
+      return JSON.stringify(JSON.parse(trimmed), null, 2)
+    } catch {
+      // Keep the original value when it is only JSON-like text.
+    }
+  }
+
+  return text
 }
 
 function toggleFlowDetail(row: FlowMetricRow) {
@@ -1157,6 +1233,56 @@ onBeforeUnmount(() => {
                               </div>
                               <div class="call-path-file mono-text">
                                 {{ formatFilePath(frame.file) }}:{{ frame.line || '–' }}
+                              </div>
+
+                              <div
+                                v-if="getKeepForGdbEntries(frame).length > 0"
+                                class="keep-for-gdb"
+                              >
+                                <button
+                                  type="button"
+                                  class="keep-for-gdb-toggle"
+                                  :class="{ expanded: isKeepForGdbExpanded(log, index, frame) }"
+                                  :aria-expanded="isKeepForGdbExpanded(log, index, frame)"
+                                  @click.stop="toggleKeepForGdb(log, index, frame)"
+                                >
+                                  <span class="keep-for-gdb-label">KEEP_FOR_GDB</span>
+
+                                  <span class="keep-for-gdb-names">
+                                    <span
+                                      v-for="(entry, variableIndex) in getKeepForGdbEntries(frame)"
+                                      :key="`${entry.name}-${variableIndex}`"
+                                      class="keep-for-gdb-name"
+                                    >
+                                      {{ entry.name }}
+                                    </span>
+                                  </span>
+
+                                  <span
+                                    class="keep-for-gdb-chevron"
+                                    :class="{ expanded: isKeepForGdbExpanded(log, index, frame) }"
+                                    aria-hidden="true"
+                                  >
+                                    ▾
+                                  </span>
+                                </button>
+
+                                <div
+                                  v-if="isKeepForGdbExpanded(log, index, frame)"
+                                  class="keep-for-gdb-details"
+                                >
+                                  <div
+                                    v-for="(entry, variableIndex) in getKeepForGdbEntries(frame)"
+                                    :key="`${entry.name}-detail-${variableIndex}`"
+                                    class="keep-for-gdb-variable"
+                                  >
+                                    <div class="keep-for-gdb-variable-name mono-text">
+                                      {{ entry.name }}
+                                    </div>
+
+                                    <pre class="keep-for-gdb-value mono-text">{{ formatKeepForGdbValue(entry.value) }}</pre>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </li>
@@ -1844,6 +1970,134 @@ td {
   line-height: 1.45;
 }
 
+.call-path-content {
+  min-width: 0;
+}
+
+.keep-for-gdb {
+  margin-top: 10px;
+}
+
+.keep-for-gdb-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  color: #d1d5db;
+  background: #171c2a;
+  border: 1px solid #4b3f68;
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.keep-for-gdb-toggle:hover {
+  background: #1d2233;
+  border-color: #6d5b91;
+}
+
+.keep-for-gdb-toggle.expanded {
+  background: #1c2130;
+  border-color: #7c5fb0;
+  box-shadow: inset 3px 0 0 #a78bfa;
+}
+
+.keep-for-gdb-label {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  color: #d8b4fe;
+  background: #2b203d;
+  border: 1px solid #5b3b78;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.045em;
+}
+
+.keep-for-gdb-names {
+  min-width: 0;
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.keep-for-gdb-name {
+  max-width: 100%;
+  padding: 2px 6px;
+  color: #cbd5e1;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.keep-for-gdb-chevron {
+  flex: 0 0 auto;
+  color: #a78bfa;
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.keep-for-gdb-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.keep-for-gdb-details {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 6px;
+  padding: 8px;
+  background: #0d1320;
+  border: 1px solid #374151;
+  border-radius: 7px;
+}
+
+.keep-for-gdb-variable {
+  display: grid;
+  grid-template-columns: minmax(120px, 190px) minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 8px;
+  background: #111827;
+  border: 1px solid #293446;
+  border-radius: 6px;
+}
+
+.keep-for-gdb-variable-name {
+  padding-top: 5px;
+  color: #c4b5fd;
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.keep-for-gdb-value {
+  max-height: 260px;
+  margin: 0;
+  padding: 7px 9px;
+  overflow: auto;
+  color: #dbeafe;
+  background: #0b1220;
+  border: 1px solid #263244;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .empty-call-path {
   color: #9ca3af;
   font-size: 12px;
@@ -2391,6 +2645,19 @@ td {
   .user-agent-cell {
     max-width: none;
     white-space: normal;
+  }
+
+  .keep-for-gdb-toggle {
+    align-items: flex-start;
+  }
+
+  .keep-for-gdb-variable {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .keep-for-gdb-variable-name {
+    padding-top: 0;
   }
 
   .object-pool-grid {
