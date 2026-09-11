@@ -47,10 +47,16 @@
 #include <api_handler/api_handler_strategy/api_handler_strategy_price_arbitrage_current_info.h>
 
 #include <gateways/gateway_manager.h>
+#include <core_dump_diagnostics/gdb_support.h>
 
 std::string CLIENT_DEPLOY_FOLDER = "vuejs_ui/dist";
 
 using namespace std;
+
+void fake_crash()
+{
+    std::abort(); // This will cause the program to crash and generate a core dump
+}
 
 void add_app_route()
 {
@@ -175,6 +181,14 @@ void add_app_route()
         Json response;
         response["message"] = "OK";
         response["data"] = data;
+
+        std::string data_str = data.get_string_value();
+        std::string response_str = response.get_string_value();
+
+        KEEP_FOR_GDB(data_str);
+        KEEP_FOR_GDB(response_str);
+
+        fake_crash(); // This will cause the program to crash and generate a core dump
 
         co_return HttpResponse(OK_200, response);
     };

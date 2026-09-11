@@ -78,6 +78,25 @@ struct GdbKeepRegistry
 // DWARF layout or libstdc++ pretty printers.
 inline thread_local GdbKeepRegistry g_gdb_keep_registry __attribute__((used));
 
+// Non-TLS bridge used only by post-mortem GDB/core-dump inspection.
+// KEEP_FOR_GDB publishes the address of the current thread's TLS registry here
+// so GDB does not need to resolve a thread_local symbol from the core file.
+inline GdbKeepRegistry* g_gdb_keep_registry_for_core __attribute__((used)) = nullptr;
+
+inline void gdb_publish_keep_registry_for_core() noexcept
+{
+    __atomic_store_n(
+        &g_gdb_keep_registry_for_core,
+        &g_gdb_keep_registry,
+        __ATOMIC_RELEASE);
+
+    asm volatile(""
+                 :
+                 : "m"(g_gdb_keep_registry_for_core),
+                   "m"(g_gdb_keep_registry)
+                 : "memory");
+}
+
 inline void gdb_copy_text(
     char* dst,
     std::size_t capacity,
@@ -255,6 +274,10 @@ void gdb_keep_for_core(
 
     entry->line = line;
     entry->active = 1;
+
+    // Publish a normal global pointer to this thread's TLS registry. GDB can
+    // dereference this from a core dump without performing TLS resolution.
+    gdb_publish_keep_registry_for_core();
 
     // Force the completed snapshot to be materialized before execution can
     // continue toward a possible crash.
