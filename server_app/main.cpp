@@ -5,7 +5,7 @@
 
 #include <utils/constants.h>
 #include <utils/utils.h>
-#include <utils/process_core_dumps.h>
+#include <core_dump_diagnostics/process_core_dumps.h>
 #include <app_constants.h>
 #include <mongo_db/mongo_db.h>
 #include <jwt/jwt_manager.h>
