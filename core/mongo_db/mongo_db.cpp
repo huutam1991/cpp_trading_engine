@@ -4,28 +4,25 @@
 
 mongocxx::pool& MongoDB::get_pool()
 {
-    if (m_pool == nullptr)
-    {
-        const char* uri = MONGO_URI;
-        if (const char* env = std::getenv("PROD"))
-        {
-            if (std::string(env) == "true")
-            {
-                uri = MONGO_URI_PROD;
-            }
+    static mongocxx::pool pool{
+        mongocxx::uri{
+            [] {
+                const char* uri = MONGO_URI;
+
+                if (const char* env = std::getenv("PROD");
+                    env && std::string(env) == "true")
+                {
+                    uri = MONGO_URI_PROD;
+                }
+
+                spdlog::info("MONGO_URI = {}", uri);
+
+                return std::string(uri);
+            }()
         }
-        spdlog::info("MONGO_URI = {}", uri);
+    };
 
-        // Use SpinLock to ensure thread safety when initializing the pool
-        SpinLockGuard lock(m_spin_lock);
-
-        if (m_pool == nullptr)
-        {
-            m_pool = new mongocxx::pool{mongocxx::uri{uri}};
-        }
-    }
-
-    return *m_pool;
+    return pool;
 }
 
 int MongoDB::count_collections(const std::string& db_name)
