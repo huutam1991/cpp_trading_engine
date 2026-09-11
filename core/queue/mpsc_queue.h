@@ -17,6 +17,7 @@
 #include <utility>
 
 #include <time/measure_time.h>
+#include <core_dump_diagnostics/gdb_support.h>
 
 #define FORCE_INLINE inline __attribute__((always_inline))
 
@@ -160,6 +161,14 @@ class MPSCQueue
     __attribute__((noinline, cold))
     void crash_consumer_thread_for_real_full()
     {
+        // Snapshot the exact TSC at which a producer proves the queue is REAL
+        // FULL. The Mongo thread has already published the same shared variable
+        // name before entering replace_one(), so this updates that Mongo-owned
+        // diagnostic slot without changing its source file/line.
+        _mm_lfence();
+        const uint64_t mpsc_real_full_tsc = __rdtsc();
+        KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mpsc_real_full_tsc);
+
         const pid_t consumer =
             m_pool_buffer.consumer_tid.load(std::memory_order_relaxed);
 
