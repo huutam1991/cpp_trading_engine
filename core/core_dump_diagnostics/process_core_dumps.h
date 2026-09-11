@@ -12,6 +12,9 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/builder/basic/kvp.hpp>
@@ -32,6 +35,12 @@ struct CoreDumpInfo
     uintmax_t size_bytes = 0;
 };
 
+struct GdbKeptVariableInfo
+{
+    std::string name;
+    std::string value;
+};
+
 struct StackFrameInfo
 {
     int index = -1;
@@ -39,6 +48,13 @@ struct StackFrameInfo
     std::string file;
     std::string line;
     std::string raw;
+
+    // Temporary data collected from `gdb bt full`.
+    std::unordered_map<std::string, std::string> local_variables;
+    std::vector<std::string> keep_for_gdb_names;
+
+    // Final values explicitly marked through KEEP_FOR_GDB(...).
+    std::vector<GdbKeptVariableInfo> keep_for_gdb;
 };
 
 static bool is_noise_function(const std::string& fn)
@@ -52,6 +68,77 @@ static bool is_noise_function(const std::string& fn)
            fn.find("poll") != std::string::npos;
 }
 
+static std::string trim_copy(std::string value)
+{
+    const auto first = value.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos)
+    {
+        return "";
+    }
+
+    const auto last = value.find_last_not_of(" \t\r\n");
+    return value.substr(first, last - first + 1);
+}
+
+static std::string decode_gdb_quoted_string(const std::string& value)
+{
+    const size_t first_quote = value.find('"');
+    const size_t last_quote = value.rfind('"');
+
+    if (first_quote == std::string::npos ||
+        last_quote == std::string::npos ||
+        last_quote <= first_quote)
+    {
+        return "";
+    }
+
+    std::string out;
+    out.reserve(last_quote - first_quote - 1);
+
+    for (size_t i = first_quote + 1; i < last_quote; ++i)
+    {
+        char c = value[i];
+
+        if (c != '\\' || i + 1 >= last_quote)
+        {
+            out += c;
+            continue;
+        }
+
+        char escaped = value[++i];
+        switch (escaped)
+        {
+            case '\\': out += '\\'; break;
+            case '"':  out += '"';  break;
+            case 'n':  out += '\n'; break;
+            case 'r':  out += '\r'; break;
+            case 't':  out += '\t'; break;
+            default:
+                // Preserve unknown GDB/C escapes rather than silently changing data.
+                out += '\\';
+                out += escaped;
+                break;
+        }
+    }
+
+    return out;
+}
+
+static std::string normalize_gdb_value(const std::string& raw_value)
+{
+    std::string value = trim_copy(raw_value);
+
+    // libstdc++'s GDB pretty-printer normally renders std::string as "...".
+    // Convert that representation back to the actual string value before
+    // storing it in MongoDB. Non-string values stay exactly as GDB printed them.
+    if (value.size() >= 2 && value.front() == '"' && value.back() == '"')
+    {
+        return decode_gdb_quoted_string(value);
+    }
+
+    return value;
+}
+
 static std::vector<StackFrameInfo> parse_stack_frames(const std::string& backtrace)
 {
     std::vector<StackFrameInfo> frames;
@@ -62,23 +149,90 @@ static std::vector<StackFrameInfo> parse_stack_frames(const std::string& backtra
         R"(^#([0-9]+)\s+(?:0x[0-9a-fA-F]+\s+in\s+)?(.+?)(?:\s+at\s+(.+):([0-9]+))?$)"
     );
 
+    // `bt full` prints locals in the form:
+    //     variable_name = value
+    std::regex local_regex(
+        R"(^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$)"
+    );
+
+    // KEEP_FOR_GDB() creates locals named __gdb_keep_name_<counter> whose
+    // value is the source variable name, e.g. 0x... "data_str".
+    std::regex keep_marker_regex(
+        R"(^__gdb_keep_name_[0-9]+$)"
+    );
+
     while (std::getline(iss, line))
     {
         std::smatch match;
 
-        if (!std::regex_match(line, match, frame_regex))
+        if (std::regex_match(line, match, frame_regex))
+        {
+            StackFrameInfo frame;
+            frame.index = std::stoi(match[1].str());
+            frame.function = match[2].str();
+            frame.file = match[3].matched ? match[3].str() : "";
+            frame.line = match[4].matched ? match[4].str() : "";
+            frame.raw = line;
+
+            frames.push_back(std::move(frame));
+            continue;
+        }
+
+        if (frames.empty())
         {
             continue;
         }
 
-        StackFrameInfo frame;
-        frame.index = std::stoi(match[1].str());
-        frame.function = match[2].str();
-        frame.file = match[3].matched ? match[3].str() : "";
-        frame.line = match[4].matched ? match[4].str() : "";
-        frame.raw = line;
+        if (!std::regex_match(line, match, local_regex))
+        {
+            continue;
+        }
 
-        frames.push_back(std::move(frame));
+        std::string local_name = match[1].str();
+        std::string local_value = trim_copy(match[2].str());
+
+        StackFrameInfo& frame = frames.back();
+        frame.local_variables[local_name] = local_value;
+
+        if (std::regex_match(local_name, keep_marker_regex))
+        {
+            std::string kept_variable_name = decode_gdb_quoted_string(local_value);
+
+            if (!kept_variable_name.empty())
+            {
+                frame.keep_for_gdb_names.push_back(std::move(kept_variable_name));
+            }
+        }
+    }
+
+    // Resolve each marker back to the actual local variable printed by GDB.
+    // Multiple KEEP_FOR_GDB(var) calls in one scope are intentionally deduped.
+    for (auto& frame : frames)
+    {
+        std::unordered_set<std::string> seen;
+
+        for (const auto& variable_name : frame.keep_for_gdb_names)
+        {
+            if (!seen.insert(variable_name).second)
+            {
+                continue;
+            }
+
+            auto it = frame.local_variables.find(variable_name);
+            if (it == frame.local_variables.end())
+            {
+                frame.keep_for_gdb.push_back({
+                    variable_name,
+                    "<not available in gdb bt full>"
+                });
+                continue;
+            }
+
+            frame.keep_for_gdb.push_back({
+                variable_name,
+                normalize_gdb_value(it->second)
+            });
+        }
     }
 
     return frames;
@@ -180,6 +334,33 @@ Json parse_crash_backtrace_to_json(const std::string& backtrace)
         item["file"] = frame.file;
         item["line"] = frame.line;
 
+        Json keep_for_gdb_array;
+        Json keep_for_gdb_object;
+        Json keep_for_gdb_vars;
+        size_t keep_for_gdb_var_index = 0;
+
+        for (const auto& variable : frame.keep_for_gdb)
+        {
+            // Public shape requested for the parsed crash JSON:
+            // KEEP_FOR_GDB: [ { "data_str": "...", ... } ]
+            keep_for_gdb_object[variable.name] = variable.value;
+
+            // Internal name/value representation used below to build BSON with
+            // dynamic field names without depending on Json object-key iteration.
+            Json variable_item;
+            variable_item["name"] = variable.name;
+            variable_item["value"] = variable.value;
+            keep_for_gdb_vars[keep_for_gdb_var_index++] = std::move(variable_item);
+        }
+
+        if (!frame.keep_for_gdb.empty())
+        {
+            keep_for_gdb_array[0] = std::move(keep_for_gdb_object);
+        }
+
+        item["KEEP_FOR_GDB"] = std::move(keep_for_gdb_array);
+        item["_KEEP_FOR_GDB_VARS"] = std::move(keep_for_gdb_vars);
+
         call_path[call_path_index++] = std::move(item);
     }
 
@@ -239,6 +420,32 @@ void insert_crash_log_to_mongodb(
                 kvp("file", (std::string)item["file"]),
                 kvp("line", (std::string)item["line"])
             );
+
+            auto keep_for_gdb_doc = bsoncxx::builder::basic::document{};
+            size_t keep_for_gdb_count = 0;
+
+            item["_KEEP_FOR_GDB_VARS"].for_each(
+                [&keep_for_gdb_doc, &keep_for_gdb_count](Json& variable)
+                {
+                    keep_for_gdb_doc.append(
+                        kvp(
+                            (std::string)variable["name"],
+                            (std::string)variable["value"]
+                        )
+                    );
+                    ++keep_for_gdb_count;
+                }
+            );
+
+            if (keep_for_gdb_count > 0)
+            {
+                auto keep_for_gdb_array = bsoncxx::builder::basic::array{};
+                keep_for_gdb_array.append(keep_for_gdb_doc.extract());
+
+                frame_doc.append(
+                    kvp("KEEP_FOR_GDB", keep_for_gdb_array.extract())
+                );
+            }
 
             array_builder.append(frame_doc.extract());
         });
@@ -340,6 +547,7 @@ static std::string generate_backtrace_from_core(
         "gdb " + shell_quote(binary_path) + " " + shell_quote(core_file.string()) +
         " -batch "
         "-ex 'set pagination off' "
+        "-ex 'set print elements 0' "
         "-ex 'bt full' "
         "-ex 'thread apply all bt full' 2>&1";
 
