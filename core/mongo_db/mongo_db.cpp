@@ -66,8 +66,39 @@ size_t MongoQuery::count_documents()
 std::string MongoQuery::insert_one(const Json& data)
 {
     GET_COLLECTION(m_db, m_collection, collection);
+
+    std::string raw_json = data.get_string_value();
+
+    const char* raw_json_ptr = raw_json.c_str();
+    const size_t raw_json_size = raw_json.size();
+
+    const uint64_t mongo_seq =
+        g_mongo_replace_seq.fetch_add(1, std::memory_order_relaxed) + 1;
+
+    _mm_lfence();
+    const uint64_t mongo_start_tsc = __rdtsc();
+
+    // The Mongo/System-IO thread owns this shared diagnostic slot. It starts at
+    // zero. If an MPSC producer later observes REAL FULL, that producer updates
+    // the same shared variable name immediately before tgkill(SIGABRT).
+    uint64_t mpsc_real_full_tsc = 0;
+
+    KEEP_FOR_GDB(raw_json);
+    KEEP_FOR_GDB(raw_json_ptr);
+    KEEP_FOR_GDB(raw_json_size);
+    KEEP_FOR_GDB(mongo_seq);
+    KEEP_FOR_GDB(mongo_start_tsc);
+    KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mpsc_real_full_tsc);
+
     bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
     bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collection.insert_one(doc_value.view());
+
+    // Ensure the variables are considered alive across the blocking call.
+    KEEP_FOR_GDB(raw_json);
+    KEEP_FOR_GDB(raw_json_ptr);
+    KEEP_FOR_GDB(raw_json_size);
+    KEEP_FOR_GDB(mongo_seq);
+    KEEP_FOR_GDB(mongo_start_tsc);
 
     return result->inserted_id().get_oid().value.to_string();
 }
