@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <limits>
 
 #include <bsoncxx/builder/basic/document.hpp>
 #include <bsoncxx/builder/basic/kvp.hpp>
@@ -48,7 +49,10 @@ struct GdbKeepVariableInfo
     std::string value;
     std::string file;
     int line = 0;
-    bool assigned = false;
+
+    // Frame selected by source-file + nearest-source-line matching.
+    // -1 means the variable could not be assigned confidently.
+    int assigned_frame_index = -1;
 };
 
 static std::string unescape_gdb_keep_value(const std::string& value)
@@ -148,6 +152,105 @@ static bool source_file_matches(const std::string& frame_file, const std::string
     return fs::path(frame_file).filename() == fs::path(keep_file).filename();
 }
 
+
+// KEEP_FOR_GDB records the source line of the macro call. A single source file
+// can contain many functions (especially template-heavy headers such as
+// mongo_db.h), so matching only by filename can attach stale variables to the
+// wrong stack frame.
+//
+// A KEEP variable is attached only when:
+//   1. the source file matches, and
+//   2. the closest stack-frame source line is reasonably close to the KEEP line.
+//
+// 32 lines is intentionally conservative. If a stale snapshot came from another
+// function in the same file, it is better to leave it unassigned than to display
+// it under an unrelated frame.
+inline constexpr int GDB_KEEP_MAX_FRAME_LINE_DISTANCE = 32;
+
+static int parse_stack_frame_source_line(const std::string& line)
+{
+    if (line.empty())
+    {
+        return -1;
+    }
+
+    try
+    {
+        const int value = std::stoi(line);
+        return value > 0 ? value : -1;
+    }
+    catch (...)
+    {
+        return -1;
+    }
+}
+
+static void assign_gdb_keep_variables_to_best_frames(
+    std::vector<GdbKeepVariableInfo>& variables,
+    const std::vector<StackFrameInfo>& frames)
+{
+    for (auto& variable : variables)
+    {
+        int best_frame_index = -1;
+        int best_line_distance = std::numeric_limits<int>::max();
+        bool found_candidate_with_line = false;
+
+        int same_file_candidate_count = 0;
+        int only_same_file_frame_index = -1;
+
+        for (const auto& frame : frames)
+        {
+            if (!source_file_matches(frame.file, variable.file))
+            {
+                continue;
+            }
+
+            ++same_file_candidate_count;
+            only_same_file_frame_index = frame.index;
+
+            const int frame_line = parse_stack_frame_source_line(frame.line);
+            if (frame_line <= 0 || variable.line <= 0)
+            {
+                continue;
+            }
+
+            const int distance =
+                frame_line >= variable.line
+                    ? frame_line - variable.line
+                    : variable.line - frame_line;
+
+            if (!found_candidate_with_line ||
+                distance < best_line_distance)
+            {
+                found_candidate_with_line = true;
+                best_line_distance = distance;
+                best_frame_index = frame.index;
+            }
+        }
+
+        if (found_candidate_with_line)
+        {
+            if (best_line_distance <= GDB_KEEP_MAX_FRAME_LINE_DISTANCE)
+            {
+                variable.assigned_frame_index = best_frame_index;
+            }
+
+            // If the closest same-file frame is too far away, deliberately keep
+            // this variable unassigned. This prevents stale KEEP snapshots from
+            // a previous function invocation in the same header/source file from
+            // being rendered under the current unrelated frame.
+            continue;
+        }
+
+        // If line information is unavailable, filename-only matching is safe
+        // only when there is exactly one matching frame in the crash stack.
+        if (same_file_candidate_count == 1)
+        {
+            variable.assigned_frame_index = only_same_file_frame_index;
+        }
+    }
+}
+
 static bool is_noise_function(const std::string& fn)
 {
     return fn.find("std::") == 0 ||
@@ -236,6 +339,10 @@ Json parse_crash_backtrace_to_json(const std::string& backtrace)
     auto frames = parse_stack_frames(crash_thread_backtrace);
     auto gdb_keep_variables = parse_gdb_keep_variables(backtrace);
 
+    // Assign every KEEP_FOR_GDB / KEEP_FOR_GDB_SHARE_BETWEEN_THREADS variable
+    // to the most plausible stack frame before building the call path.
+    assign_gdb_keep_variables_to_best_frames(gdb_keep_variables, frames);
+
     result["signal"] = signal;
     result["frame_count"] = frames.size();
 
@@ -291,9 +398,9 @@ Json parse_crash_backtrace_to_json(const std::string& backtrace)
         Json keep_variables;
         size_t keep_variable_count = 0;
 
-        for (auto& variable : gdb_keep_variables)
+        for (const auto& variable : gdb_keep_variables)
         {
-            if (variable.assigned || !source_file_matches(frame.file, variable.file))
+            if (variable.assigned_frame_index != frame.index)
             {
                 continue;
             }
@@ -305,7 +412,6 @@ Json parse_crash_backtrace_to_json(const std::string& backtrace)
             keep_variable["source_line"] = variable.line;
 
             keep_variables[keep_variable_count++] = std::move(keep_variable);
-            variable.assigned = true;
         }
 
         item["keep_for_gdb_count"] = keep_variable_count;
