@@ -72,6 +72,24 @@ class MPSCQueue
         "T must either be a pointer type or support construction/comparison with nullptr"
     );
 
+    // Keep the last 200 successful producer reservations. At queue capacity 40
+    // this gives us exactly:
+    //   - the 40 currently outstanding queue positions, and
+    //   - up to 160 enqueue positions immediately before them.
+    //
+    // The timestamp is recorded immediately after a producer successfully
+    // reserves a queue position by advancing head. This is the same ordering
+    // domain used by the REAL FULL check (head - published_tail).
+    static constexpr size_t ENQUEUE_HISTORY_CAPACITY = 200;
+    static constexpr size_t ENQUEUE_HISTORY_PREVIOUS_COUNT = 160;
+
+    struct EnqueueHistorySlot
+    {
+        // queue_position + 1. Zero means this history slot has never been used.
+        std::atomic<uint64_t> queue_position_plus_one{0};
+        std::atomic<uint64_t> tsc{0};
+    };
+
     struct alignas(64) Slot
     {
         std::atomic<size_t> sequence;
@@ -88,6 +106,10 @@ class MPSCQueue
         alignas(64) std::atomic<size_t> published_tail{0};
         alignas(64) std::atomic<uint64_t> last_pop_tsc{0};
         alignas(64) std::atomic<pid_t> consumer_tid{0};
+
+        // Diagnostic-only ring. Indexed by queue position % 200.
+        alignas(64) std::array<EnqueueHistorySlot, ENQUEUE_HISTORY_CAPACITY>
+            enqueue_history{};
 
         PoolBuffer()
         {
@@ -132,6 +154,79 @@ class MPSCQueue
         {
             crash_mpsc_multiple_consumers_detected();
         }
+    }
+
+    FORCE_INLINE void record_enqueue_history(
+        const size_t queue_position,
+        const uint64_t enqueue_tsc)
+    {
+        EnqueueHistorySlot& history_slot =
+            m_pool_buffer.enqueue_history[
+                queue_position % ENQUEUE_HISTORY_CAPACITY];
+
+        // Publish the timestamp first, then publish its queue-position tag.
+        // A crash reader accepts the value only when the tag still matches the
+        // exact queue position it asked for.
+        history_slot.tsc.store(
+            enqueue_tsc,
+            std::memory_order_relaxed);
+
+        history_slot.queue_position_plus_one.store(
+            static_cast<uint64_t>(queue_position) + 1,
+            std::memory_order_release);
+    }
+
+    uint64_t read_enqueue_history_tsc(
+        const size_t queue_position) const
+    {
+        const EnqueueHistorySlot& history_slot =
+            m_pool_buffer.enqueue_history[
+                queue_position % ENQUEUE_HISTORY_CAPACITY];
+
+        const uint64_t expected_position_plus_one =
+            static_cast<uint64_t>(queue_position) + 1;
+
+        const uint64_t position_before =
+            history_slot.queue_position_plus_one.load(
+                std::memory_order_acquire);
+
+        if (position_before != expected_position_plus_one)
+        {
+            return 0;
+        }
+
+        const uint64_t enqueue_tsc =
+            history_slot.tsc.load(std::memory_order_relaxed);
+
+        // Re-read the tag so an overwrite of this ring slot while the producer
+        // is building the crash snapshot cannot pair a new position with an old
+        // timestamp (or vice versa).
+        const uint64_t position_after =
+            history_slot.queue_position_plus_one.load(
+                std::memory_order_acquire);
+
+        if (position_after != expected_position_plus_one)
+        {
+            return 0;
+        }
+
+        return enqueue_tsc;
+    }
+
+    static void append_enqueue_history_entry(
+        std::string& output,
+        const size_t queue_position,
+        const uint64_t enqueue_tsc)
+    {
+        if (!output.empty())
+        {
+            output += ",";
+        }
+
+        // Format: queue_position:enqueue_tsc
+        output += std::to_string(queue_position);
+        output += ":";
+        output += std::to_string(enqueue_tsc);
     }
 
     // Read a uint64_t value previously published through
@@ -216,6 +311,131 @@ class MPSCQueue
         const uint64_t consumer_task_start_queue_size =
             read_shared_gdb_uint64("consumer_task_start_queue_size");
 
+        // --------------------------------------------------------------------
+        // Enqueue history snapshot.
+        //
+        // At REAL FULL with Size == 40:
+        //   [mpsc_published_tail, mpsc_head)
+        //       = the 40 queue positions currently outstanding.
+        //
+        // The 160 positions immediately before mpsc_published_tail are the
+        // previous enqueue events, giving a full 200-position history window.
+        //
+        // Each serialized entry is:
+        //     queue_position:enqueue_tsc
+        // --------------------------------------------------------------------
+        std::string enqueue_tsc_current_outstanding;
+        std::string enqueue_tsc_previous_160;
+
+        enqueue_tsc_current_outstanding.reserve(2048);
+        enqueue_tsc_previous_160.reserve(8192);
+
+        size_t current_outstanding_history_count = 0;
+        size_t current_outstanding_after_mongo_start_count = 0;
+
+        uint64_t current_outstanding_oldest_tsc = 0;
+        uint64_t current_outstanding_newest_tsc = 0;
+
+        for (size_t queue_position = mpsc_published_tail;
+             queue_position < mpsc_head;
+             ++queue_position)
+        {
+            const uint64_t enqueue_tsc =
+                read_enqueue_history_tsc(queue_position);
+
+            if (enqueue_tsc == 0 ||
+                enqueue_tsc > mpsc_real_full_tsc)
+            {
+                continue;
+            }
+
+            append_enqueue_history_entry(
+                enqueue_tsc_current_outstanding,
+                queue_position,
+                enqueue_tsc);
+
+            if (current_outstanding_history_count == 0 ||
+                enqueue_tsc < current_outstanding_oldest_tsc)
+            {
+                current_outstanding_oldest_tsc = enqueue_tsc;
+            }
+
+            if (enqueue_tsc > current_outstanding_newest_tsc)
+            {
+                current_outstanding_newest_tsc = enqueue_tsc;
+            }
+
+            ++current_outstanding_history_count;
+
+            if (mongo_replace_one_active &&
+                enqueue_tsc >= mongo_replace_one_start_tsc)
+            {
+                ++current_outstanding_after_mongo_start_count;
+            }
+        }
+
+        const uint64_t current_outstanding_span_ticks =
+            current_outstanding_history_count >= 2 &&
+            current_outstanding_newest_tsc >= current_outstanding_oldest_tsc
+                ? current_outstanding_newest_tsc -
+                    current_outstanding_oldest_tsc
+                : 0;
+
+        const size_t previous_history_end =
+            mpsc_published_tail;
+
+        const size_t previous_history_begin =
+            previous_history_end > ENQUEUE_HISTORY_PREVIOUS_COUNT
+                ? previous_history_end - ENQUEUE_HISTORY_PREVIOUS_COUNT
+                : 0;
+
+        size_t previous_160_history_count = 0;
+        uint64_t previous_160_oldest_tsc = 0;
+        uint64_t previous_160_newest_tsc = 0;
+
+        for (size_t queue_position = previous_history_begin;
+             queue_position < previous_history_end;
+             ++queue_position)
+        {
+            const uint64_t enqueue_tsc =
+                read_enqueue_history_tsc(queue_position);
+
+            if (enqueue_tsc == 0 ||
+                enqueue_tsc > mpsc_real_full_tsc)
+            {
+                continue;
+            }
+
+            append_enqueue_history_entry(
+                enqueue_tsc_previous_160,
+                queue_position,
+                enqueue_tsc);
+
+            if (previous_160_history_count == 0 ||
+                enqueue_tsc < previous_160_oldest_tsc)
+            {
+                previous_160_oldest_tsc = enqueue_tsc;
+            }
+
+            if (enqueue_tsc > previous_160_newest_tsc)
+            {
+                previous_160_newest_tsc = enqueue_tsc;
+            }
+
+            ++previous_160_history_count;
+        }
+
+        const uint64_t previous_160_span_ticks =
+            previous_160_history_count >= 2 &&
+            previous_160_newest_tsc >= previous_160_oldest_tsc
+                ? previous_160_newest_tsc -
+                    previous_160_oldest_tsc
+                : 0;
+
+        const size_t enqueue_history_valid_count =
+            current_outstanding_history_count +
+            previous_160_history_count;
+
         KEEP_FOR_GDB(mpsc_real_full_tsc);
         KEEP_FOR_GDB(mongo_replace_one_start_tsc);
         KEEP_FOR_GDB(consumer_task_start_queue_size);
@@ -226,6 +446,21 @@ class MPSCQueue
         KEEP_FOR_GDB(mpsc_outstanding);
         KEEP_FOR_GDB(mpsc_size);
         KEEP_FOR_GDB(mpsc_queue_name);
+
+        KEEP_FOR_GDB(enqueue_history_valid_count);
+
+        KEEP_FOR_GDB(current_outstanding_history_count);
+        KEEP_FOR_GDB(current_outstanding_after_mongo_start_count);
+        KEEP_FOR_GDB(current_outstanding_oldest_tsc);
+        KEEP_FOR_GDB(current_outstanding_newest_tsc);
+        KEEP_FOR_GDB(current_outstanding_span_ticks);
+        KEEP_FOR_GDB(enqueue_tsc_current_outstanding);
+
+        KEEP_FOR_GDB(previous_160_history_count);
+        KEEP_FOR_GDB(previous_160_oldest_tsc);
+        KEEP_FOR_GDB(previous_160_newest_tsc);
+        KEEP_FOR_GDB(previous_160_span_ticks);
+        KEEP_FOR_GDB(enqueue_tsc_previous_160);
 
         // Crash immediately on the producer thread. No tgkill/SIGABRT handoff
         // to the consumer, so there is no opportunity for the consumer stack to
@@ -363,6 +598,14 @@ public:
                         std::memory_order_relaxed,
                         std::memory_order_relaxed))
                 {
+                    // pos is now this enqueue's unique global queue position.
+                    // Record its TSC immediately after reservation so the last
+                    // 200 successful enqueue positions can be reconstructed at
+                    // REAL FULL.
+                    _mm_lfence();
+                    const uint64_t enqueue_tsc = __rdtsc();
+                    record_enqueue_history(pos, enqueue_tsc);
+
                     slot.value = std::move(item);
 
                     // Update the diagnostic occupancy counter BEFORE publishing
