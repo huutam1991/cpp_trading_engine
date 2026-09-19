@@ -209,8 +209,11 @@ class MPSCQueue
 
         const std::string mpsc_queue_name = name;
 
+        const size_t mongo_replace_one_start_queue_size;
+
         KEEP_FOR_GDB(mpsc_real_full_tsc);
         KEEP_FOR_GDB(mongo_replace_one_start_tsc);
+        KEEP_FOR_GDB(mongo_replace_one_start_queue_size);
         KEEP_FOR_GDB(mongo_replace_one_active);
         KEEP_FOR_GDB(mongo_replace_one_elapsed_ticks);
         KEEP_FOR_GDB(mpsc_head);
@@ -424,6 +427,11 @@ public:
             m_pool_buffer.published_tail.store(pos + 1, std::memory_order_relaxed);
             m_pool_buffer.last_pop_tsc.store(__rdtsc(), std::memory_order_relaxed);
             m_pool_buffer.size.fetch_sub(1, std::memory_order_relaxed);
+
+            const size_t mongo_replace_one_start_queue_size = m_pool_buffer.size.load(std::memory_order_relaxed);
+
+            KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(
+                mongo_replace_one_start_queue_size);
 
             return item;
         }
