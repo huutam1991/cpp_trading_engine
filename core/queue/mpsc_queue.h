@@ -109,27 +109,6 @@ class MPSCQueue
         throw std::runtime_error("MPSC MULTIPLE CONSUMERS DETECTED");
     }
 
-    [[noreturn]]
-    __attribute__((noinline, cold))
-    static void crash_mpsc_real_full_consumer_not_registered()
-    {
-        throw std::runtime_error("MPSC REAL FULL CONSUMER NOT REGISTERED");
-    }
-
-    [[noreturn]]
-    __attribute__((noinline, cold))
-    static void crash_mpsc_real_full_tgkill_failed()
-    {
-        throw std::runtime_error("MPSC REAL FULL TGKILL FAILED");
-    }
-
-    [[noreturn]]
-    __attribute__((noinline, cold))
-    static void crash_mpsc_real_full_tgkill_returned()
-    {
-        throw std::runtime_error("MPSC REAL FULL TGKILL RETURNED");
-    }
-
     FORCE_INLINE static pid_t current_linux_tid()
     {
         return static_cast<pid_t>(::syscall(SYS_gettid));
@@ -155,49 +134,95 @@ class MPSCQueue
         }
     }
 
-    // On REAL FULL, crash the consumer thread itself so the crash reporter
-    // captures the exact coroutine/business function currently running there.
-    [[noreturn]]
-    __attribute__((noinline, cold))
-    void crash_consumer_thread_for_real_full()
+    // Read a uint64_t value previously published through
+    // KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(). The shared diagnostic registry is
+    // process-wide, so the producer can inspect the Mongo consumer's published
+    // start timestamp without signaling or resuming the consumer.
+    static uint64_t read_shared_gdb_uint64(const char* variable_name)
     {
-        // Snapshot the exact TSC at which a producer proves the queue is REAL
-        // FULL. The Mongo thread has already published the same shared variable
-        // name before entering replace_one(), so this updates that Mongo-owned
-        // diagnostic slot without changing its source file/line.
+        while (g_gdb_keep_shared_registry_lock.test_and_set(std::memory_order_acquire))
+        {
+            _mm_pause();
+        }
+
+        uint64_t value = 0;
+
+        if (GdbKeepSharedEntry* entry =
+                gdb_find_shared_entry_by_name(variable_name);
+            entry != nullptr && entry->active)
+        {
+            char* end = nullptr;
+            const unsigned long long parsed =
+                std::strtoull(entry->value, &end, 10);
+
+            if (end != entry->value)
+            {
+                value = static_cast<uint64_t>(parsed);
+            }
+        }
+
+        g_gdb_keep_shared_registry_lock.clear(std::memory_order_release);
+        return value;
+    }
+
+    // On REAL FULL, crash THIS producer immediately.
+    //
+    // Do not signal the consumer: by the time SIGABRT is delivered the consumer
+    // may already have returned from the slow task and entered another task.
+    //
+    // MongoQuery::replace_one publishes mongo_replace_one_start_tsc while the
+    // blocking Mongo call is active. The producer snapshots that shared value,
+    // computes the elapsed ticks at REAL FULL, stores all diagnostics in its own
+    // KEEP_FOR_GDB registry, and aborts immediately. The crash stack therefore
+    // belongs to the producer, while the diagnostic variables tell us how long
+    // the current replace_one had been active.
+    [[noreturn]]
+    GDB_DIAGNOSTIC_FUNCTION
+    void crash_producer_thread_for_real_full()
+    {
         _mm_lfence();
         const uint64_t mpsc_real_full_tsc = __rdtsc();
-        KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mpsc_real_full_tsc);
 
-        const pid_t consumer =
-            m_pool_buffer.consumer_tid.load(std::memory_order_relaxed);
+        const uint64_t mongo_replace_one_start_tsc =
+            read_shared_gdb_uint64("mongo_replace_one_start_tsc");
 
-        const pid_t current = current_linux_tid();
+        const bool mongo_replace_one_active =
+            mongo_replace_one_start_tsc != 0;
 
-        if (consumer == 0)
-        {
-            crash_mpsc_real_full_consumer_not_registered();
-        }
+        const uint64_t mongo_replace_one_elapsed_ticks =
+            mongo_replace_one_active &&
+            mpsc_real_full_tsc >= mongo_replace_one_start_tsc
+                ? mpsc_real_full_tsc - mongo_replace_one_start_tsc
+                : 0;
 
-        if (consumer == current)
-        {
-            // Current thread already is the consumer. Preserve this exact stack.
-            ::abort();
-        }
+        const size_t mpsc_head =
+            m_pool_buffer.head.load(std::memory_order_relaxed);
 
-        const long rc = ::syscall(
-            SYS_tgkill,
-            static_cast<pid_t>(::getpid()),
-            consumer,
-            SIGABRT);
+        const size_t mpsc_published_tail =
+            m_pool_buffer.published_tail.load(std::memory_order_relaxed);
 
-        if (rc != 0)
-        {
-            crash_mpsc_real_full_tgkill_failed();
-        }
+        const size_t mpsc_outstanding =
+            mpsc_head - mpsc_published_tail;
 
-        // Normally unreachable unless a custom SIGABRT handler returns.
-        crash_mpsc_real_full_tgkill_returned();
+        const size_t mpsc_size =
+            m_pool_buffer.size.load(std::memory_order_relaxed);
+
+        const std::string mpsc_queue_name = name;
+
+        KEEP_FOR_GDB(mpsc_real_full_tsc);
+        KEEP_FOR_GDB(mongo_replace_one_start_tsc);
+        KEEP_FOR_GDB(mongo_replace_one_active);
+        KEEP_FOR_GDB(mongo_replace_one_elapsed_ticks);
+        KEEP_FOR_GDB(mpsc_head);
+        KEEP_FOR_GDB(mpsc_published_tail);
+        KEEP_FOR_GDB(mpsc_outstanding);
+        KEEP_FOR_GDB(mpsc_size);
+        KEEP_FOR_GDB(mpsc_queue_name);
+
+        // Crash immediately on the producer thread. No tgkill/SIGABRT handoff
+        // to the consumer, so there is no opportunity for the consumer stack to
+        // move to another task before the core is taken.
+        ::abort();
     }
 
     // ------------------------------------------------------------------------
@@ -362,7 +387,7 @@ public:
 
                 if (outstanding >= Size)
                 {
-                    crash_consumer_thread_for_real_full();
+                    crash_producer_thread_for_real_full();
                 }
 
                 crash_mpsc_false_full();

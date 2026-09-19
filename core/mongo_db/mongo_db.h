@@ -121,35 +121,54 @@ bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, c
         g_mongo_replace_seq.fetch_add(1, std::memory_order_relaxed) + 1;
 
     _mm_lfence();
-    const uint64_t mongo_start_tsc = __rdtsc();
 
-    // The Mongo/System-IO thread owns this shared diagnostic slot. It starts at
-    // zero. If an MPSC producer later observes REAL FULL, that producer updates
-    // the same shared variable name immediately before tgkill(SIGABRT).
-    uint64_t mpsc_real_full_tsc = 0;
+    // This is the ONE cross-thread diagnostic value for replace_one().
+    //
+    // While replace_one() is inside the blocking MongoDB call, the shared value
+    // contains its start TSC. As soon as replace_one() returns (or throws), the
+    // value is reset to zero. Therefore an MPSC producer that reaches REAL FULL
+    // can tell whether replace_one() is currently active and, if so, calculate
+    // exactly how many TSC ticks it has been active.
+    uint64_t mongo_replace_one_start_tsc = __rdtsc();
 
     KEEP_FOR_GDB(raw_json);
     KEEP_FOR_GDB(raw_json_ptr);
     KEEP_FOR_GDB(raw_json_size);
     KEEP_FOR_GDB(mongo_seq);
-    KEEP_FOR_GDB(mongo_start_tsc);
-    KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mpsc_real_full_tsc);
+    KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mongo_replace_one_start_tsc);
 
     bsoncxx::document::value doc_value =
         bsoncxx::from_json(raw_json);
 
-    auto result = collection.replace_one(
-        document{} << find_key << find_value << finalize,
-        doc_value.view());
+    try
+    {
+        auto result = collection.replace_one(
+            document{} << find_key << find_value << finalize,
+            doc_value.view());
 
-    // Ensure the variables are considered alive across the blocking call.
-    KEEP_FOR_GDB(raw_json);
-    KEEP_FOR_GDB(raw_json_ptr);
-    KEEP_FOR_GDB(raw_json_size);
-    KEEP_FOR_GDB(mongo_seq);
-    KEEP_FOR_GDB(mongo_start_tsc);
+        // replace_one() is no longer active. Clear the process-wide shared
+        // timestamp before any following task can be mistaken for this Mongo
+        // operation.
+        mongo_replace_one_start_tsc = 0;
+        KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mongo_replace_one_start_tsc);
 
-    return result ? true : false;
+        // Keep the ordinary diagnostic payload alive for unrelated crashes that
+        // may still occur after the Mongo call returns.
+        KEEP_FOR_GDB(raw_json);
+        KEEP_FOR_GDB(raw_json_ptr);
+        KEEP_FOR_GDB(raw_json_size);
+        KEEP_FOR_GDB(mongo_seq);
+
+        return result ? true : false;
+    }
+    catch (...)
+    {
+        // Never leave a stale non-zero "Mongo active" timestamp behind if the
+        // driver exits through an exception.
+        mongo_replace_one_start_tsc = 0;
+        KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mongo_replace_one_start_tsc);
+        throw;
+    }
 }
 
 template<class T, class U>
