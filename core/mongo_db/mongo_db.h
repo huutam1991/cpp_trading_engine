@@ -12,6 +12,7 @@
 #include <utils/constants.h>
 #include <core_dump_diagnostics/gdb_support.h>
 #include <json/json.h>
+#include <time/measure_time.h>
 #include <utils/spin_lock.h>
 #include "mongo_db_header.h"
 
@@ -108,6 +109,7 @@ template<class T>
 GDB_DIAGNOSTIC_FUNCTION
 bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const Json& data)
 {
+    MeasureTime measure_time("MongoQuery::replace_one");
     GET_COLLECTION(m_db, m_collection, collection);
 
     std::string raw_json = data.get_string_value();
