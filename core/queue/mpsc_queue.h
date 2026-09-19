@@ -209,11 +209,16 @@ class MPSCQueue
 
         const std::string mpsc_queue_name = name;
 
-        const size_t mongo_replace_one_start_queue_size;
+        // Snapshot published by the consumer immediately after it popped the
+        // task that is currently executing. If mongo_replace_one_active == true,
+        // no later pop can have happened on this single-consumer queue, so this
+        // is the queue occupancy at the start of the current consumer task.
+        const uint64_t consumer_task_start_queue_size =
+            read_shared_gdb_uint64("consumer_task_start_queue_size");
 
         KEEP_FOR_GDB(mpsc_real_full_tsc);
         KEEP_FOR_GDB(mongo_replace_one_start_tsc);
-        KEEP_FOR_GDB(mongo_replace_one_start_queue_size);
+        KEEP_FOR_GDB(consumer_task_start_queue_size);
         KEEP_FOR_GDB(mongo_replace_one_active);
         KEEP_FOR_GDB(mongo_replace_one_elapsed_ticks);
         KEEP_FOR_GDB(mpsc_head);
@@ -360,13 +365,18 @@ public:
                 {
                     slot.value = std::move(item);
 
-                    // publish item
-                    slot.sequence.store(pos + 1, std::memory_order_release);
+                    // Update the diagnostic occupancy counter BEFORE publishing
+                    // the slot. The consumer only sees the item after the
+                    // release-store below, so its matching fetch_sub() cannot
+                    // race ahead of this increment.
+                    const size_t current =
+                        m_pool_buffer.size.fetch_add(
+                            1,
+                            std::memory_order_relaxed) + 1;
 
-                    // m_pool_buffer.size.fetch_add(1, std::memory_order_release);
+                    auto old_max =
+                        m_pool_buffer.max_size.load(std::memory_order_relaxed);
 
-                    auto current = m_pool_buffer.size.fetch_add(1, std::memory_order_relaxed) + 1;
-                    auto old_max = m_pool_buffer.max_size.load(std::memory_order_relaxed);
                     while (current > old_max &&
                         !m_pool_buffer.max_size.compare_exchange_weak(
                             old_max,
@@ -374,6 +384,9 @@ public:
                             std::memory_order_relaxed))
                     {
                     }
+
+                    // Publish item only after value + diagnostic size are ready.
+                    slot.sequence.store(pos + 1, std::memory_order_release);
 
                     return;
                 }
@@ -426,12 +439,21 @@ public:
             m_pool_buffer.tail = pos + 1;
             m_pool_buffer.published_tail.store(pos + 1, std::memory_order_relaxed);
             m_pool_buffer.last_pop_tsc.store(__rdtsc(), std::memory_order_relaxed);
-            m_pool_buffer.size.fetch_sub(1, std::memory_order_relaxed);
 
-            const size_t mongo_replace_one_start_queue_size = m_pool_buffer.size.load(std::memory_order_relaxed);
+            // fetch_sub() returns the occupancy immediately BEFORE this pop.
+            // Subtracting one therefore gives the occupancy immediately AFTER
+            // this exact pop, without a second load that could observe producer
+            // pushes that happened later.
+            const size_t size_before_pop =
+                m_pool_buffer.size.fetch_sub(
+                    1,
+                    std::memory_order_relaxed);
+
+            const size_t consumer_task_start_queue_size =
+                size_before_pop - 1;
 
             KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(
-                mongo_replace_one_start_queue_size);
+                consumer_task_start_queue_size);
 
             return item;
         }
