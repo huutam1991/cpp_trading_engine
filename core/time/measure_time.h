@@ -212,6 +212,10 @@ public:
                 pipeline_timings[count++] = scope;
             });
 
+            if (count == 0)
+            {
+                return;
+            }
 
             std::sort(pipeline_timings.begin(), pipeline_timings.begin() + count, [](const ScopeTiming& a, const ScopeTiming& b)
             {
