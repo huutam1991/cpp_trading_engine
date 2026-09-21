@@ -1,8 +1,7 @@
 #pragma once
 
-#include "base_promise_type.h"
-
 #include <mongo_db/mongo_db.h>
+#include "base_promise_type.h"
 
 struct BaseTask
 {
@@ -22,7 +21,11 @@ struct BaseTask
     BasePromiseType* m_promise = nullptr;
 
     BaseTask(std::nullptr_t) : m_promise(nullptr) {}
-    BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise) {}
+    BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise)
+    {
+        auto frame_info = DwarfStackTrace::capture();
+        m_promise->creation_frame_info = frame_info.get_frame_info();
+    }
     BaseTask() {};
 
     // Only allow move constructor and move assignment
