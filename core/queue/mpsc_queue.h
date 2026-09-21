@@ -49,6 +49,12 @@ struct GetTypeName<T, std::void_t<decltype(T::get_name())>>
     }
 };
 
+template <typename T>
+concept has_get_frame_info = requires
+{
+    { &T::get_frame_info };
+};
+
 template<typename T, typename = void>
 struct SupportsNullptr : std::false_type {};
 
@@ -88,6 +94,13 @@ class MPSCQueue
         // queue_position + 1. Zero means this history slot has never been used.
         std::atomic<uint64_t> queue_position_plus_one{0};
         std::atomic<uint64_t> tsc{0};
+
+        // get_frame_info() ultimately gives us std::string values. Protect the
+        // diagnostic string with a per-history-slot lock so producers may
+        // overwrite the 200-slot ring while the crash producer snapshots it
+        // without creating a C++ data race on std::string internals.
+        std::atomic_flag frame_info_lock = ATOMIC_FLAG_INIT;
+        std::string frame_info;
     };
 
     struct alignas(64) Slot
@@ -156,23 +169,81 @@ class MPSCQueue
         }
     }
 
+    static std::string build_enqueue_frame_info(T& item)
+    {
+        if constexpr (has_get_frame_info<T>)
+        {
+            // T may support nullptr semantics (TaskInfoEvent does). Do not
+            // dereference/get frame information for an empty event.
+            if constexpr (SupportsNullptr<T>::value)
+            {
+                if (item == nullptr)
+                {
+                    return {};
+                }
+            }
+
+            std::tuple<std::string, std::string> frame_info = item.get_frame_info();
+
+            if (std::get<0>(frame_info).empty())
+            {
+                return {};
+            }
+
+            // Required crash-report format:
+            //     <file>:<function>
+            std::string result;
+            result.reserve(
+                std::get<0>(frame_info).size() +
+                1 +
+                std::get<1>(frame_info).size());
+
+            result += std::get<0>(frame_info);
+            result += ":";
+            result += std::get<1>(frame_info);
+
+            return result;
+        }
+        else
+        {
+            return {};
+        }
+    }
+
     FORCE_INLINE void record_enqueue_history(
         const size_t queue_position,
-        const uint64_t enqueue_tsc)
+        const uint64_t enqueue_tsc,
+        const std::string& enqueue_frame_info)
     {
         EnqueueHistorySlot& history_slot =
             m_pool_buffer.enqueue_history[
                 queue_position % ENQUEUE_HISTORY_CAPACITY];
 
-        // Publish the timestamp first, then publish its queue-position tag.
-        // A crash reader accepts the value only when the tag still matches the
-        // exact queue position it asked for.
+        while (history_slot.frame_info_lock.test_and_set(
+            std::memory_order_acquire))
+        {
+            _mm_pause();
+        }
+
+        // Invalidate the previous generation before overwriting this ring slot.
+        // Timestamp readers that race this update will reject the slot instead
+        // of pairing a new timestamp/frame with an old queue position.
+        history_slot.queue_position_plus_one.store(
+            0,
+            std::memory_order_release);
+
         history_slot.tsc.store(
             enqueue_tsc,
             std::memory_order_relaxed);
 
+        history_slot.frame_info = enqueue_frame_info;
+
+        // Publish the complete timestamp + frame-info snapshot last.
         history_slot.queue_position_plus_one.store(
             static_cast<uint64_t>(queue_position) + 1,
+            std::memory_order_release);
+
+        history_slot.frame_info_lock.clear(
             std::memory_order_release);
     }
 
@@ -213,6 +284,37 @@ class MPSCQueue
         return enqueue_tsc;
     }
 
+    std::string read_enqueue_history_frame_info(
+        const size_t queue_position)
+    {
+        EnqueueHistorySlot& history_slot =
+            m_pool_buffer.enqueue_history[
+                queue_position % ENQUEUE_HISTORY_CAPACITY];
+
+        while (history_slot.frame_info_lock.test_and_set(
+            std::memory_order_acquire))
+        {
+            _mm_pause();
+        }
+
+        const uint64_t expected_position_plus_one =
+            static_cast<uint64_t>(queue_position) + 1;
+
+        std::string result;
+
+        if (history_slot.queue_position_plus_one.load(
+                std::memory_order_acquire) ==
+            expected_position_plus_one)
+        {
+            result = history_slot.frame_info;
+        }
+
+        history_slot.frame_info_lock.clear(
+            std::memory_order_release);
+
+        return result;
+    }
+
     static void append_enqueue_history_entry(
         std::string& output,
         const size_t queue_position,
@@ -227,6 +329,25 @@ class MPSCQueue
         output += std::to_string(queue_position);
         output += ":";
         output += std::to_string(enqueue_tsc);
+    }
+
+    static void append_frame_info_line(
+        std::string& output,
+        const std::string& frame_info)
+    {
+        if (!output.empty())
+        {
+            output += "\n";
+        }
+
+        if (frame_info.empty())
+        {
+            output += "<unknown>:<unknown>";
+        }
+        else
+        {
+            output += frame_info;
+        }
     }
 
     // Read a uint64_t value previously published through
@@ -310,6 +431,79 @@ class MPSCQueue
         // is the queue occupancy at the start of the current consumer task.
         const uint64_t consumer_task_start_queue_size =
             read_shared_gdb_uint64("consumer_task_start_queue_size");
+
+        // --------------------------------------------------------------------
+        // Frame information for the newest <= 200 elements STILL IN THE QUEUE.
+        //
+        // For the current 200000-capacity diagnostic run, REAL FULL means this
+        // yields exactly queue positions [head - 200, head), i.e. the 200 most
+        // recently enqueued outstanding TaskInfoEvent objects.
+        //
+        // Values are serialized as:
+        //     <file>:<function>
+        //
+        // Keep them in four groups of 50. Each KEEP_FOR_GDB value has a 64 KiB
+        // backing buffer; splitting prevents long demangled C++ function names
+        // from truncating the complete 200-frame history.
+        // --------------------------------------------------------------------
+        std::string enqueue_frame_info_recent_200_part_1;
+        std::string enqueue_frame_info_recent_200_part_2;
+        std::string enqueue_frame_info_recent_200_part_3;
+        std::string enqueue_frame_info_recent_200_part_4;
+
+        enqueue_frame_info_recent_200_part_1.reserve(16 * 1024);
+        enqueue_frame_info_recent_200_part_2.reserve(16 * 1024);
+        enqueue_frame_info_recent_200_part_3.reserve(16 * 1024);
+        enqueue_frame_info_recent_200_part_4.reserve(16 * 1024);
+
+        const size_t recent_200_by_head =
+            mpsc_head > ENQUEUE_HISTORY_CAPACITY
+                ? mpsc_head - ENQUEUE_HISTORY_CAPACITY
+                : 0;
+
+        const size_t recent_200_queue_begin =
+            recent_200_by_head > mpsc_published_tail
+                ? recent_200_by_head
+                : mpsc_published_tail;
+
+        size_t enqueue_frame_info_recent_200_count = 0;
+
+        for (size_t queue_position = recent_200_queue_begin;
+             queue_position < mpsc_head;
+             ++queue_position)
+        {
+            // Require the timestamp/tag to still belong to this exact queue
+            // position before reading its frame string from the same ring slot.
+            if (read_enqueue_history_tsc(queue_position) == 0)
+            {
+                continue;
+            }
+
+            const std::string frame_info =
+                read_enqueue_history_frame_info(queue_position);
+
+            std::string* output = nullptr;
+
+            if (enqueue_frame_info_recent_200_count < 50)
+            {
+                output = &enqueue_frame_info_recent_200_part_1;
+            }
+            else if (enqueue_frame_info_recent_200_count < 100)
+            {
+                output = &enqueue_frame_info_recent_200_part_2;
+            }
+            else if (enqueue_frame_info_recent_200_count < 150)
+            {
+                output = &enqueue_frame_info_recent_200_part_3;
+            }
+            else
+            {
+                output = &enqueue_frame_info_recent_200_part_4;
+            }
+
+            append_frame_info_line(*output, frame_info);
+            ++enqueue_frame_info_recent_200_count;
+        }
 
         // --------------------------------------------------------------------
         // Enqueue history snapshot.
@@ -446,6 +640,12 @@ class MPSCQueue
         KEEP_FOR_GDB(mpsc_outstanding);
         KEEP_FOR_GDB(mpsc_size);
         KEEP_FOR_GDB(mpsc_queue_name);
+
+        KEEP_FOR_GDB(enqueue_frame_info_recent_200_count);
+        KEEP_FOR_GDB(enqueue_frame_info_recent_200_part_1);
+        KEEP_FOR_GDB(enqueue_frame_info_recent_200_part_2);
+        KEEP_FOR_GDB(enqueue_frame_info_recent_200_part_3);
+        KEEP_FOR_GDB(enqueue_frame_info_recent_200_part_4);
 
         KEEP_FOR_GDB(enqueue_history_valid_count);
 
@@ -604,7 +804,14 @@ public:
                     // REAL FULL.
                     _mm_lfence();
                     const uint64_t enqueue_tsc = __rdtsc();
-                    record_enqueue_history(pos, enqueue_tsc);
+
+                    const std::string enqueue_frame_info =
+                        build_enqueue_frame_info(item);
+
+                    record_enqueue_history(
+                        pos,
+                        enqueue_tsc,
+                        enqueue_frame_info);
 
                     slot.value = std::move(item);
 
