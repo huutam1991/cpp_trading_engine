@@ -1,6 +1,8 @@
 #pragma once
 
+#include <core_dump_diagnostics/dwarf_stacktrace.h>
 #include <metric/trace_transfer.h>
+
 #include "event_base.h"
 
 struct BasePromiseType
@@ -10,6 +12,9 @@ struct BasePromiseType
     EventBase* m_event_base = nullptr;
     bool has_suspend_value = false;
     bool has_awaiter = true;
+
+    // For debugging, record the creation stacktrace of this promise
+    DwarfFrameInfo creation_frame_info;
 
     // For metric tracing
     TraceTransfer trace;
