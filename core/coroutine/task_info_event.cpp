@@ -1,6 +1,16 @@
 #include "task_info_event.h"
 #include "base_promise_type.h"
 
+std::tuple<std::string, std::string> TaskInfoEvent::get_frame_info()
+{
+    if (promise == nullptr)
+    {
+        return {"nullptr promise", "nullptr promise"};
+    }
+
+    return {promise->creation_frame_info.file, promise->creation_frame_info.function};
+}
+
 void TaskInfoEvent::check_handle()
 {
     if (promise == nullptr)

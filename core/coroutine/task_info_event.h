@@ -23,6 +23,8 @@ struct TaskInfoEvent
     TaskInfoEvent(std::nullptr_t) : type(TaskType::NONE), promise(nullptr) {}
     TaskInfoEvent(TaskType type, BasePromiseType* promise) : type(type), promise(promise) {}
 
+    std::tuple<std::string, std::string> get_frame_info();
+
     bool operator==(std::nullptr_t) const
     {
         return type == TaskType::NONE && promise == nullptr;
