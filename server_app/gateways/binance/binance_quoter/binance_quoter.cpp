@@ -118,13 +118,19 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
         response = co_await client->put(api_path + "?" + new_query_std, "");
     }
 
-    Json response_json = Json::parse(response.body);
-    if (response.status_code < 0)
+    Json response_json;
+    if (response.status_code == -1 && response.status_message == "HTTPS_CLIENT_DISCONNECTED")
     {
+        co_await Timer::sleep_for(5000); // Wait for 5 seconds before retrying
+
         response_json = {
             {"code", response.status_code},
-            {"msg", "Order body: " + response.body }
+            {"msg", response.status_message}
         };
+    }
+    else
+    {
+        response_json = Json::parse(response.body);
     }
 
     co_return response_json;

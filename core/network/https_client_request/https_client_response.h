@@ -37,7 +37,7 @@ struct HttpsClientResponse
 
     static HttpsClientResponse create_error_response()
     {
-        return HttpsClientResponse {-1, "Disconnected", {}, "", false};
+        return HttpsClientResponse {-1, "HTTPS_CLIENT_DISCONNECTED", {}, "", false};
     }
 
     static inline std::string trim(const std::string& s)
