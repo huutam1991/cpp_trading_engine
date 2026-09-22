@@ -122,8 +122,8 @@ Task<Json> BinanceQuoter::send_binance_request(RequestMethod method, std::string
     if (response.status_code < 0)
     {
         response_json = {
-            {"code", -1},
-            {"msg", "Disconnected"}
+            {"code", response.status_code},
+            {"msg", "Order body: " + response.body }
         };
     }
 
