@@ -93,6 +93,12 @@ Task<void> OrderManager::update_order_in_db(Order order)
 {
     static std::unordered_map<OrderId, SavableObject<Order>> m_order_db_cache;
 
+    if (order.status == Order::Status::REJECTED)
+    {
+        // If order is rejected, we dont need to save it to DB
+        co_return;
+    }
+
     // Create SavableObject for order if not exist
     if (m_order_db_cache.find(order.order_id) == m_order_db_cache.end())
     {
@@ -100,7 +106,6 @@ Task<void> OrderManager::update_order_in_db(Order order)
     }
 
     SavableObject<Order>& order_db = m_order_db_cache.at(order.order_id);
-    order_db = order;
 
     // Check to remove oder if needed
     // If order is canceled or rejected, remove it from [m_order_db_cache]
@@ -111,9 +116,14 @@ Task<void> OrderManager::update_order_in_db(Order order)
 
         m_order_db_cache.erase(order_id);
         m_order_list.erase(order_id);
+
+        co_return;
     }
+
+    order_db = order;
+
     // For FILLED order, we can also remove it from [m_order_db_cache] to save space, but dont remove from DB
-    else if (order_db->status == Order::Status::FILLED)
+    if (order_db->status == Order::Status::FILLED)
     {
         m_order_db_cache.erase(order_db->order_id);
     }

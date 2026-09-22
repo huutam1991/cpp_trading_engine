@@ -24,7 +24,7 @@ struct BaseTask
     BaseTask(promise_type* promise) : m_promise((BasePromiseType*)promise)
     {
         auto frame_info = DwarfStackTrace::capture();
-        m_promise->creation_frame_info = frame_info.get_frame_info();
+        m_promise->creation_frame_info = frame_info.get_frame_info(6);
     }
     BaseTask() {};
 

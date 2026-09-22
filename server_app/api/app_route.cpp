@@ -53,6 +53,11 @@ std::string CLIENT_DEPLOY_FOLDER = "vuejs_ui/dist";
 
 using namespace std;
 
+Task<int> test_future_number()
+{
+    co_return 123;
+}
+
 void add_app_route()
 {
     RouteController::instance().add_dashboard_folder(CLIENT_DEPLOY_FOLDER);
@@ -173,9 +178,16 @@ void add_app_route()
         std::string body = request->get_body();
         Json data = Json::parse(body);
 
+        Task<int> future_number = test_future_number();
+        future_number.m_promise->creation_frame_info.function;
+
         Json response;
         response["message"] = "OK";
         response["data"] = data;
+        response["future_number"] = {
+            {"function", future_number.m_promise->creation_frame_info.function},
+            {"file", future_number.m_promise->creation_frame_info.file}
+        };
 
         co_return HttpResponse(OK_200, response);
     };
