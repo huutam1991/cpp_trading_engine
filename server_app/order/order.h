@@ -61,6 +61,7 @@ public:
         enum SourceType
         {
             NOT_AVAILABLE,
+            SIMULATOR,
             WEB,
             IOS,
             ANDROID,

@@ -70,6 +70,7 @@ void SimulatorOrder::price_update(PriceUpdate data)
 Task<void> SimulatorOrder::execute_place(Order order)
 {
     order.status = Order::Status::NEW;
+    order.source.type = Order::Source::SourceType::SIMULATOR;
     auto& order_list = get_order_list();
     order_list[order.instrument].insert(std::make_pair(order.order_id, order));
 
