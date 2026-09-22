@@ -44,7 +44,7 @@ bool StrategyMeanReversionStateRun::is_same_order_info(Order& order1, Order& ord
 
 Order StrategyMeanReversionStateRun::get_limit_order(Order::Side side, double price, double quantity)
 {
-    return Order(
+    Order order(
         OrderManager::instance().generate_order_id(),
         Order::Status::NOT_AVAILABLE,
         m_instrument,
@@ -53,11 +53,16 @@ Order StrategyMeanReversionStateRun::get_limit_order(Order::Side side, double pr
         m_instrument->get_round_up_price(price),
         quantity
     );
+
+    order.source.type = Order::Source::SourceType::STRATEGY;
+    order.source.strategy_id = EventBaseID::MEAN_REVERSION_STRATEGY;
+
+    return order;
 }
 
 Order StrategyMeanReversionStateRun::get_market_order(Order::Side side, double quantity)
 {
-    return Order(
+    Order order(
         OrderManager::instance().generate_order_id(),
         Order::Status::NOT_AVAILABLE,
         m_instrument,
@@ -66,6 +71,10 @@ Order StrategyMeanReversionStateRun::get_market_order(Order::Side side, double q
         0.0,
         quantity
     );
+    order.source.type = Order::Source::SourceType::STRATEGY;
+    order.source.strategy_id = EventBaseID::MEAN_REVERSION_STRATEGY;
+
+    return order;
 }
 
 void StrategyMeanReversionStateRun::handle_price_update(PriceUpdate& price_update)
