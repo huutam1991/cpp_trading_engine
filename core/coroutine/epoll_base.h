@@ -156,11 +156,6 @@ public:
         return m_task_event_queue.size();
     }
 
-    inline size_t max_size()
-    {
-        return m_task_event_queue.max_size();
-    }
-
     virtual inline void add_run_task_event(BasePromiseType* promise)
     {
         m_task_event_queue.push(TaskInfoEvent{TaskInfoEvent::TaskType::RUN, promise});

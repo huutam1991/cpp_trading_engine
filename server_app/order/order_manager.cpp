@@ -96,6 +96,7 @@ Task<void> OrderManager::update_order_in_db(Order order)
     if (order.status == Order::Status::REJECTED)
     {
         // If order is rejected, we dont need to save it to DB
+        m_order_list.erase(order.order_id);
         co_return;
     }
 

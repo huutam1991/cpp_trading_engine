@@ -4,23 +4,14 @@
 #include <utility>
 #include <unordered_map>
 #include <tuple>
-#include <atomic>
-#include <cstdint>
-#include <x86intrin.h>
 
 #include <utils/util_macros.h>
 #include <utils/constants.h>
-#include <core_dump_diagnostics/gdb_support.h>
 #include <json/json.h>
-#include <time/measure_time.h>
-#include <utils/spin_lock.h>
 #include "mongo_db_header.h"
 
 using mongo_find = bsoncxx::stdx::optional<bsoncxx::document::value>;
 using mongo_view = bsoncxx::document::view;
-
-// Diagnostic sequence: 1, 2, 3, ... for replace_one calls.
-inline std::atomic<uint64_t> g_mongo_replace_seq{0};
 
 class MongoQuery
 {
@@ -71,7 +62,6 @@ class MongoDB
 private:
     mongocxx::instance m_instance{};
     mongocxx::pool* m_pool = nullptr;
-    SpinLock m_spin_lock;
 
     std::string m_db;
     std::string m_collection;
@@ -94,81 +84,15 @@ size_t MongoQuery::count_documents(const std::string& find_key, const T& find_va
     return (size_t)collection.count_documents(filter);
 }
 
-// template<class T>
-// bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const Json& data)
-// {
-//     GET_COLLECTION(m_db, m_collection, collection);
-//     bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
-//     bsoncxx::stdx::optional<mongocxx::result::replace_one> result =
-//         collection.replace_one(document{} << find_key << find_value << finalize, doc_value.view());
-
-//     return result ? true : false;
-// }
-
 template<class T>
-GDB_DIAGNOSTIC_FUNCTION
 bool MongoQuery::replace_one(const std::string& find_key, const T& find_value, const Json& data)
 {
-    MeasureTime measure_time("MongoQuery::replace_one");
     GET_COLLECTION(m_db, m_collection, collection);
+    bsoncxx::document::value doc_value = bsoncxx::from_json(data.get_string_value());
+    bsoncxx::stdx::optional<mongocxx::result::replace_one> result =
+        collection.replace_one(document{} << find_key << find_value << finalize, doc_value.view());
 
-    std::string raw_json = data.get_string_value();
-
-    const char* raw_json_ptr = raw_json.c_str();
-    const size_t raw_json_size = raw_json.size();
-
-    const uint64_t mongo_seq =
-        g_mongo_replace_seq.fetch_add(1, std::memory_order_relaxed) + 1;
-
-    _mm_lfence();
-
-    // This is the ONE cross-thread diagnostic value for replace_one().
-    //
-    // While replace_one() is inside the blocking MongoDB call, the shared value
-    // contains its start TSC. As soon as replace_one() returns (or throws), the
-    // value is reset to zero. Therefore an MPSC producer that reaches REAL FULL
-    // can tell whether replace_one() is currently active and, if so, calculate
-    // exactly how many TSC ticks it has been active.
-    uint64_t mongo_replace_one_start_tsc = __rdtsc();
-
-    KEEP_FOR_GDB(raw_json);
-    KEEP_FOR_GDB(raw_json_ptr);
-    KEEP_FOR_GDB(raw_json_size);
-    KEEP_FOR_GDB(mongo_seq);
-    KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mongo_replace_one_start_tsc);
-
-    bsoncxx::document::value doc_value =
-        bsoncxx::from_json(raw_json);
-
-    try
-    {
-        auto result = collection.replace_one(
-            document{} << find_key << find_value << finalize,
-            doc_value.view());
-
-        // replace_one() is no longer active. Clear the process-wide shared
-        // timestamp before any following task can be mistaken for this Mongo
-        // operation.
-        mongo_replace_one_start_tsc = 0;
-        KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mongo_replace_one_start_tsc);
-
-        // Keep the ordinary diagnostic payload alive for unrelated crashes that
-        // may still occur after the Mongo call returns.
-        KEEP_FOR_GDB(raw_json);
-        KEEP_FOR_GDB(raw_json_ptr);
-        KEEP_FOR_GDB(raw_json_size);
-        KEEP_FOR_GDB(mongo_seq);
-
-        return result ? true : false;
-    }
-    catch (...)
-    {
-        // Never leave a stale non-zero "Mongo active" timestamp behind if the
-        // driver exits through an exception.
-        mongo_replace_one_start_tsc = 0;
-        KEEP_FOR_GDB_SHARE_BETWEEN_THREADS(mongo_replace_one_start_tsc);
-        throw;
-    }
+    return result ? true : false;
 }
 
 template<class T, class U>
