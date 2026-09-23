@@ -75,6 +75,11 @@ public:
     Task<void> apply_config(StrategyConfig new_config)
     {
         m_config = new_config;
+
+        // Update OrderSimulator config
+        StrategyConfigBase* base_config_ptr = &new_config;
+        SimulatorOrder::set_active(base_config_ptr->is_running);
+
         on_config_change(std::move(new_config));
 
         co_return;

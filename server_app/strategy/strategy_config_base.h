@@ -2,11 +2,12 @@
 
 #include <json/json.h>
 #include <account/account.h>
+#include <order/simulator_order.h>
 
 struct StrategyConfigBase
 {
     std::shared_ptr<AccountBase> account = AccountManager::get_account_by_key("BINANCE_REAL_1");
-    bool is_real_trading = true;
+    bool is_real_trading = SimulatorOrder::get_active() ? false : true;
     bool is_running = false;
 
     Json to_json() const
