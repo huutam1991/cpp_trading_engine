@@ -839,52 +839,56 @@ onBeforeUnmount(() => {
             >
               <p>{{ selectedStrategy }}</p>
 
-              <span
-                class="running-state"
-                :class="strategyIsRunning ? 'running' : 'stopping'"
-              >
-                <span class="running-state-dot" />
-                {{ strategyIsRunning ? 'is Running' : 'is Stopping' }}
-              </span>
-
-              <button
-                class="strategy-control-button"
-                :class="strategyIsRunning ? 'stop-button' : 'start-button'"
-                :disabled="controlLoading"
-                @click="toggleStrategyRunning"
-              >
-                {{ controlLoading ? 'Processing...' : strategyIsRunning ? 'Stop' : 'Start' }}
-              </button>
-
-              <label
-                class="trading-mode-control"
-                :class="{
-                  'real-trading': strategyIsRealTrading,
-                  'simulator-trading': !strategyIsRealTrading,
-                  disabled: strategyIsRunning || controlLoading,
-                }"
-                :title="strategyIsRunning ? 'Stop the strategy before changing trading mode' : 'Switch between simulator and real trading'"
-              >
-                <input
-                  class="trading-mode-switch-input"
-                  type="checkbox"
-                  :checked="strategyIsRealTrading"
-                  :disabled="strategyIsRunning || controlLoading"
-                  aria-label="Toggle real trading"
-                  @change="toggleRealTrading"
+              <div class="trading-mode-cluster">
+                <label
+                  class="trading-mode-control"
+                  :class="{
+                    'real-trading': strategyIsRealTrading,
+                    'simulator-trading': !strategyIsRealTrading,
+                    disabled: strategyIsRunning || controlLoading,
+                  }"
+                  :title="strategyIsRunning ? 'Stop the strategy before changing trading mode' : 'Switch between simulator and real trading'"
                 >
+                  <input
+                    class="trading-mode-switch-input"
+                    type="checkbox"
+                    :checked="strategyIsRealTrading"
+                    :disabled="strategyIsRunning || controlLoading"
+                    aria-label="Toggle real trading"
+                    @change="toggleRealTrading"
+                  >
 
+                  <span
+                    class="trading-mode-switch"
+                    aria-hidden="true"
+                  >
+                    <span class="trading-mode-switch-thumb" />
+                  </span>
+
+                  <span class="trading-mode-text">
+                    {{ strategyIsRealTrading ? 'Real Trading' : 'Simulator' }}
+                  </span>
+                </label>
+              </div>
+
+              <div class="strategy-run-cluster">
                 <span
-                  class="trading-mode-switch"
-                  aria-hidden="true"
+                  class="running-state"
+                  :class="strategyIsRunning ? 'running' : 'stopping'"
                 >
-                  <span class="trading-mode-switch-thumb" />
+                  <span class="running-state-dot" />
+                  {{ strategyIsRunning ? 'is Running' : 'is Stopping' }}
                 </span>
 
-                <span class="trading-mode-text">
-                  {{ strategyIsRealTrading ? 'Real Trading' : 'Simulator' }}
-                </span>
-              </label>
+                <button
+                  class="strategy-control-button"
+                  :class="strategyIsRunning ? 'stop-button' : 'start-button'"
+                  :disabled="controlLoading"
+                  @click="toggleStrategyRunning"
+                >
+                  {{ controlLoading ? 'Processing...' : strategyIsRunning ? 'Stop' : 'Start' }}
+                </button>
+              </div>
             </div>
 
             <p v-else-if="selectedStrategy">
@@ -1495,12 +1499,28 @@ onBeforeUnmount(() => {
   background: currentColor;
 }
 
+.trading-mode-cluster,
+.strategy-run-cluster {
+  display: inline-flex;
+  align-items: center;
+}
+
+.trading-mode-cluster {
+  margin-left: 2px;
+}
+
+.strategy-run-cluster {
+  gap: 10px;
+  margin-left: 18px;
+  padding-left: 18px;
+  border-left: 1px solid #374151;
+}
+
 .trading-mode-control {
   min-height: 30px;
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin-left: 10px;
   cursor: pointer;
   user-select: none;
 }
