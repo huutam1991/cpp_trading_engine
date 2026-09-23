@@ -2,12 +2,13 @@
 
 #include <string>
 
-#include <account/account.h>
+#include <json/json.h>
+#include <strategy/strategy_config_base.h>
+
 #include "spread_capture_config.h"
 
 struct StrategyMeanReversionConfig : public StrategyConfigBase
 {
-    std::shared_ptr<AccountBase> account = AccountManager::get_account_by_key("BINANCE_REAL_1");
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     double volume = 0.01; // in BTC
     SpreadCaptureConfig spread_capture_config = {2.0, 1.0, 0.8, 2.0};
