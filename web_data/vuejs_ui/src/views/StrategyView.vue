@@ -66,7 +66,7 @@ type AccountListResponse = {
   data: AccountItem[]
 }
 
-const SPECIAL_ROOT_KEYS = new Set(['is_running', 'symbol', 'account'])
+const SPECIAL_ROOT_KEYS = new Set(['is_running', 'is_real_trading', 'symbol', 'account'])
 
 type ConfigRow = {
   key: string
@@ -110,6 +110,8 @@ let currentInfoRequestInFlight = false
 const hasStrategies = computed(() => strategies.value.length > 0)
 
 const strategyIsRunning = computed(() => strategyConfig.value?.is_running === true)
+
+const strategyIsRealTrading = computed(() => strategyConfig.value?.is_real_trading === true)
 
 const strategySymbol = computed(() => {
   const value = strategyConfig.value?.symbol
@@ -168,7 +170,7 @@ const isDirty = computed(() => {
 
 const visibleValueCount = computed(() => {
   const normalValueCount = configRows.value.filter((row) => row.kind === 'value').length
-  const specialEditableCount = strategyConfig.value ? 2 : 0
+  const specialEditableCount = strategyConfig.value ? 3 : 0
   return normalValueCount + specialEditableCount
 })
 
@@ -675,6 +677,14 @@ function updateSpecialStringValue(key: 'symbol' | 'account', event: Event) {
   strategyConfig.value[key] = target.value
 }
 
+function toggleRealTrading() {
+  if (!strategyConfig.value || strategyIsRunning.value || controlLoading.value) {
+    return
+  }
+
+  strategyConfig.value.is_real_trading = !strategyIsRealTrading.value
+}
+
 async function toggleStrategyRunning() {
   if (!selectedStrategy.value || !strategyConfig.value || controlLoading.value) {
     return
@@ -836,6 +846,18 @@ onBeforeUnmount(() => {
                 <span class="running-state-dot" />
                 {{ strategyIsRunning ? 'is Running' : 'is Stopping' }}
               </span>
+
+              <button
+                type="button"
+                class="trading-mode-toggle"
+                :class="strategyIsRealTrading ? 'real-trading' : 'simulator-trading'"
+                :disabled="strategyIsRunning || controlLoading"
+                :title="strategyIsRunning ? 'Stop the strategy before changing trading mode' : 'Switch between simulator and real trading'"
+                @click="toggleRealTrading"
+              >
+                <span class="trading-mode-toggle-dot" />
+                {{ strategyIsRealTrading ? 'Real Trading' : 'Simulator' }}
+              </button>
 
               <button
                 class="strategy-control-button"
@@ -1453,6 +1475,44 @@ onBeforeUnmount(() => {
   height: 8px;
   border-radius: 999px;
   background: currentColor;
+}
+
+.trading-mode-toggle {
+  min-width: 108px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.trading-mode-toggle.real-trading {
+  color: #fecaca;
+  background: #4a1f24;
+  border: 1px solid #ef4444;
+}
+
+.trading-mode-toggle.simulator-trading {
+  color: #bfdbfe;
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+}
+
+.trading-mode-toggle-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.trading-mode-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .strategy-control-button {
