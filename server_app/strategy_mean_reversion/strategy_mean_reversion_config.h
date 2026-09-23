@@ -5,17 +5,16 @@
 #include <account/account.h>
 #include "spread_capture_config.h"
 
-struct StrategyMeanReversionConfig
+struct StrategyMeanReversionConfig : public StrategyConfigBase
 {
-    // Default account is BINANCE_REAL_1
     std::shared_ptr<AccountBase> account = AccountManager::get_account_by_key("BINANCE_REAL_1");
     std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
-    bool is_running = false;
     double volume = 0.01; // in BTC
     SpreadCaptureConfig spread_capture_config = {2.0, 1.0, 0.8, 2.0};
 
     Json to_json() const
     {
+        Json json = StrategyConfigBase::to_json();
         Json spread_capture_config_json = {
             {"move_distance", spread_capture_config.move_distance},
             {"entry_distance", spread_capture_config.entry_distance},
@@ -23,25 +22,23 @@ struct StrategyMeanReversionConfig
             {"stop_loss", spread_capture_config.stop_loss}
         };
 
-        return {
-            {"account", account != nullptr ? account->get_key_name() : ""},
-            {"symbol", symbol},
-            {"is_running", is_running},
-            {"volume", volume},
-            {"spread_capture_config", spread_capture_config_json}
-        };
+        json["symbol"] = symbol;
+        json["volume"] = volume;
+        json["spread_capture_config"] = spread_capture_config_json;
+
+        return json;
     }
 
     static StrategyMeanReversionConfig from_json(Json& data)
     {
         StrategyMeanReversionConfig res;
+        StrategyConfigBase* base_config_ptr_of_res = &res;
+        *base_config_ptr_of_res = StrategyConfigBase::from_json(data);
 
         // Only load from [data], if it is valid
         if (data.has_field("symbol"))
         {
-            res.account = AccountManager::get_account_by_key((std::string)data["account"]);
             res.symbol = (std::string)data["symbol"];
-            res.is_running = (bool)data["is_running"];
             res.volume = (double)data["volume"];
 
             if (data.has_field("spread_capture_config"))

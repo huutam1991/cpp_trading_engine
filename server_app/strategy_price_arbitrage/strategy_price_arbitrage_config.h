@@ -1,9 +1,11 @@
 #pragma once
 
 #include <string>
-#include <json/json.h>
 
-struct StrategyPriceArbitrageConfig
+#include <json/json.h>
+#include <strategy/strategy_config_base.h>
+
+struct StrategyPriceArbitrageConfig : public StrategyConfigBase
 {
     std::string symbol_1 = "BTC-USDT";
     std::string symbol_2 = "ETH-BTC";
@@ -13,26 +15,27 @@ struct StrategyPriceArbitrageConfig
     double price_delta = 5.0;
     double too_low_price_delta = 5.0;
     double too_high_price_delta = 15.0;
-    bool is_running = false;
 
     Json to_json() const
     {
-        return {
-            {"symbol_1", symbol_1},
-            {"symbol_2", symbol_2},
-            {"symbol_3", symbol_3},
-            {"buy_volumn", buy_volumn},
-            {"buy_at_lower_price", buy_at_lower_price},
-            {"price_delta", price_delta},
-            {"too_low_price_delta", too_low_price_delta},
-            {"too_high_price_delta", too_high_price_delta},
-            {"is_running", is_running},
-        };
+        Json json = StrategyConfigBase::to_json();
+        json["symbol_1"] = symbol_1;
+        json["symbol_2"] = symbol_2;
+        json["symbol_3"] = symbol_3;
+        json["buy_volumn"] = buy_volumn;
+        json["buy_at_lower_price"] = buy_at_lower_price;
+        json["price_delta"] = price_delta;
+        json["too_low_price_delta"] = too_low_price_delta;
+        json["too_high_price_delta"] = too_high_price_delta;
+
+        return json;
     }
 
     static StrategyPriceArbitrageConfig from_json(Json& data)
     {
         StrategyPriceArbitrageConfig res;
+        StrategyConfigBase* base_config_ptr_of_res = &res;
+        *base_config_ptr_of_res = StrategyConfigBase::from_json(data);
 
         // Only load from [data], if it is valid
         if (data.has_field("symbol_1") && data.has_field("symbol_2") && data.has_field("symbol_3"))
@@ -45,7 +48,6 @@ struct StrategyPriceArbitrageConfig
             res.price_delta = (double)data["price_delta"];
             res.too_low_price_delta = (double)data["too_low_price_delta"];
             res.too_high_price_delta = (double)data["too_high_price_delta"];
-            res.is_running = (bool)data["is_running"];
         }
 
         return res;
