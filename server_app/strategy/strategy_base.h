@@ -78,7 +78,7 @@ public:
 
         // Update OrderSimulator config
         StrategyConfigBase* base_config_ptr = &new_config;
-        SimulatorOrder::set_active(base_config_ptr->is_running);
+        SimulatorOrder::set_active(base_config_ptr->is_real_trading == false);
 
         on_config_change(std::move(new_config));
 
