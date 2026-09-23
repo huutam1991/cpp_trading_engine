@@ -848,18 +848,6 @@ onBeforeUnmount(() => {
               </span>
 
               <button
-                type="button"
-                class="trading-mode-toggle"
-                :class="strategyIsRealTrading ? 'real-trading' : 'simulator-trading'"
-                :disabled="strategyIsRunning || controlLoading"
-                :title="strategyIsRunning ? 'Stop the strategy before changing trading mode' : 'Switch between simulator and real trading'"
-                @click="toggleRealTrading"
-              >
-                <span class="trading-mode-toggle-dot" />
-                {{ strategyIsRealTrading ? 'Real Trading' : 'Simulator' }}
-              </button>
-
-              <button
                 class="strategy-control-button"
                 :class="strategyIsRunning ? 'stop-button' : 'start-button'"
                 :disabled="controlLoading"
@@ -867,6 +855,36 @@ onBeforeUnmount(() => {
               >
                 {{ controlLoading ? 'Processing...' : strategyIsRunning ? 'Stop' : 'Start' }}
               </button>
+
+              <label
+                class="trading-mode-control"
+                :class="{
+                  'real-trading': strategyIsRealTrading,
+                  'simulator-trading': !strategyIsRealTrading,
+                  disabled: strategyIsRunning || controlLoading,
+                }"
+                :title="strategyIsRunning ? 'Stop the strategy before changing trading mode' : 'Switch between simulator and real trading'"
+              >
+                <input
+                  class="trading-mode-switch-input"
+                  type="checkbox"
+                  :checked="strategyIsRealTrading"
+                  :disabled="strategyIsRunning || controlLoading"
+                  aria-label="Toggle real trading"
+                  @change="toggleRealTrading"
+                >
+
+                <span
+                  class="trading-mode-switch"
+                  aria-hidden="true"
+                >
+                  <span class="trading-mode-switch-thumb" />
+                </span>
+
+                <span class="trading-mode-text">
+                  {{ strategyIsRealTrading ? 'Real Trading' : 'Simulator' }}
+                </span>
+              </label>
             </div>
 
             <p v-else-if="selectedStrategy">
@@ -1477,42 +1495,95 @@ onBeforeUnmount(() => {
   background: currentColor;
 }
 
-.trading-mode-toggle {
-  min-width: 108px;
-  height: 30px;
+.trading-mode-control {
+  min-height: 30px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 0 12px;
-  border-radius: 7px;
+  gap: 9px;
+  margin-left: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.trading-mode-switch-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.trading-mode-switch {
+  position: relative;
+  width: 42px;
+  height: 22px;
+  flex: 0 0 42px;
+  border: 1px solid;
+  border-radius: 999px;
+  transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.trading-mode-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #f8fafc;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 140ms ease;
+}
+
+.trading-mode-control.simulator-trading .trading-mode-switch {
+  background: #1e3a5f;
+  border-color: #3b82f6;
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.12);
+}
+
+.trading-mode-control.simulator-trading .trading-mode-text {
+  color: #93c5fd;
+}
+
+.trading-mode-control.real-trading .trading-mode-switch {
+  background: #854d0e;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1);
+}
+
+.trading-mode-control.real-trading .trading-mode-switch-thumb {
+  transform: translateX(20px);
+}
+
+.trading-mode-control.real-trading .trading-mode-text {
+  color: #fbbf24;
+}
+
+.trading-mode-text {
+  min-width: 72px;
   font-size: 12px;
   font-weight: 900;
-  cursor: pointer;
+  line-height: 1;
+  transition: color 140ms ease;
 }
 
-.trading-mode-toggle.real-trading {
-  color: #fecaca;
-  background: #4a1f24;
-  border: 1px solid #ef4444;
+.trading-mode-control:not(.disabled):hover .trading-mode-switch {
+  filter: brightness(1.12);
 }
 
-.trading-mode-toggle.simulator-trading {
-  color: #bfdbfe;
-  background: #1e3a5f;
-  border: 1px solid #3b82f6;
+.trading-mode-switch-input:focus-visible + .trading-mode-switch {
+  outline: 2px solid #cbd5e1;
+  outline-offset: 2px;
 }
 
-.trading-mode-toggle-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.trading-mode-toggle:disabled {
+.trading-mode-control.disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
 .strategy-control-button {
