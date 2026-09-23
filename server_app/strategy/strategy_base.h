@@ -5,9 +5,11 @@
 #include <app_constants.h>
 #include <strategy/strategy_abstract.h>
 #include <strategy/strategy_state_base.h>
+#include <strategy/strategy_config_base.h>
 #include <enum_reflect/enum_reflect.h>
 
 template<class StrategyConfig, size_t eventBaseID>
+requires std::is_base_of_v<StrategyConfigBase, StrategyConfig>
 class StrategyBase : public StrategyAbstract
 {
 protected:
