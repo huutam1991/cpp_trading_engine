@@ -2086,29 +2086,38 @@ onBeforeUnmount(() => {
 }
 
 .special-array-item {
-  /* Same visual row height as .value-row (stop_loss, take_profit, ...). */
-  height: 52px;
-  min-height: 52px;
-  max-height: 52px;
+  /*
+   * A special array entry is deliberately 62px tall, matching the minimum
+   * height of .special-config-row. This avoids the old 52px child sitting
+   * inside a 62px parent and leaving an unexplained empty strip underneath.
+   *
+   * Vertical math for non-last rows is exact:
+   *   4px top + 12px label + 6px gap + 34px control + 5px bottom + 1px border
+   *   = 62px
+   * so there is no distributable/free vertical space inside the row.
+   */
+  height: 62px;
+  min-height: 62px;
+  max-height: 62px;
   box-sizing: border-box;
   display: grid;
   grid-template-rows: 12px 34px;
-  align-content: center;
-  /* Keep the compact 52px row, but leave a small visual gap between
-   * the Instrument/Account label and its value control. */
-  row-gap: 3px;
-  padding: 1px 16px;
+  row-gap: 6px;
+  padding: 4px 16px 5px;
   border-bottom: 1px solid #374151;
 }
 
 .special-array-item:last-of-type {
+  /* Replace the removed 1px border with 1px bottom padding so the last row
+   * keeps exactly the same internal geometry as the rows above it. */
+  padding-bottom: 6px;
   border-bottom: 0;
 }
 
 .special-array-item-label {
   display: block;
   margin: 0;
-  padding: 0;
+  padding-top: 1px;
   color: #9ca3af;
   font-size: 11px;
   font-weight: 800;
@@ -2415,11 +2424,11 @@ onBeforeUnmount(() => {
 
   .special-array-item {
     height: auto;
-    min-height: 52px;
+    min-height: 62px;
     max-height: none;
     grid-template-rows: 12px auto;
-    row-gap: 2px;
-    padding: 4px 32px;
+    row-gap: 6px;
+    padding: 5px 32px 6px;
   }
 
   .special-array-item-editor {
