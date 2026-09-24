@@ -66,7 +66,7 @@ type AccountListResponse = {
   data: AccountItem[]
 }
 
-const SPECIAL_ROOT_KEYS = new Set(['is_running', 'is_real_trading', 'symbol', 'account'])
+const SPECIAL_ROOT_KEYS = new Set(['is_running', 'is_real_trading', 'instruments', 'accounts'])
 
 type ConfigRow = {
   key: string
@@ -113,22 +113,30 @@ const strategyIsRunning = computed(() => strategyConfig.value?.is_running === tr
 
 const strategyIsRealTrading = computed(() => strategyConfig.value?.is_real_trading === true)
 
-const strategySymbol = computed(() => {
-  const value = strategyConfig.value?.symbol
-  return typeof value === 'string' ? value : ''
+const strategyInstruments = computed<InstrumentItem[]>(() => {
+  const value = strategyConfig.value?.instruments
+
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map((item) => toInstrumentItem(item))
+    .filter((item): item is InstrumentItem => item !== null)
 })
 
-const strategyAccount = computed(() => {
-  const value = strategyConfig.value?.account
-  return typeof value === 'string' ? value : ''
+const strategyAccounts = computed<string[]>(() => {
+  const value = strategyConfig.value?.accounts
+
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.filter((item): item is string => typeof item === 'string')
 })
 
 const activeAccounts = computed(() => accounts.value.filter((account) => account.is_active))
 const inactiveAccounts = computed(() => accounts.value.filter((account) => !account.is_active))
-
-const selectedAccountInfo = computed(() =>
-  accounts.value.find((account) => account.key === strategyAccount.value) ?? null,
-)
 
 const configRows = computed<ConfigRow[]>(() => {
   if (!strategyConfig.value) {
@@ -170,7 +178,14 @@ const isDirty = computed(() => {
 
 const visibleValueCount = computed(() => {
   const normalValueCount = configRows.value.filter((row) => row.kind === 'value').length
-  const specialEditableCount = strategyConfig.value ? 3 : 0
+
+  if (!strategyConfig.value) {
+    return normalValueCount
+  }
+
+  // is_real_trading is edited in the header. Each instrument/account array
+  // element is represented by its own selector in the special config section.
+  const specialEditableCount = 1 + strategyInstruments.value.length + strategyAccounts.value.length
   return normalValueCount + specialEditableCount
 })
 
@@ -221,6 +236,35 @@ function cloneJson<T>(value: T): T {
 
 function isPlainObject(value: JsonValue): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function toInstrumentItem(value: JsonValue): InstrumentItem | null {
+  if (!isPlainObject(value)) {
+    return null
+  }
+
+  if (typeof value.symbol !== 'string' || typeof value.exchange_id !== 'string') {
+    return null
+  }
+
+  return value as unknown as InstrumentItem
+}
+
+function instrumentOptionValue(instrument: InstrumentItem): string {
+  return JSON.stringify([
+    instrument.exchange_id,
+    instrument.symbol,
+    instrument.exchange_symbol,
+    instrument.instrument_type,
+  ])
+}
+
+function instrumentDisplayName(instrument: InstrumentItem): string {
+  return `${instrument.symbol} | ${instrument.exchange_id}`
+}
+
+function accountInfo(accountKey: string): AccountItem | null {
+  return accounts.value.find((account) => account.key === accountKey) ?? null
 }
 
 function flattenJson(root: JsonObject, excludedRootKeys?: Set<string>): ConfigRow[] {
@@ -667,14 +711,39 @@ function updateBooleanValue(row: ConfigRow, event: Event) {
   setValueAtPath(row.path, target.value === 'true')
 }
 
-function updateSpecialStringValue(key: 'symbol' | 'account', event: Event) {
+function updateInstrumentAtIndex(index: number, event: Event) {
   const target = event.target as HTMLSelectElement
 
-  if (!strategyConfig.value) {
+  if (!strategyConfig.value || strategyIsRunning.value) {
     return
   }
 
-  strategyConfig.value[key] = target.value
+  const instrument = subscribedInstruments.value.find(
+    (item) => instrumentOptionValue(item) === target.value,
+  )
+  const configuredInstruments = strategyConfig.value.instruments
+
+  if (!instrument || !Array.isArray(configuredInstruments) || index >= configuredInstruments.length) {
+    return
+  }
+
+  configuredInstruments[index] = cloneJson(instrument) as unknown as JsonObject
+}
+
+function updateAccountAtIndex(index: number, event: Event) {
+  const target = event.target as HTMLSelectElement
+
+  if (!strategyConfig.value || strategyIsRunning.value) {
+    return
+  }
+
+  const configuredAccounts = strategyConfig.value.accounts
+
+  if (!Array.isArray(configuredAccounts) || index >= configuredAccounts.length) {
+    return
+  }
+
+  configuredAccounts[index] = target.value
 }
 
 function toggleRealTrading() {
@@ -1100,41 +1169,64 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="special-config-section">
-            <div class="special-config-row">
+            <div class="special-config-row special-array-row">
               <div class="special-config-label">
-                <span class="special-key">symbol</span>
-                <span class="special-description">Subscribed instrument</span>
+                <div class="special-key-line">
+                  <span class="special-key">instruments</span>
+                  <span class="special-array-badge">array · {{ strategyInstruments.length }}</span>
+                </div>
+                <span class="special-description">Subscribed instruments used by this strategy</span>
               </div>
 
-              <div class="special-config-control">
-                <select
-                  class="config-input config-select special-select"
-                  :value="strategySymbol"
-                  :disabled="instrumentsLoading"
-                  @change="updateSpecialStringValue('symbol', $event)"
+              <div class="special-config-control special-array-control">
+                <div
+                  v-if="strategyInstruments.length === 0"
+                  class="special-array-empty"
                 >
-                  <option
-                    v-if="strategySymbol && !subscribedInstruments.some((item) => item.symbol === strategySymbol)"
-                    :value="strategySymbol"
-                  >
-                    {{ strategySymbol }}
-                  </option>
-                  <option
-                    v-if="instrumentsLoading"
-                    disabled
-                  >
-                    Loading instruments...
-                  </option>
-                  <option
-                    v-for="instrument in subscribedInstruments"
-                    :key="`${instrument.exchange_id}:${instrument.symbol}`"
-                    :value="instrument.symbol"
-                  >
-                    {{ instrument.symbol }}
-                  </option>
-                </select>
+                  No instruments configured.
+                </div>
 
-                <span class="value-type">select</span>
+                <div
+                  v-for="(instrument, index) in strategyInstruments"
+                  :key="`instrument-${index}`"
+                  class="special-array-item"
+                >
+                  <span class="special-array-item-label">Instrument {{ index + 1 }}</span>
+
+                  <div class="special-array-item-editor">
+                    <select
+                      class="config-input config-select special-select"
+                      :value="instrumentOptionValue(instrument)"
+                      :disabled="instrumentsLoading"
+                      @change="updateInstrumentAtIndex(index, $event)"
+                    >
+                      <option
+                        v-if="!subscribedInstruments.some((item) => instrumentOptionValue(item) === instrumentOptionValue(instrument))"
+                        :value="instrumentOptionValue(instrument)"
+                      >
+                        {{ instrumentDisplayName(instrument) }}
+                      </option>
+
+                      <option
+                        v-if="instrumentsLoading"
+                        disabled
+                      >
+                        Loading instruments...
+                      </option>
+
+                      <option
+                        v-for="availableInstrument in subscribedInstruments"
+                        :key="instrumentOptionValue(availableInstrument)"
+                        :value="instrumentOptionValue(availableInstrument)"
+                      >
+                        {{ instrumentDisplayName(availableInstrument) }}
+                      </option>
+                    </select>
+
+                    <span class="value-type">select</span>
+                  </div>
+                </div>
+
                 <span
                   v-if="instrumentsErrorMessage"
                   class="inline-error"
@@ -1144,71 +1236,91 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <div class="special-config-row">
+            <div class="special-config-row special-array-row">
               <div class="special-config-label">
-                <span class="special-key">account</span>
-                <span class="special-description">Trading account</span>
+                <div class="special-key-line">
+                  <span class="special-key">accounts</span>
+                  <span class="special-array-badge">array · {{ strategyAccounts.length }}</span>
+                </div>
+                <span class="special-description">Trading accounts used by this strategy</span>
               </div>
 
-              <div class="special-config-control">
-                <select
-                  class="config-input config-select special-select"
-                  :class="{ 'inactive-selection': selectedAccountInfo && !selectedAccountInfo.is_active }"
-                  :value="strategyAccount"
-                  :disabled="accountsLoading"
-                  @change="updateSpecialStringValue('account', $event)"
+              <div class="special-config-control special-array-control">
+                <div
+                  v-if="strategyAccounts.length === 0"
+                  class="special-array-empty"
                 >
-                  <option
-                    v-if="strategyAccount && !accounts.some((item) => item.key === strategyAccount)"
-                    :value="strategyAccount"
-                  >
-                    {{ strategyAccount }}
-                  </option>
+                  No accounts configured.
+                </div>
 
-                  <option
-                    v-if="accountsLoading"
-                    disabled
-                  >
-                    Loading accounts...
-                  </option>
-
-                  <optgroup
-                    v-if="activeAccounts.length"
-                    label="Active accounts"
-                  >
-                    <option
-                      v-for="account in activeAccounts"
-                      :key="account.key"
-                      :value="account.key"
-                    >
-                      {{ account.key }} · Active
-                    </option>
-                  </optgroup>
-
-                  <optgroup
-                    v-if="inactiveAccounts.length"
-                    label="Inactive accounts — unavailable"
-                  >
-                    <option
-                      v-for="account in inactiveAccounts"
-                      :key="account.key"
-                      :value="account.key"
-                      disabled
-                    >
-                      {{ account.key }} · Inactive
-                    </option>
-                  </optgroup>
-                </select>
-
-                <span
-                  v-if="selectedAccountInfo"
-                  class="account-state-badge"
-                  :class="selectedAccountInfo.is_active ? 'active' : 'inactive'"
+                <div
+                  v-for="(accountKey, index) in strategyAccounts"
+                  :key="`account-${index}`"
+                  class="special-array-item"
                 >
-                  {{ selectedAccountInfo.is_active ? 'Active' : 'Inactive' }}
-                </span>
+                  <span class="special-array-item-label">Account {{ index + 1 }}</span>
 
-                <span class="value-type">select</span>
+                  <div class="special-array-item-editor">
+                    <select
+                      class="config-input config-select special-select"
+                      :class="{ 'inactive-selection': accountInfo(accountKey) && !accountInfo(accountKey)?.is_active }"
+                      :value="accountKey"
+                      :disabled="accountsLoading"
+                      @change="updateAccountAtIndex(index, $event)"
+                    >
+                      <option
+                        v-if="accountKey && !accounts.some((item) => item.key === accountKey)"
+                        :value="accountKey"
+                      >
+                        {{ accountKey }}
+                      </option>
+
+                      <option
+                        v-if="accountsLoading"
+                        disabled
+                      >
+                        Loading accounts...
+                      </option>
+
+                      <optgroup
+                        v-if="activeAccounts.length"
+                        label="Active accounts"
+                      >
+                        <option
+                          v-for="account in activeAccounts"
+                          :key="account.key"
+                          :value="account.key"
+                        >
+                          {{ account.key }} · Active
+                        </option>
+                      </optgroup>
+
+                      <optgroup
+                        v-if="inactiveAccounts.length"
+                        label="Inactive accounts — unavailable"
+                      >
+                        <option
+                          v-for="account in inactiveAccounts"
+                          :key="account.key"
+                          :value="account.key"
+                          disabled
+                        >
+                          {{ account.key }} · Inactive
+                        </option>
+                      </optgroup>
+                    </select>
+
+                    <span
+                      v-if="accountInfo(accountKey)"
+                      class="account-state-badge"
+                      :class="accountInfo(accountKey)?.is_active ? 'active' : 'inactive'"
+                    >
+                      {{ accountInfo(accountKey)?.is_active ? 'Active' : 'Inactive' }}
+                    </span>
+
+                    <span class="value-type">select</span>
+                  </div>
+                </div>
 
                 <span
                   v-if="accountsErrorMessage"
@@ -1924,6 +2036,27 @@ onBeforeUnmount(() => {
   font-weight: 700;
 }
 
+.special-key-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.special-array-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  color: #9ca3af;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .special-config-control {
   display: flex;
   align-items: center;
@@ -1935,6 +2068,57 @@ onBeforeUnmount(() => {
 
 .special-select {
   min-width: 280px;
+}
+
+.special-array-row {
+  align-items: stretch;
+}
+
+.special-array-control {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 9px;
+}
+
+.special-array-item {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.special-array-item + .special-array-item {
+  padding-top: 9px;
+  border-top: 1px solid #374151;
+}
+
+.special-array-item-label {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.special-array-item-editor {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.special-array-item-editor .special-select {
+  flex: 1 1 320px;
+}
+
+.special-array-empty {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .account-state-badge {
@@ -2194,6 +2378,15 @@ onBeforeUnmount(() => {
   .special-select {
     width: 100%;
     min-width: 0;
+  }
+
+  .special-array-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .special-array-item-editor {
+    width: 100%;
   }
 
   .config-value-cell {
