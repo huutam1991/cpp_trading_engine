@@ -16,7 +16,7 @@ struct StrategyConfigBase
 
     // Instruments list
     std::vector<const Instrument*> instruments = {
-        Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL") // Default is PERPETUAL
+        Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL") // Default is BTC-USDC-PERPETUAL
     };
 
     bool is_real_trading = SimulatorOrder::get_active() ? false : true;
