@@ -9,29 +9,26 @@
 
 struct StrategyConfigBase
 {
-    // Accounts list
-    std::vector<std::shared_ptr<AccountBase>> accounts = {
-        AccountManager::get_account_by_key("BINANCE_REAL_1") // Default is BINANCE_REAL_1
-    };
-
-    // Instruments list
-    std::vector<const Instrument*> instruments = {
-        Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL") // Default is BTC-USDC-PERPETUAL
-    };
-
+    std::vector<std::shared_ptr<AccountBase>> accounts;
+    std::vector<const Instrument*> instruments;
     bool is_real_trading = SimulatorOrder::get_active() ? false : true;
     bool is_running = false;
 
     void resize(size_t num_accounts, size_t num_instruments)
     {
+        accounts.resize(num_accounts);
+        instruments.resize(num_instruments);
+
         for (size_t i = 0; i < num_accounts; i++)
         {
-            accounts.push_back(AccountManager::get_account_by_key("BINANCE_REAL_1"));
+            // Default is BINANCE_REAL_1
+            accounts[i] = AccountManager::get_account_by_key("BINANCE_REAL_1");
         }
 
         for (size_t i = 0; i < num_instruments; i++)
         {
-            instruments.push_back(Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL"));
+            // Default is BTC-USDC-PERPETUAL
+            instruments[i] = Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL");
         }
     }
 
