@@ -109,6 +109,8 @@ type FlowGraphEdge = FlowMetricRow & {
   target: FlowGraphNode
   strokeWidth: number
   path: string
+  tailX: number
+  tailY: number
   labelX: number
   labelY: number
   selfLoop: boolean
@@ -161,6 +163,10 @@ const flowGraphHorizontalPadding = 220
 const flowGraphVerticalPadding = 120
 const flowGraphColumnGap = 320
 const flowGraphRowGap = 185
+// The marker tip is the path endpoint (refX=8), so terminate the path exactly
+// on the target card border. This makes the arrow visually connect to the card
+// without letting the line continue underneath it.
+const flowArrowTargetGap = 0
 const flowLayoutStorageKey = 'system-view.flow-metric.node-positions.v1'
 
 
@@ -349,9 +355,68 @@ const flowGraph = computed(() => {
     const source = nodes.get(row.from)!
     const target = nodes.get(row.to)!
     const selfLoop = row.from === row.to
-    const path = selfLoop
-      ? `M ${source.x + flowNodeHalfWidth - 4} ${source.y - 24} C ${source.x + 195} ${source.y - 112}, ${source.x + 195} ${source.y + 112}, ${source.x + flowNodeHalfWidth - 4} ${source.y + 24}`
-      : `M ${source.x + flowNodeHalfWidth} ${source.y} C ${(source.x + target.x) / 2} ${source.y}, ${(source.x + target.x) / 2} ${target.y}, ${target.x - flowNodeHalfWidth} ${target.y}`
+
+    let path = ''
+    let tailX = source.x
+    let tailY = source.y
+
+    if (selfLoop) {
+      // Preserve the original soft self-loop, but end a few pixels outside the
+      // card so the arrowhead is visible without drawing a second overlay head.
+      tailX = source.x + flowNodeHalfWidth
+      tailY = source.y - 24
+      const targetX = source.x + flowNodeHalfWidth + flowArrowTargetGap
+      const targetY = source.y + 24
+      path = `M ${tailX} ${tailY} C ${source.x + 195} ${source.y - 112}, ${source.x + 195} ${source.y + 112}, ${targetX} ${targetY}`
+    } else {
+      const dx = target.x - source.x
+      const dy = target.y - source.y
+
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        // Horizontal routing is the same old midpoint Bezier, mirrored when a
+        // user drags the source to the right of the target.
+        const direction = dx >= 0 ? 1 : -1
+        tailX = source.x + direction * flowNodeHalfWidth
+        tailY = source.y
+        const targetX = target.x - direction * (flowNodeHalfWidth + flowArrowTargetGap)
+        const targetY = target.y
+        const middleX = (tailX + targetX) / 2
+
+        // Keep the familiar midpoint curve, but make the last Bezier handle
+        // follow the actual source -> target direction. SVG markers orient to
+        // the final curve tangent, so the arrowhead now continues naturally
+        // along the visible body instead of snapping horizontally at the end.
+        const approachDx = targetX - tailX
+        const approachDy = targetY - tailY
+        const approachLength = Math.max(1, Math.hypot(approachDx, approachDy))
+        const approachHandle = Math.max(36, Math.min(86, approachLength * 0.22))
+        const control2X = targetX - (approachDx / approachLength) * approachHandle
+        const control2Y = targetY - (approachDy / approachLength) * approachHandle
+
+        path = `M ${tailX} ${tailY} C ${middleX} ${tailY}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
+      } else {
+        // When nodes are mainly above/below one another, use the same smooth
+        // midpoint Bezier vertically. This prevents an arrow from entering the
+        // wrong side of a node after the user drags the layout.
+        const direction = dy >= 0 ? 1 : -1
+        tailX = source.x
+        tailY = source.y + direction * flowNodeHalfHeight
+        const targetX = target.x
+        const targetY = target.y - direction * (flowNodeHalfHeight + flowArrowTargetGap)
+        const middleY = (tailY + targetY) / 2
+
+        // Same treatment for mostly-vertical edges: preserve the soft curve,
+        // while aligning the final arrowhead with the direction of the body.
+        const approachDx = targetX - tailX
+        const approachDy = targetY - tailY
+        const approachLength = Math.max(1, Math.hypot(approachDx, approachDy))
+        const approachHandle = Math.max(36, Math.min(86, approachLength * 0.22))
+        const control2X = targetX - (approachDx / approachLength) * approachHandle
+        const control2Y = targetY - (approachDy / approachLength) * approachHandle
+
+        path = `M ${tailX} ${tailY} C ${tailX} ${middleY}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
+      }
+    }
 
     return {
       ...row,
@@ -360,9 +425,10 @@ const flowGraph = computed(() => {
       selfLoop,
       strokeWidth: 2.3 + Math.min(9.2, (row.total_delay_ns / maxTotalDelay) * 9.2),
       path,
-      // Self-loop labels need to sit outside the node box. The label itself is
-      // 252px wide and is rendered from labelX - 126, so source.x + 250 puts
-      // its left edge at source.x + 124, safely past the enlarged node's right edge.
+      tailX,
+      tailY,
+      // Keep the original label placement so the visual language of the old
+      // graph stays unchanged.
       labelX: selfLoop ? Math.min(width - 136, source.x + 250) : (source.x + target.x) / 2,
       labelY: selfLoop ? source.y : (source.y + target.y) / 2 - 12,
     }
@@ -1415,6 +1481,11 @@ onBeforeUnmount(() => {
                   @mouseleave="stopDragFlowNode"
                 >
                   <defs>
+                    <!--
+                      Keep the original arrow geometry: the marker scales with
+                      the edge body, so a high-volume edge still has the same
+                      broad, easy-to-read arrowhead as before.
+                    -->
                     <marker
                       id="flow-arrow-head"
                       markerWidth="10"
@@ -1425,6 +1496,18 @@ onBeforeUnmount(() => {
                       markerUnits="strokeWidth"
                     >
                       <path d="M 0 0 L 8 3 L 0 6 z" class="flow-arrow-head" />
+                    </marker>
+
+                    <marker
+                      id="flow-arrow-head-selected"
+                      markerWidth="10"
+                      markerHeight="10"
+                      refX="8"
+                      refY="3"
+                      orient="auto"
+                      markerUnits="strokeWidth"
+                    >
+                      <path d="M 0 0 L 8 3 L 0 6 z" class="flow-arrow-head-selected" />
                     </marker>
                   </defs>
 
@@ -1444,7 +1527,21 @@ onBeforeUnmount(() => {
                         class="flow-edge"
                         :d="edge.path"
                         :stroke-width="edge.strokeWidth"
-                        marker-end="url(#flow-arrow-head)"
+                        :marker-end="expandedFlowId === edge.id
+                          ? 'url(#flow-arrow-head-selected)'
+                          : 'url(#flow-arrow-head)'"
+                      />
+
+                      <!--
+                        The old graph naturally showed a tiny round cap at the
+                        source. Render it explicitly so that visual cue remains
+                        stable even when the source port changes side.
+                      -->
+                      <circle
+                        class="flow-edge-tail"
+                        :cx="edge.tailX"
+                        :cy="edge.tailY"
+                        :r="Math.max(2.2, Math.min(4.2, edge.strokeWidth * 0.42))"
                       />
 
                       <foreignObject
@@ -1485,6 +1582,7 @@ onBeforeUnmount(() => {
                       </text>
                     </g>
                   </g>
+
                 </svg>
               </div>
             </div>
@@ -2281,6 +2379,10 @@ td {
   fill: #60a5fa;
 }
 
+.flow-arrow-head-selected {
+  fill: #22c55e;
+}
+
 .flow-edge-group {
   cursor: pointer;
 }
@@ -2305,8 +2407,16 @@ td {
   opacity: 1;
 }
 
-.flow-edge-group.selected .flow-arrow-head {
+.flow-edge-tail {
+  fill: #60a5fa;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.flow-edge-group:hover .flow-edge-tail,
+.flow-edge-group.selected .flow-edge-tail {
   fill: #22c55e;
+  opacity: 1;
 }
 
 .flow-edge-label-foreign {
