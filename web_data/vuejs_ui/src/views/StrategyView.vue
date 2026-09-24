@@ -2077,19 +2077,22 @@ onBeforeUnmount(() => {
 .special-array-control {
   flex-direction: column;
   align-items: stretch;
-  justify-content: center;
-  gap: 9px;
+  justify-content: flex-start;
+  gap: 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .special-array-item {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
+  gap: 3px;
+  padding: 4px 0;
 }
 
 .special-array-item + .special-array-item {
-  padding-top: 9px;
+  padding-top: 5px;
   border-top: 1px solid #374151;
 }
 
