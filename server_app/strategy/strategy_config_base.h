@@ -47,12 +47,13 @@ struct StrategyConfigBase
     static StrategyConfigBase from_json(Json& data)
     {
         StrategyConfigBase res;
-        res.accounts.clear();
-        res.instruments.clear();
 
         // Only load from [data], if it is valid
         if (data.has_field("accounts") && data.has_field("instruments"))
         {
+            res.accounts.clear();
+            res.instruments.clear();
+
             for (const auto& account : data["accounts"].array())
             {
                 res.accounts.push_back(AccountManager::get_account_by_key((std::string)account));
