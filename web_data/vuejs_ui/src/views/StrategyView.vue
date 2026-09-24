@@ -2117,7 +2117,7 @@ onBeforeUnmount(() => {
 .special-array-item-label {
   display: block;
   margin: 0;
-  padding-top: 1px;
+  padding-top: 3px;
   color: #9ca3af;
   font-size: 11px;
   font-weight: 800;
@@ -2129,6 +2129,7 @@ onBeforeUnmount(() => {
   min-width: 0;
   height: 34px;
   display: flex;
+  margin-top: 4px;
   align-items: center;
   flex-wrap: nowrap;
   gap: 8px;
