@@ -11,7 +11,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMarketMaker::init_
     std::unordered_map<StrategyState, StrategyStateBase*> strategy_states;
 
     // Get ExchangeId from account
-    ExchangeId exchange_id = m_config->account->get_exchange_id();
+    ExchangeId exchange_id = m_config->accounts[0]->get_exchange_id();
     m_gateway = GatewayManager::instance().get_gateway(exchange_id);
 
     // Subscribe instrument to gateway
