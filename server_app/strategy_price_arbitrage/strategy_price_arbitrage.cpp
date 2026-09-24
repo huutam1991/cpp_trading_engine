@@ -24,8 +24,8 @@ void StrategyPriceArbitrage::start()
     // Subscribe symbols
     // auto ins1 = m_gateway->get_instrument_by_symbol(m_config->symbol_1);
     // auto ins2 = m_gateway->get_instrument_by_symbol(m_config->symbol_2);
-    Instrument* ins1 = nullptr;
-    Instrument* ins2 = nullptr;
+    const Instrument* ins1 = m_config->instruments[0];
+    const Instrument* ins2 = m_config->instruments[1];
     m_gateway->subscribe_instruments({ins1, ins2});
 }
 
