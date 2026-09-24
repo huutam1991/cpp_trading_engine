@@ -32,7 +32,7 @@ struct StrategyMeanReversionConfig : public StrategyConfigBase
     {
         StrategyMeanReversionConfig res;
         StrategyConfigBase* base_config_ptr_of_res = &res;
-        *base_config_ptr_of_res = StrategyConfigBase::from_json<2, 2>(data);
+        *base_config_ptr_of_res = StrategyConfigBase::from_json(data);
 
         // Only load from [data], if it is valid
         if (data.has_field("volume") && data.has_field("spread_capture_config"))
