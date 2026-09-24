@@ -2075,52 +2075,72 @@ onBeforeUnmount(() => {
 }
 
 .special-array-control {
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 0;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  /*
+   * Do not keep the generic special-control flex layout here.  The normal
+   * config rows below are compact because each row owns its vertical sizing.
+   * Treat array entries the same way: a plain stack of fixed-height rows,
+   * with no parent flex gap/padding that can be distributed between items.
+   */
+  display: block;
+  padding: 0;
 }
 
 .special-array-item {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 3px;
-  padding: 4px 0;
+  /* Same visual row height as .value-row (stop_loss, take_profit, ...). */
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: 12px 34px;
+  align-content: center;
+  row-gap: 0;
+  padding: 2px 16px 3px;
+  border-bottom: 1px solid #374151;
 }
 
-.special-array-item + .special-array-item {
-  padding-top: 5px;
-  border-top: 1px solid #374151;
+.special-array-item:last-of-type {
+  border-bottom: 0;
 }
 
 .special-array-item-label {
   display: block;
+  margin: 0;
+  padding: 0;
   color: #9ca3af;
   font-size: 11px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 12px;
   white-space: nowrap;
 }
 
 .special-array-item-editor {
   min-width: 0;
+  height: 34px;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
 }
 
 .special-array-item-editor .special-select {
-  flex: 1 1 320px;
+  min-width: 0;
+  width: auto;
+  max-width: none;
+  flex: 1 1 0;
+}
+
+.special-array-item-editor .account-state-badge,
+.special-array-item-editor .value-type {
+  flex: 0 0 auto;
 }
 
 .special-array-empty {
-  min-height: 34px;
+  min-height: 52px;
   display: flex;
   align-items: center;
+  padding: 8px 16px;
+  box-sizing: border-box;
   color: #6b7280;
   font-size: 12px;
   font-weight: 700;
@@ -2155,6 +2175,8 @@ onBeforeUnmount(() => {
 
 .inline-error {
   width: 100%;
+  padding: 6px 16px;
+  box-sizing: border-box;
   color: #fca5a5;
   font-size: 11px;
   font-weight: 700;
@@ -2385,13 +2407,24 @@ onBeforeUnmount(() => {
     min-width: 0;
   }
 
+  .special-array-control {
+    padding-left: 0;
+  }
+
   .special-array-item {
-    grid-template-columns: 1fr;
-    gap: 6px;
+    height: auto;
+    min-height: 52px;
+    max-height: none;
+    grid-template-rows: 12px auto;
+    row-gap: 2px;
+    padding: 4px 32px;
   }
 
   .special-array-item-editor {
     width: 100%;
+    height: auto;
+    min-height: 34px;
+    flex-wrap: wrap;
   }
 
   .config-value-cell {
