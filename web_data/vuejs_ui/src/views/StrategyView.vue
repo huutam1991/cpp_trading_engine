@@ -2082,10 +2082,10 @@ onBeforeUnmount(() => {
 }
 
 .special-array-item {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .special-array-item + .special-array-item {
@@ -2094,9 +2094,11 @@ onBeforeUnmount(() => {
 }
 
 .special-array-item-label {
+  display: block;
   color: #9ca3af;
   font-size: 11px;
   font-weight: 800;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
