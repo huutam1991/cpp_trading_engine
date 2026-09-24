@@ -2094,8 +2094,10 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-rows: 12px 34px;
   align-content: center;
-  row-gap: 0;
-  padding: 2px 16px 3px;
+  /* Keep the compact 52px row, but leave a small visual gap between
+   * the Instrument/Account label and its value control. */
+  row-gap: 3px;
+  padding: 1px 16px;
   border-bottom: 1px solid #374151;
 }
 
