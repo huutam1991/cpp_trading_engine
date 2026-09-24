@@ -32,22 +32,18 @@ struct StrategyMeanReversionConfig : public StrategyConfigBase
     {
         StrategyMeanReversionConfig res;
         StrategyConfigBase* base_config_ptr_of_res = &res;
-        *base_config_ptr_of_res = StrategyConfigBase::from_json(data);
+        *base_config_ptr_of_res = StrategyConfigBase::from_json<2, 2>(data);
 
         // Only load from [data], if it is valid
-        if (data.has_field("symbol"))
+        if (data.has_field("volume") && data.has_field("spread_capture_config"))
         {
             res.volume = (double)data["volume"];
 
-            if (data.has_field("spread_capture_config"))
-            {
-                Json config_json = data["spread_capture_config"];
-
-                res.spread_capture_config.move_distance = (double)config_json["move_distance"];
-                res.spread_capture_config.entry_distance = (double)config_json["entry_distance"];
-                res.spread_capture_config.take_profit = (double)config_json["take_profit"];
-                res.spread_capture_config.stop_loss = (double)config_json["stop_loss"];
-            }
+            Json config_json = data["spread_capture_config"];
+            res.spread_capture_config.move_distance = (double)config_json["move_distance"];
+            res.spread_capture_config.entry_distance = (double)config_json["entry_distance"];
+            res.spread_capture_config.take_profit = (double)config_json["take_profit"];
+            res.spread_capture_config.stop_loss = (double)config_json["stop_loss"];
         }
 
         return res;
