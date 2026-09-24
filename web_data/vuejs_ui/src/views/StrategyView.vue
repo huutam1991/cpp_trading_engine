@@ -2003,7 +2003,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: minmax(230px, 0.8fr) minmax(320px, 1.2fr);
   align-items: center;
-  min-height: 62px;
+  min-height: 68px;
   background: #1f2937;
   border-bottom: 1px solid #374151;
 }
