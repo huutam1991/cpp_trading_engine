@@ -30,14 +30,14 @@ void StrategyPriceArbitrageStateRun::on_config_change()
     // Re-subscribe symbols
     // auto ins1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
     // auto ins2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
-    Instrument* ins1 = nullptr;
-    Instrument* ins2 = nullptr;
+    const Instrument* ins1 = m_config.instruments[0];
+    const Instrument* ins2 = m_config.instruments[1];
     m_gateway->subscribe_instruments({ins1, ins2});
 
     // Get new instruments
-    // m_instrument_1 = m_gateway->get_instrument_by_symbol(m_config.symbol_1);
-    // m_instrument_2 = m_gateway->get_instrument_by_symbol(m_config.symbol_2);
-    // m_instrument_3 = m_gateway->get_instrument_by_symbol(m_config.symbol_3);
+    m_instrument_1 = m_config.instruments[0];
+    m_instrument_2 = m_config.instruments[1];
+    m_instrument_3 = m_config.instruments[2];
 
     spdlog::debug("StrategyPriceArbitrageStateRun, instrument 1: {}", m_instrument_1->to_json());
     spdlog::debug("StrategyPriceArbitrageStateRun, instrument 2: {}", m_instrument_2->to_json());
@@ -62,7 +62,7 @@ Order StrategyPriceArbitrageStateRun::get_limit_buy_spot_order_by_price(double p
     );
 }
 
-Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
+Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_quantity(const Instrument* instrument, double quantity)
 {
     double round_up_quantity = instrument->get_round_up_quantity(quantity);
 
@@ -77,7 +77,7 @@ Order StrategyPriceArbitrageStateRun::get_market_buy_spot_order_by_symbol_and_qu
     );
 }
 
-Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_quantity(Instrument* instrument, double quantity)
+Order StrategyPriceArbitrageStateRun::get_market_sell_spot_order_by_symbol_and_quantity(const Instrument* instrument, double quantity)
 {
     double round_up_quantity = instrument->get_round_up_quantity(quantity);
 
