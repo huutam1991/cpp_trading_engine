@@ -119,6 +119,25 @@ Json::const_iterator Json::end() const
     throw std::runtime_error("Not a JSON object");
 }
 
+std::vector<Json>& Json::array()
+{
+    check_create_json_object();
+    JsonObject* object = static_cast<JsonObject*>(m_value);
+    object->set_array();
+
+    return object->array();
+}
+
+const std::vector<Json>& Json::array() const
+{
+    if (m_value && !m_value->is_json_value())
+    {
+        return ((const JsonObject*)m_value)->array();
+    }
+
+    throw std::runtime_error("Not a JSON array");
+}
+
 bool Json::has_field(const std::string& field) const
 {
     if (m_value->is_json_value() == false)

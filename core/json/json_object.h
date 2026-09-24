@@ -82,6 +82,17 @@ public:
     const_iterator begin() const { return m_object.begin(); }
     const_iterator end() const { return m_object.end(); }
 
+    // For iterating through array
+    std::vector<Json>& array()
+    {
+        return m_array;
+    }
+
+    const std::vector<Json>& array() const
+    {
+        return m_array;
+    }
+
     bool has_field(const std::string& field) const
     {
         return m_is_array ? false :m_object.find(field) != m_object.end();
@@ -91,6 +102,11 @@ public:
     {
         m_is_array = false; // Ensure this is treated as an object
         m_object.erase(field);
+    }
+
+    void set_array()
+    {
+        m_is_array = true;
     }
 
     bool is_array() const

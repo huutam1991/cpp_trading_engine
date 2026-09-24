@@ -224,6 +224,10 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
+    // For iterating through array
+    std::vector<Json>& array();
+    const std::vector<Json>& array() const;
+
     bool has_field(const std::string& field) const;
     void remove_field(const std::string& field);
 
