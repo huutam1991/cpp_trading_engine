@@ -47,6 +47,8 @@ struct StrategyConfigBase
     static StrategyConfigBase from_json(Json& data)
     {
         StrategyConfigBase res;
+        res.accounts.clear();
+        res.instruments.clear();
 
         // Only load from [data], if it is valid
         if (data.has_field("accounts") && data.has_field("instruments"))
