@@ -11,12 +11,12 @@ struct StrategyConfigBase
 {
     // Accounts list
     std::vector<std::shared_ptr<AccountBase>> accounts = {
-        AccountManager::get_account_by_key("BINANCE_REAL_1")
+        AccountManager::get_account_by_key("BINANCE_REAL_1") // Default is BINANCE_REAL_1
     };
 
     // Instruments list
     std::vector<const Instrument*> instruments = {
-        Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL")
+        Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL") // Default is PERPETUAL
     };
 
     bool is_real_trading = SimulatorOrder::get_active() ? false : true;
