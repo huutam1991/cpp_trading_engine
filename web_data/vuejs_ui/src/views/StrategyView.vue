@@ -2096,9 +2096,9 @@ onBeforeUnmount(() => {
    *   = 62px
    * so there is no distributable/free vertical space inside the row.
    */
-  height: 62px;
-  min-height: 62px;
-  max-height: 62px;
+  height: 68px;
+  min-height: 68px;
+  max-height: 68px;
   box-sizing: border-box;
   display: grid;
   grid-template-rows: 12px 34px;
@@ -2424,8 +2424,8 @@ onBeforeUnmount(() => {
   }
 
   .special-array-item {
-    height: 68px;
-    min-height: 68px;
+    height: auto;
+    min-height: 62px;
     max-height: none;
     grid-template-rows: 12px auto;
     row-gap: 6px;
