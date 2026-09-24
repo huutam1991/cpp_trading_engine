@@ -22,6 +22,19 @@ struct StrategyConfigBase
     bool is_real_trading = SimulatorOrder::get_active() ? false : true;
     bool is_running = false;
 
+    void resize(size_t num_accounts, size_t num_instruments)
+    {
+        for (size_t i = 0; i < num_accounts; i++)
+        {
+            accounts.push_back(AccountManager::get_account_by_key("BINANCE_REAL_1"));
+        }
+
+        for (size_t i = 0; i < num_instruments; i++)
+        {
+            instruments.push_back(Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, "BTC-USDC-PERPETUAL"));
+        }
+    }
+
     Json to_json() const
     {
         Json accounts_json;
@@ -44,12 +57,11 @@ struct StrategyConfigBase
         };
     }
 
-    template <size_t ACCOUNT_NUMB = 1, size_t INSTRUMENT_NUMB = 1>
+    template <size_t NUM_ACCOUNTS = 1, size_t NUM_INSTRUMENTS = 1>
     static StrategyConfigBase from_json(Json& data)
     {
         StrategyConfigBase res;
-        res.accounts.resize(ACCOUNT_NUMB);
-        res.instruments.resize(INSTRUMENT_NUMB);
+        res.resize(NUM_ACCOUNTS, NUM_INSTRUMENTS);
 
         // Only load from [data], if it is valid
         if (data.has_field("accounts") && data.has_field("instruments"))
