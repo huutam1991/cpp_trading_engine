@@ -9,7 +9,6 @@
 
 struct StrategyMeanReversionConfig : public StrategyConfigBase
 {
-    std::string symbol = "BTC-USDC-PERPETUAL"; // BTCUSDC perpetual by default
     double volume = 0.01; // in BTC
     SpreadCaptureConfig spread_capture_config = {2.0, 1.0, 0.8, 2.0};
 
@@ -23,7 +22,6 @@ struct StrategyMeanReversionConfig : public StrategyConfigBase
             {"stop_loss", spread_capture_config.stop_loss}
         };
 
-        json["symbol"] = symbol;
         json["volume"] = volume;
         json["spread_capture_config"] = spread_capture_config_json;
 
@@ -39,7 +37,6 @@ struct StrategyMeanReversionConfig : public StrategyConfigBase
         // Only load from [data], if it is valid
         if (data.has_field("symbol"))
         {
-            res.symbol = (std::string)data["symbol"];
             res.volume = (double)data["volume"];
 
             if (data.has_field("spread_capture_config"))

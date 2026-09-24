@@ -25,7 +25,7 @@ std::unordered_map<StrategyState, StrategyStateBase*> StrategyMeanReversion::ini
     m_gateway = GatewayManager::instance().get_gateway(exchange_id);
 
     // Subscribe instrument to gateway
-    const Instrument* instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config->symbol);
+    const Instrument* instrument = m_config->instruments[0];
     m_gateway->subscribe_instruments({instrument});
 
     strategy_states[StrategyState::RUN] = new StrategyMeanReversionStateRun(m_gateway, get_config_reference(), m_spread_captures);

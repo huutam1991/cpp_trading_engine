@@ -1,6 +1,8 @@
 #pragma once
 
 #include <json/json.h>
+#include <enum_reflect/enum_reflect.h>
+
 #include <account/account.h>
 #include <instrument/instrument.h>
 #include <order/simulator_order.h>
@@ -57,7 +59,12 @@ struct StrategyConfigBase
             for (auto& instrument : data["instruments"].array())
             {
                 std::string symbol = instrument["symbol"];
-                res.instruments.push_back(Instrument::get_instrument_by_symbol(ExchangeId::BINANCE, (std::string)symbol));
+                std::string exchange_id = instrument["exchange_id"];
+
+                res.instruments.push_back(Instrument::get_instrument_by_symbol(
+                    enum_reflect::enum_value<ExchangeId>(exchange_id),
+                    symbol)
+                );
             }
 
             res.is_real_trading = (bool)data["is_real_trading"];

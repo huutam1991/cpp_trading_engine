@@ -4,7 +4,7 @@
 StrategyMeanReversionStateRun::StrategyMeanReversionStateRun(std::shared_ptr<Gateway> gateway, const StrategyMeanReversionConfig& config, SpreadCaptureConfigManager& spread_captures)
     : m_gateway{gateway}, m_config{config}, m_spread_captures{spread_captures}
 {
-    m_instrument = Instrument::get_instrument_by_symbol(m_gateway->get_exchange(), m_config.symbol);
+    m_instrument = m_config.instruments[0];
     m_pnl.update_instrument(m_instrument);
 }
 
