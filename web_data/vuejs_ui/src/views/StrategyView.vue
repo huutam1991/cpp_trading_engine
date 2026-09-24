@@ -2424,7 +2424,7 @@ onBeforeUnmount(() => {
   }
 
   .special-array-item {
-    height: auto;
+    height: 68px;
     min-height: 68px;
     max-height: none;
     grid-template-rows: 12px auto;
