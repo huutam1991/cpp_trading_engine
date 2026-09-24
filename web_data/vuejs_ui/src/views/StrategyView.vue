@@ -104,6 +104,10 @@ const currentInfoErrorMessage = ref('')
 // Read-only current-info tree expansion state. Paths in this set are collapsed.
 const collapsedCurrentInfoGroups = ref<Set<string>>(new Set())
 
+// Keep the current-info tree open/closed state across browser refreshes.
+// The storage is scoped per strategy so each strategy remembers its own layout.
+const CURRENT_INFO_TREE_STORAGE_PREFIX = 'strategy-view:current-info-tree:v1:'
+
 let currentInfoPollTimer: ReturnType<typeof setInterval> | null = null
 let currentInfoRequestInFlight = false
 
@@ -197,6 +201,56 @@ function jsonPathKey(path: (string | number)[]): string {
   return JSON.stringify(path)
 }
 
+function currentInfoTreeStorageKey(strategyName: string): string {
+  return `${CURRENT_INFO_TREE_STORAGE_PREFIX}${encodeURIComponent(strategyName)}`
+}
+
+function loadCollapsedCurrentInfoGroups(strategyName: string): Set<string> {
+  if (typeof window === 'undefined') {
+    return new Set()
+  }
+
+  try {
+    const savedValue = window.localStorage.getItem(currentInfoTreeStorageKey(strategyName))
+
+    if (!savedValue) {
+      return new Set()
+    }
+
+    const parsedValue: unknown = JSON.parse(savedValue)
+
+    if (!Array.isArray(parsedValue)) {
+      return new Set()
+    }
+
+    return new Set(
+      parsedValue.filter((value): value is string => typeof value === 'string'),
+    )
+  } catch (error) {
+    console.warn('Failed to load current-info tree state from localStorage:', error)
+    return new Set()
+  }
+}
+
+function saveCollapsedCurrentInfoGroups(strategyName: string | null = selectedStrategy.value) {
+  if (!strategyName || typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    window.localStorage.setItem(
+      currentInfoTreeStorageKey(strategyName),
+      JSON.stringify([...collapsedCurrentInfoGroups.value]),
+    )
+  } catch (error) {
+    console.warn('Failed to save current-info tree state to localStorage:', error)
+  }
+}
+
+function restoreCollapsedCurrentInfoGroups(strategyName: string) {
+  collapsedCurrentInfoGroups.value = loadCollapsedCurrentInfoGroups(strategyName)
+}
+
 function isCurrentInfoGroupExpanded(row: ConfigRow): boolean {
   return !collapsedCurrentInfoGroups.value.has(jsonPathKey(row.path))
 }
@@ -216,6 +270,7 @@ function toggleCurrentInfoGroup(row: ConfigRow) {
   }
 
   collapsedCurrentInfoGroups.value = next
+  saveCollapsedCurrentInfoGroups()
 }
 
 function collapseAllCurrentInfoGroups() {
@@ -224,10 +279,12 @@ function collapseAllCurrentInfoGroups() {
       .filter((row) => row.kind === 'group')
       .map((row) => jsonPathKey(row.path)),
   )
+  saveCollapsedCurrentInfoGroups()
 }
 
 function expandAllCurrentInfoGroups() {
   collapsedCurrentInfoGroups.value = new Set()
+  saveCollapsedCurrentInfoGroups()
 }
 
 function cloneJson<T>(value: T): T {
@@ -526,7 +583,7 @@ function startCurrentInfoPolling(strategyName: string) {
   stopCurrentInfoPolling()
   currentStrategyInfo.value = null
   currentInfoErrorMessage.value = ''
-  collapsedCurrentInfoGroups.value = new Set()
+  restoreCollapsedCurrentInfoGroups(strategyName)
 
   // Load immediately, then refresh once every second while the strategy is running.
   void fetchStrategyCurrentInfo(strategyName, true)
@@ -551,7 +608,7 @@ async function fetchStrategyConfig(strategyName: string) {
   originalStrategyConfig.value = null
   currentStrategyInfo.value = null
   currentInfoErrorMessage.value = ''
-  collapsedCurrentInfoGroups.value = new Set()
+  restoreCollapsedCurrentInfoGroups(strategyName)
 
   try {
     const query = new URLSearchParams({
@@ -2003,7 +2060,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: minmax(230px, 0.8fr) minmax(320px, 1.2fr);
   align-items: center;
-  min-height: 68px;
+  min-height: 62px;
   background: #1f2937;
   border-bottom: 1px solid #374151;
 }
@@ -2096,9 +2153,9 @@ onBeforeUnmount(() => {
    *   = 62px
    * so there is no distributable/free vertical space inside the row.
    */
-  height: 68px;
-  min-height: 68px;
-  max-height: 68px;
+  height: 62px;
+  min-height: 62px;
+  max-height: 62px;
   box-sizing: border-box;
   display: grid;
   grid-template-rows: 12px 34px;
@@ -2117,7 +2174,7 @@ onBeforeUnmount(() => {
 .special-array-item-label {
   display: block;
   margin: 0;
-  padding-top: 3px;
+  padding: 0;
   color: #9ca3af;
   font-size: 11px;
   font-weight: 800;
@@ -2129,7 +2186,6 @@ onBeforeUnmount(() => {
   min-width: 0;
   height: 34px;
   display: flex;
-  margin-top: 4px;
   align-items: center;
   flex-wrap: nowrap;
   gap: 8px;
