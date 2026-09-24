@@ -58,9 +58,9 @@ Json StrategyPriceArbitrage::get_orders_chain()
     // std::string symbol_1 = m_gateway->get_instrument_by_symbol(m_config->symbol_1)->exchange_symbol;
     // std::string symbol_2 = m_gateway->get_instrument_by_symbol(m_config->symbol_2)->exchange_symbol;
     // std::string symbol_3 = m_gateway->get_instrument_by_symbol(m_config->symbol_3)->exchange_symbol;
-    std::string symbol_1 = m_config->symbol_1;
-    std::string symbol_2 = m_config->symbol_2;
-    std::string symbol_3 = m_config->symbol_3;
+    std::string symbol_1 = m_config->instruments[0]->symbol;
+    std::string symbol_2 = m_config->instruments[1]->symbol;
+    std::string symbol_3 = m_config->instruments[2]->symbol;
 
     Json orders;
 
