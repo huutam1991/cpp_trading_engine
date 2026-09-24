@@ -113,6 +113,11 @@ type FlowGraphEdge = FlowMetricRow & {
   tailY: number
   labelX: number
   labelY: number
+  collapsedLabelX: number
+  collapsedLabelY: number
+  collapsedLabelAnchorX: number
+  collapsedLabelAnchorY: number
+  collapsedLabelLeaderPath: string
   selfLoop: boolean
 }
 
@@ -147,6 +152,7 @@ const upTime = ref('--:--:--')
 const expandedCrashId = ref<string | null>(null)
 const expandedKeepForGdbIds = ref<Set<string>>(new Set())
 const expandedFlowId = ref<string | null>(null)
+const collapsedFlowLabelIds = ref<Set<string>>(new Set())
 const flowSvgRef = ref<SVGSVGElement | null>(null)
 const flowNodePositions = ref<Record<string, { x: number; y: number }>>({})
 const draggingFlowNode = ref<{ id: string; offsetX: number; offsetY: number } | null>(null)
@@ -168,6 +174,96 @@ const flowGraphRowGap = 185
 // without letting the line continue underneath it.
 const flowArrowTargetGap = 0
 const flowLayoutStorageKey = 'system-view.flow-metric.node-positions.v1'
+const flowLabelCollapseStorageKey = 'system-view.flow-metric.info-card-collapse.v1'
+const flowCollapsedLabelWidth = 84
+const flowCollapsedLabelHeight = 48
+const flowCollapsedLabelGap = 5
+
+function clampFlowGraphValue(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value))
+}
+
+function cubicPointAtHalf(
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  p3: { x: number; y: number },
+) {
+  return {
+    x: (p0.x + 3 * p1.x + 3 * p2.x + p3.x) / 8,
+    y: (p0.y + 3 * p1.y + 3 * p2.y + p3.y) / 8,
+  }
+}
+
+function cubicTangentAtHalf(
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  p3: { x: number; y: number },
+) {
+  return {
+    x: 0.75 * (p1.x - p0.x) + 1.5 * (p2.x - p1.x) + 0.75 * (p3.x - p2.x),
+    y: 0.75 * (p1.y - p0.y) + 1.5 * (p2.y - p1.y) + 0.75 * (p3.y - p2.y),
+  }
+}
+
+function getCollapsedFlowLabelPlacement(
+  anchor: { x: number; y: number },
+  tangent: { x: number; y: number },
+  expandedCenter: { x: number; y: number },
+  graphWidth: number,
+  graphHeight: number,
+) {
+  const tangentLength = Math.max(1, Math.hypot(tangent.x, tangent.y))
+  const normal = {
+    x: -tangent.y / tangentLength,
+    y: tangent.x / tangentLength,
+  }
+  const halfWidth = flowCollapsedLabelWidth / 2
+  const halfHeight = flowCollapsedLabelHeight / 2
+  const graphMargin = 8
+
+  // Distance from the center of an axis-aligned rectangle to its edge in the
+  // normal direction. Adding a tiny gap keeps the arrow visible while a short
+  // leader visually glues the collapsed card to the exact curve point.
+  const edgeDistance = Math.min(
+    Math.abs(normal.x) > 1e-5 ? halfWidth / Math.abs(normal.x) : Number.POSITIVE_INFINITY,
+    Math.abs(normal.y) > 1e-5 ? halfHeight / Math.abs(normal.y) : Number.POSITIVE_INFINITY,
+  )
+  const offsetDistance = edgeDistance + flowCollapsedLabelGap
+
+  const candidates = [1, -1].map((side) => {
+    const rawX = anchor.x + normal.x * offsetDistance * side
+    const rawY = anchor.y + normal.y * offsetDistance * side
+    const x = clampFlowGraphValue(rawX, graphMargin + halfWidth, graphWidth - graphMargin - halfWidth)
+    const y = clampFlowGraphValue(rawY, graphMargin + halfHeight, graphHeight - graphMargin - halfHeight)
+    const moveDistance = Math.hypot(x - expandedCenter.x, y - expandedCenter.y)
+    const clampPenalty = Math.hypot(x - rawX, y - rawY) * 4
+
+    return { x, y, score: moveDistance + clampPenalty }
+  })
+
+  const center = candidates[0]!.score <= candidates[1]!.score ? candidates[0]! : candidates[1]!
+  const toAnchorX = anchor.x - center.x
+  const toAnchorY = anchor.y - center.y
+  const boundaryScale = 1 / Math.max(
+    Math.abs(toAnchorX) / Math.max(1, halfWidth),
+    Math.abs(toAnchorY) / Math.max(1, halfHeight),
+    1,
+  )
+  const boxEdge = {
+    x: center.x + toAnchorX * boundaryScale,
+    y: center.y + toAnchorY * boundaryScale,
+  }
+
+  return {
+    x: center.x,
+    y: center.y,
+    anchorX: anchor.x,
+    anchorY: anchor.y,
+    leaderPath: `M ${anchor.x} ${anchor.y} L ${boxEdge.x} ${boxEdge.y}`,
+  }
+}
 
 
 const activeTabInfo = computed(() => {
@@ -359,15 +455,25 @@ const flowGraph = computed(() => {
     let path = ''
     let tailX = source.x
     let tailY = source.y
+    let control1X = source.x
+    let control1Y = source.y
+    let control2X = target.x
+    let control2Y = target.y
+    let targetX = target.x
+    let targetY = target.y
 
     if (selfLoop) {
       // Preserve the original soft self-loop, but end a few pixels outside the
       // card so the arrowhead is visible without drawing a second overlay head.
       tailX = source.x + flowNodeHalfWidth
       tailY = source.y - 24
-      const targetX = source.x + flowNodeHalfWidth + flowArrowTargetGap
-      const targetY = source.y + 24
-      path = `M ${tailX} ${tailY} C ${source.x + 195} ${source.y - 112}, ${source.x + 195} ${source.y + 112}, ${targetX} ${targetY}`
+      targetX = source.x + flowNodeHalfWidth + flowArrowTargetGap
+      targetY = source.y + 24
+      control1X = source.x + 195
+      control1Y = source.y - 112
+      control2X = source.x + 195
+      control2Y = source.y + 112
+      path = `M ${tailX} ${tailY} C ${control1X} ${control1Y}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
     } else {
       const dx = target.x - source.x
       const dy = target.y - source.y
@@ -378,8 +484,8 @@ const flowGraph = computed(() => {
         const direction = dx >= 0 ? 1 : -1
         tailX = source.x + direction * flowNodeHalfWidth
         tailY = source.y
-        const targetX = target.x - direction * (flowNodeHalfWidth + flowArrowTargetGap)
-        const targetY = target.y
+        targetX = target.x - direction * (flowNodeHalfWidth + flowArrowTargetGap)
+        targetY = target.y
         const middleX = (tailX + targetX) / 2
 
         // Keep the familiar midpoint curve, but make the last Bezier handle
@@ -390,10 +496,12 @@ const flowGraph = computed(() => {
         const approachDy = targetY - tailY
         const approachLength = Math.max(1, Math.hypot(approachDx, approachDy))
         const approachHandle = Math.max(36, Math.min(86, approachLength * 0.22))
-        const control2X = targetX - (approachDx / approachLength) * approachHandle
-        const control2Y = targetY - (approachDy / approachLength) * approachHandle
+        control1X = middleX
+        control1Y = tailY
+        control2X = targetX - (approachDx / approachLength) * approachHandle
+        control2Y = targetY - (approachDy / approachLength) * approachHandle
 
-        path = `M ${tailX} ${tailY} C ${middleX} ${tailY}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
+        path = `M ${tailX} ${tailY} C ${control1X} ${control1Y}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
       } else {
         // When nodes are mainly above/below one another, use the same smooth
         // midpoint Bezier vertically. This prevents an arrow from entering the
@@ -401,8 +509,8 @@ const flowGraph = computed(() => {
         const direction = dy >= 0 ? 1 : -1
         tailX = source.x
         tailY = source.y + direction * flowNodeHalfHeight
-        const targetX = target.x
-        const targetY = target.y - direction * (flowNodeHalfHeight + flowArrowTargetGap)
+        targetX = target.x
+        targetY = target.y - direction * (flowNodeHalfHeight + flowArrowTargetGap)
         const middleY = (tailY + targetY) / 2
 
         // Same treatment for mostly-vertical edges: preserve the soft curve,
@@ -411,12 +519,33 @@ const flowGraph = computed(() => {
         const approachDy = targetY - tailY
         const approachLength = Math.max(1, Math.hypot(approachDx, approachDy))
         const approachHandle = Math.max(36, Math.min(86, approachLength * 0.22))
-        const control2X = targetX - (approachDx / approachLength) * approachHandle
-        const control2Y = targetY - (approachDy / approachLength) * approachHandle
+        control1X = tailX
+        control1Y = middleY
+        control2X = targetX - (approachDx / approachLength) * approachHandle
+        control2Y = targetY - (approachDy / approachLength) * approachHandle
 
-        path = `M ${tailX} ${tailY} C ${tailX} ${middleY}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
+        path = `M ${tailX} ${tailY} C ${control1X} ${control1Y}, ${control2X} ${control2Y}, ${targetX} ${targetY}`
       }
     }
+
+    const p0 = { x: tailX, y: tailY }
+    const p1 = { x: control1X, y: control1Y }
+    const p2 = { x: control2X, y: control2Y }
+    const p3 = { x: targetX, y: targetY }
+    const curveAnchor = cubicPointAtHalf(p0, p1, p2, p3)
+    const curveTangent = cubicTangentAtHalf(p0, p1, p2, p3)
+    // Keep the expanded card exactly where it was before. Only the collapsed
+    // card snaps toward the real Bezier path, so the familiar full layout does
+    // not shift when this feature is enabled.
+    const labelX = selfLoop ? Math.min(width - 136, source.x + 250) : (source.x + target.x) / 2
+    const labelY = selfLoop ? source.y : (source.y + target.y) / 2 - 12
+    const collapsedPlacement = getCollapsedFlowLabelPlacement(
+      curveAnchor,
+      curveTangent,
+      { x: labelX, y: labelY },
+      width,
+      height,
+    )
 
     return {
       ...row,
@@ -427,10 +556,13 @@ const flowGraph = computed(() => {
       path,
       tailX,
       tailY,
-      // Keep the original label placement so the visual language of the old
-      // graph stays unchanged.
-      labelX: selfLoop ? Math.min(width - 136, source.x + 250) : (source.x + target.x) / 2,
-      labelY: selfLoop ? source.y : (source.y + target.y) / 2 - 12,
+      labelX,
+      labelY,
+      collapsedLabelX: collapsedPlacement.x,
+      collapsedLabelY: collapsedPlacement.y,
+      collapsedLabelAnchorX: collapsedPlacement.anchorX,
+      collapsedLabelAnchorY: collapsedPlacement.anchorY,
+      collapsedLabelLeaderPath: collapsedPlacement.leaderPath,
     }
   })
 
@@ -660,6 +792,66 @@ function formatKeepForGdbValue(value: unknown) {
 
 function toggleFlowDetail(row: FlowMetricRow) {
   expandedFlowId.value = expandedFlowId.value === row.id ? null : row.id
+}
+
+function isFlowLabelCollapsed(edgeId: string) {
+  return collapsedFlowLabelIds.value.has(edgeId)
+}
+
+function loadFlowLabelCollapseState() {
+  try {
+    const rawState = window.localStorage.getItem(flowLabelCollapseStorageKey)
+
+    if (!rawState) {
+      return
+    }
+
+    const parsed = JSON.parse(rawState)
+
+    if (!Array.isArray(parsed)) {
+      throw new Error('Saved flow label collapse state is not an array.')
+    }
+
+    collapsedFlowLabelIds.value = new Set(
+      parsed.filter((edgeId): edgeId is string => typeof edgeId === 'string' && edgeId.length > 0),
+    )
+  } catch (error) {
+    console.warn('Failed to load saved flow info-card state:', error)
+    collapsedFlowLabelIds.value = new Set()
+    window.localStorage.removeItem(flowLabelCollapseStorageKey)
+  }
+}
+
+function saveFlowLabelCollapseState() {
+  try {
+    // Store only collapsed edge ids. An edge that is not present today can
+    // reappear later and recover its previous state; brand-new edges simply
+    // default to expanded because their id is not in this set.
+    if (collapsedFlowLabelIds.value.size === 0) {
+      window.localStorage.removeItem(flowLabelCollapseStorageKey)
+      return
+    }
+
+    window.localStorage.setItem(
+      flowLabelCollapseStorageKey,
+      JSON.stringify([...collapsedFlowLabelIds.value]),
+    )
+  } catch (error) {
+    console.warn('Failed to save flow info-card state:', error)
+  }
+}
+
+function toggleFlowLabelCollapsed(edgeId: string) {
+  const next = new Set(collapsedFlowLabelIds.value)
+
+  if (next.has(edgeId)) {
+    next.delete(edgeId)
+  } else {
+    next.add(edgeId)
+  }
+
+  collapsedFlowLabelIds.value = next
+  saveFlowLabelCollapseState()
 }
 
 function getFlowMetricNodeIds(metric: Record<string, Record<string, FlowMetricEntry[]>> = flowMetric.value) {
@@ -1139,6 +1331,7 @@ async function refreshSystem() {
 
 onMounted(async () => {
   loadFlowNodePositions()
+  loadFlowLabelCollapseState()
 
   await Promise.all([
     fetchFlowMetric(),
@@ -1544,22 +1737,60 @@ onBeforeUnmount(() => {
                         :r="Math.max(2.2, Math.min(4.2, edge.strokeWidth * 0.42))"
                       />
 
+                      <path
+                        class="flow-edge-label-anchor-line"
+                        :class="{ visible: isFlowLabelCollapsed(edge.id) }"
+                        :d="edge.collapsedLabelLeaderPath"
+                      />
+                      <circle
+                        class="flow-edge-label-anchor-dot"
+                        :class="{ visible: isFlowLabelCollapsed(edge.id) }"
+                        :cx="edge.collapsedLabelAnchorX"
+                        :cy="edge.collapsedLabelAnchorY"
+                        r="2.2"
+                      />
+
                       <foreignObject
                         :x="edge.labelX - 126"
                         :y="edge.labelY - 32"
                         width="252"
                         height="64"
                         class="flow-edge-label-foreign"
+                        :class="{ collapsed: isFlowLabelCollapsed(edge.id) }"
+                        :style="{
+                          '--flow-label-translate-x': `${edge.collapsedLabelX - edge.labelX}px`,
+                          '--flow-label-translate-y': `${edge.collapsedLabelY - edge.labelY}px`,
+                        }"
                       >
-                        <div class="flow-edge-label" xmlns="http://www.w3.org/1999/xhtml">
-                          <div class="flow-edge-label-main">
-                            <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
-                            <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
-                          </div>
-                          <div class="flow-edge-label-percentiles">
-                            <span class="mono-text">p50 {{ formatNs(edge.entries?.[0]?.p50) }}</span>
-                            <span class="mono-text">p90 {{ formatNs(edge.entries?.[0]?.p90) }}</span>
-                            <span class="mono-text">p99 {{ formatNs(edge.entries?.[0]?.p99) }}</span>
+                        <div
+                          class="flow-edge-label-stage"
+                          xmlns="http://www.w3.org/1999/xhtml"
+                        >
+                          <div
+                            class="flow-edge-label"
+                            :class="{ collapsed: isFlowLabelCollapsed(edge.id) }"
+                            :title="isFlowLabelCollapsed(edge.id)
+                              ? 'Double-click to expand flow metrics'
+                              : 'Double-click to collapse flow metrics'"
+                            @click.stop
+                            @dblclick.stop.prevent="toggleFlowLabelCollapsed(edge.id)"
+                          >
+                            <div class="flow-edge-label-expanded">
+                              <div class="flow-edge-label-main">
+                                <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
+                                <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
+                              </div>
+                              <div class="flow-edge-label-percentiles">
+                                <span class="mono-text">p50 {{ formatNs(edge.entries?.[0]?.p50) }}</span>
+                                <span class="mono-text">p90 {{ formatNs(edge.entries?.[0]?.p90) }}</span>
+                                <span class="mono-text">p99 {{ formatNs(edge.entries?.[0]?.p99) }}</span>
+                              </div>
+                            </div>
+
+                            <div class="flow-edge-label-collapsed">
+                              <strong class="mono-text">{{ formatAvgNs(edge.total_delay_ns, edge.count) }}</strong>
+                              <span class="mono-text">cnt {{ formatNumber(edge.count) }}</span>
+                            </div>
                           </div>
                         </div>
                       </foreignObject>
@@ -2419,23 +2650,143 @@ td {
   opacity: 1;
 }
 
+.flow-edge-label-anchor-line {
+  fill: none;
+  stroke: #60a5fa;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease 45ms;
+}
+
+.flow-edge-label-anchor-dot {
+  fill: #60a5fa;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease 45ms;
+}
+
+.flow-edge-label-anchor-line.visible {
+  opacity: 0.52;
+}
+
+.flow-edge-label-anchor-dot.visible {
+  opacity: 0.82;
+}
+
+.flow-edge-group:hover .flow-edge-label-anchor-line,
+.flow-edge-group.selected .flow-edge-label-anchor-line {
+  stroke: #22c55e;
+}
+
+.flow-edge-group:hover .flow-edge-label-anchor-dot,
+.flow-edge-group.selected .flow-edge-label-anchor-dot {
+  fill: #22c55e;
+}
+
 .flow-edge-label-foreign {
   pointer-events: none;
   overflow: visible;
+  transform: translate(0, 0);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.flow-edge-label-foreign.collapsed {
+  transform: translate(
+    var(--flow-label-translate-x, 0px),
+    var(--flow-label-translate-y, 0px)
+  );
+}
+
+.flow-edge-label-stage {
+  width: 252px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  pointer-events: none;
 }
 
 .flow-edge-label {
-  min-height: 58px;
-  display: grid;
-  grid-template-columns: minmax(96px, 1fr) minmax(110px, auto);
-  column-gap: 14px;
-  align-items: center;
-  padding: 8px 12px;
+  --expanded-width: 252px;
+  --expanded-height: 64px;
+  --collapsed-width: 84px;
+  --collapsed-height: 48px;
+  --collapsed-primary-size: 10.8px;
+  --collapsed-secondary-size: 9px;
+
+  position: relative;
+  width: var(--expanded-width);
+  height: var(--expanded-height);
+  box-sizing: border-box;
+  overflow: hidden;
   color: #cbd5e1;
   background: rgba(17, 24, 39, 0.92);
   border: 1px solid #374151;
   border-radius: 11px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+  cursor: default;
+  user-select: none;
+  pointer-events: auto;
+  transform: translateZ(0);
+  transition:
+    width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms ease;
+}
+
+.flow-edge-label.collapsed {
+  width: var(--collapsed-width);
+  height: var(--collapsed-height);
+  border-radius: 9px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.flow-edge-label-expanded,
+.flow-edge-label-collapsed {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  transition:
+    opacity 135ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.flow-edge-label-expanded {
+  display: grid;
+  grid-template-columns: minmax(96px, 1fr) minmax(110px, auto);
+  column-gap: 14px;
+  align-items: center;
+  padding: 8px 12px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.flow-edge-label-collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 5px;
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+.flow-edge-label.collapsed .flow-edge-label-expanded {
+  opacity: 0;
+  transform: scale(0.94);
+  pointer-events: none;
+}
+
+.flow-edge-label.collapsed .flow-edge-label-collapsed {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .flow-edge-label-main,
@@ -2454,20 +2805,54 @@ td {
   align-items: flex-start;
 }
 
-.flow-edge-label strong {
+.flow-edge-label-expanded strong {
   color: #f8fafc;
   font-size: 15px;
   font-weight: 900;
   line-height: 1.18;
 }
 
-.flow-edge-label span {
+.flow-edge-label-expanded span {
   margin-top: 3px;
   color: #9ca3af;
   font-size: 12.5px;
   font-weight: 850;
   line-height: 1.15;
   white-space: nowrap;
+}
+
+.flow-edge-label-collapsed strong {
+  max-width: 100%;
+  overflow: hidden;
+  color: #f8fafc;
+  font-size: var(--collapsed-primary-size);
+  font-weight: 900;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flow-edge-label-collapsed span {
+  max-width: 100%;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #9ca3af;
+  font-size: var(--collapsed-secondary-size);
+  font-weight: 850;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-edge-label-foreign,
+  .flow-edge-label,
+  .flow-edge-label-expanded,
+  .flow-edge-label-collapsed,
+  .flow-edge-label-anchor-line,
+  .flow-edge-label-anchor-dot {
+    transition: none;
+  }
 }
 
 .flow-node-group {
