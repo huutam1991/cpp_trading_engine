@@ -131,12 +131,6 @@ struct LatencyStats
             return 0;
         }
 
-        // Capture one self-consistent histogram snapshot for this calculation.
-        //
-        // It is intentionally not a globally atomic "point in time" snapshot:
-        // writers remain completely lock-free. However, target and cumulative
-        // are computed from the exact same captured bucket values, so there is
-        // no count-vs-bucket mismatch and no bogus fallback to max_delay_ns.
         std::array<uint64_t, BUCKET_COUNT> snapshot{};
         uint64_t total = 0;
 
@@ -144,6 +138,7 @@ struct LatencyStats
         {
             snapshot[i] =
                 buckets[i].load(std::memory_order_relaxed);
+
             total += snapshot[i];
         }
 
@@ -152,10 +147,8 @@ struct LatencyStats
             return 0;
         }
 
-        // Nearest-rank percentile.
         const uint64_t target = static_cast<uint64_t>(
-            std::ceil(static_cast<long double>(total)
-                      * static_cast<long double>(p)));
+            std::ceil(static_cast<double>(total) * p));
 
         uint64_t cumulative = 0;
 
@@ -169,7 +162,6 @@ struct LatencyStats
             }
         }
 
-        // Unreachable as long as total was computed from this snapshot.
         return bucket_upper_bound_ns(BUCKET_COUNT - 1);
     }
 };
