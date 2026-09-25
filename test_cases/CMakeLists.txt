@@ -44,6 +44,8 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/coroutine/*.hpp
     ${PROJECT_ROOT}/core/queue/*.h
     ${PROJECT_ROOT}/core/queue/*.hpp
+    ${PROJECT_ROOT}/core/metric/*.h
+    ${PROJECT_ROOT}/core/metric/*.hpp
     ${PROJECT_ROOT}/core/network/https_client_request/*.h
     ${PROJECT_ROOT}/core/network/https_client_request/*.hpp
     ${PROJECT_ROOT}/core/network/https_client_websocket/*.h
@@ -65,6 +67,8 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
     ${PROJECT_ROOT}/core/coroutine/*.cpp
     ${PROJECT_ROOT}/core/queue/*.c
     ${PROJECT_ROOT}/core/queue/*.cpp
+    ${PROJECT_ROOT}/core/metric/*.c
+    ${PROJECT_ROOT}/core/metric/*.cpp
     ${PROJECT_ROOT}/core/network/https_client_request/https_client_response_parser*.cpp
     ${PROJECT_ROOT}/core/network/https_client_request/https_client_chunk_parser*.cpp
     ${PROJECT_ROOT}/core/network/https_client_websocket/websocket_frame_parser.cpp
@@ -105,6 +109,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE mongo::mongocxx_shared)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto OpenSSL::SSL)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PRIVATE GTest::gtest GTest::gtest_main Threads::Threads)
+target_link_libraries(${PROJECT_NAME} PRIVATE stdc++_libbacktrace backtrace)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 

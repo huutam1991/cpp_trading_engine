@@ -48,12 +48,12 @@ file (GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
 add_executable(${PROJECT_NAME} ${HEADER_FILES} ${SRC_FILES})
 
 target_link_libraries(${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME} PRIVATE stdc++_libbacktrace backtrace)
 target_link_libraries(${PROJECT_NAME} PRIVATE mongo::bsoncxx_shared)
 target_link_libraries(${PROJECT_NAME} PRIVATE mongo::mongocxx_shared)
 target_link_libraries(${PROJECT_NAME} PRIVATE OpenSSL::Crypto OpenSSL::SSL)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 # target_link_libraries(${PROJECT_NAME} PRIVATE glog::glog)
+target_link_libraries(${PROJECT_NAME} PRIVATE stdc++_libbacktrace backtrace)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
