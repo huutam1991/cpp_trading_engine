@@ -111,7 +111,8 @@ Json MongoQuery::find_many(const bsoncxx::v_noabi::document::view_or_value& filt
 
     Json list;
 
-    for (auto doc : cursor) {
+    for (auto doc : cursor)
+    {
         Json data = Json::parse(bsoncxx::to_json(doc));
 
         if (data != nullptr)

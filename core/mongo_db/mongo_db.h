@@ -102,9 +102,12 @@ bool MongoQuery::update_one(const std::string& find_key, const T& find_value, co
 
     // MongoDB doesn't support size_t, so have to cast it to int64_t
     auto update_builder = bsoncxx::builder::stream::document{};
-    if constexpr (std::is_same<U, size_t>::value) {
+    if constexpr (std::is_same<U, size_t>::value)
+    {
         update_builder << update_key << static_cast<int64_t>(update_value);
-    } else {
+    }
+    else
+    {
         update_builder << update_key << update_value;
     }
 
