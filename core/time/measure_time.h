@@ -28,6 +28,7 @@ struct TraceId
     uint32_t count_step;
 
     TraceId() : value(0), count_step(0) {}
+    TraceId(uint32_t v) : value(v), count_step(0) {}
     TraceId(uint32_t v, uint32_t step) : value(v), count_step(step) {}
     TraceId(const TraceId& other) : value(other.value), count_step{other.count_step + 1} {}
 
