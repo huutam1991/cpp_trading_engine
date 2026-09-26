@@ -29,6 +29,13 @@ struct ScopeTiming
     double ns = 0.0;
     double us = 0.0;
     PipelineStage stage = PipelineStage::TOTAL_STAGES;
+
+    void reset()
+    {
+        start = 0;
+        end = 0;
+        ticks = 0;
+    }
 };
 
 class MeasureTime
@@ -113,6 +120,31 @@ class PipelineTraceBuffer
 public:
     static constexpr TraceId Capacity = 20000;
 
+    template <typename F, std::size_t... I>
+    static constexpr void for_each_stage_impl(
+        F&& f,
+        std::index_sequence<I...>)
+    {
+        (
+            f.template operator()<
+                static_cast<PipelineStage>(I)
+            >(),
+            ...
+        );
+    }
+
+    template <typename F>
+    static constexpr void for_each_stage(F&& f)
+    {
+        for_each_stage_impl(
+            std::forward<F>(f),
+            std::make_index_sequence<
+                static_cast<std::size_t>(
+                    PipelineStage::TOTAL_STAGES)
+            >{}
+        );
+    }
+
     static inline TraceId allocate() noexcept
     {
         const TraceId id = m_next++;
@@ -121,6 +153,10 @@ public:
         {
             m_next = 0;
         }
+
+        for_each_stage([&]<PipelineStage Stage>() {
+            field<Stage>[id].reset();
+        });
 
         return id;
     }
@@ -169,31 +205,6 @@ public:
         ScopeTiming& m_timing;
         TraceId m_id;
         bool m_end;
-
-        template <typename F, std::size_t... I>
-        static constexpr void for_each_stage_impl(
-            F&& f,
-            std::index_sequence<I...>)
-        {
-            (
-                f.template operator()<
-                    static_cast<PipelineStage>(I)
-                >(),
-                ...
-            );
-        }
-
-        template <typename F>
-        static constexpr void for_each_stage(F&& f)
-        {
-            for_each_stage_impl(
-                std::forward<F>(f),
-                std::make_index_sequence<
-                    static_cast<std::size_t>(
-                        PipelineStage::TOTAL_STAGES)
-                >{}
-            );
-        }
 
         void update_pipeline_timing(TraceId id)
         {
