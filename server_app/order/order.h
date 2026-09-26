@@ -74,7 +74,7 @@ public:
 
     // Input data
     OrderId order_id = 0;
-    TraceId trace_id = 0;
+    TraceId trace_id;
     Status status = Status::NOT_AVAILABLE;
     const Instrument *instrument;
     Side side;

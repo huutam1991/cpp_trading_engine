@@ -17,7 +17,7 @@ enum class OrderBookUpdateType
 struct OrderBookUpdate
 {
     const Instrument* instrument = nullptr;
-    TraceId trace_id = 0;
+    TraceId trace_id;
     OrderBookSideType side;
     OrderBookUpdateType type;
     double price;
