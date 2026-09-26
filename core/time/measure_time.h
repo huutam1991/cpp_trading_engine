@@ -7,6 +7,7 @@
 
 #include <enum_reflect/enum_reflect.h>
 #include <utils/util_macros.h>
+#include <metric/latency_stat.h>
 
 enum class PipelineStage
 {
@@ -21,6 +22,23 @@ enum class PipelineStage
     TOTAL_STAGES
 };
 
+struct TraceId
+{
+    uint32_t value;
+    uint32_t count_step;
+
+    TraceId() : value(0), count_step(0) {}
+    TraceId(uint32_t v, uint32_t step) : value(v), count_step(step) {}
+    TraceId(const TraceId& other) : value(other.value), count_step{other.count_step + 1} {}
+
+    TraceId& operator=(const TraceId& other)
+    {
+        value = other.value;
+        count_step = other.count_step + 1;
+        return *this;
+    }
+};
+
 struct ScopeTiming
 {
     uint64_t start = 0;
@@ -29,12 +47,14 @@ struct ScopeTiming
     double ns = 0.0;
     double us = 0.0;
     PipelineStage stage = PipelineStage::TOTAL_STAGES;
+    TraceId trace_id;
 
     void reset()
     {
         start = 0;
         end = 0;
         ticks = 0;
+        trace_id = {0, 0};
     }
 };
 
@@ -113,12 +133,10 @@ private:
     }
 };
 
-using TraceId = uint32_t;
-
 class PipelineTraceBuffer
 {
 public:
-    static constexpr TraceId Capacity = 20000;
+    static constexpr uint32_t Capacity = 2000;
 
     template <typename F, std::size_t... I>
     static constexpr void for_each_stage_impl(
@@ -147,7 +165,7 @@ public:
 
     static inline TraceId allocate() noexcept
     {
-        const TraceId id = m_next++;
+        const TraceId id{m_next++, 0};
 
         if (m_next == Capacity)
         {
@@ -155,7 +173,7 @@ public:
         }
 
         for_each_stage([&]<PipelineStage Stage>() {
-            field<Stage>[id].reset();
+            field<Stage>[id.value].reset();
         });
 
         return id;
@@ -164,15 +182,15 @@ public:
     template <PipelineStage Name>
     static inline ScopeTiming& get(TraceId id) noexcept
     {
-        return field<Name>[id];
+        return field<Name>[id.value];
     }
 
     template <PipelineStage StartStage, PipelineStage EndStage>
     static inline ScopeTiming get_pipeline_timing(TraceId id, bool force_end = true)
     {
         ScopeTiming timing;
-        timing.start = field<StartStage>[id].start;
-        timing.end = force_end ? MeasureTime::read_tsc() : field<EndStage>[id].end;
+        timing.start = field<StartStage>[id.value].start;
+        timing.end = force_end ? MeasureTime::read_tsc() : field<EndStage>[id.value].end;
         timing.ticks = timing.end - timing.start;
         timing.ns = static_cast<double>(timing.ticks) / MeasureTime::get_tsc_ghz();
         timing.us = timing.ns / 1000.0;
@@ -183,9 +201,10 @@ public:
     class RecordStageTiming
     {
     public:
-        inline RecordStageTiming(TraceId id, bool end = false) : m_timing{field<Name>[id]}, m_id{id}, m_end{end}
+        inline RecordStageTiming(TraceId id, bool end = false) : m_timing{field<Name>[id.value]}, m_end{end}
         {
             m_timing.start = MeasureTime::read_tsc();
+            m_timing.trace_id = id;
         }
 
         inline ~RecordStageTiming()
@@ -197,23 +216,22 @@ public:
 
             if (m_end) [[unlikely]]
             {
-                update_pipeline_timing(m_id);
+                update_pipeline_timing();
             }
         }
 
     private:
         ScopeTiming& m_timing;
-        TraceId m_id;
         bool m_end;
 
-        void update_pipeline_timing(TraceId id)
+        void update_pipeline_timing()
         {
             std::array<ScopeTiming, static_cast<size_t>(PipelineStage::TOTAL_STAGES)> pipeline_timings;
             size_t count = 0;
 
             for_each_stage([&]<PipelineStage Stage>()
             {
-                ScopeTiming& scope = field<Stage>[id];
+                ScopeTiming& scope = field<Stage>[m_timing.trace_id.value];
                 if (scope.start == 0 || scope.end == 0)
                 {
                     return;
@@ -230,7 +248,7 @@ public:
 
             std::sort(pipeline_timings.begin(), pipeline_timings.begin() + count, [](const ScopeTiming& a, const ScopeTiming& b)
             {
-                return a.start < b.start && a.end < b.end;
+                return a.trace_id.count_step < b.trace_id.count_step;
             });
 
             // Update the pipeline timing for the current stage
@@ -240,7 +258,7 @@ public:
             m_timing.ns = static_cast<double>(m_timing.ticks) / MeasureTime::get_tsc_ghz();
             m_timing.us = m_timing.ns / 1000.0;
 
-            spdlog::debug("Pipeline timing for TraceId {}", id);
+            spdlog::debug("Pipeline timing for TraceId {}", m_timing.trace_id.value);
             for (size_t i = 0; i < count; ++i)
             {
                 auto& timing = pipeline_timings[i];
@@ -254,8 +272,11 @@ public:
     };
 
 private:
-    static inline TraceId m_next;
+    static inline uint32_t m_next;
 
     template <PipelineStage Stage>
     static inline std::array<ScopeTiming, Capacity> field;
+
+    template <PipelineStage Stage>
+    static inline LatencyStats latency_stat;
 };
