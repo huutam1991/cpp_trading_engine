@@ -25,17 +25,36 @@ enum class PipelineStage
 struct TraceId
 {
     uint32_t value;
-    uint32_t count_step;
+    bool has_copy;
 
-    TraceId() : value(0), count_step(0) {}
-    TraceId(uint32_t v) : value(v), count_step(0) {}
-    TraceId(uint32_t v, uint32_t step) : value(v), count_step(step) {}
-    TraceId(const TraceId& other) : value(other.value), count_step{other.count_step + 1} {}
+    TraceId() : value(0), has_copy{false} {}
+    TraceId(uint32_t v) : value(v), has_copy{false} {}
+    TraceId(uint32_t v, uint32_t step) : value(v), has_copy{false} {}
+    TraceId(const TraceId& other) : value(other.value), has_copy{false}
+    {
+        const_cast<TraceId&>(other).has_copy = true;
+    }
+    TraceId(TraceId&& other) : value(other.value), has_copy{other.has_copy}
+    {
+        other.has_copy = true;
+    }
 
     TraceId& operator=(const TraceId& other)
     {
         value = other.value;
-        count_step = other.count_step + 1;
+        has_copy = false;
+
+        const_cast<TraceId&>(other).has_copy = true;
+
+        return *this;
+    }
+
+    TraceId& operator=(TraceId&& other)
+    {
+        *this = other;
+
+        other.has_copy = true;
+
         return *this;
     }
 };
@@ -55,7 +74,8 @@ struct ScopeTiming
         start = 0;
         end = 0;
         ticks = 0;
-        trace_id = {0, 0};
+        trace_id.value = 0;
+        trace_id.has_copy = false;
     }
 };
 
@@ -166,7 +186,7 @@ public:
 
     static inline TraceId allocate() noexcept
     {
-        const TraceId id{m_next++, 0};
+        uint32_t next = m_next++;
 
         if (m_next == Capacity)
         {
@@ -174,10 +194,10 @@ public:
         }
 
         for_each_stage([&]<PipelineStage Stage>() {
-            field<Stage>[id.value].reset();
+            field<Stage>[next].reset();
         });
 
-        return id;
+        return TraceId{next, 0};
     }
 
     template <PipelineStage Name>
@@ -202,10 +222,9 @@ public:
     class RecordStageTiming
     {
     public:
-        inline RecordStageTiming(TraceId id, bool end = false) : m_timing{field<Name>[id.value]}, m_end{end}
+        inline RecordStageTiming(TraceId& id) : m_timing{field<Name>[id.value]}, m_trace_id{id}
         {
             m_timing.start = MeasureTime::read_tsc();
-            m_timing.trace_id = id;
         }
 
         inline ~RecordStageTiming()
@@ -215,7 +234,7 @@ public:
             m_timing.ns = static_cast<double>(m_timing.ticks) / MeasureTime::get_tsc_ghz();
             m_timing.us = m_timing.ns / 1000.0;
 
-            if (m_end) [[unlikely]]
+            if (m_trace_id.has_copy == false) [[unlikely]]
             {
                 update_pipeline_timing();
             }
@@ -223,7 +242,7 @@ public:
 
     private:
         ScopeTiming& m_timing;
-        bool m_end;
+        TraceId& m_trace_id;
 
         void update_pipeline_timing()
         {
@@ -232,7 +251,7 @@ public:
 
             for_each_stage([&]<PipelineStage Stage>()
             {
-                ScopeTiming& scope = field<Stage>[m_timing.trace_id.value];
+                ScopeTiming& scope = field<Stage>[m_trace_id.value];
                 if (scope.start == 0 || scope.end == 0)
                 {
                     return;
@@ -249,7 +268,7 @@ public:
 
             std::sort(pipeline_timings.begin(), pipeline_timings.begin() + count, [](const ScopeTiming& a, const ScopeTiming& b)
             {
-                return a.trace_id.count_step < b.trace_id.count_step;
+                return a.start < b.start && a.end < b.end;
             });
 
             // Update the pipeline timing for the current stage
@@ -259,7 +278,7 @@ public:
             m_timing.ns = static_cast<double>(m_timing.ticks) / MeasureTime::get_tsc_ghz();
             m_timing.us = m_timing.ns / 1000.0;
 
-            spdlog::debug("Pipeline timing for TraceId {}", m_timing.trace_id.value);
+            spdlog::debug("Pipeline timing for TraceId {}", m_trace_id.value);
             for (size_t i = 0; i < count; ++i)
             {
                 auto& timing = pipeline_timings[i];
