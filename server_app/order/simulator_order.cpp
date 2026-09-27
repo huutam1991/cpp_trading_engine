@@ -69,6 +69,8 @@ void SimulatorOrder::price_update(PriceUpdate data)
 
 Task<void> SimulatorOrder::execute_place(Order order)
 {
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage(order.trace_id);
+
     order.status = Order::Status::NEW;
     order.source.type = Order::Source::SourceType::SIMULATOR;
     auto& order_list = get_order_list();
@@ -81,6 +83,8 @@ Task<void> SimulatorOrder::execute_place(Order order)
 
 Task<void> SimulatorOrder::execute_cancel(Order order)
 {
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage(order.trace_id);
+
     order.status = Order::Status::CANCELED;
     auto& order_list = get_order_list();
     order_list[order.instrument].erase(order.order_id);
