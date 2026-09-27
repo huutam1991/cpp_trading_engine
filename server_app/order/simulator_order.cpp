@@ -45,12 +45,18 @@ Json SimulatorOrder::get_info()
 
 void SimulatorOrder::place(Order order)
 {
+    TraceId trace_id = order.trace_id;
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage(trace_id);
+
     auto task = execute_place(std::move(order));
     task.start_running_on(get_event_base());
 }
 
 void SimulatorOrder::cancel(Order order)
 {
+    TraceId trace_id = order.trace_id;
+    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage(trace_id);
+
     auto task = execute_cancel(std::move(order));
     task.start_running_on(get_event_base());
 }
@@ -69,8 +75,6 @@ void SimulatorOrder::price_update(PriceUpdate data)
 
 Task<void> SimulatorOrder::execute_place(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage(order.trace_id);
-
     order.status = Order::Status::NEW;
     order.source.type = Order::Source::SourceType::SIMULATOR;
     auto& order_list = get_order_list();
@@ -83,8 +87,6 @@ Task<void> SimulatorOrder::execute_place(Order order)
 
 Task<void> SimulatorOrder::execute_cancel(Order order)
 {
-    PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage(order.trace_id);
-
     order.status = Order::Status::CANCELED;
     auto& order_list = get_order_list();
     order_list[order.instrument].erase(order.order_id);
