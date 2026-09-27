@@ -36,8 +36,10 @@ Task<void> BinanceOrderBook::start_fetching_order_book()
         [this](std::string buffer) -> Task<void>
         {
             {
-                m_trace_id = PipelineTraceBuffer::allocate();
-                PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(m_trace_id);
+                TraceId trace_id = PipelineTraceBuffer::allocate();
+                PipelineTraceBuffer::RecordStageTiming<PipelineStage::RECEIVE_DATA> record_stage(trace_id);
+
+                m_trace_id = trace_id;
 
                 if (m_has_received_first_update == false)
                 {

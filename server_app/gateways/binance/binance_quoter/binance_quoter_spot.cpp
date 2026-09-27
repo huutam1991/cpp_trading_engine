@@ -239,7 +239,7 @@ Task<Json> BinanceQuoterSpot::place(Order order)
 
     HttpsClientRequest client(m_epoll_base, get_url(), std::stoi(get_port()));
     {
-        PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id, true);
+        PipelineTraceBuffer::RecordStageTiming<PipelineStage::SEND_ORDER> record_stage_timing(order.trace_id);
 
         query_str += "symbol=" + order.instrument->exchange_symbol.to_string();
         query_str += "&side=" + (std::string)enum_reflect::enum_name(order.side);
